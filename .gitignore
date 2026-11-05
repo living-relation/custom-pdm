@@ -1,0 +1,26 @@
+# Agent local files
+CLAUDE.local.md
+.claude/
+# KiCad
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.lck
+_autosave-*
+*.bak
+*-bak
+# Fusion / CAD temp
+*.f3d.bak
+~*
+# Fab outputs (regenerate)
+gerbers/
+*.zip
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+*.swp
+# Secrets
+.env
+*.env
