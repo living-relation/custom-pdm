@@ -3,14 +3,16 @@
 Updated 2026-11-07.
 
 ## Status
-- Repo created (public). No design files yet.
+- Repo created (public). No design files in the repo yet; the Fusion import lives in the Fusion project.
 - Reference KiCad sources (dingoPDM v7.5, dingoPDM-Max) cloned locally under `reference/` (git-ignored, about 350 MB).
-- Next: import dingoPDM v7.5 into Fusion Electronics (Fusion project `custom-pdm`); finished exports go to the models folder (`Desktop\models` on OneDrive, add-only).
+- dingoPDM v7.5 imported into Fusion Electronics (Fusion project `custom-pdm`, Sheets translation): design, schematic and board files created. Check: 115/115 named nets match; 154/156 parts (G1, G2 not imported, likely logo graphics). Board outline, pad count and layer stack not yet checked by eye.
+- Part and net lists from the import are in the models folder (`Desktop\models\custom-pdm-import-check`, OneDrive, add-only).
+- BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
+- Next: check the imported board by eye, then start the board A changes (replace 2x BTS7002 with a 4th BTS7008 dual; add 8 universal analog inputs).
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
-- Copy BOM v4 into the repo (not done).
-- Import dingoPDM v7.5 into Fusion Electronics and check the translation.
+- Check the imported board by eye in Fusion (outline 72.4 x 95.2 mm, 4 layers, pads).
 - Decide 256 Kbit FRAM vs 64 Kbit substitute.
 - Design the 150 A feed busbar.
 - Pick connector part numbers.
