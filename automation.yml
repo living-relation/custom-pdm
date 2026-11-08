@@ -1,0 +1,54 @@
+# automation.yml: every script, workflow, hook and scheduled job in this repo, one entry each.
+# Format: git-checker "Automation registry". Nothing here runs on its own; all scripts are manual.
+generated_patterns: ["**/*.checks.json", "**/*_report.json", "**/*.pdf", "**/*.html"]
+ignore: ["reference/**"]
+handmade: ["docs/**"]          # BOM spreadsheet and other hand-made docs
+automations:
+  - id: board-a-build
+    script: tools/build_board_a.ps1
+    helpers: [tools/sch_swap_board_a.py, tools/sch_repin_board_a.py, tools/pcb_swap_board_a.py, tools/route_board_a.py]
+    trigger: manual
+    reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
+    writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: powershell -File tools/build_board_a.ps1
+    check_cmd: kicad-cli pcb drc --schematic-parity hardware/board-a/DingoPDM.kicad_pcb
+    owner: claude
+  - id: sch-swap-board-a
+    script: tools/sch_swap_board_a.py
+    trigger: called-by:board-a-build
+    reads: [hardware/board-a/HighCurrentDrivers.kicad_sch, hardware/board-a/BTS7008_2EPA.kicad_sch]
+    writes: [hardware/board-a/HighCurrentDrivers.kicad_sch, hardware/board-a/MCU.kicad_sch, hardware/board-a/DingoPDM.kicad_sch, hardware/board-a/BTS7008_2EPA.kicad_sch]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    owner: claude
+  - id: sch-repin-board-a
+    script: tools/sch_repin_board_a.py
+    trigger: called-by:board-a-build
+    reads: [hardware/board-a/Connectors.kicad_sch]
+    writes: [hardware/board-a/Connectors.kicad_sch]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    owner: claude
+  - id: pcb-swap-board-a
+    script: tools/pcb_swap_board_a.py
+    trigger: called-by:board-a-build
+    reads: [hardware/board-a/DingoPDM.kicad_pcb]
+    writes: [hardware/board-a/DingoPDM.kicad_pcb]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    owner: claude
+  - id: route-board-a
+    script: tools/route_board_a.py
+    trigger: called-by:board-a-build
+    reads: [hardware/board-a/DingoPDM.kicad_pcb]
+    writes: [hardware/board-a/DingoPDM.kicad_pcb]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    owner: claude
