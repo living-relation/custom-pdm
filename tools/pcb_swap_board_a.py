@@ -10,6 +10,7 @@ U8 keeps its place and its support parts (and their tracks). Changes:
 5. Old INPUT1 copper touching J3 pin 8 is removed (pin 8 is now an output).
 Remaining connections (U8 pins 5/6 to R20/R19, INPUT1 from J3 pin 12) are routed by route_board_a.py.
 KiCad 10 swig loses object types after BOARD.Remove(), so removals happen last.
+Run with KiCad 9's python: Fusion's KiCad importer cannot read KiCad 10 files (nets are lost).
 """
 import sys
 import xml.etree.ElementTree as ET

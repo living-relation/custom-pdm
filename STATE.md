@@ -3,14 +3,14 @@
 Updated 2026-11-08.
 
 ## Status
-- Repo created (public). Board A design source is KiCad (`hardware/board-a/`, KiCad 10 format; KiCad 10.0.7 on DansPC). Edits are scripted in `tools/` and checked with KiCad ERC/DRC; Fusion is for viewing, 3D and later checks (re-import after each round).
+- Repo created (public). Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
 - Reference KiCad sources (dingoPDM v7.5, dingoPDM-Max) cloned locally under `reference/` (git-ignored, about 350 MB).
 - dingoPDM v7.5 imported into Fusion Electronics (Fusion project `custom-pdm`, Sheets translation): design, schematic and board files created. Check: 115/115 named nets match; all 156 parts. Board checked: outline 72.39 x 95.25 mm, 4 copper layers, 522 pads, board image looks right.
 - Part and net lists from the import are in the models folder (`Desktop\models\custom-pdm-import-check`, OneDrive, add-only).
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Board A step 1 done (PR #2): U8+U9 (2x BTS7002) replaced by one BTS7008-2EPA dual at U8. J3 re-pinned: pin 7 = OUT2, pin 8 = OUT1 (was IN1), pin 12 = IN1 (was OUT2). PF_DEN2 MCU pin is now PF_DSEL1_2. PF_IS2 ADC path is spare (buffer input tied to GND). DRC/parity: 0 unconnected, no shorts, all other findings same as the unmodified dingoPDM baseline (28 clearance findings pre-exist).
-- Fusion: `custom-pdm` project holds the clean import (root) and a `board-A` folder with an independent re-import of the unmodified design; `LINKED-COPY-unused` there can be deleted.
-- Next: re-import the modified board A into Fusion and review in 3D; then add 8 universal analog inputs (start with the spare PF_IS2 path).
+- Fusion `custom-pdm` project: root = clean import of the original; `board-A` = unmodified re-import (+ `LINKED-COPY-unused`, deletable); `board-A-dual-k9` = modified board A (143 parts, 111 nets = KiCad); `board-A-dual` = broken KiCad 10 import with no nets (deletable).
+- Next: add 8 universal analog inputs to board A (start with the spare PF_IS2 path).
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
