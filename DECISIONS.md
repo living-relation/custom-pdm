@@ -18,6 +18,7 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): KiCad files in this repo are the design source, edited by scripts in `tools/` and checked with KiCad ERC/DRC; Fusion is used to view, review and later for 3D (re-import after each round).
 - 2026-11-08 (Claude, PR #3): The board A PCB stays in KiCad 9 format (KiCad 9.0.8 edits it) because Fusion's importer loses all nets from a KiCad 10 PCB.
 - 2026-11-08 (Dan, chat): Agents may merge their own PRs when green (no CI = GitHub shows mergeable/clean).
+- 2026-11-08 (Dan, chat): Install the git-checker state-file check as a PR workflow in comment mode (warns, never blocks).
 - 2026-11-08 (Dan, chat): Agents click app dialogs (e.g. Fusion import) themselves with screen control instead of asking Dan.
 
 ## Heat and enclosure

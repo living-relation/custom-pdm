@@ -4,6 +4,7 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
 **Kept branches:** none
+**Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Status
 - Repo created (public). Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
