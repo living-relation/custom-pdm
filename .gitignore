@@ -24,3 +24,5 @@ desktop.ini
 # Secrets
 .env
 *.env
+# Local reference clones (dingoPDM, dingoPDM-Max KiCad sources)
+reference/
