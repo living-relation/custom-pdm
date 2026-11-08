@@ -1,6 +1,9 @@
 # STATE - custom-pdm
 
-Updated 2026-11-08.
+Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
+
+**Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
+**Kept branches:** none
 
 ## Status
 - Repo created (public). Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
@@ -21,9 +24,3 @@ Updated 2026-11-08.
 - Design the 150 A feed busbar.
 - Pick connector part numbers.
 - Pick fab: JLCPCB vs PCBWay.
-
-## Decisions 2026-11-08
-- PDM mounts inside the cabin (design air temp up to about 60 C). Enclosure: aluminum, or MJF print with a heat sink; thermal pads, small fan allowed.
-- 8 A outputs are limited to 7.5 A (BTS7008-2EPA rating, all channels on at 85 C).
-- Heat checks: hand calc now, Elmer 3D model (handbuilt-cad sim stack) once the layout exists. No Fusion thermal study.
-- Found: BTS7002-1EPP and BTS7008-2EPA share the TSDSO-14 footprint and pins 1-4 (GND, IN/IN0, DEN, IS) and 15 (VS). The dual adds DSEL (pad 5) and IN1 (pad 6), and splits outputs (pads 12-14 OUT0, 8-10 OUT1).
