@@ -1079,7 +1079,7 @@
 			)
 		)
 	)
-	(global_label "PF_DEN2"
+	(global_label "PF_DSEL1_2"
 		(shape output)
 		(at 160.655 81.28 0)
 		(fields_autoplaced yes)
@@ -2763,7 +2763,7 @@
 				(justify left)
 			)
 		)
-		(pin "PF_DEN2" output
+		(pin "PF_DSEL1_2" output
 			(at 160.655 81.28 0)
 			(uuid "94571e66-e0bc-49d4-a982-496522e2956c")
 			(effects
