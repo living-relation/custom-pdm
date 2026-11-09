@@ -11,3 +11,4 @@ Rules:
 - Work on a branch, open a PR; agents may merge their own PRs when green (Dan, 2026-11-08). `git pull --ff-only`; never force-push; never `--no-verify`.
 - Fusion on DansPC: follow the lock rules in `C:\projects\active\workstation\agents\projects-AGENTS.md` section 5.
 - Upstream design is dingoPDM (MIT): keep its license notice on any reused files.
+- `tools/build_board_a.ps1` rewrites `hardware/board-a/` in the working tree. Check `git diff --cached --stat` before every commit, and restore board files you did not mean to change (`git checkout HEAD -- hardware/board-a`).

@@ -26,3 +26,5 @@ desktop.ini
 *.env
 # Local reference clones (dingoPDM, dingoPDM-Max KiCad sources)
 reference/
+# Python cache (tools import each other)
+__pycache__/

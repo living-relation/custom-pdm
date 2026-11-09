@@ -3,7 +3,7 @@
 Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
-**Kept branches:** none
+**Kept branches:** feat/input-board (active, input expansion WIP)
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Status
@@ -14,10 +14,16 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Board A step 1 done (PR #2): U8+U9 (2x BTS7002) replaced by one BTS7008-2EPA dual at U8. J3 re-pinned: pin 7 = OUT2, pin 8 = OUT1 (was IN1), pin 12 = IN1 (was OUT2). PF_DEN2 MCU pin is now PF_DSEL1_2. PF_IS2 ADC path is spare (buffer input tied to GND). DRC/parity: 0 unconnected, no shorts, all other findings same as the unmodified dingoPDM baseline (28 clearance findings pre-exist).
 - Fusion `custom-pdm` project: root = clean import of the original; `board-A` = unmodified re-import (+ `LINKED-COPY-unused`, deletable); `board-A-dual-k9` = modified board A (143 parts, 111 nets = KiCad); `board-A-dual` = broken KiCad 10 import with no nets (deletable).
-- Next: add 8 universal analog inputs to board A (start with the spare PF_IS2 path).
+- Board A inputs (branch `feat/input-board`, WIP, not merged):
+  - Schematic/PCB scripts add J6 (JST GH 12-pin) at the left edge, IN_3..IN_10 on PA8, PA15, PB4, PB5, PB13, PC14, PC15, PD2, spare analog on PC2 (R12 DNP). Run with `tools/build_board_a.ps1 -WithInputs`; the default build is unchanged.
+  - Router is importable (`route_board_a.py`); `pcb_rework.py` rips up / reconnects; `pcb_inputs_board_a.py` fans out U4 pins with exact KiCad collision checks.
+  - Blocker: U4's left-edge row (pins 53-59) has room for about 4 vias at board rules but needs 7. PB4, PB5, PD2, PB13 fan out, but ripped CAN_STANDBY then can't reconnect. Waiting on Dan (A4, or enlarge the board).
+  - Input board (DIP pulls, DT panel connector) not started.
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
+- A4 (Dan): how to free the left-edge U4 pins: re-fan the row, drop SWO, fewer direct pins, I2C expander, or enlarge/re-lay out the MCU area.
+- Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).
 - Firmware (later): outputs 1-2 are now a dual pair (DSEL on the old PF_DEN2 pin).
 - Review the 28 pre-existing DRC clearance findings before ordering.
