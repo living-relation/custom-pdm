@@ -6,6 +6,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-05 (Dan, chat): Personal project, not for sale. Bigger dingoPDM-based PDM (dingoPDM by Cory Grant, MIT) for car accessories, not high-current pumps or motors.
 - 2026-11-05 (Dan, chat): 12 V system, about 150 A total feed. 24 outputs: 16 x 8 A, 6 x 15 A, 2 x 30 A (30 A outputs may be flying leads).
 - 2026-11-05 (Dan, chat): 16 universal 0-5 V inputs, usable as digital by firmware threshold.
+- 2026-11-08 (Dan, chat): Replaces the line above: inputs are on/off, not sensor inputs. Each input works as switch-to-ground or 12 V on/off, chosen per input in firmware. No 5 V sensor supply. Board A: 2 existing + 8 new inputs.
+- 2026-11-08 (Dan, chat): Future 5 V analog sensors, if ever needed, come in through external hardware (e.g. the Link ECU's own analog inputs sent over CAN); keep the spare analog pin reachable.
 - 2026-11-05 (Dan, chat): Controlled over CAN by a Link G4X XtremeX ECU; the ECU can send anything over CAN, so no CAN map work is needed up front.
 - 2026-11-05 (Dan, chat): Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) stays open until one clearly wins.
 - 2026-11-05 (Dan, chat): Plan B uses two board designs: board A (8 x 8 A outputs + 8 inputs, built twice) and board B (6 x 15 A + 2 x 30 A).
@@ -32,3 +34,9 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Replace the two BTS7002 singles (U8, U9) with one BTS7008-2EPA dual at U8, keeping 8 outputs per board.
 - 2026-11-08 (Dan, chat): Re-pin J3 so the dual sits between its two output pins: pin 7 = OUT2, pin 8 = OUT1 (was IN1), pin 12 = IN1 (was OUT2). Signal wires routed by script.
 - 2026-11-08 (Claude, finding): BTS7002-1EPP and BTS7008-2EPA share the TSDSO-14 footprint and pins 1-4 (GND, IN/IN0, DEN, IS) and 15 (VS); the dual adds DSEL (pad 5) and IN1 (pad 6) and splits outputs (pads 12-14 OUT0, 8-10 OUT1).
+- 2026-11-08 (Dan, chat): Board A's 8 new inputs live on a small input daughter board: board A's 8 free MCU pins go to a header, keyed ribbon cable to the input board, which holds the input protection parts and a Deutsch DT 12-pin connector.
+
+## CAN
+- 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
+- 2026-11-08 (Dan, chat): CAN termination is install-specific (out of scope); every board keeps a selectable 120 ohm termination jumper.
+- 2026-11-08 (Dan, chat): Any CAN device (e.g. a keypad) can join later; it must use 1 Mbps and IDs that don't collide with the PDM boards.
