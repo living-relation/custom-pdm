@@ -54,6 +54,10 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat): The analog channel takes 0-5 V (divider + clamp).
 - 2026-11-09 (Dan, chat): Box connectors: cheaper plastic circular (HD-style or similar) instead of Deutsch DT; two connectors or fewer for the whole box, carrying all low-current I/O (7.5 A outputs, inputs, analog). High-current outputs use separate studs.
 
+- 2026-11-09 (Dan, chat): Box connectors are TE Deutsch HD30/HDP20 family (not CPC), using parts already on hand: X1 outputs = HD30 24-21 (HD34-24-21SN / HD36-24-21PN), X2 signals = a spare HDP 24-47 set, X3 board B 15 A/30 A outputs = HDP 24-9 (instead of studs). 150 A feed stays on a stud.
+- 2026-11-09 (Dan, chat): Leave the ST185 project's TE on-hand list unchanged (don't mark parts claimed there).
+- 2026-11-09 (Dan, chat): Fusion work (import, check, render) never needs asking.
+
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
 - 2026-11-08 (Dan, chat): CAN termination is install-specific (out of scope); every board keeps a selectable 120 ohm termination jumper.
