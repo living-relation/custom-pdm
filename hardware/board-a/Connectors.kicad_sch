@@ -4787,7 +4787,7 @@
 			)
 		)
 	)
-	(global_label "INPUT1"
+	(global_label "PF_OUT1"
 		(shape output)
 		(at 101.6 61.595 180)
 		(fields_autoplaced yes)
@@ -4906,7 +4906,7 @@
 			)
 		)
 	)
-	(global_label "PF_OUT2"
+	(global_label "INPUT1"
 		(shape input)
 		(at 101.6 71.755 180)
 		(fields_autoplaced yes)
@@ -4952,7 +4952,7 @@
 			)
 		)
 	)
-	(global_label "PF_OUT1"
+	(global_label "PF_OUT2"
 		(shape input)
 		(at 101.6 59.055 180)
 		(fields_autoplaced yes)
