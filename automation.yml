@@ -29,6 +29,18 @@ automations:
     run_cmd: powershell -File tools/build_input_board.ps1
     check_cmd: kicad-cli pcb drc --schematic-parity hardware/input-board/input-board.kicad_pcb
     owner: claude
+  - id: board-b-build
+    script: tools/build_board_b.ps1
+    helpers: [tools/sch_board_b.py, tools/check_board_b.py, tools/netlist_pins.py]
+    trigger: manual
+    reads: ["tools/*_board_b.py"]   # plus the baseline commit fe19c28 of hardware/board-b-max
+    writes: ["hardware/board-b-max/*.kicad_sch"]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: powershell -File tools/build_board_b.ps1
+    check_cmd: python tools/check_board_b.py <netlist>
+    owner: claude
   - id: state-check
     script: .github/workflows/state-check.yml
     helpers: [.github/state-check.sh, .github/registry-check.py]
@@ -37,5 +49,5 @@ automations:
     writes: []
     committed: yes
     auto_commit: false
-    enabled: true
+    enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
     owner: claude

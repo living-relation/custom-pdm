@@ -2875,6 +2875,52 @@
 			)
 		)
 	)
+	(sheet
+		(at 231.14 50.8)
+		(size 22.86 21.59)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "5574c8bf-ac8c-491f-a51c-eb1ae05b2947")
+		(property "Sheetname" "HighCurrentDrivers2"
+			(at 231.14 50.0884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "HighCurrentDrivers2.kicad_sch"
+			(at 231.14 72.9746 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "dingoPDM-Max"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d"
+					(page "14")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

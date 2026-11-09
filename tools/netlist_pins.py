@@ -9,13 +9,13 @@ import sys
 def parse(path):
     text = open(path, encoding="utf-8").read()
     nets = {}
-    for block in re.split(r"\(net \(code ", text)[1:]:
-        m = re.search(r'\(name "([^"]*)"\)', block)
+    for block in re.split(r"\(net\s+\(code\s+", text)[1:]:
+        m = re.search(r'\(name\s+"([^"]*)"\)', block)
         if not m:
             continue
         name = m.group(1)
         for ref, pin, fn in re.findall(
-            r'\(node \(ref "([^"]+)"\) \(pin "([^"]+)"\)(?: \(pinfunction "([^"]*)"\))?', block
+            r'\(node\s+\(ref\s+"([^"]+)"\)\s+\(pin\s+"([^"]+)"\)(?:\s+\(pinfunction\s+"([^"]*)"\))?', block
         ):
             nets.setdefault(ref, []).append((pin, fn, name))
     return nets
