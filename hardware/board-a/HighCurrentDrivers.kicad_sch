@@ -1301,6 +1301,16 @@
 	)
 	(wire
 		(pts
+			(xy 63.5 72.39) (xy 66.04 72.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d2c71ec3-f4dc-473f-bf0b-8b458e2329f1")
+	)
+	(wire
+		(pts
 			(xy 220.98 31.115) (xy 232.41 31.115)
 		)
 		(stroke
@@ -1397,7 +1407,7 @@
 	)
 	(global_label "PF_IN2"
 		(shape input)
-		(at 66.04 62.23 180)
+		(at 66.04 76.2 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1464,9 +1474,9 @@
 			)
 		)
 	)
-	(global_label "PF_DSEL1_2"
+	(global_label "PF_DEN2"
 		(shape input)
-		(at 66.04 58.42 180)
+		(at 66.04 80.01 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1512,7 +1522,7 @@
 	)
 	(global_label "PF_OUT2"
 		(shape input)
-		(at 87.63 60.96 0)
+		(at 87.63 72.39 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1605,6 +1615,83 @@
 			(project "DingoPDM"
 				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
 					(reference "#PWR051")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:+12V")
+		(at 63.5 72.39 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "00000000-0000-0000-0000-00005f5a40d4")
+		(property "Reference" "#PWR052"
+			(at 63.5 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+12V"
+			(at 63.881 67.9958 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 63.5 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 63.5 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 63.5 72.39 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4ff6d7cf-5c3c-4113-a5f5-18dced1e4a44")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
+					(reference "#PWR052")
 					(unit 1)
 				)
 			)
@@ -2105,83 +2192,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 87.63 80.01 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "dbee8317-0e77-4434-b0a9-6d7277ac2190")
-		(property "Reference" "#PWR061"
-			(at 87.63 86.3600 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 87.757 84.4042 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 87.63 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 87.63 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 87.63 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "534a691c-8fee-4445-8b21-856a713c2202")
-		)
-		(instances
-			(project "DingoPDM"
-				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
-					(reference "#PWR061")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Amplifier_Operational:LM324")
 		(at 139.7 82.55 0)
 		(unit 4)
@@ -2563,7 +2573,7 @@
 	)
 	(sheet
 		(at 66.04 44.45)
-		(size 21.59 20.32)
+		(size 21.59 13.97)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -2588,8 +2598,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "BTS7008_2EPA.kicad_sch"
-			(at 66.04 65.3546 0)
+		(property "Sheetfile" "BTS700n_1EPP.kicad_sch"
+			(at 66.04 59.0046 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2609,7 +2619,7 @@
 				(justify left)
 			)
 		)
-		(pin "IN0" input
+		(pin "IN" input
 			(at 66.04 50.8 180)
 			(uuid "2e62cc97-2fc0-49ae-961c-217a76a9a942")
 			(effects
@@ -2629,7 +2639,7 @@
 				(justify left)
 			)
 		)
-		(pin "OUT0" output
+		(pin "OUT" output
 			(at 87.63 50.8 0)
 			(uuid "4c6f8db8-7f3d-43e0-8282-a4c71cf11add")
 			(effects
@@ -2649,9 +2659,55 @@
 				(justify right)
 			)
 		)
-		(pin "DSEL" input
-			(at 66.04 58.42 180)
-			(uuid "33f1bbd1-e45a-44a8-9c2c-1e6218951a61")
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
+					(page "10")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 66.04 69.85)
+		(size 21.59 12.7)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "00000000-0000-0000-0000-00005f5a40c6")
+		(property "Sheetname" "sheet5F5A40BA"
+			(at 66.04 69.1384 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "BTS700n_1EPP.kicad_sch"
+			(at 66.04 83.1346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "BATT" input
+			(at 66.04 72.39 180)
+			(uuid "35059426-9218-47cf-bf06-90f2244e95cc")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2659,9 +2715,9 @@
 				(justify left)
 			)
 		)
-		(pin "IN1" input
-			(at 66.04 62.23 180)
-			(uuid "62aab9bb-c112-47e3-83d9-31fe00eadb35")
+		(pin "IN" input
+			(at 66.04 76.2 180)
+			(uuid "7cc34362-6960-462f-98cb-ad5de64c137c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2669,9 +2725,29 @@
 				(justify left)
 			)
 		)
-		(pin "OUT1" output
-			(at 87.63 60.96 0)
-			(uuid "4466997d-ddc5-4441-8887-fed39e7841d0")
+		(pin "DEN" input
+			(at 66.04 80.01 180)
+			(uuid "9d1d95ac-57b2-4c7e-b3e7-c438f7babd3c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "OUT" output
+			(at 87.63 72.39 0)
+			(uuid "309b8d26-0d8d-4eb4-8564-0281d8012ffe")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "IS" output
+			(at 87.63 80.01 0)
+			(uuid "c8607837-6a93-4d45-90d3-7d61581bd6ff")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2682,7 +2758,7 @@
 		(instances
 			(project "DingoPDM"
 				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
-					(page "10")
+					(page "11")
 				)
 			)
 		)
