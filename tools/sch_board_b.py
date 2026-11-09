@@ -460,12 +460,41 @@ def nc(x, y):
     return f'(no_connect\n\t\t(at {fmt(x)} {fmt(y)})\n\t\t(uuid "{u()}")\n\t)'
 
 
+# J4 re-pin (Dan G1a: no software current cap, gang connector pins for full current): BTS70012 = 31.3 A nominal,
+# DT size 16 contact = 13 A, so OUT1-4 get 3 pins each (39 A); CAN and the 2 stock inputs move to J6 pins 9-12.
+J4_AT = tuple(map(float, re.search(r"\(at ([\d.\-]+) ([\d.\-]+)", j4).groups()))
+J4_PINS = {1: "PF_OUT4", 2: "PF_OUT4", 3: "PF_OUT4", 4: "PF_OUT3", 5: "PF_OUT3", 6: "PF_OUT3",
+           7: "PF_OUT1", 8: "PF_OUT1", 9: "PF_OUT1", 10: "PF_OUT2", 11: "PF_OUT2", 12: "PF_OUT2"}
+J6_PINS = {1: "PF_OUT5", 2: "PF_OUT5", 3: "PF_OUT6", 4: "PF_OUT6", 5: "PF_OUT7", 6: "PF_OUT7", 7: "PF_OUT8", 8: "PF_OUT8",
+           9: "CAN_H", 10: "CAN_L", 11: "INPUT1", 12: "INPUT2"}
+SHAPE = {"CAN_H": "bidirectional", "CAN_L": "bidirectional", "INPUT1": "input", "INPUT2": "input"}
+box = (J4_AT[0] - 8, J4_AT[1] - 15, J4_AT[0], J4_AT[1] + 16)   # J4's old pin wiring, left of its pins
+
+
+def inbox(x, y):
+    return box[0] <= x <= box[2] + .01 and box[1] <= y <= box[3]
+
+
+for head in ("wire", "junction", "global_label"):
+    out, pos = [], 0
+    for s2, e2 in top_blocks(t, head):
+        bb = t[s2:e2]
+        pts = [tuple(map(float, q)) for q in re.findall(r"\((?:xy|at) ([\d.\-]+) ([\d.\-]+)", bb)[:2]]
+        if head == "global_label":
+            pts = pts[:1]
+        if all(inbox(*p) for p in pts):
+            out.append(t[pos:s2 - 2])
+            pos = e2
+    out.append(t[pos:])
+    t = "".join(out)
+
 items = []
+for n, net in J4_PINS.items():
+    items.append(clab(net, *jpin(J4_AT, n)))
 j6, j7 = refs.new("J"), refs.new("J")
-items.append(conn(J6_AT, j6, "OUTPUTS 5-8", "Deutsch_DT:DT15-12PA"))
-for n in range(1, 13):
-    x, y = jpin(J6_AT, n)
-    items.append(clab(f"PF_OUT{5 + (n - 1) // 2}", x, y) if n <= 8 else nc(x, y))
+items.append(conn(J6_AT, j6, "OUTPUTS 5-8, CAN, IN1-2", "Deutsch_DT:DT15-12PA"))
+for n, net in J6_PINS.items():
+    items.append(clab(net, *jpin(J6_AT, n), SHAPE.get(net, "output")))
 items.append(conn(J7_AT, j7, "INPUT BOARD B_IN3-10", GH12))
 for n in range(1, 10):
     x, y = jpin(J7_AT, n)

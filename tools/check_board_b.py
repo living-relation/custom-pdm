@@ -31,12 +31,17 @@ for ch in range(1, 9):
     bad += not ok
     print(f"{is_net:8} U4 pin {mcu}  {path}  {'OK' if ok else 'CHECK'}")
 
-for ch in range(5, 9):
+for ch in range(1, 9):
     outs = sorted({r for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r.startswith("U")})
-    jp = sorted(p for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r == "J6")
-    ok = len(outs) == 1 and len(jp) == 2
+    jp = sorted((r, p) for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r in ("J4", "J6"))
+    ok = len(outs) == 1 and len(jp) == (3 if ch <= 4 else 2)
     bad += not ok
-    print(f"PF_OUT{ch}: switch {outs} J6 pins {jp} {'OK' if ok else 'CHECK'}")
+    print(f"PF_OUT{ch}: switch {outs} pins {jp} {'OK' if ok else 'CHECK'}")
+for net in ("CAN_H", "CAN_L", "INPUT1", "INPUT2"):
+    jp = sorted((r, p) for r, p, f in by_net.get(net, []) if r.startswith("J"))
+    ok = len(jp) == 1 and jp[0][0] == "J6"
+    bad += not ok
+    print(f"{net:8} {jp} {'OK' if ok else 'CHECK'}")
 for net in ("PF_IN5", "PF_IN6", "PF_IN7", "PF_IN8", "PF_DEN5_6", "PF_DEN7_8"):
     sw = sorted(r for r, p, f in by_net.get(net, []) if r.startswith("U") and r != "U4")
     rr = sorted(r for r, p, f in by_net.get(net, []) if r.startswith("R"))
