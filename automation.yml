@@ -6,7 +6,8 @@ handmade: ["docs/**"]          # BOM spreadsheet and other hand-made docs
 automations:
   - id: board-a-build
     script: tools/build_board_a.ps1
-    helpers: [tools/sch_swap_board_a.py, tools/sch_repin_board_a.py, tools/pcb_swap_board_a.py, tools/route_board_a.py]
+    helpers: [tools/sch_swap_board_a.py, tools/sch_repin_board_a.py, tools/pcb_swap_board_a.py, tools/route_board_a.py,
+              tools/sch_inputs_board_a.py, tools/pcb_inputs_board_a.py, tools/pcb_rework.py]
     trigger: manual
     reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
     writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]

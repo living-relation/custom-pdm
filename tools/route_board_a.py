@@ -1,6 +1,6 @@
 """Small grid A* router for a few signal nets on board A (KiCad 10 pcbnew Python + numpy).
 
-usage: python route_board_a.py <board.kicad_pcb>
+usage: python route_board_a.py <board.kicad_pcb>   (or import it: setup(board, win), run_jobs(jobs))
 
 Routes (pad/point -> pad/point) on F.Cu, In2.Cu and B.Cu with through vias. In1.Cu (GND plane) is left alone.
 Obstacles: other-net tracks, vias, pads and holes, board edge. Zones are not obstacles: they refill around
@@ -10,7 +10,6 @@ import sys, heapq, math
 import numpy as np
 import pcbnew
 
-PCB = sys.argv[1]
 mm, tomm = pcbnew.FromMM, pcbnew.ToMM
 G = 0.1
 TW, CL, MARGIN = 0.2, 0.2, 0.03
@@ -18,17 +17,30 @@ VIA_D, VIA_DRILL = 0.8, 0.4
 VIA_COST = 30.0
 WIN = (-24.0, -2.0, 24.0, 30.0)      # x0, y0, x1, y1 (mm) routing window
 
-b = pcbnew.LoadBoard(PCB)
-L = {"F.Cu": b.GetLayerID("F.Cu"), "In2.Cu": b.GetLayerID("In2.Cu"), "B.Cu": b.GetLayerID("B.Cu")}
-LAYERS = list(L)
-fps = {fp.GetReference(): fp for fp in b.GetFootprints()}
-TRACKS = list(b.GetTracks())
+LAYERS = ["F.Cu", "In2.Cu", "B.Cu"]
+LAYER_COST = {ly: 1.0 for ly in LAYERS}           # per-step cost multiplier per layer
 
-x0, y0, x1, y1 = WIN
-NX, NY = int(round((x1 - x0) / G)) + 1, int(round((y1 - y0) / G)) + 1
-XS = x0 + np.arange(NX) * G
-YS = y0 + np.arange(NY) * G
-GX, GY = np.meshgrid(XS, YS, indexing="xy")      # shape (NY, NX)
+
+def setup(board, win=WIN, layer_cost=None):
+    """Bind the router to a loaded board and a routing window (x0, y0, x1, y1) in mm."""
+    global b, L, fps, TRACKS, x0, y0, x1, y1, NX, NY, XS, YS, GX, GY, LAYER_COST
+    b = board
+    L = {ly: b.GetLayerID(ly) for ly in LAYERS}
+    fps = {fp.GetReference(): fp for fp in b.GetFootprints()}
+    TRACKS = list(b.GetTracks())
+    LAYER_COST = dict(layer_cost or {ly: 1.0 for ly in LAYERS})
+    x0, y0, x1, y1 = win
+    NX, NY = int(round((x1 - x0) / G)) + 1, int(round((y1 - y0) / G)) + 1
+    XS = x0 + np.arange(NX) * G
+    YS = y0 + np.arange(NY) * G
+    GX, GY = np.meshgrid(XS, YS, indexing="xy")      # shape (NY, NX)
+
+
+def refresh():
+    """New copper becomes an obstacle for the next net."""
+    global TRACKS, fps
+    TRACKS = list(b.GetTracks())
+    fps = {fp.GetReference(): fp for fp in b.GetFootprints()}
 
 
 def seg_dist(ax, ay, bx, by, px, py):
@@ -53,7 +65,7 @@ def paint(dist, shape_fn, bbox, pad):
 
 def build_dist(net):
     """distance from each cell centre to nearest foreign copper, per layer (and 'hole' for drills)."""
-    D = {ly: np.full((NY, NX), 99.0) for ly in LAYERS}
+    D = {ly: np.full((NY, NX), 99.0) for ly in LAYERS + ["In1.Cu"]}   # In1: obstacles for vias only
     H = np.full((NY, NX), 99.0)
     R = 3.0
     for t in TRACKS:
@@ -62,7 +74,7 @@ def build_dist(net):
         if t.GetClass() == "PCB_VIA":
             cx, cy = tomm(t.GetPosition().x), tomm(t.GetPosition().y)
             r = tomm(t.GetWidth(pcbnew.F_Cu)) / 2
-            for ly in LAYERS:
+            for ly in D:
                 paint(D[ly], lambda X, Y: np.hypot(X - cx, Y - cy) - r, (cx, cy, cx, cy), r + R)
             dr = tomm(t.GetDrillValue()) / 2
             paint(H, lambda X, Y: np.hypot(X - cx, Y - cy) - dr, (cx, cy, cx, cy), dr + R)
@@ -85,8 +97,8 @@ def build_dist(net):
                 dx = np.maximum(np.maximum(bx0 - X, X - bx1), 0)
                 dy = np.maximum(np.maximum(by0 - Y, Y - by1), 0)
                 return np.hypot(dx, dy)
-            for ly in LAYERS:
-                if pad.IsOnLayer(L[ly]):
+            for ly in D:
+                if pad.IsOnLayer(L[ly] if ly in L else b.GetLayerID(ly)):
                     paint(D[ly], rect, (bx0, by0, bx1, by1), R)
             if pad.HasHole():
                 c = pad.GetPosition()
@@ -117,7 +129,10 @@ def build_dist(net):
 
 
 def cell(x, y):
-    return int(round((x - x0) / G)), int(round((y - y0) / G))
+    i, j = int(round((x - x0) / G)), int(round((y - y0) / G))
+    if not (0 <= i < NX and 0 <= j < NY):
+        raise ValueError(f"point ({x:.2f}, {y:.2f}) is outside the routing window {(x0, y0, x1, y1)}")
+    return i, j
 
 
 def route(net, start, goal):
@@ -125,7 +140,7 @@ def route(net, start, goal):
     D, H = build_dist(net)
     free = {ly: D[ly] >= TW / 2 + CL + MARGIN for ly in LAYERS}
     via_ok = np.ones((NY, NX), bool)
-    for ly in LAYERS:
+    for ly in LAYERS + ["In1.Cu"]:
         via_ok &= D[ly] >= VIA_D / 2 + CL + MARGIN
     via_ok &= H >= VIA_D / 2 + 0.25 + MARGIN
     # also stay clear of In1 plane holes: fine (plane refills)
@@ -172,7 +187,7 @@ def route(net, start, goal):
                 continue
             turn = 0.0 if d is None or d == (di, dj) else 0.3
             ns = (ni, nj, k)
-            ng = g + c + turn
+            ng = g + c * LAYER_COST[ly] + turn
             if ng < best.get(ns, 1e18):
                 best[ns] = ng
                 prev[ns] = s
@@ -261,24 +276,36 @@ def padpos(ref, num):
     raise KeyError((ref, num))
 
 
-JOBS = [
-    ("Net-(U8-IN1)", padpos("R19", "1") + (["F.Cu"],), padpos("U8", "6") + (["F.Cu"],)),
-    ("Net-(U8-DSEL)", padpos("R20", "2") + (["F.Cu"],), padpos("U8", "5") + (["F.Cu"],)),
-    ("INPUT1", padpos("J3", "12") + (LAYERS,), (6.67, 15.306, ["In2.Cu"])),
-]
-ok = True
-for net, s, g in JOBS:
-    pts = route(net, s, g)
-    if pts is None:
-        print(f"FAILED {net}")
-        ok = False
-        continue
-    nt, nv = emit(net, pts, s[:2], g[:2])
-    TRACKS = list(b.GetTracks())          # new copper becomes an obstacle for the next net
-    layers = sorted({p[2] for p in pts})
-    print(f"routed {net}: {nt} segments, {nv} vias, layers {layers}, length ~{len(pts) * G:.1f} mm")
+def run_jobs(jobs):
+    """jobs: [(net, start, goal)] with start/goal = (x, y, layers). Returns True if all routed."""
+    ok = True
+    for net, s, g in jobs:
+        pts = route(net, s, g)
+        if pts is None:
+            print(f"FAILED {net}")
+            ok = False
+            continue
+        nt, nv = emit(net, pts, s[:2], g[:2])
+        refresh()
+        layers = sorted({p[2] for p in pts})
+        print(f"routed {net}: {nt} segments, {nv} vias, layers {layers}, length ~{len(pts) * G:.1f} mm")
+    return ok
 
-if ok:
-    pcbnew.ZONE_FILLER(b).Fill(b.Zones())
-    b.Save(PCB)
-    print("saved")
+
+def main(pcb):
+    setup(pcbnew.LoadBoard(pcb))
+    jobs = [
+        ("Net-(U8-IN1)", padpos("R19", "1") + (["F.Cu"],), padpos("U8", "6") + (["F.Cu"],)),
+        ("Net-(U8-DSEL)", padpos("R20", "2") + (["F.Cu"],), padpos("U8", "5") + (["F.Cu"],)),
+        ("INPUT1", padpos("J3", "12") + (LAYERS,), (6.67, 15.306, ["In2.Cu"])),
+    ]
+    if run_jobs(jobs):
+        pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+        b.Save(pcb)
+        print("saved")
+    else:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])

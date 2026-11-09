@@ -35,6 +35,20 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Re-pin J3 so the dual sits between its two output pins: pin 7 = OUT2, pin 8 = OUT1 (was IN1), pin 12 = IN1 (was OUT2). Signal wires routed by script.
 - 2026-11-08 (Claude, finding): BTS7002-1EPP and BTS7008-2EPA share the TSDSO-14 footprint and pins 1-4 (GND, IN/IN0, DEN, IS) and 15 (VS); the dual adds DSEL (pad 5) and IN1 (pad 6) and splits outputs (pads 12-14 OUT0, 8-10 OUT1).
 - 2026-11-08 (Dan, chat): Board A's 8 new inputs live on a small input daughter board: board A's 8 free MCU pins go to a header, keyed ribbon cable to the input board, which holds the input protection parts and a Deutsch DT 12-pin connector.
+- 2026-11-08 (Dan, chat): Input pull resistors: per input a 10 kohm pull-up (to 3.3 V) and a 10 kohm pull-down, each on a DIP switch (up / down / off); off falls back to the MCU's weak pull. Per input also the dingo filter: 4.7 kohm series, BAT54S clamp, 10 nF.
+- 2026-11-08 (Dan, chat): Board A to input board link: JST GH 12-pin locking connector (J6, side entry) at the left board edge, replacing the keyed ribbon header. J6: 1-8 IN_3..IN_10, 9 spare analog (PC2), 10 +3.3 V, 11-12 GND.
+- 2026-11-08 (Claude, finding): PC2 (spare analog) reaches the old IS2 buffer only through R12; R12 set DNP frees it. A 2.54 mm 2x6 header does not fit near the MCU; J6 (19.6 x 6.7 mm) fits only at the left edge turned sideways.
+- 2026-11-08 (Dan, chat): Inputs reach the MCU on its free pins directly (no I2C expander): rework the copper around U4 to free them instead.
+- 2026-11-08 (Claude, finding): At board rules (0.2/0.2 mm, 0.8 mm vias) only 1 of the 9 spare U4 pins can fan out; the left-edge row (pins 53-59: CAN_STANDBY, IN_10, SWO, IN_5, IN_6, I2C SCL, SDA) cannot all get vias. Open question A4 (re-fan the row, drop SWO, fewer pins, or expander) and Dan's idea of enlarging the board.
+- 2026-11-08 (Dan, chat): Input board's Deutsch DT 12-pin is a panel-mount receptacle in the enclosure wall with short wires to the input board (not a PCB-mount DT header, whose panel cutout is about 49 x 42 mm).
+- 2026-11-08 (Dan, chat): Heat sink: the board is pressed onto it by a center standoff between the two driver-chip pairs (no board change). Back copper under the drivers is +12 V, so the thermal pad must be electrically insulating; J3's through-hole pins need a pocket in the heat sink.
+- 2026-11-08 (Dan, chat): Remove all test points on board A (TP1-TP3, TP5, TP6, TP8-TP10). PC10, PC11, PC13 (ex E1-E3) become inputs.
+- 2026-11-08 (Dan, chat): Drop SWO (trace output); PB3 becomes an input. Programming/debug via SWCLK/SWDIO is unchanged.
+- 2026-11-08 (Claude, finding): Patching dingo's layout around U4 frees at most 5 new input pins (PC10, PC11, PC13, PB3, PB4) without disturbing dingo's own signals; more needs a re-layout of the U4 area.
+- 2026-11-08 (Dan, chat): Board A gets 5 new inputs (PC10, PC11, PB4, PC13, PB3); J6 stays 12-pin with pins 6-8 unused so one input board design also fits board B.
+- 2026-11-08 (Dan, chat): Board B (dingoPDM-Max) gets its extra inputs too: plan about 9 new (decide the final count when board B is built).
+
+- 2026-11-09 (Dan, chat): Remove dingo's DRT logo (G1) from board A; J6 sits where it was.
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
