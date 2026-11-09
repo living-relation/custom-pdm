@@ -48,6 +48,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Board A gets 5 new inputs (PC10, PC11, PB4, PC13, PB3); J6 stays 12-pin with pins 6-8 unused so one input board design also fits board B.
 - 2026-11-08 (Dan, chat): Board B (dingoPDM-Max) gets its extra inputs too: plan about 9 new (decide the final count when board B is built).
 
+- 2026-11-09 (Dan, chat): Remove dingo's DRT logo (G1) from board A; J6 sits where it was.
+
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
 - 2026-11-08 (Dan, chat): CAN termination is install-specific (out of scope); every board keeps a selectable 120 ohm termination jumper.

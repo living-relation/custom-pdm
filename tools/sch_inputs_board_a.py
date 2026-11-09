@@ -251,4 +251,12 @@ for f in sorted(glob.glob("*.kicad_sch")):
         out.append(x[pos:])
         wr(f, "".join(out))
 print("test points removed:", removed)
+
+# ---------- DingoPDM.kicad_sch: remove the DRT logo G1 (J6 sits where it was; Dan, 2026-11-09) ----------
+p = "DingoPDM.kicad_sch"
+t = rd(p)
+s, e = instance(t, "G1")
+t = t[:s - 2] + t[e:]                      # also eat the newline + tab before the block
+wr(p, t)
+print("logo G1 removed")
 print("input header schematic edits OK:", REF, "labels", len(MCU_PINS), "power", len(PWR_REFS), "R12 DNP")

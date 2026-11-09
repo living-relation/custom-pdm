@@ -17,13 +17,12 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Board A inputs (branch `feat/input-board`): DONE in the board files, part of the default build.
   - J6 (JST GH 12-pin, side entry) at the left edge: 1-5 IN_3..IN_7 = PC10, PC11, PB4, PC13, PB3 (ex-SWO); 6-8 NC; 9 PC2 spare analog (R12 DNP); 10 +3V3; 11-12 GND.
   - All test points removed (THT ones that joined layers got a via; dead-end stubs removed). SWO dropped. GND fenced-in pad C32.1 got a stitching via; one floating GND sliver covered by a no-fill area.
-  - DRC: 0 unconnected, 0 shorts, same 28 inherited clearance findings as stock dingo. New: silkscreen notes where J6 overlaps the DRT logo (cosmetic, open question). ERC 623 (was 632).
+  - DRC: 0 unconnected, 0 shorts, same 28 inherited clearance findings as stock dingo. DRT logo G1 removed (Dan), so no new silkscreen notes. ERC 623 (was 632).
   - Board B (Max) check: ~9 new inputs escape without rework (PC10, PC11, PC13, PB3 + PB12, PB10, PB1, PC4, PB4). Plan ~9 there (Dan, A6a). System: 7 + 7 + ~11 = ~25 inputs.
   - Input board (DIP pulls, DT panel connector) not started.
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
-- J6 silkscreen overlaps dingo's DRT logo (G1): move or remove the logo?
 - Re-import board A into Fusion and check.
 - Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).

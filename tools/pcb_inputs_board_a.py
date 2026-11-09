@@ -263,6 +263,7 @@ STEPS = [
 escape = {}
 doomed = [f for f in b.GetFootprints() if f.GetReference().startswith("TP")]
 doomed_tracks = []
+logo = b.FindFootprintByReference("G1")    # DRT logo under J6: removed (Dan, 2026-11-09)
 print("removing test points:", sorted(f.GetReference() for f in doomed))
 # The test points are through-hole: they also joined copper on different layers (CAN_TX/RX F.Cu <-> In2.Cu,
 # GND zone islands). Put a via where each one was, except the ex-E1..E3 pads whose copper becomes an input route.
@@ -320,6 +321,9 @@ for f in doomed:
             b.Add(v)
             print(f"via for removed {f.GetReference()} ({n}) at ({tomm(pad.GetPosition().x):.2f}, {tomm(pad.GetPosition().y):.2f})")
 doomed += doomed_tracks
+if logo:
+    doomed.append(logo)
+    print("removing logo G1")
 # SWO copper -> IN_7; drop the piece that touches the Tag-Connect pad
 j4 = b.FindFootprintByReference("J4")
 for tr in b.GetTracks():

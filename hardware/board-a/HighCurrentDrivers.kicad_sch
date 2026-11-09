@@ -2114,7 +2114,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "29335c12-089b-43a9-8bba-6ac48d4be34a")
+		(uuid "c4ba9073-12dc-48e8-8a2c-923a393fad9c")
 		(property "Reference" "#PWR061"
 			(at 87.63 86.3600 0)
 			(hide yes)
@@ -2170,7 +2170,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "d9e35d85-d996-40db-8ca6-b07716627080")
+			(uuid "a26210eb-c59d-4009-a402-1ff4603c7f9b")
 		)
 		(instances
 			(project "DingoPDM"
@@ -2651,7 +2651,7 @@
 		)
 		(pin "DSEL" input
 			(at 66.04 58.42 180)
-			(uuid "120e9475-edb1-4f28-932e-860a7746e601")
+			(uuid "9871c902-bd41-4a5d-b98b-9c4da17c31ad")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2661,7 +2661,7 @@
 		)
 		(pin "IN1" input
 			(at 66.04 62.23 180)
-			(uuid "616ad203-b555-4c5a-94c2-5e9f7640755c")
+			(uuid "d78d15fe-5d4e-4d56-8007-a7b82aac8c18")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2671,7 +2671,7 @@
 		)
 		(pin "OUT1" output
 			(at 87.63 60.96 0)
-			(uuid "aacd08c3-a30e-41c9-84d0-1fcf4a97ef86")
+			(uuid "f49d5a1f-389c-4563-ab1a-cede5a6b46ac")
 			(effects
 				(font
 					(size 1.27 1.27)
