@@ -61,6 +61,9 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat, standing): Manufacturer drawings and datasheets can be downloaded without asking.
 - 2026-11-09 (Dan, chat): X2 is HDP24-24-47SE-L017 (box) + HDP26-24-47PE-L015 (harness).
 - 2026-11-09 (Dan, chat): Board B gets 8 outputs and extra inputs (D1b). Superseded the same day by F1a: no add-on ADC; the 4 new BTS7004 channels and 9 extra inputs use the MCU's spare pins. That gives board B 11 inputs and the system about 25.
+- 2026-11-09 (Dan, chat): Board B keeps all 4 stock BTS70012 (G1a): 4 x 31 A + 4 x 15 A, no software current cap; connectors must carry full current.
+- 2026-11-09 (Dan, chat): Board B is one bigger board, not a base board plus add-on (G2a).
+- 2026-11-09 (Dan, chat): OUT1-4 leave board B on bolt-down terminals, one wire per output, instead of ganged DT pins (I1a).
 - 2026-11-09 (Dan, chat): Personal project, not for sale. The repo becomes local-only (detached from GitHub; Dan made the GitHub repo private instead of deleting it, kept detached for now) so dingoPDM-Max files (no license) can sit with the rest.
 
 ## CAN
