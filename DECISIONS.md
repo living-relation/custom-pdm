@@ -61,7 +61,7 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat, standing): Manufacturer drawings and datasheets can be downloaded without asking.
 - 2026-11-09 (Dan, chat): X2 is HDP24-24-47SE-L017 (box) + HDP26-24-47PE-L015 (harness).
 - 2026-11-09 (Dan, chat): Board B gets its 8 outputs plus extra inputs by adding an I2C ADC (D1b). Plan: TI ADS7828 reads the current sense of the 4 new BTS7004 channels plus 4 inputs. Board B has about 11 inputs, about 25 for the system.
-- 2026-11-09 (Dan, chat): Personal project, not for sale. The repo becomes local-only (detached from GitHub, GitHub repo to be deleted) so dingoPDM-Max files (no license) can sit with the rest.
+- 2026-11-09 (Dan, chat): Personal project, not for sale. The repo becomes local-only (detached from GitHub; Dan made the GitHub repo private instead of deleting it, kept detached for now) so dingoPDM-Max files (no license) can sit with the rest.
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
