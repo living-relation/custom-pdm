@@ -3,7 +3,7 @@
 Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
-**Kept branches:** feat/input-board (active, input expansion WIP)
+**Kept branches:** feat/input-board (active, PR open)
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Status
@@ -14,16 +14,17 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Board A step 1 done (PR #2): U8+U9 (2x BTS7002) replaced by one BTS7008-2EPA dual at U8. J3 re-pinned: pin 7 = OUT2, pin 8 = OUT1 (was IN1), pin 12 = IN1 (was OUT2). PF_DEN2 MCU pin is now PF_DSEL1_2. PF_IS2 ADC path is spare (buffer input tied to GND). DRC/parity: 0 unconnected, no shorts, all other findings same as the unmodified dingoPDM baseline (28 clearance findings pre-exist).
 - Fusion `custom-pdm` project: root = clean import of the original; `board-A` = unmodified re-import (+ `LINKED-COPY-unused`, deletable); `board-A-dual-k9` = modified board A (143 parts, 111 nets = KiCad); `board-A-dual` = broken KiCad 10 import with no nets (deletable).
-- Board A inputs (branch `feat/input-board`, WIP, not merged):
-  - Schematic/PCB scripts add J6 (JST GH 12-pin) at the left edge, IN_3..IN_10 on PA8, PA15, PB4, PB5, PB13, PC14, PC15, PD2, spare analog on PC2 (R12 DNP). Run with `tools/build_board_a.ps1 -WithInputs`; the default build is unchanged.
-  - Router is importable (`route_board_a.py`); `pcb_rework.py` rips up / reconnects; `pcb_inputs_board_a.py` fans out U4 pins with exact KiCad collision checks.
-  - Pin plan (Dan, A4a): IN_3..IN_10 = PC10, PC11, PB4, PB5, PB13, PC13, PB3 (ex-SWO), PD2. All 8 test points removed (TP8-TP10 were dingo's E1-E3 expansion pads on PC10/PC11/PC13, already routed out). SWO dropped (Tag-Connect pin unused).
-  - Result (fan-out experiments, 2026-11-08): only 5 new inputs escape without disturbing dingo's own signals: PC10, PC11, PC13, PB3 (existing copper) + PB4. PB5/PD2/PB13/PA15 each box in a neighbour (CAN_STANDBY, I2C SCL/SDA, PF_DSEL3_4) that then can't reconnect, even with 0.6/0.3 vias. Waiting on Dan (A5).
+- Board A inputs (branch `feat/input-board`): DONE in the board files, part of the default build.
+  - J6 (JST GH 12-pin, side entry) at the left edge: 1-5 IN_3..IN_7 = PC10, PC11, PB4, PC13, PB3 (ex-SWO); 6-8 NC; 9 PC2 spare analog (R12 DNP); 10 +3V3; 11-12 GND.
+  - All test points removed (THT ones that joined layers got a via; dead-end stubs removed). SWO dropped. GND fenced-in pad C32.1 got a stitching via; one floating GND sliver covered by a no-fill area.
+  - DRC: 0 unconnected, 0 shorts, same 28 inherited clearance findings as stock dingo. New: silkscreen notes where J6 overlaps the DRT logo (cosmetic, open question). ERC 623 (was 632).
+  - Board B (Max) check: ~9 new inputs escape without rework (PC10, PC11, PC13, PB3 + PB12, PB10, PB1, PC4, PB4). Plan ~9 there (Dan, A6a). System: 7 + 7 + ~11 = ~25 inputs.
   - Input board (DIP pulls, DT panel connector) not started.
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
-- A5 (Dan): 5 direct inputs per board A, or re-lay out the area around U4 (bigger board OK), or 5 direct + I2C expander.
+- J6 silkscreen overlaps dingo's DRT logo (G1): move or remove the logo?
+- Re-import board A into Fusion and check.
 - Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).
 - Firmware (later): outputs 1-2 are now a dual pair (DSEL on the old PF_DEN2 pin).

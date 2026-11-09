@@ -106,3 +106,61 @@ def reconnect(R, b, net, max_rounds=8):
         if not R.run_jobs([(net, a, c)]):
             return False
     return len(islands(b, net)) <= 1
+
+
+def net_groups(b, net):
+    """Connected groups of a net's copper INCLUDING zone fill islands (per layer).
+    Returns a list of groups, biggest first; each group is a list of (kind, item) with kind in
+    PCB_TRACK / PCB_VIA / PAD / ZONE (item is the pad/track/via, or (layer, SHAPE_POLY_SET) for a fill island)."""
+    cu = [CU[k] for k in ("F.Cu", "In1.Cu", "In2.Cu", "B.Cu")]
+    items = []
+    for x in b.GetTracks():
+        if x.GetNetname() == net:
+            items.append((x.GetClass(), x, [l for l in cu if x.IsOnLayer(l)], x.GetBoundingBox()))
+    for f in b.GetFootprints():
+        for p in f.Pads():
+            if p.GetNetname() == net:
+                items.append(("PAD", p, [l for l in cu if p.IsOnLayer(l)], p.GetBoundingBox()))
+    for z in b.Zones():
+        if z.GetNetname() != net or z.GetIsRuleArea():
+            continue
+        for l in cu:
+            if not z.IsOnLayer(l):
+                continue
+            polys = z.GetFilledPolysList(l)
+            for i in range(polys.OutlineCount()):
+                sp = pcbnew.SHAPE_POLY_SET()
+                sp.AddOutline(polys.Outline(i))
+                for h in range(polys.HoleCount(i)):
+                    sp.AddHole(polys.Hole(i, h))
+                items.append(("ZONE", (l, sp), [l], sp.BBox()))
+    n = len(items)
+    parent = list(range(n))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    def shp(it, l):
+        return it[1][1] if it[0] == "ZONE" else it[1].GetEffectiveShape(l)
+
+    def overlap(a, c):
+        return a.GetLeft() <= c.GetRight() and c.GetLeft() <= a.GetRight() and a.GetTop() <= c.GetBottom() and c.GetTop() <= a.GetBottom()
+    for i in range(n):
+        for j in range(i + 1, n):
+            common = set(items[i][2]) & set(items[j][2])
+            if not common or find(i) == find(j) or not overlap(items[i][3], items[j][3]):
+                continue
+            if items[i][0] == "ZONE" and items[j][0] == "ZONE":
+                continue
+            a, c = (items[j], items[i]) if items[i][0] == "ZONE" else (items[i], items[j])
+            for l in common:
+                if shp(c, l).Collide(shp(a, l), 0):
+                    parent[find(i)] = find(j)
+                    break
+    groups = {}
+    for i in range(n):
+        groups.setdefault(find(i), []).append((items[i][0], items[i][1]))
+    return sorted(groups.values(), key=len, reverse=True)

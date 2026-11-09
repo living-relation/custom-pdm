@@ -3,9 +3,10 @@
 Run from hardware/board-a after sch_swap_board_a.py / sch_repin_board_a.py. Edits files in place.
 
 J6 pinout (to the input daughter board):
-  1-8  IN_3..IN_10 -> PC10, PC11, PB4, PB5, PB13, PC13, PB3, PD2
-       PC10/PC11/PC13 were dingo's expansion test points E1-E3 (TP8-TP10, removed); PB3 was SWO (trace output,
-       not needed to program/debug; the Tag-Connect pin is left unused); PB4/PB5/PB13/PD2 were no-connect.
+  1-5  IN_3..IN_7 -> PC10, PC11, PB4, PC13, PB3 (5 new inputs: the most that escape U4 without disturbing dingo's
+       own signals). PC10/PC11/PC13 were dingo's expansion test points E1-E3 (TP8-TP10, removed); PB3 was SWO
+       (trace output, not needed to program/debug; the Tag-Connect pin is left unused); PB4 was no-connect.
+  6-8  not connected (kept so one input board design also fits board B, which has more spare pins)
   9    PF2_IS (PC2, spare analog; R12 set DNP so the unused IS2 buffer no longer drives it)
   10   +3V3 (pull-up supply for the input board DIP switches)
   11-12 GND
@@ -25,12 +26,10 @@ MCU_PINS = [
     ("tp", "TP8", "IN_3"),                        # PC10 pin 51 (was E1)
     ("tp", "TP9", "IN_4"),                        # PC11 pin 52 (was E2)
     ("nc", (127.0, 90.805), "IN_5", "R"),         # PB4  pin 56
-    ("nc", (127.0, 93.345), "IN_6", "R"),         # PB5  pin 57
-    ("nc", (127.0, 111.125), "IN_7", "R"),        # PB13 pin 34
-    ("tp", "TP10", "IN_8"),                       # PC13 pin 2 (was E3)
-    ("relabel", (138.43, 88.265), "IN_9"),        # PB3  pin 55 (was SWO)
-    ("nc", (91.44, 55.245), "IN_10", "L"),        # PD2  pin 54
+    ("tp", "TP10", "IN_6"),                       # PC13 pin 2 (was E3)
+    ("relabel", (138.43, 88.265), "IN_7"),        # PB3  pin 55 (was SWO)
 ]
+N_IN = len(MCU_PINS)                              # J6 pins 1..N_IN carry IN_3..; the rest up to 8 are not connected
 SWO_TAG_SIDE = (38.1, 172.72)                     # SWO label at the Tag-Connect (J4) -> renamed SWO_UNUSED
 TESTPOINT_LIB = "Connector:TestPoint"             # every test point on every sheet is removed (Dan, 2026-11-08)
 PWR_REFS = ["#PWR122", "#PWR123", "#PWR124"]
@@ -166,7 +165,10 @@ t = relabel(t, SWO_TAG_SIDE, "SWO_UNUSED")
 jx, jy = J_AT
 pin_end = lambda n: (jx - 5.08, jy - 12.7 + 2.54 * (n - 1))
 for n in range(1, 9):
-    items.append(label(f"IN_{n + 2}", *pin_end(n), 180))
+    if n <= N_IN:
+        items.append(label(f"IN_{n + 2}", *pin_end(n), 180))
+    else:
+        items.append(f'(no_connect\n\t\t(at {fmt(pin_end(n)[0])} {fmt(pin_end(n)[1])})\n\t\t(uuid "{u()}")\n\t)')
 x9, y9 = pin_end(9)
 items.append(f'(hierarchical_label "PF2_IS"\n\t\t(shape input)\n\t\t(at {fmt(x9)} {fmt(y9)} 180)\n\t\t(effects\n\t\t\t(font\n'
              f'\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n\t\t\t(justify right)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')
@@ -208,7 +210,7 @@ j = re.sub(r'\n\t\t\(pin "1"[\s\S]*?\(pin "2"\s*\(uuid "[^"]+"\)\s*\)', "\n\t\t"
     f'(pin "{n}"\n\t\t\t(uuid "{u()}")\n\t\t)' for n in range(1, 13)), j, count=1)
 j = renew_uuids(j)
 items.append(j)
-items.append(f'(text "Input expansion J6 -> input daughter board (JST GH 12p).\\nIN_3..IN_10 = PA8 PA15 PB4 PB5 PB13 PC14 PC15 PD2.\\n'
+items.append(f'(text "Input expansion J6 -> input daughter board (JST GH 12p).\\nIN_3..IN_7 = PC10 PC11 PB4 PC13 PB3; pins 6-8 NC.\\n'
              f'Pin 9 = PC2 spare analog (R12 DNP). Protection + pull DIPs live on the input board."\n\t\t(exclude_from_sim no)\n'
              f'\t\t(at {fmt(jx - 30.48)} {fmt(jy - 25.4)} 0)\n\t\t(effects\n\t\t\t(font\n\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n'
              f'\t\t\t(justify left bottom)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')

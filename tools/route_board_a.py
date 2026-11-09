@@ -65,7 +65,7 @@ def paint(dist, shape_fn, bbox, pad):
 
 def build_dist(net):
     """distance from each cell centre to nearest foreign copper, per layer (and 'hole' for drills)."""
-    D = {ly: np.full((NY, NX), 99.0) for ly in LAYERS}
+    D = {ly: np.full((NY, NX), 99.0) for ly in LAYERS + ["In1.Cu"]}   # In1: obstacles for vias only
     H = np.full((NY, NX), 99.0)
     R = 3.0
     for t in TRACKS:
@@ -74,7 +74,7 @@ def build_dist(net):
         if t.GetClass() == "PCB_VIA":
             cx, cy = tomm(t.GetPosition().x), tomm(t.GetPosition().y)
             r = tomm(t.GetWidth(pcbnew.F_Cu)) / 2
-            for ly in LAYERS:
+            for ly in D:
                 paint(D[ly], lambda X, Y: np.hypot(X - cx, Y - cy) - r, (cx, cy, cx, cy), r + R)
             dr = tomm(t.GetDrillValue()) / 2
             paint(H, lambda X, Y: np.hypot(X - cx, Y - cy) - dr, (cx, cy, cx, cy), dr + R)
@@ -97,8 +97,8 @@ def build_dist(net):
                 dx = np.maximum(np.maximum(bx0 - X, X - bx1), 0)
                 dy = np.maximum(np.maximum(by0 - Y, Y - by1), 0)
                 return np.hypot(dx, dy)
-            for ly in LAYERS:
-                if pad.IsOnLayer(L[ly]):
+            for ly in D:
+                if pad.IsOnLayer(L[ly] if ly in L else b.GetLayerID(ly)):
                     paint(D[ly], rect, (bx0, by0, bx1, by1), R)
             if pad.HasHole():
                 c = pad.GetPosition()
@@ -140,7 +140,7 @@ def route(net, start, goal):
     D, H = build_dist(net)
     free = {ly: D[ly] >= TW / 2 + CL + MARGIN for ly in LAYERS}
     via_ok = np.ones((NY, NX), bool)
-    for ly in LAYERS:
+    for ly in LAYERS + ["In1.Cu"]:
         via_ok &= D[ly] >= VIA_D / 2 + CL + MARGIN
     via_ok &= H >= VIA_D / 2 + 0.25 + MARGIN
     # also stay clear of In1 plane holes: fine (plane refills)

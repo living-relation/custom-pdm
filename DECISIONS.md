@@ -45,6 +45,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Remove all test points on board A (TP1-TP3, TP5, TP6, TP8-TP10). PC10, PC11, PC13 (ex E1-E3) become inputs.
 - 2026-11-08 (Dan, chat): Drop SWO (trace output); PB3 becomes an input. Programming/debug via SWCLK/SWDIO is unchanged.
 - 2026-11-08 (Claude, finding): Patching dingo's layout around U4 frees at most 5 new input pins (PC10, PC11, PC13, PB3, PB4) without disturbing dingo's own signals; more needs a re-layout of the U4 area.
+- 2026-11-08 (Dan, chat): Board A gets 5 new inputs (PC10, PC11, PB4, PC13, PB3); J6 stays 12-pin with pins 6-8 unused so one input board design also fits board B.
+- 2026-11-08 (Dan, chat): Board B (dingoPDM-Max) gets its extra inputs too: plan about 9 new (decide the final count when board B is built).
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
