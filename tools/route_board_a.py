@@ -21,10 +21,13 @@ LAYERS = ["F.Cu", "In2.Cu", "B.Cu"]
 LAYER_COST = {ly: 1.0 for ly in LAYERS}           # per-step cost multiplier per layer
 
 
-def setup(board, win=WIN, layer_cost=None):
-    """Bind the router to a loaded board and a routing window (x0, y0, x1, y1) in mm."""
-    global b, L, fps, TRACKS, x0, y0, x1, y1, NX, NY, XS, YS, GX, GY, LAYER_COST
+def setup(board, win=WIN, layer_cost=None, layers=None):
+    """Bind the router to a loaded board and a routing window (x0, y0, x1, y1) in mm.
+    layers: routing layers (default F.Cu, In2.Cu, B.Cu; a 2-layer board passes ["F.Cu", "B.Cu"])."""
+    global b, L, fps, TRACKS, x0, y0, x1, y1, NX, NY, XS, YS, GX, GY, LAYER_COST, LAYERS
     b = board
+    if layers:
+        LAYERS[:] = list(layers)
     L = {ly: b.GetLayerID(ly) for ly in LAYERS}
     fps = {fp.GetReference(): fp for fp in b.GetFootprints()}
     TRACKS = list(b.GetTracks())

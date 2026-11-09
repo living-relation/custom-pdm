@@ -89,7 +89,8 @@ def reconnect(R, b, net, max_rounds=8):
         groups = islands(b, net)
         if len(groups) <= 1:
             return True
-        anchors = [[a for it in g for a in _anchors(it)] for g in groups]
+        anchors = [[(a[0], a[1], [ly for ly in a[2] if ly in R.LAYERS]) for it in g for a in _anchors(it)]
+                   for g in groups]                      # only layers the router uses (2-layer boards)
         # closest pair between group 0 and any other group (grow from group 0 = Prim's MST)
         best = None
         for k in range(1, len(anchors)):
