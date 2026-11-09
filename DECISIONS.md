@@ -49,6 +49,10 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Board B (dingoPDM-Max) gets its extra inputs too: plan about 9 new (decide the final count when board B is built).
 
 - 2026-11-09 (Dan, chat): Remove dingo's DRT logo (G1) from board A; J6 sits where it was.
+- 2026-11-09 (Dan, chat): Input board has as many channels as possible: 8 digital + 1 analog (board A uses 5, board B up to 8).
+- 2026-11-09 (Dan, chat): Input board wires connect with a Molex Micro-Fit 3.0 2x6 (crimped, locking).
+- 2026-11-09 (Dan, chat): The analog channel takes 0-5 V (divider + clamp).
+- 2026-11-09 (Dan, chat): Box connectors: cheaper plastic circular (HD-style or similar) instead of Deutsch DT; two connectors or fewer for the whole box, carrying all low-current I/O (7.5 A outputs, inputs, analog). High-current outputs use separate studs.
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
