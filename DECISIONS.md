@@ -42,6 +42,9 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Claude, finding): At board rules (0.2/0.2 mm, 0.8 mm vias) only 1 of the 9 spare U4 pins can fan out; the left-edge row (pins 53-59: CAN_STANDBY, IN_10, SWO, IN_5, IN_6, I2C SCL, SDA) cannot all get vias. Open question A4 (re-fan the row, drop SWO, fewer pins, or expander) and Dan's idea of enlarging the board.
 - 2026-11-08 (Dan, chat): Input board's Deutsch DT 12-pin is a panel-mount receptacle in the enclosure wall with short wires to the input board (not a PCB-mount DT header, whose panel cutout is about 49 x 42 mm).
 - 2026-11-08 (Dan, chat): Heat sink: the board is pressed onto it by a center standoff between the two driver-chip pairs (no board change). Back copper under the drivers is +12 V, so the thermal pad must be electrically insulating; J3's through-hole pins need a pocket in the heat sink.
+- 2026-11-08 (Dan, chat): Remove all test points on board A (TP1-TP3, TP5, TP6, TP8-TP10). PC10, PC11, PC13 (ex E1-E3) become inputs.
+- 2026-11-08 (Dan, chat): Drop SWO (trace output); PB3 becomes an input. Programming/debug via SWCLK/SWDIO is unchanged.
+- 2026-11-08 (Claude, finding): Patching dingo's layout around U4 frees at most 5 new input pins (PC10, PC11, PC13, PB3, PB4) without disturbing dingo's own signals; more needs a re-layout of the U4 area.
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.

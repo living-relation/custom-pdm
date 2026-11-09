@@ -17,12 +17,13 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Board A inputs (branch `feat/input-board`, WIP, not merged):
   - Schematic/PCB scripts add J6 (JST GH 12-pin) at the left edge, IN_3..IN_10 on PA8, PA15, PB4, PB5, PB13, PC14, PC15, PD2, spare analog on PC2 (R12 DNP). Run with `tools/build_board_a.ps1 -WithInputs`; the default build is unchanged.
   - Router is importable (`route_board_a.py`); `pcb_rework.py` rips up / reconnects; `pcb_inputs_board_a.py` fans out U4 pins with exact KiCad collision checks.
-  - Blocker: U4's left-edge row (pins 53-59) has room for about 4 vias at board rules but needs 7. PB4, PB5, PD2, PB13 fan out, but ripped CAN_STANDBY then can't reconnect. Waiting on Dan (A4, or enlarge the board).
+  - Pin plan (Dan, A4a): IN_3..IN_10 = PC10, PC11, PB4, PB5, PB13, PC13, PB3 (ex-SWO), PD2. All 8 test points removed (TP8-TP10 were dingo's E1-E3 expansion pads on PC10/PC11/PC13, already routed out). SWO dropped (Tag-Connect pin unused).
+  - Result (fan-out experiments, 2026-11-08): only 5 new inputs escape without disturbing dingo's own signals: PC10, PC11, PC13, PB3 (existing copper) + PB4. PB5/PD2/PB13/PA15 each box in a neighbour (CAN_STANDBY, I2C SCL/SDA, PF_DSEL3_4) that then can't reconnect, even with 0.6/0.3 vias. Waiting on Dan (A5).
   - Input board (DIP pulls, DT panel connector) not started.
 - Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) still open.
 
 ## Open items
-- A4 (Dan): how to free the left-edge U4 pins: re-fan the row, drop SWO, fewer direct pins, I2C expander, or enlarge/re-lay out the MCU area.
+- A5 (Dan): 5 direct inputs per board A, or re-lay out the area around U4 (bigger board OK), or 5 direct + I2C expander.
 - Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).
 - Firmware (later): outputs 1-2 are now a dual pair (DSEL on the old PF_DEN2 pin).

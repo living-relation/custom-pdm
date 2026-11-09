@@ -31,6 +31,7 @@ try {
     & $py9 "$repo\tools\route_board_a.py" DingoPDM.kicad_pcb 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'route_board_a.py failed' }
     if ($WithInputs) {
+        Copy-Item -Force DingoPDM.kicad_pcb "$Out\pre_inputs.kicad_pcb"     # snapshot for experiments / debugging
         & $py9 "$repo\tools\pcb_inputs_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
         if ($LASTEXITCODE) { throw 'pcb_inputs_board_a.py failed' }
     }

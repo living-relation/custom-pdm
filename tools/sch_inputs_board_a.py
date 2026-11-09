@@ -3,7 +3,9 @@
 Run from hardware/board-a after sch_swap_board_a.py / sch_repin_board_a.py. Edits files in place.
 
 J6 pinout (to the input daughter board):
-  1-8  IN_3..IN_10 -> PA8, PA15, PB4, PB5, PB13, PC14, PC15, PD2 (were no-connect)
+  1-8  IN_3..IN_10 -> PC10, PC11, PB4, PB5, PB13, PC13, PB3, PD2
+       PC10/PC11/PC13 were dingo's expansion test points E1-E3 (TP8-TP10, removed); PB3 was SWO (trace output,
+       not needed to program/debug; the Tag-Connect pin is left unused); PB4/PB5/PB13/PD2 were no-connect.
   9    PF2_IS (PC2, spare analog; R12 set DNP so the unused IS2 buffer no longer drives it)
   10   +3V3 (pull-up supply for the input board DIP switches)
   11-12 GND
@@ -15,17 +17,22 @@ LIB = "Connector_Generic:Conn_01x12"
 FOOTPRINT = "Connector_JST:JST_GH_SM12B-GHS-TB_1x12-1MP_P1.25mm_Horizontal"
 REF = "J6"
 J_AT = (220.98, 60.96)          # symbol origin; pin n end = (215.9, 48.26 + 2.54 (n-1))
-# MCU pin end (x, y), net label, label side ('R' = pin points right -> label angle 0)
+# How each input gets its net name on the MCU sheet:
+#   ("nc", (x, y), name, side)   no-connect flag at a U4 pin end -> label ('R' = pin points right -> angle 0)
+#   ("tp", ref, name)            test point symbol -> label at its pin (the wire to U4 stays)
+#   ("relabel", (x, y), name)    existing local label renamed
 MCU_PINS = [
-    ((127.0, 57.785), "IN_3", "R"),    # PA8  pin 41
-    ((127.0, 75.565), "IN_4", "R"),    # PA15 pin 50
-    ((127.0, 90.805), "IN_5", "R"),    # PB4  pin 56
-    ((127.0, 93.345), "IN_6", "R"),    # PB5  pin 57
-    ((127.0, 111.125), "IN_7", "R"),   # PB13 pin 34
-    ((91.44, 95.885), "IN_8", "L"),    # PC14 pin 3
-    ((91.44, 98.425), "IN_9", "L"),    # PC15 pin 4
-    ((91.44, 55.245), "IN_10", "L"),   # PD2  pin 54
+    ("tp", "TP8", "IN_3"),                        # PC10 pin 51 (was E1)
+    ("tp", "TP9", "IN_4"),                        # PC11 pin 52 (was E2)
+    ("nc", (127.0, 90.805), "IN_5", "R"),         # PB4  pin 56
+    ("nc", (127.0, 93.345), "IN_6", "R"),         # PB5  pin 57
+    ("nc", (127.0, 111.125), "IN_7", "R"),        # PB13 pin 34
+    ("tp", "TP10", "IN_8"),                       # PC13 pin 2 (was E3)
+    ("relabel", (138.43, 88.265), "IN_9"),        # PB3  pin 55 (was SWO)
+    ("nc", (91.44, 55.245), "IN_10", "L"),        # PD2  pin 54
 ]
+SWO_TAG_SIDE = (38.1, 172.72)                     # SWO label at the Tag-Connect (J4) -> renamed SWO_UNUSED
+TESTPOINT_LIB = "Connector:TestPoint"             # every test point on every sheet is removed (Dan, 2026-11-08)
 PWR_REFS = ["#PWR122", "#PWR123", "#PWR124"]
 
 
@@ -124,19 +131,42 @@ if f'(symbol "{LIB}"' not in t:
     t = t[:k] + "\n\t\t" + sym.lstrip("\t") + t[k:]
 
 items = []
-# 2. MCU pins: no_connect -> label
-for (x, y), name, side in MCU_PINS:
-    pat = re.compile(r"\n\t\(no_connect\s*\(at %s %s\)\s*\(uuid \"[^\"]+\"\)\s*\)" % (re.escape(fmt(x)), re.escape(fmt(y))))
-    t, n = pat.subn("", t)
+
+
+def relabel(t, at, new):
+    pat = re.compile(r'\(label "[^"]+"(\s*\(at %s %s \d+\))' % (re.escape(fmt(at[0])), re.escape(fmt(at[1]))))
+    t, n = pat.subn(lambda m: f'(label "{new}"' + m.group(1), t)
     if n != 1:
-        raise SystemExit(f"no_connect at {x},{y}: {n} matches")
-    items.append(label(name, x, y, 0 if side == "R" else 180))
+        raise SystemExit(f"label at {at}: {n} matches")
+    return t
+
+
+# 2. MCU pins -> labels
+tp_at = {}
+for kind, *rest in MCU_PINS:
+    if kind == "nc":
+        (x, y), name, side = rest
+        pat = re.compile(r"\n\t\(no_connect\s*\(at %s %s\)\s*\(uuid \"[^\"]+\"\)\s*\)" % (re.escape(fmt(x)), re.escape(fmt(y))))
+        t, n = pat.subn("", t)
+        if n != 1:
+            raise SystemExit(f"no_connect at {x},{y}: {n} matches")
+        items.append(label(name, x, y, 0 if side == "R" else 180))
+    elif kind == "tp":
+        ref, name = rest
+        s, e = instance(t, ref)
+        m = re.search(r"\(at ([\d.\-]+) ([\d.\-]+) (\d+)\)", t[s:e])
+        tp_at[ref] = (float(m.group(1)), float(m.group(2)))
+        items.append(label(name, *tp_at[ref], 0))
+    else:
+        at, name = rest
+        t = relabel(t, at, name)
+t = relabel(t, SWO_TAG_SIDE, "SWO_UNUSED")
 
 # 3. J6 pins
 jx, jy = J_AT
 pin_end = lambda n: (jx - 5.08, jy - 12.7 + 2.54 * (n - 1))
-for n, (_, name, _) in enumerate(MCU_PINS, start=1):
-    items.append(label(name, *pin_end(n), 180))
+for n in range(1, 9):
+    items.append(label(f"IN_{n + 2}", *pin_end(n), 180))
 x9, y9 = pin_end(9)
 items.append(f'(hierarchical_label "PF2_IS"\n\t\t(shape input)\n\t\t(at {fmt(x9)} {fmt(y9)} 180)\n\t\t(effects\n\t\t\t(font\n'
              f'\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n\t\t\t(justify right)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')
@@ -203,4 +233,20 @@ if "(dnp no)" not in b:
     raise SystemExit("R12 dnp flag not found")
 t = t[:s] + b.replace("(dnp no)", "(dnp yes)", 1) + t[e:]
 wr(p, t)
+# ---------- all sheets: remove test point symbols ----------
+import glob
+removed = []
+for f in sorted(glob.glob("*.kicad_sch")):
+    x = rd(f)
+    out, pos, hit = [], 0, False
+    for m in re.finditer(r'\n\t\(symbol\s*\(lib_id "%s"\)' % re.escape(TESTPOINT_LIB), x):
+        s = m.start() + 2
+        e = block_end(x, s)
+        out.append(x[pos:m.start()])
+        removed.append(f + ":" + re.search(r'"Reference" "([^"]+)"', x[s:e]).group(1))
+        pos, hit = e, True
+    if hit:
+        out.append(x[pos:])
+        wr(f, "".join(out))
+print("test points removed:", removed)
 print("input header schematic edits OK:", REF, "labels", len(MCU_PINS), "power", len(PWR_REFS), "R12 DNP")

@@ -102,7 +102,8 @@ for num, dx in (("11", 2.0), ("12", 3.4)):
 
 # ---- 4. routes
 R.setup(b, WIN, {"F.Cu": 1.6, "In2.Cu": 1.0, "B.Cu": 2.5})
-U4 = {f"/MCU/IN_{k}": pin for k, pin in zip(range(3, 11), ("41", "50", "56", "57", "34", "3", "4", "54"))}
+# IN_3..IN_10 = PC10, PC11, PB4, PB5, PB13, PC13, PB3 (ex-SWO), PD2
+U4 = {f"/MCU/IN_{k}": pin for k, pin in zip(range(3, 11), ("51", "52", "56", "57", "34", "2", "55", "54"))}
 U4["PF_IS2"] = "10"
 for num, net in list(SIG.items()) + [("9", "PF_IS2")]:
     if pinnet.get(("U4", U4[net])) != net:
@@ -216,40 +217,71 @@ def fanout(net, pad, sides=(0, 1, -1)):
     return vg
 
 
-# ---- 5. free the spare U4 pins, step by step (rip up a few blockers, fan out, reconnect what was ripped)
-# Each entry: target nets for this step, and (box, blocker nets) to rip up first. Blockers are slow signals only;
-# plane nets (GND, +3V3, +12V) and the crystal (PH0/PH1) are never ripped by these helpers.
+# ---- 5. free the spare U4 pins, step by step
+# PC10, PC11, PC13 already run out to the old expansion test pads (TP8-TP10, now removed): route from those ends.
+# PB3 (ex-SWO) runs out to the Tag-Connect J4: cut the last piece at J4 and route from the cut end.
+# The rest fan out; a few slow-signal blockers are ripped up first and reconnected after. Plane nets (GND, +3V3,
+# +12V) and the crystal are never ripped.
 import pcb_rework as RW
+EXISTING = ["/MCU/IN_3", "/MCU/IN_4", "/MCU/IN_8", "/MCU/IN_9"]
 STEPS = [
-    # PB5 (IN_6) first, forced to turn down (+y) so PB4 (IN_5) can go straight out above it
-    {"targets": ["/MCU/IN_6", "/MCU/IN_10", "/MCU/IN_5", "/MCU/IN_7"],          # PB5, PD2, PB4, PB13
-     "sides": {"/MCU/IN_6": (-1,)},
-     "rip": [((-3.5, 40.6, 1.0, 43.8), ["/MCU/SWO", "I2C1_SCL", "I2C1_SDA", "/MCU/CAN_STANDBY"]),
+    # "refan": ripped nets whose own U4 pin sits in the row; they get a fan-out via first, then reconnect from it
+    {"refan": ["/MCU/CAN_STANDBY"],
+     "targets": ["/MCU/IN_6", "/MCU/IN_10", "/MCU/IN_5", "/MCU/IN_7"],          # PB5, PD2, PB4, PB13
+     "sides": {"/MCU/IN_6": (-1,), "/MCU/IN_5": (-1, 0), "/MCU/IN_10": (1, 0)},
+     "rip": [((-3.5, 40.6, 1.0, 43.8), ["I2C1_SCL", "I2C1_SDA", "/MCU/CAN_STANDBY"]),
              ((9.9, 33.0, 11.4, 36.3), ["PF_DSEL3_4", "PF_IN4"])]},
 ]
 escape = {}
-doomed, ripped_by_step = [], []
+doomed = [f for f in b.GetFootprints() if f.GetReference().startswith("TP")]
+print("removing test points:", sorted(f.GetReference() for f in doomed))
+# SWO copper -> IN_9; drop the piece that touches the Tag-Connect pad
+j4 = b.FindFootprintByReference("J4")
+for tr in b.GetTracks():
+    if tr.GetNetname() == "/MCU/SWO":
+        if any(p.GetEffectiveShape(pcbnew.F_Cu).Collide(tr.GetEffectiveShape(pcbnew.F_Cu), 0) for p in j4.Pads()):
+            doomed.append(tr)
+        else:
+            tr.SetNet(netinfo("/MCU/IN_9"))
+ripped_by_step = []
 for step in STEPS:
     ripped = set()
     for box, nets in step["rip"]:
         gone = RW.ripup(b, set(nets), box)
         doomed += gone
-        names = sorted({t.GetNetname() for t in gone})
+        names = sorted({x.GetNetname() for x in gone})
         ripped |= set(names)
         print(f"rip {len(gone)} items in {box}: {names}")
     ripped_by_step.append(ripped)
 b = RW.remove_and_reload(b, doomed, PCB)
 R.setup(b, WIN, {"F.Cu": 1.6, "In2.Cu": 1.0, "B.Cu": 2.5})
 u4 = b.FindFootprintByReference("U4")
+for net in EXISTING:                      # route from the free end of the existing copper (farthest from U4)
+    pad = next(q for q in u4.Pads() if q.GetNumber() == U4[net])
+    px, py = tomm(pad.GetPosition().x), tomm(pad.GetPosition().y)
+    ends = [(tomm(q.x), tomm(q.y), tr.GetLayerName()) for tr in b.GetTracks()
+            if tr.GetNetname() == net and tr.GetClass() == "PCB_TRACK" for q in (tr.GetStart(), tr.GetEnd())]
+    if not ends:
+        raise SystemExit(f"{net}: no existing copper")
+    ex, ey, ly = max(ends, key=lambda q: math.hypot(q[0] - px, q[1] - py))
+    escape[net] = (ex, ey, [ly])
+    print(f"existing {net}: route from ({ex:.2f}, {ey:.2f}) {ly}")
 for step, ripped in zip(STEPS, ripped_by_step):
     stuck = []
-    for net in step["targets"]:
-        pad = next(p for p in u4.Pads() if p.GetNumber() == U4[net])
+    for net in step.get("refan", []):
+        pad = next(q for q in u4.Pads() if q.GetNetname() == net)
         vg = fanout(net, pad, step.get("sides", {}).get(net, (0, 1, -1)))
         if vg is None:
             stuck.append(net)
         else:
-            escape[net] = vg
+            print(f"re-fan {net}: U4.{pad.GetNumber()} -> via at ({vg[0]:.2f}, {vg[1]:.2f})")
+    for net in step["targets"]:
+        pad = next(q for q in u4.Pads() if q.GetNumber() == U4[net])
+        vg = fanout(net, pad, step.get("sides", {}).get(net, (0, 1, -1)))
+        if vg is None:
+            stuck.append(net)
+        else:
+            escape[net] = (vg[0], vg[1], ["In2.Cu", "B.Cu"])
             print(f"fan-out {net}: U4.{U4[net]} -> via at ({vg[0]:.2f}, {vg[1]:.2f})")
     if stuck:
         raise SystemExit(f"no fan-out spot for {stuck}")
@@ -257,11 +289,13 @@ for step, ripped in zip(STEPS, ripped_by_step):
         if not RW.reconnect(R, b, net):
             raise SystemExit(f"could not reconnect ripped net {net}")
         print(f"reconnected {net}")
+if "--fanout-only" in sys.argv:
+    b.Save(PCB)
+    raise SystemExit("fan-out stage only: saved, routes to J6 not done")
 num_of = {net: num for num, net in SIG.items()}
-jobs = [(net, padxy(REF, num_of[net]) + (["F.Cu"],), escape[net] + (["In2.Cu", "B.Cu"],)) for net in escape]
+jobs = [(net, padxy(REF, num_of[net]) + (["F.Cu"],), (ex, ey, lys)) for net, (ex, ey, lys) in escape.items()]
+jobs.append(("PF_IS2", padxy(REF, "9") + (["F.Cu"],), padxy("R12", "1") + (["F.Cu"],)))   # R12 is DNP
 jobs.append(("+3V3", padxy(REF, "10") + (["F.Cu"],), p33 + (["F.Cu"],)))
-left = [n for n in list(SIG.values()) + ["PF_IS2"] if n not in escape]
-print("not routed in this step yet:", left)
 if not R.run_jobs(jobs):
     sys.exit(1)
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
