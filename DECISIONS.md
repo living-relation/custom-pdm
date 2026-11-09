@@ -57,6 +57,9 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat): Box connectors are TE Deutsch HD30/HDP20 family (not CPC), using parts already on hand: X1 outputs = HD30 24-21 (HD34-24-21SN / HD36-24-21PN), X2 signals = a spare HDP 24-47 set, X3 board B 15 A/30 A outputs = HDP 24-9 (instead of studs). 150 A feed stays on a stud.
 - 2026-11-09 (Dan, chat): Leave the ST185 project's TE on-hand list unchanged (don't mark parts claimed there).
 - 2026-11-09 (Dan, chat): Fusion work (import, check, render) never needs asking.
+- 2026-11-09 (Dan, chat, standing): Anything that sources power has socket contacts on the box side, so X3 becomes HDP24-24-9SE (buy) with the on-hand HDP26-24-9PE plug.
+- 2026-11-09 (Dan, chat, standing): Manufacturer drawings and datasheets can be downloaded without asking.
+- 2026-11-09 (Dan, chat): X2 is HDP24-24-47SE-L017 (box) + HDP26-24-47PE-L015 (harness).
 
 ## CAN
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
