@@ -15,7 +15,8 @@ What it adds
         PF_DEN5_6 PB12          PF_DEN7_8 PB15
         PF_IS5 PA2 (ADC_IN2)    PF_IS6 PA4 (ADC_IN4)     PF_IS7 PA7 (ADC_IN7)     PF_IS8 PC4 (ADC_IN14)
         B_IN3..B_IN10 = PC14 PC15 PB2 PD2 PB4 PB5 PC10 PC11        B_AN = PB1 (ADC_IN9)
-  * Connectors sheet: J6 = Deutsch DT15-12PA (same as J4): pins 1-2 OUT5, 3-4 OUT6, 5-6 OUT7, 7-8 OUT8, 9-12 NC.
+  * Connectors sheet: T1-T8 = bolt-down output terminals (Wuerth REDCUBE THR M4), one per output; J4 (Deutsch DT) removed.
+                      J6 = Molex Micro-Fit 2x2: 1 CAN_H, 2 CAN_L, 3 INPUT1, 4 INPUT2.
                       J7 = JST GH 12 to input board #3: 1-8 B_IN3..10, 9 B_AN, 10 +3V3, 11-12 GND.
   * All test points removed (Dan: no test points).
 """
@@ -44,7 +45,6 @@ RENAME_HCD2 = {"PF_IN1": "PF_IN5", "PF_IN2": "PF_IN6", "PF_IN3": "PF_IN7", "PF_I
                "PF_IS1": "PF_IS5", "PF_IS2": "PF_IS6", "PF_IS3": "PF_IS7", "PF_IS4": "PF_IS8",
                "PF_OUT1": "PF_OUT5", "PF_OUT2": "PF_OUT6", "PF_OUT3": "PF_OUT7", "PF_OUT4": "PF_OUT8"}
 HCD2_AT = (231.14, 50.8)        # root sheet block position
-J6_AT = (167.64, 56.515)        # Connectors sheet
 J7_AT = (220.98, 56.515)        # right of J6 (the lower right holds the Deutsch connector picture)
 
 
@@ -424,51 +424,26 @@ for f in sorted(glob.glob("*.kicad_sch")):
     wr(f, x)
 print("test points removed:", removed, "labels dropped:", dropped_labels)
 
-# ---------------------------------------------------------------- Connectors sheet: J6 outputs, J7 input board
+# ---------------------------------------------------------------- Connectors sheet
+# Dan, 2026-11-09: every output leaves the board on its own bolt-down terminal (one wire per output, no ganged pins):
+#   T1-T4 = OUT1-4 (BTS70012, 31.3 A)  -> Wuerth REDCUBE THR 74650094R (M4, 8 pins, 85 A at 20 C)
+#   T5-T8 = OUT5-8 (BTS7004, 15 A)     -> Wuerth REDCUBE THR 74650074R (M4, 4 pins, 50 A at 20 C)
+# The Deutsch DT header J4 is removed. J6 = Molex Micro-Fit 2x2 for CAN + the 2 stock inputs (M1a).
+# J7 = JST GH 12 to input board #3.
 t = rd("Connectors.kicad_sch")
 s, e = symbol_by_ref(t, "J4")
 j4 = t[s:e]
+J4_AT = tuple(map(float, re.search(r"\(at ([\d.\-]+) ([\d.\-]+)", j4).groups()))
+SHEET_PATH = re.search(r'\(path "([^"]+)"', j4).group(1)
 c_glab = {re.search(r'\(global_label "([^"]+)"', t[s2:e2]).group(1): t[s2:e2] for s2, e2 in top_blocks(t, "global_label")}
 tpl = c_glab["PF_OUT1"]                         # angle 180, left of the connector pins
+s1, e1 = symbol_by_ref(t, "J1")
+j1 = t[s1:e1]                                   # RedCube terminal symbol (1 pin), rotated 270: pin end 3.81 above the origin
+if not re.search(r"\(at [\d.\-]+ [\d.\-]+ 270\)", j1):
+    raise SystemExit("J1 is not rotated 270: terminal pin math not handled")
 
-
-def jpin(at, n):
-    return at[0] - 5.08, at[1] - 12.7 + 2.54 * (n - 1)
-
-
-def conn(at, ref, value, footprint):
-    b = move_block(j4, *at)
-    b = set_ref_prop(b, ref)
-    b = set_instances(b, [(re.search(r'\(path "([^"]+)"', j4).group(1), ref)])
-    b = re.sub(r'"Value" "[^"]*"', f'"Value" "{value}"', b, count=1)
-    b = re.sub(r'"Footprint" "[^"]*"', f'"Footprint" "{footprint}"', b, count=1)
-    for prop in ("Digi-Key_PN", "LCSC"):
-        if footprint != "Deutsch_DT:DT15-12PA":
-            m = re.search(r'\n\t\t\(property "%s"' % prop, b)
-            if m:
-                b = b[:m.start()] + b[block_end(b, m.start() + 3):]
-    return renew_uuids(b)
-
-
-def clab(name, x, y, shape="output"):
-    b = re.sub(r'\(global_label "[^"]+"', f'(global_label "{name}"', tpl, count=1)
-    b = re.sub(r"\(shape \w+\)", f"(shape {shape})", b, count=1)
-    return renew_uuids(move_block(b, x, y))
-
-
-def nc(x, y):
-    return f'(no_connect\n\t\t(at {fmt(x)} {fmt(y)})\n\t\t(uuid "{u()}")\n\t)'
-
-
-# J4 re-pin (Dan G1a: no software current cap, gang connector pins for full current): BTS70012 = 31.3 A nominal,
-# DT size 16 contact = 13 A, so OUT1-4 get 3 pins each (39 A); CAN and the 2 stock inputs move to J6 pins 9-12.
-J4_AT = tuple(map(float, re.search(r"\(at ([\d.\-]+) ([\d.\-]+)", j4).groups()))
-J4_PINS = {1: "PF_OUT4", 2: "PF_OUT4", 3: "PF_OUT4", 4: "PF_OUT3", 5: "PF_OUT3", 6: "PF_OUT3",
-           7: "PF_OUT1", 8: "PF_OUT1", 9: "PF_OUT1", 10: "PF_OUT2", 11: "PF_OUT2", 12: "PF_OUT2"}
-J6_PINS = {1: "PF_OUT5", 2: "PF_OUT5", 3: "PF_OUT6", 4: "PF_OUT6", 5: "PF_OUT7", 6: "PF_OUT7", 7: "PF_OUT8", 8: "PF_OUT8",
-           9: "CAN_H", 10: "CAN_L", 11: "INPUT1", 12: "INPUT2"}
-SHAPE = {"CAN_H": "bidirectional", "CAN_L": "bidirectional", "INPUT1": "input", "INPUT2": "input"}
-box = (J4_AT[0] - 8, J4_AT[1] - 15, J4_AT[0], J4_AT[1] + 16)   # J4's old pin wiring, left of its pins
+# remove J4 and its pin wiring / labels
+box = (J4_AT[0] - 8, J4_AT[1] - 15, J4_AT[0], J4_AT[1] + 16)
 
 
 def inbox(x, y):
@@ -487,32 +462,102 @@ for head in ("wire", "junction", "global_label"):
             pos = e2
     out.append(t[pos:])
     t = "".join(out)
+s, e = symbol_by_ref(t, "J4")
+t = t[:s - 2] + t[e:]
+
+
+def strip_props(b, names=("Digi-Key_PN", "LCSC")):
+    for prop in names:
+        m = re.search(r'\n\t\t\(property "%s"' % prop, b)
+        if m:
+            b = b[:m.start()] + b[block_end(b, m.start() + 3):]
+    return b
+
+
+def part(template, at, ref, value, footprint):
+    b = move_block(template, *at)
+    b = set_ref_prop(b, ref)
+    b = set_instances(b, [(SHEET_PATH, ref)])
+    b = re.sub(r'"Value" "[^"]*"', f'"Value" "{value}"', b, count=1)
+    b = re.sub(r'"Footprint" "[^"]*"', f'"Footprint" "{footprint}"', b, count=1)
+    return renew_uuids(strip_props(b))
+
+
+def clab(name, x, y, shape="output", ang=180):
+    b = re.sub(r'\(global_label "[^"]+"', f'(global_label "{name}"', tpl, count=1)
+    b = re.sub(r"\(shape \w+\)", f"(shape {shape})", b, count=1)
+    b = move_block(b, x, y, ang)
+    if ang == 90:
+        b = b.replace("(justify right)", "(justify left)", 1)
+    return renew_uuids(b)
+
+
+def jpin(at, n, npins=12):
+    """Pin end of a Conn_01xNN symbol placed at `at` (rotation 0)."""
+    top = {12: 12.7, 4: 2.54}[npins]
+    return at[0] - 5.08, at[1] - top + 2.54 * (n - 1)
+
 
 items = []
-for n, net in J4_PINS.items():
-    items.append(clab(net, *jpin(J4_AT, n)))
-j6, j7 = refs.new("J"), refs.new("J")
-items.append(conn(J6_AT, j6, "OUTPUTS 5-8, CAN, IN1-2", "Deutsch_DT:DT15-12PA"))
-for n, net in J6_PINS.items():
-    items.append(clab(net, *jpin(J6_AT, n), SHAPE.get(net, "output")))
-items.append(conn(J7_AT, j7, "INPUT BOARD B_IN3-10", GH12))
+# output terminals
+T_AT = lambda n: (149.86 + 15.24 * ((n - 1) % 4), 55.88 if n <= 4 else 86.36)
+for n in range(1, 9):
+    big = n <= 4
+    fp = "TerminalBlock_Wuerth:Wuerth_REDCUBE-THR_WP-THRBU_%s_THR" % ("74650094" if big else "74650074")
+    x, y = T_AT(n)
+    items.append(part(j1, (x, y), f"T{n}", "74650094R" if big else "74650074R", fp))
+    items.append(clab(f"PF_OUT{n}", x, y - 3.81, "output", 90))
+items.append(f'(text "Output terminals: one wire per output (no ganged pins).\\nT1-T4 = OUT1-4, 31 A (REDCUBE M4 85 A).  '
+             f'T5-T8 = OUT5-8, 15 A (REDCUBE M4 50 A)."\n\t\t(exclude_from_sim no)\n\t\t(at 142.24 35.56 0)\n\t\t(effects\n\t\t\t(font\n'
+             f'\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n\t\t\t(justify left bottom)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')
+
+# J6: Micro-Fit 2x2 (CAN + stock inputs)
+LIB4 = "Connector_Generic:Conn_01x04"
+if f'(symbol "{LIB4}"' not in t:
+    lt = rd(os.path.join(os.environ["LOCALAPPDATA"], r"Programs\KiCad\10.0\share\kicad\symbols\Connector_Generic.kicad_sym"))
+    s2 = lt.index('\n\t(symbol "Conn_01x04"') + 2
+    sym = lt[s2:block_end(lt, s2)]
+    if "(extends" in sym:
+        raise SystemExit("Conn_01x04 extends another symbol; embed not handled")
+    sym = sym.replace('(symbol "Conn_01x04"', f'(symbol "{LIB4}"', 1)
+    sym = "\n".join(("\t" + ln) if ln else ln for ln in sym.split("\n"))
+    k = t.index("(lib_symbols") + len("(lib_symbols")
+    t = t[:k] + "\n\t\t" + sym.lstrip("\t") + t[k:]
+J6_AT = (106.68, 50.8)
+j6 = part(j4, J6_AT, "J6", "CAN + IN1-2 (Micro-Fit 2x2)", "Connector_Molex:Molex_Micro-Fit_3.0_43045-0412_2x02_P3.00mm_Vertical")
+j6 = j6.replace('(lib_id "Connector_Generic:Conn_01x12")', f'(lib_id "{LIB4}")')
+pins = re.findall(r'\n\t\t\(pin "\d+"\s*\(uuid "[^"]+"\)\s*\)', j6)
+if len(pins) != 12:
+    raise SystemExit(f"J4 pin entries: {len(pins)}")
+k = j6.index(pins[0])
+for pn in pins:
+    j6 = j6.replace(pn, "", 1)
+j6 = j6[:k] + "".join(f'\n\t\t(pin "{n}"\n\t\t\t(uuid "{u()}")\n\t\t)' for n in range(1, 5)) + j6[k:]
+items.append(j6)
+for n, (net, shape) in enumerate((("CAN_H", "bidirectional"), ("CAN_L", "bidirectional"), ("INPUT1", "input"), ("INPUT2", "input")), 1):
+    items.append(clab(net, *jpin(J6_AT, n, 4), shape))
+
+# J7: input board
+j7 = refs.new("J")
+if j7 == "J6":
+    j7 = refs.new("J")
+items.append(part(j4, J7_AT, j7, "INPUT BOARD B_IN3-10", GH12))
 for n in range(1, 10):
     x, y = jpin(J7_AT, n)
     items.append(clab(f"B_IN{n + 2}" if n <= 8 else "B_AN", x, y, "input"))
-# power pins 10-12 (templates cloned from other sheets)
 hcd = rd("HighCurrentDrivers.kicad_sch")
 t = ensure_libsym(t, "power:+3V3", hcd)
 for lib_id, n, ang in (("power:+3V3", 10, 270), ("power:GND", 11, 90), ("power:GND", 12, 90)):
     src = hcd if lib_id == "power:+3V3" else t
-    s2, e2 = next((a, z) for a, z in top_blocks(src, "symbol") if f'(lib_id "{lib_id}")' in src[a:z])
+    s2, e2 = next((a2, z2) for a2, z2 in top_blocks(src, "symbol") if f'(lib_id "{lib_id}")' in src[a2:z2])
     b = src[s2:e2]
     x, y = jpin(J7_AT, n)
     r = refs.new("#PWR")
     b = move_block(b, x, y, ang)
     b = set_ref_prop(b, r)
-    b = set_instances(b, [(re.search(r'\(path "([^"]+)"', j4).group(1), r)])
+    b = set_instances(b, [(SHEET_PATH, r)])
     items.append(renew_uuids(b))
 t = insert_items(t, items)
 wr("Connectors.kicad_sch", t)
-print("connectors:", j6, "(outputs 5-8)", j7, "(input board)")
+print("connectors: T1-T8 (output terminals), J6 (CAN + IN1-2),", j7, "(input board); J4 removed")
 print("board B schematic edits OK")

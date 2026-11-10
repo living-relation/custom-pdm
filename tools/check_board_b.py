@@ -33,15 +33,18 @@ for ch in range(1, 9):
 
 for ch in range(1, 9):
     outs = sorted({r for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r.startswith("U")})
-    jp = sorted((r, p) for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r in ("J4", "J6"))
-    ok = len(outs) == 1 and len(jp) == (3 if ch <= 4 else 2)
+    term = sorted(r for r, p, f in by_net.get(f"PF_OUT{ch}", []) if r.startswith(("T", "J")))
+    ok = len(outs) == 1 and term == [f"T{ch}"]
     bad += not ok
-    print(f"PF_OUT{ch}: switch {outs} pins {jp} {'OK' if ok else 'CHECK'}")
-for net in ("CAN_H", "CAN_L", "INPUT1", "INPUT2"):
+    print(f"PF_OUT{ch}: switch {outs} terminal {term} {'OK' if ok else 'CHECK'}")
+for pin, net in (("1", "CAN_H"), ("2", "CAN_L"), ("3", "INPUT1"), ("4", "INPUT2")):
     jp = sorted((r, p) for r, p, f in by_net.get(net, []) if r.startswith("J"))
-    ok = len(jp) == 1 and jp[0][0] == "J6"
+    ok = jp == [("J6", pin)]
     bad += not ok
     print(f"{net:8} {jp} {'OK' if ok else 'CHECK'}")
+if "J4" in d:
+    bad += 1
+    print("J4 still present CHECK")
 for net in ("PF_IN5", "PF_IN6", "PF_IN7", "PF_IN8", "PF_DEN5_6", "PF_DEN7_8"):
     sw = sorted(r for r, p, f in by_net.get(net, []) if r.startswith("U") and r != "U4")
     rr = sorted(r for r, p, f in by_net.get(net, []) if r.startswith("R"))

@@ -91,4 +91,4 @@ Also buy: 6 studs with boots, sealing plugs for spare cavities (size 20, 16). Th
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers.
 - Board B input count (dingoPDM-Max spare pins: about 8-9 fan out cleanly; confirm when board B is built).
 - X1 carries up to 16 x 7.5 A + 4 x 15 A (180 A) in one shell. Check the connector's total-current derating before running all outputs at full load.
-- Board B: terminals T1-T8 and the small CAN/IN1-2 connector are decided (Dan) but not in the schematic yet. Pictures: `docs/diagrams/` (illustrations, not a source of truth).
+- Board B terminal ratings (REDCUBE 85 A / 50 A) are at 20 C: check derating at enclosure temperature. Pictures: `docs/diagrams/` (illustrations, not a source of truth).
