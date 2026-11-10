@@ -28,3 +28,6 @@ desktop.ini
 reference/
 # Python cache (tools import each other)
 __pycache__/
+*.kicad_pcb.dbg
+*.kicad_pcb.kicad_pro
+*.kicad_pcb.kicad_prl
