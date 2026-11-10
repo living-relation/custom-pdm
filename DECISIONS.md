@@ -69,6 +69,7 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat): Board B OUT5-8 also leave the board on bolt-down terminals, one wire per output (J1a). OUT4 goes to a stud like OUT1-3 (L1a): 4 output studs.
 - 2026-11-09 (Dan, chat): Connector diagrams are saved in `docs/diagrams/` as illustrations only, not a source of truth.
 - 2026-11-09 (Dan, chat): Board B's CAN + IN1-2 connector is a Molex Micro-Fit 2x2 (M1a).
+- 2026-11-09 (Dan, chat): Connector current criterion: each pin must meet its own load within the maker's per-contact rating; no extra total-connector derating. The enclosure gets more than enough cooling.
 - 2026-11-09 (Dan, chat): Personal project, not for sale. The repo becomes local-only (detached from GitHub; Dan made the GitHub repo private instead of deleting it, kept detached for now) so dingoPDM-Max files (no license) can sit with the rest.
 
 ## CAN

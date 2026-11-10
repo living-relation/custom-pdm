@@ -90,5 +90,5 @@ Also buy: 6 studs with boots, sealing plugs for spare cavities (size 20, 16). Th
 ## Open items
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers.
 - Board B input count (dingoPDM-Max spare pins: about 8-9 fan out cleanly; confirm when board B is built).
-- X1 carries up to 16 x 7.5 A + 4 x 15 A (180 A) in one shell. Check the connector's total-current derating before running all outputs at full load.
+- X1 current (checked 2026-11-09): TE's HD30/HDP20 catalog and technical manual give only per-contact ratings (continuous at 125 C) and no total-connector limit or multi-contact derating. Loads here are 7.5 A on size 16 (13 A) and 15 A on size 12 (25 A), about 60% of each contact's rating. Dan: per-contact rating is the criterion; the enclosure gets ample cooling.
 - Board B terminal ratings (REDCUBE 85 A / 50 A) are at 20 C: check derating at enclosure temperature. Pictures: `docs/diagrams/` (illustrations, not a source of truth).
