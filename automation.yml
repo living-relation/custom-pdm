@@ -41,6 +41,16 @@ automations:
     run_cmd: powershell -File tools/build_board_b.ps1
     check_cmd: python tools/check_board_b.py <netlist>
     owner: claude
+  - id: connector-maps
+    script: tools/gen_connector_maps.py
+    trigger: manual
+    reads: []                       # tables are typed into the script by hand
+    writes: ["docs/diagrams/*.svg"]   # illustrations only, not a source of truth
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/gen_connector_maps.py
+    owner: claude
   - id: state-check
     script: .github/workflows/state-check.yml
     helpers: [.github/state-check.sh, .github/registry-check.py]

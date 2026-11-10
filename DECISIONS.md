@@ -66,6 +66,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-09 (Dan, chat): OUT1-4 leave board B on bolt-down terminals, one wire per output, instead of ganged DT pins (I1a).
 - 2026-11-09 (Dan, chat, standing): No ganged (paralleled) pins on enclosure connectors: one pin per output.
 - 2026-11-09 (Dan, chat): X3 (HDP 24-9) dropped. Board B OUT5-8 (15 A) go to X1's size 12 cavities B, D, E, G; board B's big outputs go to studs (OUT1-3 stated; OUT4 too, since it never fit X3).
+- 2026-11-09 (Dan, chat): Board B OUT5-8 also leave the board on bolt-down terminals, one wire per output (J1a). OUT4 goes to a stud like OUT1-3 (L1a): 4 output studs.
+- 2026-11-09 (Dan, chat): Connector diagrams are saved in `docs/diagrams/` as illustrations only, not a source of truth.
 - 2026-11-09 (Dan, chat): Personal project, not for sale. The repo becomes local-only (detached from GitHub; Dan made the GitHub repo private instead of deleting it, kept detached for now) so dingoPDM-Max files (no license) can sit with the rest.
 
 ## CAN

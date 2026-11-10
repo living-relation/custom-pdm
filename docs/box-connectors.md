@@ -35,10 +35,10 @@ Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17
 
 | Cavity | Signal | Board connector |
 |---|---|---|
-| B | B_OUT5 (15 A) | B J6-1, 2 |
-| D | B_OUT6 (15 A) | B J6-3, 4 |
-| E | B_OUT7 (15 A) | B J6-5, 6 |
-| G | B_OUT8 (15 A) | B J6-7, 8 |
+| B | B_OUT5 (15 A) | B terminal T5 |
+| D | B_OUT6 (15 A) | B terminal T6 |
+| E | B_OUT7 (15 A) | B terminal T7 |
+| G | B_OUT8 (15 A) | B terminal T8 |
 
 B, D, E, G are the size 12 cavities (25 A). Spare: F (size 16). Plug every unused cavity with a sealing plug.
 
@@ -91,4 +91,4 @@ Also buy: 6 studs with boots, sealing plugs for spare cavities (size 20, 16). Th
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers.
 - Board B input count (dingoPDM-Max spare pins: about 8-9 fan out cleanly; confirm when board B is built).
 - X1 carries up to 16 x 7.5 A + 4 x 15 A (180 A) in one shell. Check the connector's total-current derating before running all outputs at full load.
-- Board B J6 has 2 board pins per 15 A output but X1 has one cavity per output: decide how the two meet (one terminal per output on the board, or two wires into one size 12 contact).
+- Board B: terminals T1-T8 and the small CAN/IN1-2 connector are decided (Dan) but not in the schematic yet. Pictures: `docs/diagrams/` (illustrations, not a source of truth).

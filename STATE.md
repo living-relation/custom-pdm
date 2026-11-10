@@ -32,10 +32,10 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
   - Connectors: J4 DT15-12PA = OUT1-4 on 3 pins each (to be replaced by bolt-down terminals T1-T4, Dan I1a); J6 DT15-12PA = OUT5-8 (2 pins each), CAN, IN1-2; J7 JST GH 12 to input board #3 (same pinout as board A J6).
   - Test points removed. Stock 4 x BTS70012 (OUT1-4) unchanged.
   - Netlist check passes. ERC: the only new errors are the same types the stock channels already have (paralleled OUT pins, GND network).
-  - Next: PCB (bigger board; add footprints; place and route).
+  - Next: replace J4/J6 with bolt-down terminals T1-T8 (one wire per output, Dan I1a + J1a) and a small connector for CAN + IN1-2; then PCB (one bigger board, Dan G2a).
 
 ## Open items
-- Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. Open: X1 total-current derating; how board B J6's 2 pins per output meet one X1 cavity.
+- Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. Open: X1 total-current derating. Illustrations (not a source of truth): `docs/diagrams/*.svg`, drawn by `tools/gen_connector_maps.py`.
 - Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).
 - Firmware (later): outputs 1-2 are now a dual pair (DSEL on the old PF_DEN2 pin).
