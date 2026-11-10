@@ -37,7 +37,7 @@ for ch in range(1, 9):
     ok = len(outs) == 1 and term == [f"T{ch}"]
     bad += not ok
     print(f"PF_OUT{ch}: switch {outs} terminal {term} {'OK' if ok else 'CHECK'}")
-for pin, net in (("1", "CAN_H"), ("2", "CAN_L"), ("3", "INPUT1"), ("4", "INPUT2")):
+for pin, net in (("1", "CAN_L"), ("2", "CAN_H"), ("3", "INPUT2"), ("4", "INPUT1")):
     jp = sorted((r, p) for r, p, f in by_net.get(net, []) if r.startswith("J"))
     ok = jp == [("J6", pin)]
     bad += not ok

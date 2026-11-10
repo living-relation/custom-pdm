@@ -69,8 +69,8 @@ b.append(t(756, 150, "OUT1-8 - bolt-down terminals (Wuerth REDCUBE M4), one wire
 b.append(grid(756, 162, [[(f"T{n}", f"OUT{n} 31 A", "out30") for n in range(1, 5)],
                          [(f"T{n}", f"OUT{n} 15 A", "out15") for n in range(5, 9)]], cw=110))
 b.append(t(756, 286, "J6 - Molex Micro-Fit 2x2 (CAN and the 2 stock inputs)", 14, 700))
-b.append(grid(756, 298, [[("1", "CAN_H", "can"), ("2", "CAN_L", "can"), ("3", "IN1", "in"), ("4", "IN2", "in")]]))
-b.append(t(756, 372, "J7 - JST GH 12-pin (to its input board)", 14, 700))
+b.append(grid(756, 298, [[("1", "CAN_L", "can"), ("2", "CAN_H", "can"), ("3", "IN2", "in"), ("4", "IN1", "in")]]))
+b.append(t(756, 372, "J7 - JST GH 12-pin, top entry (to its input board)", 14, 700))
 b7 = [(str(n), f"IN{n + 2}", "in") for n in range(1, 9)] + [("9", "ANALOG", "in"), ("10", "+3V3", "v33"), ("11", "GND", "gnd"), ("12", "GND", "gnd")]
 b.append(grid(756, 384, [b7], cw=50))
 b.append(t(756, 458, "Power terminals (bolt-down)", 14, 700))
@@ -230,7 +230,7 @@ w3.append(note(200, 160, "CAN_H / CAN_L (twisted pair) to X2 pins 2, 3 - then to
 w3.append(note(772, 384, "CAN: A1 J3 pins 2, 1", PNK))
 w3.append(note(772, 400, "to A2 J3 pins 2, 1", PNK))
 w3.append(note(772, 614, "CAN: A2 J3 pins 2, 1", PNK))
-w3.append(note(772, 630, "to B J6 pins 1, 2", PNK))
+w3.append(note(772, 630, "to B J6 pins 2, 1", PNK))
 x2pins = {"A1": ("9-14", "7, 8"), "A2": ("17-22", "15, 16"), "B": ("25-33", "23, 24")}
 for key, y, name, sub, iname, isub in rows3:
     w3.append(box(MX, y, MW, H, name, sub, "#ffffff"))
@@ -245,7 +245,7 @@ for key, y, name, sub, iname, isub in rows3:
     w3.append(note(260, y + 78, "+ ground 35-38", GRN, "middle", w=400))
     # stock inputs IN1-2 -> X2
     w3.append(line([(MX, y + 128), (190, y + 128)], GRN, 3, "7 5"))
-    src = "J6 pins 3, 4" if key == "B" else "J3 pins 12, 11"
+    src = "J6 pins 4, 3" if key == "B" else "J3 pins 12, 11"
     w3.append(note(445, y + 121, f"IN1, IN2: {src} to X2 pins {x2pins[key][1]}", GRN, "middle"))
 # outputs to X1 and the studs
 w3.append(box(1400, 190, 150, 570, "X1", "21-pin", "#eff6ff", "#1e40af"))

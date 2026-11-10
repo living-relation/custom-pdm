@@ -29,10 +29,11 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
   - Added 4 x BTS7004-1EPP channels (U23-U26, sheet `BTS7004_1EPP` copied from dingoPDM MIT, RSENSE 1.2k) on page `HighCurrentDrivers2`, plus a second LM324 sense buffer (U22).
   - MCU pins: IN5-8 = PA8, PB10, PA15, PC8; DEN5_6 = PB12; DEN7_8 = PB15; IS5-8 = PA2, PA4, PA7, PC4.
   - Inputs B_IN3-10 = PC14, PC15, PB2, PD2, PB4, PB5, PC10, PC11; B_AN = PB1. PC13 is spare.
-  - Connectors: T1-T8 bolt-down terminals, one per output (T1-T4 Wuerth REDCUBE 74650094R M4 85 A for the 31 A outputs; T5-T8 74650074R M4 50 A for the 15 A outputs; ratings are at 20 C, derating not checked). Deutsch DT header J4 removed. J6 Molex Micro-Fit 2x2 = CAN_H, CAN_L, INPUT1, INPUT2. J7 JST GH 12 to input board #3 (same pinout as board A J6).
+  - Connectors: T1-T8 bolt-down terminals, one per output, all Wuerth REDCUBE 74650074R (M4, 7 x 7 mm, 50 A at 20 C; the 85 A 74650094R is 10 x 10 mm and does not fit between a BTS70012 and its output diode). Deutsch DT header J4 removed. J6 Molex Micro-Fit 2x2 = 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends). J7 JST GH 12 top entry (BM12B) to input board #3 (same pinout as board A J6).
   - Test points removed. Stock 4 x BTS70012 (OUT1-4) unchanged.
   - Netlist check passes. ERC: the only new errors are the same types the stock channels already have (paralleled OUT pins, GND network).
-  - Next: PCB (one bigger board, Dan G2a): add the new footprints, grow the outline, place and route.
+  - PCB in progress (`tools/pcb_board_b.py` then `tools/route_board_b.py`, both run by the build): board grows 39 mm to the right (72.4 -> 111.4 x 95.3 mm). Old area: T1-T4 on the four output pours, J6 where J4's centre pins were. New column: four 15 A channels whose placement and copper are copied from dingoPDM v7.5's BTS700x-1EPP block (board A baseline, MIT), turned 90 degrees, each with its terminal and output pour; bottom layer there is +12 V. A 7.5 mm strip between old edge and blocks holds J7, U22 (LM324) and R52-R55/C46. Two extra mounting holes H5/H6 (board only).
+  - Next: finish routing (MCU fan-outs), DRC against the stock Max, Fusion import check.
 
 ## Open items
 - Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. X1 current check done: every pin is at about 60% of its TE rating; TE publishes no total-connector limit (Dan: per-pin rating is enough). Illustrations (not a source of truth): `docs/diagrams/*.svg`, drawn by `tools/gen_connector_maps.py`.

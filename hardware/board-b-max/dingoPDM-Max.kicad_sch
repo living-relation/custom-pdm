@@ -2206,93 +2206,7 @@
 				)
 			)
 		)
-	)
-	(symbol
-		(lib_id "DRT_Logo:DRT_Logo")
-		(at 252.73 157.48 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-00005f65317d")
-		(property "Reference" "G1"
-			(at 253.365 156.3116 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "DRT_Logo"
-			(at 253.365 158.623 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "DRTLogo:DRTLogo"
-			(at 252.73 157.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 252.73 157.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 252.73 157.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" ""
-			(at 252.73 157.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(instances
-			(project "dingoPDM-Max"
-				(path "/8948e307-9174-4227-9c28-3ff885e6e83d"
-					(reference "G1")
-					(unit 1)
-				)
-			)
-		)
-	)
+	)
 	(symbol
 		(lib_id "DRT_Logo:DRT_Logo")
 		(at 252.73 164.465 0)
@@ -2890,7 +2804,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "27b459aa-3371-4b61-9a1b-3f09a2dd90d2")
+		(uuid "575906bb-1f37-4474-809f-974c900eb5b4")
 		(property "Sheetname" "HighCurrentDrivers2"
 			(at 231.14 50.0884 0)
 			(show_name no)

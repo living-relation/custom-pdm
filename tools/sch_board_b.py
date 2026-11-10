@@ -16,11 +16,12 @@ What it adds
         PF_IS5 PA2 (ADC_IN2)    PF_IS6 PA4 (ADC_IN4)     PF_IS7 PA7 (ADC_IN7)     PF_IS8 PC4 (ADC_IN14)
         B_IN3..B_IN10 = PC14 PC15 PB2 PD2 PB4 PB5 PC10 PC11        B_AN = PB1 (ADC_IN9)
   * Connectors sheet: T1-T8 = bolt-down output terminals (Wuerth REDCUBE THR M4), one per output; J4 (Deutsch DT) removed.
-                      J6 = Molex Micro-Fit 2x2: 1 CAN_H, 2 CAN_L, 3 INPUT1, 4 INPUT2.
+                      J6 = Molex Micro-Fit 2x2: 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends).
                       J7 = JST GH 12 to input board #3: 1-8 B_IN3..10, 9 B_AN, 10 +3V3, 11-12 GND.
   * All test points removed (Dan: no test points).
 """
 import glob
+import json
 import os
 import re
 import subprocess
@@ -31,7 +32,7 @@ BASE_1EPP = "542b3b9:hardware/board-a/BTS700n_1EPP.kicad_sch"     # dingoPDM v7.
 PROJECT = "dingoPDM-Max"
 ROOT = "dingoPDM-Max.kicad_sch"
 NETLIST = os.path.join(os.environ.get("TEMP", "."), "boardb_base.net")
-GH12 = "Connector_JST:JST_GH_SM12B-GHS-TB_1x12-1MP_P1.25mm_Horizontal"
+GH12 = "Connector_JST:JST_GH_BM12B-GHS-TBT_1x12-1MP_P1.25mm_Vertical"    # top entry: sits inside the board, not at an edge
 
 OUT_PINS = {  # net: (U4 pin name, shape)
     "PF_IN5": ("PA8", "output"), "PF_IN6": ("PB10", "output"), "PF_IN7": ("PA15", "output"), "PF_IN8": ("PC8", "output"),
@@ -278,6 +279,9 @@ t = "".join(out)
 t = re.sub(r'\(title "[^"]*"\)', '(title "15 A channel (BTS7004-1EPP) - from dingoPDM v7.5, MIT")', t)
 wr("BTS7004_1EPP.kicad_sch", t)
 print("BTS7004 sheet: U refs", made.get("U8"))
+# the PCB script needs to know which new part is which copy
+json.dump({"channel": {k: v for k, v in made.items() if not k.startswith("#")},
+           "page": {k: v for k, v in ref_map.items() if not k.startswith("#")}}, open("board-b-refs.json", "w"), indent=1)
 
 # ---------------------------------------------------------------- root: add the page
 b = root[hcd_s:hcd_e]
@@ -288,6 +292,8 @@ b = re.sub(r'"Sheetname" "[^"]+"', '"Sheetname" "HighCurrentDrivers2"', b)
 b = re.sub(r'\(page "\d+"\)', '(page "14")', b)
 b = move_block(b, *HCD2_AT)
 root = insert_items(root, [b])
+s, e = symbol_by_ref(root, "G1")           # DRT logo: its footprint is gone from the board (J-side space)
+root = root[:s - 2] + root[e:]
 wr(ROOT, root)
 
 # ---------------------------------------------------------------- MCU sheet: labels on U4 pins, test points out
@@ -426,8 +432,8 @@ print("test points removed:", removed, "labels dropped:", dropped_labels)
 
 # ---------------------------------------------------------------- Connectors sheet
 # Dan, 2026-11-09: every output leaves the board on its own bolt-down terminal (one wire per output, no ganged pins):
-#   T1-T4 = OUT1-4 (BTS70012, 31.3 A)  -> Wuerth REDCUBE THR 74650094R (M4, 8 pins, 85 A at 20 C)
-#   T5-T8 = OUT5-8 (BTS7004, 15 A)     -> Wuerth REDCUBE THR 74650074R (M4, 4 pins, 50 A at 20 C)
+#   T1-T8 -> Wuerth REDCUBE THR 74650074R (M4, 4 pins, 7 x 7 mm, 50 A at 20 C). OUT1-4 carry 31.3 A, OUT5-8 15 A.
+#   (The 85 A 74650094R is 10 x 10 mm and does not fit between the BTS70012 and its output diode.)
 # The Deutsch DT header J4 is removed. J6 = Molex Micro-Fit 2x2 for CAN + the 2 stock inputs (M1a).
 # J7 = JST GH 12 to input board #3.
 t = rd("Connectors.kicad_sch")
@@ -502,13 +508,12 @@ items = []
 # output terminals
 T_AT = lambda n: (149.86 + 15.24 * ((n - 1) % 4), 55.88 if n <= 4 else 86.36)
 for n in range(1, 9):
-    big = n <= 4
-    fp = "TerminalBlock_Wuerth:Wuerth_REDCUBE-THR_WP-THRBU_%s_THR" % ("74650094" if big else "74650074")
+    fp = "TerminalBlock_Wuerth:Wuerth_REDCUBE-THR_WP-THRBU_74650074_THR"
     x, y = T_AT(n)
-    items.append(part(j1, (x, y), f"T{n}", "74650094R" if big else "74650074R", fp))
+    items.append(part(j1, (x, y), f"T{n}", "74650074R", fp))
     items.append(clab(f"PF_OUT{n}", x, y - 3.81, "output", 90))
-items.append(f'(text "Output terminals: one wire per output (no ganged pins).\\nT1-T4 = OUT1-4, 31 A (REDCUBE M4 85 A).  '
-             f'T5-T8 = OUT5-8, 15 A (REDCUBE M4 50 A)."\n\t\t(exclude_from_sim no)\n\t\t(at 142.24 35.56 0)\n\t\t(effects\n\t\t\t(font\n'
+items.append(f'(text "Output terminals: one wire per output (no ganged pins).\\nT1-T4 = OUT1-4, 31 A.  '
+             f'T5-T8 = OUT5-8, 15 A.  All Wuerth REDCUBE M4 74650074R (50 A)."\n\t\t(exclude_from_sim no)\n\t\t(at 142.24 35.56 0)\n\t\t(effects\n\t\t\t(font\n'
              f'\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n\t\t\t(justify left bottom)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')
 
 # J6: Micro-Fit 2x2 (CAN + stock inputs)
@@ -534,7 +539,7 @@ for pn in pins:
     j6 = j6.replace(pn, "", 1)
 j6 = j6[:k] + "".join(f'\n\t\t(pin "{n}"\n\t\t\t(uuid "{u()}")\n\t\t)' for n in range(1, 5)) + j6[k:]
 items.append(j6)
-for n, (net, shape) in enumerate((("CAN_H", "bidirectional"), ("CAN_L", "bidirectional"), ("INPUT1", "input"), ("INPUT2", "input")), 1):
+for n, (net, shape) in enumerate((("CAN_L", "bidirectional"), ("CAN_H", "bidirectional"), ("INPUT2", "input"), ("INPUT1", "input")), 1):
     items.append(clab(net, *jpin(J6_AT, n, 4), shape))
 
 # J7: input board
