@@ -29,13 +29,13 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
   - Added 4 x BTS7004-1EPP channels (U23-U26, sheet `BTS7004_1EPP` copied from dingoPDM MIT, RSENSE 1.2k) on page `HighCurrentDrivers2`, plus a second LM324 sense buffer (U22).
   - MCU pins: IN5-8 = PA8, PB10, PA15, PC8; DEN5_6 = PB12; DEN7_8 = PB15; IS5-8 = PA2, PA4, PA7, PC4.
   - Inputs B_IN3-10 = PC14, PC15, PB2, PD2, PB4, PB5, PC10, PC11; B_AN = PB1. PC13 is spare.
-  - Connectors: J6 DT15-12PA (OUT5-8, 2 pins each); J7 JST GH 12 to input board #3 (same pinout as board A J6).
+  - Connectors: J4 DT15-12PA = OUT1-4 on 3 pins each (to be replaced by bolt-down terminals T1-T4, Dan I1a); J6 DT15-12PA = OUT5-8 (2 pins each), CAN, IN1-2; J7 JST GH 12 to input board #3 (same pinout as board A J6).
   - Test points removed. Stock 4 x BTS70012 (OUT1-4) unchanged.
   - Netlist check passes. ERC: the only new errors are the same types the stock channels already have (paralleled OUT pins, GND network).
   - Next: PCB (bigger board; add footprints; place and route).
 
 ## Open items
-- Box connectors (Dan): X1 HD30 24-21 outputs, X2 HDP 24-47 signals, X3 HDP 24-9 board B power; wire list in `docs/box-connectors.md`. Cavity IDs assigned from TE drawing 0425-014-2400. X3 box side changed to HDP24-24-9SE (sockets, to buy). Still to buy: size 20 contacts and sealing plugs.
+- Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. Open: X1 total-current derating; how board B J6's 2 pins per output meet one X1 cavity.
 - Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
 - Harness: J3 pinout changed on board A (see Status).
 - Firmware (later): outputs 1-2 are now a dual pair (DSEL on the old PF_DEN2 pin).

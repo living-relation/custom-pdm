@@ -14,12 +14,11 @@ Rule (Dan, standing): anything that sources power has **socket** contacts on the
 
 | # | Box side (panel) | Harness side | Insert | Carries |
 |---|---|---|---|---|
-| X1 | HD34-24-21SN (aluminum, flange, sockets) | HD36-24-21PN (pins) | 24-21: 17 x size 16, 4 x size 12 | 16 x 7.5 A outputs (boards A1, A2) |
+| X1 | HD34-24-21SN (aluminum, flange, sockets) | HD36-24-21PN (pins) | 24-21: 17 x size 16, 4 x size 12 | 16 x 7.5 A outputs (boards A1, A2) + 4 x 15 A outputs (board B OUT5-8) |
 | X2 | HDP24-24-47SE-L017 (sockets) | HDP26-24-47PE-L015 (pins) | 24-47: 42 x size 20, 5 x size 16 | inputs, analog, CAN, signal GND |
-| X3 | HDP24-24-9SE (sockets, **to buy**) | HDP26-24-9PE (pins) | 24-9: 6 x size 12, 2 x size 8, 1 x size 4 | board B 6 x 15 A + 2 x 30 A |
-| - | stud | ring terminal | - | 150 A battery feed (+12 V); chassis ground stud |
+| - | 6 studs | ring terminals | - | 150 A battery feed (+12 V); chassis ground; board B OUT1-4 (31 A each, one stud per output, rubber boots) |
 
-## X1 - outputs, boards A1 and A2 (size 16, 16 AWG)
+## X1 - outputs: boards A1 and A2 (size 16, 16 AWG) and board B OUT5-8 (size 12, 14 AWG)
 
 Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17 are size 16. Outputs go around the outer ring, clockwise from H in the rear view.
 
@@ -34,7 +33,14 @@ Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17
 | P | A1_OUT7 | A1 J3-4 | A | A2_OUT7 | A2 J3-4 |
 | R | A1_OUT8 | A1 J3-3 | C | A2_OUT8 | A2 J3-3 |
 
-Spare: F (size 16); B, D, E, G (size 12). Plug every unused cavity with a sealing plug.
+| Cavity | Signal | Board connector |
+|---|---|---|
+| B | B_OUT5 (15 A) | B J6-1, 2 |
+| D | B_OUT6 (15 A) | B J6-3, 4 |
+| E | B_OUT7 (15 A) | B J6-5, 6 |
+| G | B_OUT8 (15 A) | B J6-7, 8 |
+
+B, D, E, G are the size 12 cavities (25 A). Spare: F (size 16). Plug every unused cavity with a sealing plug.
 
 ## X2 - inputs, analog, CAN (size 20, 20 AWG)
 
@@ -59,15 +65,17 @@ The drawing labels only some numbers (1, 2, 20, 30, 40, 47); the rest come from 
 
 33 used, 14 spare.
 
-## X3 - board B high current
+## Studs
 
-Insert 24-9: R = size 4 (center), S and U = size 8, T, V, W, X, Y, Z = size 12.
+Dan, 2026-11-09: no X3 connector. One pin per output on enclosure connectors (no ganged pins), and no HD30/HDP shell-24 insert has four cavities above 25 A.
 
-| Cavity | Signal | Contact | Wire |
-|---|---|---|---|
-| T, V, W, X, Y, Z | B_OUT15_1 .. B_OUT15_6 | size 12 (25 A) | 14 AWG (12 AWG for long runs) |
-| S, U | B_OUT30_1, B_OUT30_2 | size 8 (60 A) | 10 AWG |
-| R | spare | size 4 | - |
+| Stud | Signal | Current |
+|---|---|---|
+| BATT | +12 V feed from the battery | 150 A |
+| GND | chassis ground | - |
+| OUT1 .. OUT4 | board B OUT1-4 (BTS70012), from board terminals T1-T4 | 31 A each |
+
+Output studs are live when their output is on: fit rubber boots.
 
 ## Contacts needed vs on hand
 
@@ -75,12 +83,12 @@ Insert 24-9: R = size 4 (center), S and U = size 8, T, V, W, X, Y, Z = size 12.
 |---|---|---|---|
 | 20 | 33 + 33 | none | yes, about 70 total plus spares |
 | 16 | 16 + 16 | plenty (16-20 AWG and 14 AWG) | no |
-| 12 | 6 + 6 | 20 + 20 | no |
-| 8 | 2 + 2 | 5 + 9 | no |
+| 12 | 4 + 4 | 20 + 20 | no |
 
-Also buy: HDP24-24-9SE receptacle (X3 box side), sealing plugs for spare cavities (size 20, 16, 12, 4).
+Also buy: 6 studs with boots, sealing plugs for spare cavities (size 20, 16). The HDP 24-9 set is not used.
 
 ## Open items
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers.
 - Board B input count (dingoPDM-Max spare pins: about 8-9 fan out cleanly; confirm when board B is built).
-- X1 carries up to 16 x 7.5 A in one shell. Check the connector's total-current derating before running all outputs at full load.
+- X1 carries up to 16 x 7.5 A + 4 x 15 A (180 A) in one shell. Check the connector's total-current derating before running all outputs at full load.
+- Board B J6 has 2 board pins per 15 A output but X1 has one cavity per output: decide how the two meet (one terminal per output on the board, or two wires into one size 12 contact).
