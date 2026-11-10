@@ -1,9 +1,9 @@
 # STATE - custom-pdm
 
-Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
+Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
-**Kept branches:** none
+**Kept branches:** none (feat/board-b merged locally 2026-11-10)
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Status
@@ -32,8 +32,12 @@ Updated 2026-11-08. Decisions live in `DECISIONS.md`; scripts are listed in `aut
   - Connectors: T1-T8 bolt-down terminals, one per output, all Wuerth REDCUBE 74650074R (M4, 7 x 7 mm, 50 A at 20 C; the 85 A 74650094R is 10 x 10 mm and does not fit between a BTS70012 and its output diode). Deutsch DT header J4 removed. J6 Molex Micro-Fit 2x2 = 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends). J7 JST GH 12 top entry (BM12B) to input board #3 (same pinout as board A J6).
   - Test points removed. Stock 4 x BTS70012 (OUT1-4) unchanged.
   - Netlist check passes. ERC: the only new errors are the same types the stock channels already have (paralleled OUT pins, GND network).
-  - PCB in progress (`tools/pcb_board_b.py` then `tools/route_board_b.py`, both run by the build): board grows 39 mm to the right (72.4 -> 111.4 x 95.3 mm). Old area: T1-T4 on the four output pours, J6 where J4's centre pins were. New column: four 15 A channels whose placement and copper are copied from dingoPDM v7.5's BTS700x-1EPP block (board A baseline, MIT), turned 90 degrees, each with its terminal and output pour; bottom layer there is +12 V. A 7.5 mm strip between old edge and blocks holds J7, U22 (LM324) and R52-R55/C46. Two extra mounting holes H5/H6 (board only).
-  - Next: finish routing (MCU fan-outs), DRC against the stock Max, Fusion import check.
+  - PCB DONE 2026-11-10 (`tools/pcb_board_b.py` then `tools/route_board_b.py`, both run by the build, about 10 min): board grows 39 mm to the right (72.4 -> 111.4 x 95.3 mm). Old area: T1-T4 on the four output pours, J6 where J4's centre pins were. New column: four 15 A channels whose placement and copper are copied from dingoPDM v7.5's BTS700x-1EPP block (board A baseline, MIT), turned 90 degrees, each with its terminal and output pour; bottom layer there is +12 V. A 7.5 mm strip between old edge and blocks holds J7, U22 (LM324) and R52-R55/C46. Two extra mounting holes H5/H6 (board only).
+  - Routing: all 27 new nets routed (17 MCU pins fanned out with a stub + via each, tightest first; each net routed from its via). Unused fan-out vias and leftover stubs pruned; GND / +3V3 pieces cut off by new tracks re-joined.
+  - DRC vs the stock Max (`tools/drc_diff.py`): 0 unconnected; clearance 7 = 7, hole clearance 56 = 56, track width 101 = 101, annular 20 = 20 (all inherited). New: 6 courtyard overlaps (terminals T1-T4 beside each other and beside the BTS70012s: bodies are 7 x 7 mm and clear), 1 dangling 1 mm stub on PF_IN8, silkscreen overlaps (cosmetic), 47 footprint field mismatches in parity (new parts lack Digi-Key/LCSC fields).
+  - Fusion: imported as `board-B` in project `custom-pdm`; 200/200 parts, 137/137 nets match (10 nets differ only in how repeated pad numbers are named: T1-T8, J1, J3).
+  - Render: `docs/diagrams/board-b-top-render.png`.
+  - Open on board B: silkscreen tidy (overlapping reference texts), fields for the new parts, the PF_IN8 stub, a human look at the layout before ordering.
 
 ## Open items
 - Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. X1 current check done: every pin is at about 60% of its TE rating; TE publishes no total-connector limit (Dan: per-pin rating is enough). Illustrations (not a source of truth): `docs/diagrams/*.svg`, drawn by `tools/gen_connector_maps.py`.
