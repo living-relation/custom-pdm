@@ -57,19 +57,29 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 ## Orchestrator session 3 (Claude-Session 014aA8s6rstT9Sxtn4fsxsmM, started 2026-11-10)
 Owns both earlier jobs (Dan A1a, `DECISIONS.md` "Orchestration and backup"). Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests; (3) enclosure with heat sink (handbuilt-cad tools + Fusion).
-- Remote: NOT attached yet. Adding the remote was blocked for the agent (permission layer), so Dan runs `git remote add origin https://github.com/living-relation/custom-pdm.git` and `git push -u origin main`. Checked 2026-11-10: the GitHub repo is private, its `main` (6d9596e) is an ancestor of local `main`, so the push is a fast-forward. After that: change the "Local-only repo" rule in `AGENTS.md`.
+- Remote: attached 2026-11-10 (Dan ran the commands; agents are blocked from adding or changing a remote). `origin` = private GitHub repo, the GitHub state-check workflow runs on PRs again. Rules: `AGENTS.md`. This replaces every "local-only / no PRs" remark further down this file.
 - Jobs in flight (each in its own worktree `C:\projects\active\custom-pdm-wt-<job>`, sub-agents do not edit `STATE.md` / `DECISIONS.md`, the orchestrator reviews and merges):
-  - `feat/board-b-in5-pc13` (wt `-bin5`): B1 move of B_IN5 from PB2 to PC13 on board B, hardware plus the firmware pin and `LINE_UNUSED`. Status: started 2026-11-10.
+  - `feat/board-b-in5-pc13` (wt `-bin5`): B1 move of B_IN5 from PB2 to PC13 on board B, hardware plus the firmware pin and `LINE_UNUSED`. Status: done 2026-11-11, merged by PR (B_IN5 on PC13; `LINE_UNUSED` = PB2 as input with pull-down; wake mask 0x0FF build-time). Checks: netlist OK; ERC errors unchanged (warnings +2 off-grid); DRC same as main in every category, unconnected 0; 4 firmware builds OK; s0 36/36, s1 26/26. Stale after this: Fusion `board-B` import and `docs/diagrams/board-b-top-render.png`. Open: B4-a, B4-b, B4-c below.
   - `feat/renode-bench` (wt `-renode`): the Renode bench from "Next" below. Only touches `firmware/sim/renode/`. Status: started 2026-11-10.
-  - `feat/parts-audit` (wt `-parts`): every part on the three boards checked against BOM v4, datasheets and stock; options for the open part choices. Status: started 2026-11-10.
-- Open questions for Dan from this session: none yet. Inherited and not asked yet: B3, B4, enclosure A-H, L1 (see the section below).
+  - `feat/parts-audit` (wt `-parts`): every part on the three boards checked against BOM v4, datasheets and stock; options for the open part choices. Status: done 2026-11-11, merged by PR: `docs/parts-audit.md` (+ `.csv`). 16 problems (P1-P16) and 7 open part choices (C1-C7) for Dan are listed there, not here. Orchestrator check: the PCA82C250 CAN chip (P3) and its wiring come from stock dingoPDM v7.5 and Max (`reference/` MCU sheets), so P3 is inherited, not new. Temp: `%TEMP%\custom-pdm-parts-audit\`.
+- **HANDOFF (2026-11-11 00:25, context full): the next orchestrator session starts here.**
+  1. Renode sub-agent was still running when this session handed off: branch `feat/renode-bench`, worktree `C:\projects\active\custom-pdm-wt-renode`, WSL `~/renode-pdm`. Its report comes back only to the old session. Check the worktree's commits and `firmware/sim/renode/` for its README / results log; if nothing is committed and no WSL process is running, treat it as stopped and re-launch from the "Next" bullet below. Review, update this file on its branch, PR, merge when green, remove the worktree (`cmd /c rmdir` any `reference` junction first).
+  2. Then a board-fix job (worktree + sub-agent, Dan has answered or must answer first): B4-b(b) 10k PB2-GND on board B (answered); parts-audit P1 (one 5 V regulator per board, others removed or DNP), P2 (120 ohm CAN terminator + jumper per main board, matches DECISIONS 2026-11-08), P9 (35 V caps on +12 V): P1, P2, P9 still need Dan's OK as choices C1 / C7 from `docs/parts-audit.md`.
+  3. Ask Dan one at a time, researched first: B4-a, B4-c, then parts choices C1-C7 (`docs/parts-audit.md` section 3; re-check stock against the assembler, see `DECISIONS.md` 2026-11-11), then L1, then enclosure A-H.
+  4. After that: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware; PC-side single-PDM layer research (D5a); enclosure 3D once A-H are answered.
+- Open questions for Dan from this session (asked one at a time):
+  - B4-b: answered 2026-11-11 (b, `DECISIONS.md`).
+  - B4-a: board B `LINE_UNUSED` pin: (A) PB2 input pull-down, built now, recommended; (B) a port bit with no physical pin (e.g. PD0), untested; (C) PB3 (SWO), not recommended. Checked: firmware writes it only for BTS7008 duals (`profet.cpp` HandleDsel), board B has none.
+  - B4-c: board B build-time wake mask 0x0DF -> 0x0FF (PD2 no longer shares EXTI 2). (A) keep until B2 is built, recommended; (B) revert.
+  - Inherited, not asked yet: enclosure A-H, L1 (see the section below).
+- Tool gotchas from the B1 job: see working memory `INDEX.md` (2026-11-11 lines).
 
 ## Next (updated 2026-11-10)
 
 - **Next task, firmware session (Dan D2a, 2026-11-10): build the full Renode bench, time-boxed.** Start point: `firmware/sim/renode/boot_a1.resc` boots the board A binary to the idle thread on Renode's `platforms/cpus/stm32f4.repl`. To add: (1) an I2C FRAM at 0x50 on `i2c1` (MB85RC256V: 2 address bytes, then data) so config load / save works; (2) MCP9808 at 0x18 on `i2c1` (check `renode/` for a ready model first); (3) an ADC1 model at 0x40012000 feeding the DMA2 stream the firmware uses, or a simpler stand-in, plus the PROFET sense model from `firmware/sim/pdmsim.py`; (4) a second and third machine on one CAN hub and a Robot test that repeats `s1_system.py` checks. Stop and report if any one of these takes more than a session. Sandbox: `~/renode-pdm` in WSL; rebuild binaries with `firmware/sim/renode/build_wsl.sh`.
 - **Firmware is in `firmware/` on `main` (merged 2026-11-10, Dan).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
 - Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
-- Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
+- Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Jobs in flight now: "Orchestrator session 3".
 - **Waiting on Dan (orchestrator session):** see "Open questions: orchestrator session" below. Do not start 3D enclosure work before he answers the enclosure questions.
 - Open, small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 - Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
@@ -77,11 +87,10 @@ Owns both earlier jobs (Dan A1a, `DECISIONS.md` "Orchestration and backup"). Dan
 
 ### Open questions: orchestrator session (Claude-Session 014aA8s6qbju3vQ7x6q7vMNX)
 Asked one at a time, explained simply, each logged in `DECISIONS.md` once settled (Dan, 2026-11-10).
-- B1: answered (`DECISIONS.md`, "Pin map and enclosure questions"). The board B reroute of B_IN5 from PB2 to PC13 is NOT done yet; do it on a branch in its own worktree, fall back to keeping PB2 if risky.
+- B1: answered and built 2026-11-11 (see "Orchestrator session 3"). The PB2 / PD2 wake pair below no longer exists.
 - B2: answered 2026-11-10 (`DECISIONS.md`): CAN + USB wake only by default, each input selectable as a wake source per channel. Not built yet (firmware). Shared wake lines, one input per pair at most: board A IN_1 (PA10) / IN_3 (PC10), and IN_4 (PC11) / USB D- (PA11); board B IN_1 (PA10) / B_IN9 (PC10), B_IN10 (PC11) / USB D- (PA11), B_IN5 (PB2) / B_IN6 (PD2) until the B1 move. Checked in code: a second pin armed on the same EXTI number replaces the first (ChibiOS `hal_pal_lld.c` @ 879cf757, asserts off); any edge on CAN RX wakes it, whatever the filter says; it only sleeps after 30 s with no accepted CAN frame, all outputs off and USB unplugged.
-- B3, B4, enclosure A-H (`docs/enclosure-layout.md` section 7), L1 (delete Fusion `board-A-dual` and `LINKED-COPY-unused`?): not asked yet.
+- B3: answered 2026-11-11 (`DECISIONS.md`, B3a). B4, enclosure A-H (`docs/enclosure-layout.md` section 7), L1: moved to "Orchestrator session 3".
 - Overlap notes for the firmware / simulation session (2026-11-10, checked on `main` f473b19):
-  - If the B1 reroute lands, board B `LINE_UNUSED` = PC13 collides with the new B_IN5 pin: pick another pin then.
   - B2 is answered (see above): it replaces the C3a "for now" wake-up set. Firmware work for your side, not started by this session: default wake set = no inputs (`WAKE_DIG_INPUT_MASK` 0 today is build-time only), plus a per-input "may wake" setting; the config or tool must stop two inputs of one shared wake line from both being selected, and an input sharing a line with USB D- from taking it silently. B3 and B4 are still open on this side.
   - Renode, 5 s run of `boot_a1.resc` (also with the board B binary): PC is in `Led::Code`, PC0 (error LED) is set, and the log has one "i2c1: Child address changed to 0x50, but target is not registered". So it ends in the fatal-error blink (no FRAM), not a plain idle.
   - `platforms/cpus/stm32f4.repl` is not an F446RE: flash 2 MB and RAM 256 KB (ours 512 KB / 128 KB), I2C is the `STM32F1_I2C` model, no ADC and no USB entry. Renode 1.17.0 ships no F446 platform. `Infrastructure.dll` contains the names `MB85RC` and `STM32_ADC`, nothing for MCP9808 (fit not checked).
@@ -92,13 +101,12 @@ Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map que
 - None open. (D5 closed 2026-11-10: see `DECISIONS.md`.)
 - Overlap notes (questions owned by the orchestrator session; listed so both sides see them, not asked by this session):
   - B2 overlap: the firmware already uses a wake-up set that follows the B2 research (all inputs except the ones sharing a wake line). Change `WAKE_DIG_INPUT_MASK` in each board's `port.h` (via `port_boards.py`) once Dan answers B2.
-  - B4 overlap: the firmware already sets `LINE_UNUSED` = PC13 on board B. Revert if Dan answers B4 "no".
-  - B1 overlap: board B input 5 is still on PB2 in the firmware. If the hardware move to PC13 happens, the firmware pin and `LINE_UNUSED` must change with it.
+  - B1 / B4 overlap: closed 2026-11-11 (B_IN5 moved to PC13; `LINE_UNUSED` = PB2; see "Orchestrator session 3").
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.
 - `%LOCALAPPDATA%\Workstation\claude-fusion\`: helper scripts (`call.ps1`, `up*.py`, `chk*.py`, `*.ulp`, `kicad\`), TE drawings in `te-drawings\`.
-- `%TEMP%\board-b-build\` build outputs; `.github/` workflow files that no longer run; the private GitHub repo `living-relation/custom-pdm` (stale since 2026-11-09, detached on purpose).
+- `%TEMP%\board-b-build\` build outputs; B1 job temp folders `%TEMP%\bin5-build-base`, `%TEMP%\bin5-build-pc13`, `%TEMP%\bin5-stock-max`, `%TEMP%\bin5-fwcheck.*`, WSL `~/bin5-pdm`.
 
 ### Mistakes not to repeat
 - Committed staged baseline files by accident (1b16fdf): check `git diff --cached --stat` before every commit.
@@ -134,7 +142,7 @@ Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map que
 - Board B (`hardware/board-b-max/`, branch `feat/board-b`): schematic done, rebuilt by `tools/build_board_b.ps1` (baseline fe19c28 -> `tools/sch_board_b.py` -> netlist check -> ERC).
   - Added 4 x BTS7004-1EPP channels (U23-U26, sheet `BTS7004_1EPP` copied from dingoPDM MIT, RSENSE 1.2k) on page `HighCurrentDrivers2`, plus a second LM324 sense buffer (U22).
   - MCU pins: IN5-8 = PA8, PB10, PA15, PC8; DEN5_6 = PB12; DEN7_8 = PB15; IS5-8 = PA2, PA4, PA7, PC4.
-  - Inputs B_IN3-10 = PC14, PC15, PB2, PD2, PB4, PB5, PC10, PC11; B_AN = PB1. PC13 is spare.
+  - Inputs B_IN3-10 = PC14, PC15, PC13, PD2, PB4, PB5, PC10, PC11; B_AN = PB1. PB2 (BOOT1) is the only unconnected MCU pin (B_IN5 moved off it 2026-11-11).
   - Connectors: T1-T8 bolt-down terminals, one per output, all Wuerth REDCUBE 74650074R (M4, 7 x 7 mm, 50 A at 20 C; the 85 A 74650094R is 10 x 10 mm and does not fit between a BTS70012 and its output diode). Deutsch DT header J4 removed. J6 Molex Micro-Fit 2x2 = 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends). J7 JST GH 12 top entry (BM12B) to input board #3 (same pinout as board A J6).
   - Test points removed. Stock 4 x BTS70012 (OUT1-4) unchanged.
   - Netlist check passes. ERC: the only new errors are the same types the stock channels already have (paralleled OUT pins, GND network).

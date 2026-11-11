@@ -18,8 +18,8 @@
 #define NUM_OUTPUTS 8
 #define NUM_DIG_OUTPUTS 0
 #define NUM_DIG_INPUTS 10
-// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 and USB D-; DI6 (PD2) loses EXTI 2 to DI5 (PB2)
-#define WAKE_DIG_INPUT_MASK 0x0DFU
+// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2
+#define WAKE_DIG_INPUT_MASK 0x0FFU
 #define NUM_ANALOG_INPUTS 1
 #define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V
 #define NUM_VIRT_INPUTS 16
