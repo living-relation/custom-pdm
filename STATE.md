@@ -1,9 +1,8 @@
 # STATE - custom-pdm
 
 > **Shared document: every agent and session reads and writes this file (Dan, 2026-11-10).**
-> - This is the one place for progress, open items, questions and handoffs. It is how sessions talk to each other.
+> - This is the one place for progress, open items and handoffs. Open questions for Dan and notes between sessions are on the session board (path under "Next").
 > - Do not copy or repeat anything from this file in any other file (docs, results, memory, handoffs). Point to it instead: `STATE.md`, section name.
-> - Keep each session's open questions in its own section. Do not edit or answer another session's section; leave a note in your own.
 
 Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
@@ -13,6 +12,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 ## Next (updated 2026-11-10)
 
+- **Next task, firmware session (Dan D2a, 2026-11-10): build the full Renode bench, time-boxed.** Start point: `firmware/sim/renode/boot_a1.resc` boots the board A binary to the idle thread on Renode's `platforms/cpus/stm32f4.repl`. To add: (1) an I2C FRAM at 0x50 on `i2c1` (MB85RC256V: 2 address bytes, then data) so config load / save works; (2) MCP9808 at 0x18 on `i2c1` (check `renode/` for a ready model first); (3) an ADC1 model at 0x40012000 feeding the DMA2 stream the firmware uses, or a simpler stand-in, plus the PROFET sense model from `firmware/sim/pdmsim.py`; (4) a second and third machine on one CAN hub and a Robot test that repeats `s1_system.py` checks. Stop and report if any one of these takes more than a session. Sandbox: `~/renode-pdm` in WSL; rebuild binaries with `firmware/sim/renode/build_wsl.sh`.
 - **Firmware is on branch `feat/firmware` (not merged).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
 - Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
 - Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
@@ -21,17 +21,8 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
 - Docs changed since the last cleanup (2026-11-08): run iterative-cleaning (report-only) after Dan answers the questions (A2-b).
 
-### Open questions: firmware / simulation session (Claude-Session 014aA8s6LsbYkVVsAomAhpXK)
-Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map questions B2-B4 and the enclosure questions A-H belong to the orchestrator session: see "Waiting on Dan" above.
-- D1. "Retry mode" (from C2a): overcurrent retry, 3 tries (as built on `feat/firmware`), or retry after a lost link?
-- D2. Build the full Renode bench (FRAM, temperature-sensor and ADC models), time-boxed, or park it?
-- D3. Default link-loss time-out: 1 s / 500 ms / 2 s. The sim used 500 ms as an example; nothing is set in firmware.
-- D4. Keep the example CAN IDs 0x500 / 0x520 / 0x540, or check the Link ECU IDs first?
-- D5. How the PC-side single-PDM layer gets built.
-- Overlap notes (questions owned by the orchestrator session; listed here so both sides see them, not asked by this session):
-  - B2 overlap: `feat/firmware` already uses a wake-up set that follows the B2 research (all inputs except the ones sharing a wake line). Change `WAKE_DIG_INPUT_MASK` in each board's `port.h` once Dan answers B2.
-  - B4 overlap: `feat/firmware` already sets `LINE_UNUSED` = PC13 on board B. Revert in `board.h` if Dan answers B4 "no".
-  - B1 overlap: board B input 5 is still on PB2 in the firmware. If the hardware move to PC13 happens, the firmware pin and `LINE_UNUSED` must change with it.
+### Open questions and notes between sessions
+They live outside the repo so every session sees them whatever branch is checked out: `C:\projects\_scratch\custom-pdm-shared\SESSION-BOARD.md` (Dan, 2026-11-10). Not repeated here.
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.

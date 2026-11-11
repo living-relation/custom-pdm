@@ -89,3 +89,6 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-10 (Dan, chat): Keep the four small firmware choices for now (C3a: status frame 27, wake-up set, `LINE_UNUSED` = PC13 on board B, analog scaling), guided by the Session 2 pin-map research.
 - 2026-11-10 (Dan, chat): Simulation order: compile, then host-side logic tests, then Renode if feasible (C4a). Renode goes in a sandbox on DansPC (WSL).
 - 2026-11-10 (Claude, finding): Renode 1.17.0 boots the board A binary on its stock `stm32f4` platform (CAN model present). Missing for a full run: I2C FRAM, MCP9808 and ADC models.
+- 2026-11-10 (Dan, chat): D1: "retry mode" means both. Overcurrent: retry 3 times before Fault (default in the custom builds). Lost link: outputs follow commands again by themselves when messages return (stock behaviour, shown in `s1_system.py`).
+- 2026-11-10 (Dan, chat): D2a: build the full Renode bench, time-boxed.
+- 2026-11-10 (Dan, chat): F1: open questions and notes between sessions live in a shared non-repo folder, `C:\projects\_scratch\custom-pdm-shared\` (`SESSION-BOARD.md`), which Dan attaches to the Claude project. `STATE.md` is a shared document: point to it, never copy from it.
