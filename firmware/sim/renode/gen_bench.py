@@ -13,7 +13,7 @@ VBAT = 13.8
 CAL = {0x1FFF7A2A: 1502, 0x1FFF7A2C: 943, 0x1FFF7A2E: 1199}
 BOARDS = [('a1', ps.BOARD_A, 'custompdm_a_unit1.elf'), ('a2', ps.BOARD_A, 'custompdm_a_unit2.elf'), ('b', ps.BOARD_B, 'custompdm_b_unit1.elf')]
 
-L = [f'include @{work}/models/PdmNvicFix.cs', f'include @{work}/models/STM32DMA_Circ.cs', f'include @{work}/models/PdmI2C.cs', f'include @{work}/models/PdmAdcCan.cs',
+L = [f'include @{work}/models/PdmNvicFix.cs', f'include @{work}/models/PdmWriteSpy.cs', f'include @{work}/models/STM32DMA_Circ.cs', f'include @{work}/models/PdmI2C.cs', f'include @{work}/models/PdmAdcCan.cs',
      'emulation CreateCANHub "bus"', '']
 for name, model, elf in BOARDS:
     L += [f'mach create "{name}"', f'machine LoadPlatformDescription @{work}/stm32f446re.repl',
@@ -21,7 +21,7 @@ for name, model, elf in BOARDS:
     L += [f'    sysbus WriteWord {a:#x} {v}' for a, v in CAL.items()]
     L += ['"""', 'runMacro $reset', 'connector Connect sysbus.can1 bus']
     # the DMA model warns on every write of the error-interrupt enable / clear bits it does not implement
-    L += ['logLevel 3 sysbus.dma1', 'logLevel 3 sysbus.dma2', 'sysbus.rettobaseFix Install']
+    L += ['logLevel 3 sysbus.dma1', 'logLevel 3 sysbus.dma2', 'sysbus.rettobaseFix Install', 'sysbus.canBtrSpy Install']
     for o in model['outputs']:
         L.append(f'sysbus.adc1 AddOutput "{o[0]}" "{o[1]}" "{o[2] or ""}" {o[3]} "{o[4]}" {ps.KILIS[o[5]]}')
     L += [f'sysbus.adc1 Vbat {VBAT}', f'sysbus.adc1 SenseResistor {ps.RSENSE}',

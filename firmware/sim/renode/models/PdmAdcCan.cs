@@ -233,7 +233,7 @@ namespace Antmicro.Renode.Peripherals.CAN
             timer = new LimitTimer(machine.ClockSource, 1000000, this, "tick", limit: TickUs, direction: Direction.Ascending,
                 enabled: true, workMode: WorkMode.Periodic, eventEnabled: true, autoUpdate: false);
             timer.LimitReached += OnTick;
-            Powered = true; ReplyTimeoutUs = 100000;
+            Powered = true; ReplyTimeoutUs = 100000; MaxTries = 3;
         }
 
         public event Action<CANMessageFrame> FrameSent;
@@ -252,7 +252,10 @@ namespace Antmicro.Renode.Peripherals.CAN
         public string FailedList { get { lock(sync) { return string.Join(";", failedList); } } }
         public ulong FramesSeen { get; private set; }
 
-        public void ClearStats() { lock(sync) { Failed = 0; Done = 0; LastReply = ""; failedList.Clear(); } }
+        public int MaxTries { get; set; }          // sends of one request before it counts as failed
+        public int Retries { get; private set; }
+        public string RetriedList { get { lock(sync) { return string.Join(";", retried); } } }
+        public void ClearStats() { lock(sync) { Failed = 0; Done = 0; Retries = 0; LastReply = ""; failedList.Clear(); retried.Clear(); } }
         public void ClearSeen() { lock(sync) { last.Clear(); FramesSeen = 0; } }
 
         public void Send(uint id, string hex) { lock(sync) { outbox.Enqueue(new CANMessageFrame(id, Bytes(hex))); } }
@@ -310,11 +313,21 @@ namespace Antmicro.Renode.Peripherals.CAN
                     while(outbox.Count > 0) send.Add(outbox.Dequeue());
                     if(current != null && nowUs >= current.DeadlineUs)
                     {
-                        Failed++; failedList.Add(string.Format("{0:X}:{1}", current.Id, Hex(current.Data))); current = null;
+                        if(current.Tries < MaxTries)
+                        {
+                            // no reply: send it again, as a PC tool would
+                            current.Tries++; Retries++; current.DeadlineUs = nowUs + ReplyTimeoutUs;
+                            retried.Add(string.Format("{0:X}:{1}", current.Id, Hex(current.Data)));
+                            send.Add(new CANMessageFrame(current.Id, current.Data));
+                        }
+                        else
+                        {
+                            Failed++; failedList.Add(string.Format("{0:X}:{1}", current.Id, Hex(current.Data))); current = null;
+                        }
                     }
                     if(current == null && queue.Count > 0)
                     {
-                        current = queue.Dequeue(); current.DeadlineUs = nowUs + ReplyTimeoutUs;
+                        current = queue.Dequeue(); current.DeadlineUs = nowUs + ReplyTimeoutUs; current.Tries = 1;
                         send.Add(new CANMessageFrame(current.Id, current.Data));
                     }
                 }
@@ -337,7 +350,8 @@ namespace Antmicro.Renode.Peripherals.CAN
         private static string Hex(byte[] d) { var sb = new StringBuilder(); foreach(var x in d) sb.Append(x.ToString("X2")); return sb.ToString(); }
 
         private class Periodic { public uint Id; public byte[] Data; public ulong PeriodUs, NextUs; }
-        private class Request { public uint Id, ReplyId; public byte[] Data; public ulong DeadlineUs; }
+        private class Request { public uint Id, ReplyId; public byte[] Data; public ulong DeadlineUs; public int Tries; }
+        private readonly List<string> retried = new List<string>();
         private class Seen { public byte[] Data; public ulong TimeUs, Count; }
 
         private readonly List<Periodic> periodic = new List<Periodic>();

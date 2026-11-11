@@ -100,6 +100,11 @@ gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x40021C00, +0x400>
 can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
     [0-3] -> nvic@[19-22]
 
+// remembers the last CAN_BTR write (see models/PdmWriteSpy.cs); run "sysbus.canBtrSpy Install" after loading
+canBtrSpy: Miscellaneous.PDM_WriteSpy @ sysbus 0x5FFF0010
+    target: can1
+    offset: 0x1C
+
 dma1: DMA.STM32DMA_Circ @ sysbus 0x40026000
     [0-7] -> nvic@[11-17,47]
 
