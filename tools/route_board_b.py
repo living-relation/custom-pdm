@@ -5,6 +5,8 @@
   * J7 (JST GH 12, top entry), U22 (LM324 sense buffer) with R52-R55 / C46, two more mounting holes
   * MCU (U4, 0.5 mm pitch) fan-outs: short exact-geometry stub + via per new pin, then the grid router joins each net
   * power pins of the new parts: a via to the +3V3 plane (bottom) or the GND plane (inner 1)
+  * board fix (2026-11-11): CAN terminator (open solder jumper + 120 ohm, C7b) beside U3, and the 10k BOOT1 pull-down on
+    PB2 (U4.28, B4-b(b)); both placed by tools/board_fix_pcb.py on the nearest free spot, then routed here
 Reports every net it could not finish; the build's DRC is the final word.
 """
 import math
@@ -14,6 +16,7 @@ import sys
 import pcbnew
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import board_fix_pcb as F  # noqa: E402
 import netlist_pins  # noqa: E402
 import pcb_rework  # noqa: E402
 import route_board_a as R  # noqa: E402
@@ -75,6 +78,17 @@ for k, ref in enumerate(("R52", "R53", "R54", "R55")):
     load(*R0805, ref, XS, 12.5 + 2.6 * k, 0, "120R")
 for k, ref in ((0, "H5"), (2, "H6")):
     load("MountingHole", "MountingHole_3.2mm_M3_ISO7380_Pad", ref, X_NEW - 4.5, CY[k] + 9.9, 0, "M3", board_only=True)
+# board fix parts (schematic: tools/sch_board_fix.py)
+FIX = F.read_netlist(NET)
+CAN_JP = next(r for r in nl if r.startswith("JP") and any(n == "CAN_H" for p, fn, n in nl[r]))
+CAN_R = next(r for r in nl if r.startswith("R") and any(n == "/MCU/CAN_TERM" for p, fn, n in nl[r]))
+BOOT_R = next(r for r in nl if r.startswith("R") and any(n == "/MCU/BOOT1" for p, fn, n in nl[r]))
+LEFT = (-40.0, -40.0, -8.0, 70.0)          # left of the routing window below: the router could not reach a part there
+F.add_part(b, FIX[CAN_JP], padnet, F.mid(b, "U3", "6", "7"), keep_out=[LEFT])
+F.add_part(b, FIX[CAN_R], padnet, F.xy(F.pad(b, CAN_JP, "2")), keep_out=[LEFT])
+u4b = b.FindFootprintByReference("U4").GetBoundingBox(False, False)
+U4_ROOM = (tomm(u4b.GetLeft()) - 4.5, tomm(u4b.GetTop()) - 4.5, tomm(u4b.GetRight()) + 4.5, tomm(u4b.GetBottom()) + 4.5)  # fan-outs
+F.add_part(b, FIX[BOOT_R], padnet, (U4_ROOM[2] + 2.0, F.xy(F.pad(b, "U4", "28"))[1]), keep_out=[LEFT, U4_ROOM])
 missing = sorted(r for r in nl if not r.startswith("#") and b.FindFootprintByReference(r) is None)
 if missing:
     raise SystemExit(f"still not on the board: {missing}")
@@ -246,7 +260,7 @@ def join(net):
 
 # ---------------------------------------------------------------- power pins of the new parts
 in_3v3 = lambda vx, vy: vy > 28.2 and X_OLD - 6 < vx < X_OLD + SEAM - 1.0       # the bottom layer is +3V3 there
-for ref in ("J7", "U22", "C46"):
+for ref in ("J7", "U22", "C46", BOOT_R):
     for p in b.FindFootprintByReference(ref).Pads():
         n = p.GetNetname()
         if n not in ("+3V3", "GND") or (ref, n) == ("C46", "+3V3"):
@@ -284,8 +298,9 @@ for n in sorted(u22n, key=reach):
 
 # ---------------------------------------------------------------- MCU pins: fan out all (tightest first), then route
 # Each net is routed FROM ITS FAN-OUT VIA: starting at the 0.5 mm pitch pad itself boxes the grid router in.
-# U4.28 (PB2 = BOOT1) is left unconnected: B_IN5 is on U4.2 (PC13), which keeps the stub of its old test point (TP2).
-NEW_PINS = ["20", "24", "23", "27", "29", "50", "54", "56", "57", "3", "4", "16", "33", "36", "39", "41"]
+# U4.28 (PB2 = BOOT1) goes to its 10k pull-down (B4-b(b)); B_IN5 is on U4.2 (PC13), which keeps the stub of its old
+# test point (TP2).
+NEW_PINS = ["20", "24", "23", "27", "28", "29", "50", "54", "56", "57", "3", "4", "16", "33", "36", "39", "41"]
 STUB_PINS = ["51", "52", "2"]              # PC10, PC11, PC13: routed from the old test point stubs, no new fan-out
 fan = {}
 for num in NEW_PINS:
@@ -319,6 +334,9 @@ for num in NEW_PINS + STUB_PINS:
             print(f"stub start U4.{num} {net}: ({sx:.2f}, {sy:.2f})")
             R.run_jobs([(net, (sx, sy, ["F.Cu"]), (*xy(tgt), tl))])
     join(net)                                                 # whatever is still separate (third pads, failed first try)
+    done.append(net)
+for net in ("CAN_H", "/MCU/CAN_TERM", "CAN_L"):                 # C7b terminator
+    join(net)
     done.append(net)
 print("routed nets:", len(done) - len([f for f in failed if f in done]), "of", len(done), "| FAILED:", failed)
 

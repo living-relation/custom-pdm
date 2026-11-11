@@ -26,6 +26,8 @@ Board count for one PDM: **2 x board A, 1 x board B, 3 x input board** (input bo
 
 ## 2. Problems and thin margins (most serious first)
 
+Status after the board fix (2026-11-11, branch `feat/board-fix`): section 9.
+
 | # | What | Why it matters | Source |
 |---|---|---|---|
 | P1 | **Three 5 V regulators are all in the parts list of every main board** (A: U1, U14, U15; B: U1, U12, U13). All three sit on the same input (+12P) and output (+5VP) nets and none is marked "do not fit". | The schematic's own note says "Use one in place of U1". An assembler working from the BOM would fit all three and tie three switching outputs together. One must be chosen and the other two marked DNP. The default one (U1, VXO7805-500-M-TR) is out of stock everywhere I looked. | Netlist export (nets `+12P`, `+5VP`); text in `Power.kicad_sch`; stock: section 3, C1. Choice C1. |
@@ -284,9 +286,35 @@ Missing from v4 completely: 6 x LM324, 3 x crystal, 3 x USB-C socket, 3 x BOOT s
 - Which other schematic files besides `board-a/CAN.kicad_sch` are leftovers.
 - The "Assembly" sheet of BOM v4 was not compared.
 
+## 9. Board fix (2026-11-11)
+
+What changed on the boards (choices from `DECISIONS.md` 2026-11-11). Scripts: `tools/sch_board_fix.py`, `tools/board_fix_pcb.py`, `tools/pcb_fix_board_a.py`, `tools/route_board_b.py`.
+
+| Item | Change | Check |
+|---|---|---|
+| P1 / C1b | U15 (A) / U13 (B) Traco TSR 1-2450 fitted; U1 + U14 (A), U1 + U12 (B) marked DNP | Pin tails about 2.3 mm below the board, far from the pedestals: see `docs/enclosure-layout.md` section 4.1. C1d not needed. |
+| P2 / C7b | Open solder jumper + 120 ohm (UNI-ROYAL 0805W8F1200T5E, LCSC C17437) between CAN_H and CAN_L on A and B | Bridge the jumper only on the board at the end of the bus. |
+| P3 / C3d | U3 = Microchip MCP2562FD-E/SN (LCSC C124016) | Pin 5 VIO (on +3V3) 1.8 to 5.5 V, pin 8 STBY, STBY high threshold 0.7 x VIO, VDD 4.5 to 5.5 V (Microchip DS20005284B, pin table and section 2.3). Wiring unchanged: matches. |
+| P4 / C2b | U5 = MB85RC64TA, order code MB85RC64TAPNF-G-AWERE2 (LCSC C43379785) | All three PNF (SOP-8) drawings: body 3.90 x 4.90 mm, pitch 1.27 mm (JNE drawing: lead span 6.00 mm) = the board's SOIC-8 3.9 x 4.9 mm footprint (RAMXEED DS501-00044-5v0-E). |
+| P9 | +12V caps: C3 (10 uF) -> Murata GRM21BR6YA106KE43L, 35 V X5R (LCSC C162422); 47 nF (A: C10, C22, C30, C35; B: C23, C27, C31, C35, C51-C54) -> KEMET C0805C473K5RAC7800, 50 V X7R (LCSC C3879816) | Ratings from the LCSC listings. X5R loses capacitance under 12-14 V DC bias (amount TBD, Murata curve not read). |
+| B4-b(b) | Board B: 10k (LCSC C17414) from PB2 (BOOT1) to GND | Firmware unchanged (`LINE_UNUSED` = PB2, input with pull-down). |
+| C6c | `Manufacturer` + `MPN` fields on every part above and on the safety parts: TVS D2, all switches, 1.2k sense resistors | MPNs are what the LCSC column resolves to (the assembler's column). Digi-Key numbers of changed parts: TBD (Digi-Key pages not readable). Sense resistors are still the 5 % part (P10 open). Not yet done: every other part. |
+
+**P11 (diode drop on the +5V feed), numbers.** +5V = TSR output minus the Schottky D18 (A) / D4 (B), PMEG10010ELR.
+- TSR 1-2450 output: 5 V, set accuracy +-2 % max = 4.90 to 5.10 V (Traco TSR 1 data sheet).
+- Load through the diode: CAN chip 45 mA typ / 70 mA max with the bus dominant (DS20005284B, IDD) + LD1117 own use 5 / 10 mA (ST LD1117 Rev 38, Table 6) + the 3.3 V rail (MCU, FRAM, sensor, LEDs: not added up, TBD). So about 0.1 A or more.
+- Diode drop at 0.1 A, 25 C: 505 mV typ, 565 mV max (Nexperia PMEG10010ELR v.5, Table 7); 640 / 710 mV at 0.5 A; higher when cold.
+- +5V at 0.1 A: 5.00 - 0.505 = **4.50 V typical**, 4.90 - 0.565 = **4.34 V worst case**.
+- MCP2562FD needs VDD >= 4.5 V: typical is at the limit, worst case **fails** (the stock PCA82C250 had the same 4.5 V minimum).
+- LD1117S33 needs Vin >= 3.3 V + dropout 1.0 typ / 1.1 max V at 100 mA = 4.3 / 4.4 V (ST Table 6): typical passes (0.2 V spare), worst case **fails by about 0.06 V**.
+- Fix options (not built; a design choice for Dan): (a) feed U3 VDD from +5VP, ahead of the diode (CAN chip then gets 4.90 to 5.10 V; the regulator stays thin); (b) a lower-drop Schottky for D18 / D4 (part TBD); (c) an ideal-diode / P-FET OR-ing in place of D18 / D4.
+
+`docs/parts-audit.csv` still lists the parts as before the board fix.
+
 ## 8. Sources
 
 Data sheets (maker):
+- Board fix: Traco TSR 1 (https://tracopower.com/tsr1-datasheet; drawing in the 2012 copy https://www.dessy.ru/include/images/ware/pdf/t/tsr_1-2450.pdf); Microchip MCP2561/2FD DS20005284B (https://ww1.microchip.com/downloads/aemDocuments/documents/APID/ProductDocuments/DataSheets/MCP2561-2FD-High-Speed-CAN-Flexible-Data-Rate-Transceiver-DS20005284.pdf); Nexperia PMEG10010ELR v.5 (https://assets.nexperia.com/documents/data-sheet/PMEG10010ELR.pdf); LCSC listings C124016, C43379785, C162422, C3879816, C17437, C17414, C534825.
 - Infineon BTS7008-2EPA, Rev. 1.21, 2024-07-29: https://www.infineon.com/assets/row/public/documents/10/49/infineon-bts7008-2epa-datasheet-cn.pdf
 - Infineon BTS70012-1ESP, Rev. 1.21, 2024-07-29: https://www.infineon.com/assets/row/public/documents/10/49/infineon-bts70012-1esp-datasheet-cn.pdf
 - Infineon BTS7004-1EPP, Rev. 1.11, 2024-07-29: https://www.infineon.com/assets/row/public/documents/10/49/infineon-bts7004-1epp-datasheet-cn.pdf

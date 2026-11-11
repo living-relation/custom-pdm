@@ -2804,7 +2804,7 @@
 		(fill
 			(color 0 0 0 0)
 		)
-		(uuid "d3d690ff-9fc7-4e5c-9b70-e6480eabd490")
+		(uuid "8600d1f9-f749-4bbc-9c28-fe8941da6905")
 		(property "Sheetname" "HighCurrentDrivers2"
 			(at 231.14 50.0884 0)
 			(show_name no)

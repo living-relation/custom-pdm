@@ -49,10 +49,11 @@ Rules from Dan: switches on top, bare back side is +12 V so an insulating gap pa
 
 ### 4.1 What the boards actually have (checked in the PCB files)
 - Bottom solder-mask windows are `B.Mask` zones, one per switch, the size of the exposed pad:
-  - Board A: **5** windows, 3.96 x 2.64 mm. Four are under U8, U10, U11, U13. **The fifth, at x -12.9..-8.94, y 11.38..14.02, is a leftover from the removed U9 (there is no chip there).** Net under it not checked: TBD.
+  - Board A: **4** windows, 3.96 x 2.64 mm, under U8, U10, U11, U13. (A fifth, leftover from the removed U9 at x -12.9..-8.94, y 11.38..14.02, was removed in the board fix, question H.)
   - Board B: **8** windows. Four BTS70012: 6.38 x 2.77 mm at x -12.2..-5.8 and 5.8..12.3, y +-(11.2..14.1). Four BTS7004: 2.64 x 3.96 mm at x 53.62..56.26 (y -27.4..-23.5, -4.1..-0.2, 19.2..23.1, 42.5..46.4). So the board B openings exist and match the brief.
 - Bottom copper around them is output / +12 V pour under mask; only the windows are bare.
 - J3 pin tails: TE contact post 3.10 mm (STEP: 3.10 below the feet plane) minus board 1.77 mm = **about 1.33 mm** sticking out of the bottom. Pin pads span x -12.4..12.4, y -5.9..5.9 in board A coordinates.
+- 5 V converter pin tails (C1b: Traco TSR 1-2450 is the one fitted converter, U15 on A, U13 on B; same spot on both boards, pins at x -26.67, y 39.6..44.7): pins are 4.1 mm below the case's 0.5 mm standoff (Traco TSR-1 drawing), so **about 2.3 mm** sticks out below a 1.77 mm board. That spot is well away from every pedestal (more than 10 mm on board B, more than 20 mm on board A), so it sits over the recessed part of the sink: the recess (pedestal height + pad) must be at least about 3 mm there, or the pins are trimmed after soldering. Source: [Traco TSR 1 data sheet](https://tracopower.com/tsr1-datasheet).
 
 ### 4.2 Proposed sink shape (placeholders, TBD by Dan's answers)
 Board rests on pedestals only, the rest of the sink is recessed. Pedestal = window hull + 1.5 mm (ASSUMED margin). Sizes are from the placed layout:
@@ -124,7 +125,7 @@ Stud sizes (BATT 150 A, GND, OUT1-4 at 31 A) and boot diameter: TBD (drawn as 20
 
 **G. Centre standoff / pressing board A onto the pedestals.** No hole exists at the centre and the point is inside the DT15 housing. (a) a post from the lid or a cross bar presses on the housing top; (b) rely on the four M3 holes and size pedestal plus pad compression, check later; (c) add a mounting hole (board change). Recommendation: (b), then check in Elmer.
 
-**H. Leftover mask window on board A (old U9 spot).** (a) remove it in the board A build; (b) leave it, the pad covers it. Recommendation: (a) next time board A is rebuilt (not touched here).
+**H. Leftover mask window on board A (old U9 spot).** (a) remove it in the board A build; (b) leave it, the pad covers it. Answered (a) (`DECISIONS.md`); removed by `tools/pcb_fix_board_a.py` in the board fix.
 
 ## 8. Not done
 3D layout; stacking check; gap pad and sink product choice; Elmer; the TE drawings for DT15-12PA, DT06-12SA, HD34-24 and HDP24 -L017 (only product pages, STEP and catalog data used).
