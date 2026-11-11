@@ -9,14 +9,21 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 ## Next (updated 2026-11-10)
 
 - **Firmware is on branch `feat/firmware` (not merged).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
-- **Waiting on Dan (firmware):** B2 wake-up set (branch follows the Session 2 research: all inputs except the shared-line ones); example CAN IDs 0x500 / 0x520 / 0x540; go / no-go on building the Renode bench (needs FRAM, temperature-sensor and ADC models); how the PC-side single-PDM layer is built.
-  - Asked 2026-11-10, not answered yet: D1 "retry mode" = overcurrent retry (3 tries, as built) or retry after a lost link; D2 build the full Renode bench, time-boxed, or park it; D3 default link-loss time-out 1 s / 500 ms / 2 s (sim used 500 ms as an example; nothing is set in firmware); D4 keep the example CAN IDs or check the Link ECU IDs first.
 - Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
 - Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
 - **Waiting on Dan:** enclosure questions A-H (`docs/enclosure-layout.md` section 7) and firmware questions B1-B4 (`docs/firmware-pin-map.md`). Do not start 3D enclosure work, or a board change, before he answers.
 - Open, small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 - Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
 - Docs changed since the last cleanup (2026-11-08): run iterative-cleaning (report-only) after Dan answers the questions (A2-b).
+
+### Open questions: firmware / simulation session (Claude-Session 014aA8s6LsbYkVVsAomAhpXK)
+Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map questions B2-B4 and the enclosure questions A-H belong to the orchestrator session: see "Waiting on Dan" above.
+- D1. "Retry mode" (from C2a): overcurrent retry, 3 tries (as built on `feat/firmware`), or retry after a lost link?
+- D2. Build the full Renode bench (FRAM, temperature-sensor and ADC models), time-boxed, or park it?
+- D3. Default link-loss time-out: 1 s / 500 ms / 2 s. The sim used 500 ms as an example; nothing is set in firmware.
+- D4. Keep the example CAN IDs 0x500 / 0x520 / 0x540, or check the Link ECU IDs first?
+- D5 (not asked yet). How the PC-side single-PDM layer gets built.
+- Note for the orchestrator session, not a question of this session: `feat/firmware` already uses a wake-up set that follows its B2 research, and `LINE_UNUSED` = PC13 on board B (its B4). Both are easy to change once Dan answers B2 / B4.
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.
