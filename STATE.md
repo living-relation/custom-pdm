@@ -20,15 +20,14 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. C3 CAN-chip data-sheet check, then enclosure A-G for Dan one at a time (see "Open questions"). Defaults rule: `AGENTS.md`. Plan B is final (b3a, 2026-11-11).
-2. Board-fix job (worktree + sub-agent): B4-b(b) 10k PB2-GND on board B; P1 / C1b (one 5 V regulator per board, check TSR 1-2450 pin clearance); P2 / C7b (120 ohm + jumper per main board); P9 (35 V caps on +12 V); C2b footprint check; C3 once picked; board A mask window (enclosure H). All settled in `DECISIONS.md` 2026-11-11.
+1. Enclosure A-G for Dan one at a time (see "Open questions"). Defaults rule: `AGENTS.md`. Plan B is final (b3a, 2026-11-11).
+2. Board-fix job (worktree + sub-agent): B4-b(b) 10k PB2-GND on board B; P1 / C1b (one 5 V regulator per board, check TSR 1-2450 pin clearance); P2 / C7b (120 ohm + jumper per main board); P9 (35 V caps on +12 V); C2b footprint check; C3d MCP2562FD swap and the P11 diode-drop check; board A mask window (enclosure H). All settled in `DECISIONS.md` 2026-11-11.
 3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- C3: CAN chip, see `docs/parts-audit.md` C3: data sheets of TJA1051T/3 and MCP2562FD being read (2026-11-11), then a pick.
 - Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time).
-- Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C2, C4, C5 studs, C6, C7, L1, enclosure H.
+- Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C3, C2, C4, C5 studs, C6, C7, L1, enclosure H.
 - Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
 
 ## Wake lines (input for the B2 firmware work)
