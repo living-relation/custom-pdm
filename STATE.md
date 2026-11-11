@@ -10,6 +10,57 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 **Kept branches:** feat/firmware (unmerged on purpose: Dan 2026-11-10 "do not merge any work")
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
+## HANDOFF - START HERE (firmware / simulation job, written 2026-11-10)
+
+**Owner:** the next firmware / simulation session only. Other agents: do not touch `firmware/` or branch `feat/firmware`.
+
+**Do this now**
+1. Check the tip first: `git log --oneline -3` on `feat/firmware` must show this handoff commit on top of `2ae3365`; `main` must still be `1bea42e`. If not, stop and ask Dan.
+2. Read the session board: `C:\projects\_scratch\custom-pdm-shared\SESSION-BOARD.md` (rules, open questions, notes from other sessions).
+3. Next step = the Renode bench (Dan, D2a), time-boxed. Recipe: the "Next task, firmware session" bullet under "Next" below.
+
+**Do not**
+- Do not merge `feat/firmware` into `main`, and do not create a PR (Dan, 2026-11-10: "don't merge it"; the repo is local-only anyway).
+- Do not push anything upstream to dingoPDM / dingoFW.
+- Do not flash anything. No hardware exists yet.
+- Do not build firmware from `/mnt/c` (CRLF checkout): use `firmware/sim/renode/build_wsl.sh`, which builds from `git archive`.
+- Do not answer or edit the orchestrator session's questions (B1-B4, enclosure A-H).
+
+**State**
+- `main` = `1bea42e`, untouched by this job. `feat/firmware` = 9 commits ahead: 2 firmware commits (`745c083` upstream import, `c7a4397` ports + sim), the rest are STATE / DECISIONS / sim-value updates.
+- One working tree, checked out on `feat/firmware`, clean. No remotes, no stashes, no other worktrees.
+- Answered decisions: `DECISIONS.md`, section "Firmware and coordination" (A3a, B2a, C1a+b, C2a, C3a, C4a, D1 both, D2a, D3a, D4a, F1).
+- Results, limits, and the firmware choices made on the branch: `firmware/sim/RESULTS.md`.
+
+**Checks (run before any commit that touches `firmware/`)**
+- WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one.
+- Linux / WSL: `firmware/sim/build.sh custompdm_a <out> 1`, same for `custompdm_a <out> 2` and `custompdm_b <out> 1`, then `python3 firmware/sim/s0_board_audit.py <out>` (expect 36 of 36) and `python3 firmware/sim/s1_system.py <out>` (expect 26 of 26).
+- Board folders are generated: change `firmware/tools_custom/port_boards.py`, re-run it, never hand-edit `firmware/boards/custompdm_*`.
+- `git diff --cached --stat` before every commit (repo rule).
+
+**Open decisions (one at a time with Dan; none blocks the Renode bench)**
+- On the session board: D5b (which "existing design" for the PC-side layer).
+- H1. Add one line to `AGENTS.md` pointing every agent at the session board and Dan's update rule? It is only on the board and in Claude project memory today, so an agent that reads just `AGENTS.md` will not know. Proposed: yes.
+- H2. Dan's two rules pull against each other: "nothing in STATE.md is repeated in any other file" and "every state update must also update the shared document". Reading used here: the board gets questions, notes and a dated pointer line, never copied content. Confirm.
+- H3. `STATE.md` on `feat/firmware` differs from `STATE.md` on `main` until a merge. Keep the folder checked out on `feat/firmware`, or move doc-only updates to `main`?
+
+**Leftovers of this job (each needs Dan's keep / remove call)**
+- WSL `~/renode-pdm` (2.0 GB; `dl/` holds 330 MB of downloaded archives that can go).
+- `firmware/ChibiOS` (git-ignored local clone, needed to build).
+- `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
+- `firmware/.gitmodules` (from upstream; inert here).
+- The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 changes: the branch is the source of truth.
+- Three lines added to working memory `INDEX.md` on 2026-11-10 (sandbox gotchas, board pointer).
+
+**Mistakes not to repeat (this job)**
+- Ran `sim/build.sh` with the unit number where the output folder goes: it created `firmware/1` and `firmware/2` full of build output, and they were committed once. List what is staged before committing.
+- `device_commit_files` delivered an older copy of a tarball that had just been rebuilt. Check contents after extracting.
+- PowerShell `$ErrorActionPreference = 'Stop'` plus a git warning on stderr stopped a multi-step command half way. Do not combine them; send git stderr to `$null`.
+- Wrote a test that assumed the stock overcurrent default was "3 tries"; it is None. Read defaults from `core/param_defs.h`.
+- First measured the power-up ON pulse as 4 ms because every test case had the same message timing. Vary the timing before quoting a number.
+- Proposed new "front door" firmware before reading upstream; upstream already had most of it. Read the code first.
+- Put this session's questions into the orchestrator's "Waiting on Dan" line. Keep them on the board, in this session's section.
+
 ## Next (updated 2026-11-10)
 
 - **Next task, firmware session (Dan D2a, 2026-11-10): build the full Renode bench, time-boxed.** Start point: `firmware/sim/renode/boot_a1.resc` boots the board A binary to the idle thread on Renode's `platforms/cpus/stm32f4.repl`. To add: (1) an I2C FRAM at 0x50 on `i2c1` (MB85RC256V: 2 address bytes, then data) so config load / save works; (2) MCP9808 at 0x18 on `i2c1` (check `renode/` for a ready model first); (3) an ADC1 model at 0x40012000 feeding the DMA2 stream the firmware uses, or a simpler stand-in, plus the PROFET sense model from `firmware/sim/pdmsim.py`; (4) a second and third machine on one CAN hub and a Robot test that repeats `s1_system.py` checks. Stop and report if any one of these takes more than a session. Sandbox: `~/renode-pdm` in WSL; rebuild binaries with `firmware/sim/renode/build_wsl.sh`.
