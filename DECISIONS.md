@@ -110,3 +110,4 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-11 (Dan, chat): Run repo-cleanup now (a1a), then the docs sweep iterative-cleaning, report-only (a2a; replaces A2a's wait), and re-run the Renode bench with `--build` (a3a: 18 of 18).
 - 2026-11-11 (Dan, chat): Cleanup (b1a, b2a): one PR; replaced `DECISIONS.md` lines stay, tagged with what replaced them. Local memory fixes L-a and L-b approved (b4a).
 - 2026-11-11 (Dan, chat): b3a - Plan C is closed; Plan B (3 boards on CAN, one enclosure) is final. c1a - apply the docs sweep fixes (`firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn).
+- 2026-11-11 (Dan, chat): r1a - no Renode bug report: the RETTOBASE fix is already on renode-infrastructure master. Keep `firmware/sim/renode` `PdmNvicFix.cs` until a Renode release includes it, then remove it.
