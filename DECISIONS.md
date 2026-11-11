@@ -79,6 +79,7 @@ One dated line per decision, newest last. Who decided, then where it came from.
 
 ## Pin map and enclosure questions (asked one at a time from 2026-11-10)
 - 2026-11-10 (Dan, chat): B1 - board B input B_IN5 sits on PB2 (BOOT1, a startup pin). Try moving it to the spare PC13 now, before the board is ordered. If the reroute is too risky, keep PB2 and live with the rule (that input off during a USB firmware update). If a firmware-update UI is involved, it should warn to disconnect or switch off whatever is needed.
+- 2026-11-10 (Dan, chat): B2 - wake-up from sleep: CAN and USB only by default (no switch input wakes the PDM); each input can be switched on as a wake source by the user, per channel. Limit to respect: two pins with the same pin number share one wake line, so only one input of such a pair can be a wake source (pairs: `STATE.md`, orchestrator section).
 
 ## Firmware and coordination
 - 2026-11-10 (Dan, chat): The three boards must act as one PDM. Approach: stock dingoFW logic on every board plus a PC-side single-PDM layer (A3a); new "front door" firmware is the backup.
