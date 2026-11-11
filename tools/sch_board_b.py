@@ -14,7 +14,8 @@ What it adds
         PF_IN5 PA8 (TIM1_CH1)   PF_IN6 PB10 (TIM2_CH3)   PF_IN7 PA15 (TIM2_CH1)   PF_IN8 PC8 (TIM8_CH3)
         PF_DEN5_6 PB12          PF_DEN7_8 PB15
         PF_IS5 PA2 (ADC_IN2)    PF_IS6 PA4 (ADC_IN4)     PF_IS7 PA7 (ADC_IN7)     PF_IS8 PC4 (ADC_IN14)
-        B_IN3..B_IN10 = PC14 PC15 PB2 PD2 PB4 PB5 PC10 PC11        B_AN = PB1 (ADC_IN9)
+        B_IN3..B_IN10 = PC14 PC15 PC13 PD2 PB4 PB5 PC10 PC11       B_AN = PB1 (ADC_IN9)
+        (B_IN5 is on PC13, not PB2: PB2 is BOOT1, a start-up pin. Dan, 2026-11-10, B1. PB2 stays no-connect.)
   * Connectors sheet: T1-T8 = bolt-down output terminals (Wuerth REDCUBE THR M4), one per output; J4 (Deutsch DT) removed.
                       J6 = Molex Micro-Fit 2x2: 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends).
                       J7 = JST GH 12 to input board #3: 1-8 B_IN3..10, 9 B_AN, 10 +3V3, 11-12 GND.
@@ -39,7 +40,7 @@ OUT_PINS = {  # net: (U4 pin name, shape)
     "PF_DEN5_6": ("PB12", "output"), "PF_DEN7_8": ("PB15", "output"),
     "PF_IS5": ("PA2", "input"), "PF_IS6": ("PA4", "input"), "PF_IS7": ("PA7", "input"), "PF_IS8": ("PC4", "input"),
 }
-IN_PINS = {"B_IN3": "PC14", "B_IN4": "PC15", "B_IN5": "PB2", "B_IN6": "PD2", "B_IN7": "PB4", "B_IN8": "PB5",
+IN_PINS = {"B_IN3": "PC14", "B_IN4": "PC15", "B_IN5": "PC13", "B_IN6": "PD2", "B_IN7": "PB4", "B_IN8": "PB5",
            "B_IN9": "PC10", "B_IN10": "PC11", "B_AN": "PB1"}
 RENAME_HCD2 = {"PF_IN1": "PF_IN5", "PF_IN2": "PF_IN6", "PF_IN3": "PF_IN7", "PF_IN4": "PF_IN8",
                "PF_DEN1": "PF_DEN5_6", "PF_DEN2": "PF_DEN5_6", "PF_DEN3": "PF_DEN7_8", "PF_DEN4": "PF_DEN7_8",
@@ -343,7 +344,8 @@ for net, (pin, shape) in OUT_PINS.items():
     x, y = pin_at(pin)
     t = drop_nc(t, x, y)
     items.append(glabel(net, x, y, x > X, shape))
-# test points: PC10/PC11 points become input labels, every test point is removed
+# test points: the PC10 / PC11 / PC13 points become input labels (their wires stay), every test point is removed
+TP_OF = {"PC10": "TP4", "PC11": "TP3", "PC13": "TP2"}
 tp_at = {}
 for s2, e2 in top_blocks(t, "symbol"):
     bb = t[s2:e2]
@@ -351,9 +353,8 @@ for s2, e2 in top_blocks(t, "symbol"):
         tp_at[re.search(r'"Reference" "([^"]+)"', bb).group(1)] = tuple(map(float, re.search(r"\(at ([\d.\-]+) ([\d.\-]+)", bb).groups()))
 for net, pin in IN_PINS.items():
     x, y = pin_at(pin)
-    if pin in ("PC10", "PC11"):
-        tp = {"PC10": "TP4", "PC11": "TP3"}[pin]
-        tx, ty = tp_at[tp]
+    if pin in TP_OF:
+        tx, ty = tp_at[TP_OF[pin]]
         items.append(glabel(net, tx, ty, False, "input"))
     else:
         t = drop_nc(t, x, y)
@@ -402,9 +403,10 @@ for f in sorted(glob.glob("*.kicad_sch")):
                 pos = e2
     out.append(x[pos:])
     x = "".join(out)
-    # PC13 (TP2): remove the wire run from the test point back to the U4 pin and flag the pin no-connect
+    # PC13 (TP2), only when PC13 is not used as an input: remove the wire run from the test point back to the U4 pin
+    # and flag the pin no-connect
     for r, p in spots:
-        if r != "TP2" or f != "MCU.kicad_sch":
+        if r != "TP2" or f != "MCU.kicad_sch" or "PC13" in IN_PINS.values():
             continue
         ends = set(pin_end.values())
         cur, gone = p, []

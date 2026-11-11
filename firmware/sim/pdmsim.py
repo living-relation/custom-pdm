@@ -29,7 +29,7 @@ BOARD_B = dict(
              ('PB0', 'PC5', None, 0, 'PA0', 'BTS70012-1ESP'), ('PA6', 'PA5', None, 0, 'PA1', 'BTS70012-1ESP'),
              ('PA8', 'PB12', None, 0, 'PA2', 'BTS7004-1EPP'), ('PB10', 'PB12', None, 0, 'PA4', 'BTS7004-1EPP'),
              ('PA15', 'PB15', None, 0, 'PA7', 'BTS7004-1EPP'), ('PC8', 'PB15', None, 0, 'PC4', 'BTS7004-1EPP')],
-    inputs=[('PA10', 'direct'), ('PC9', 'direct'), ('PC14', 'ib1'), ('PC15', 'ib2'), ('PB2', 'ib3'), ('PD2', 'ib4'),
+    inputs=[('PA10', 'direct'), ('PC9', 'direct'), ('PC14', 'ib1'), ('PC15', 'ib2'), ('PC13', 'ib3'), ('PD2', 'ib4'),
             ('PB4', 'ib5'), ('PB5', 'ib6'), ('PC10', 'ib7'), ('PC11', 'ib8')],
     analog='PB1', batt='PA3', limit=None, base={1: 0x540})
 

@@ -148,21 +148,23 @@ t = set_lines(t, L([
     ('PF3_IS','A0'),('PF3_IN','B0'),('PF3_DEN','C5'),('PF4_IS','A1'),('PF4_IN','A6'),('PF4_DEN','A5'),
     ('PF5_IS','A2'),('PF5_IN','A8'),('PF6_IS','A4'),('PF6_IN','B10'),('PF5_6_DEN','B12'),
     ('PF7_IS','A7'),('PF7_IN','A15'),('PF8_IS','C4'),('PF8_IN','C8'),('PF7_8_DEN','B15'),
-    ('DI1','A10'),('DI2','C9'),('DI3','C14'),('DI4','C15'),('DI5','B2'),('DI6','D2'),('DI7','B4'),
+    ('DI1','A10'),('DI2','C9'),('DI3','C14'),('DI4','C15'),('DI5','C13'),('DI6','D2'),('DI7','B4'),
     ('DI8','B5'),('DI9','C10'),('DI10','C11'),('AIN1','B1')] + COMMON +
-    [('SWO','B3'),('UNUSED','C13')]), 'custom-pdm board B (dingoPDM-Max based)')
+    [('SWO','B3'),('UNUSED','B2')]), 'custom-pdm board B (dingoPDM-Max based)')
 for port, pin in [('A',8),('B',10),('A',15),('C',8),('B',12),('B',15)]:   # IN5-8, DEN5_6, DEN7_8
     t = set_pin(t, port, pin, 'OUTPUT', 'PULLDOWN')
 for port, pin in [('A',2),('A',4),('A',7),('C',4),('B',1)]:                # IS5-8, AIN
     t = set_pin(t, port, pin, 'ANALOG', 'FLOATING')
-for port, pin in [('C',14),('C',15),('B',2),('D',2),('B',4),('B',5),('C',10),('C',11)]:
+for port, pin in [('C',14),('C',15),('C',13),('D',2),('B',4),('B',5),('C',10),('C',11)]:
     t = set_pin(t, port, pin, 'INPUT', 'FLOATING')
-t = set_pin(t, 'C', 13, 'INPUT', 'PULLUP')                                  # free pin = LINE_UNUSED
+# PB2 (BOOT1) is the only MCU pin with nothing on it = LINE_UNUSED. Input, never an output; pull-down = the BOOT1 level
+# the system bootloader needs (the pull only acts while the firmware runs, not during reset).
+t = set_pin(t, 'B', 2, 'INPUT', 'PULLDOWN')
 (d/'board.h').write_text(t)
 
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
-p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 and USB D-; DI6 (PD2) loses EXTI 2 to DI5 (PB2)\n#define WAKE_DIG_INPUT_MASK 0x0DFU')
+p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2\n#define WAKE_DIG_INPUT_MASK 0x0FFU')
 p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % '0x540')
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
