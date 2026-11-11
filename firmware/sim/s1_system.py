@@ -3,7 +3,7 @@ firmware logic, and what outputs do when a CAN link is lost (three policies).
 IDs used here are examples only: boards 0x500 / 0x520 / 0x540, ECU command frame 0x4F0."""
 import sys, json, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
-BASE = {'A1': 0x500, 'A2': 0x520, 'B': 0x540}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 500
+BASE = {'A1': 0x500, 'A2': 0x520, 'B': 0x540}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000   # Dan D3a: 1 s default (also the firmware default), adjustable per channel
 res = []; info = {}
 def check(name, ok, detail=''):
     res.append((name, bool(ok), str(detail))); print(('PASS ' if ok else 'FAIL ') + name + (' : ' + str(detail) if detail != '' else ''))
@@ -128,13 +128,13 @@ matrix = []
 def case(name, pre_cmd, fault, undo):
     cmd[:] = [0] * 24
     for g in WATCH: cmd[g - 1] = pre_cmd
-    bus.run_for(600); before = snapshot(); t = bus.now; fault(); trace = {g: None for g in WATCH}
+    bus.run_for(TIMEOUT_MS + 300); before = snapshot(); t = bus.now; fault(); trace = {g: None for g in WATCH}
     while bus.now < t + 2_500_000:
         bus.run_for(5); p = pins_on()
         for g in WATCH:
             if trace[g] is None and (g in p) != bool(before[g]): trace[g] = round((bus.now - t) / 1000)
     after = snapshot(); stale = {k: round((bus.now - stat[k].last) / 1000) for k in boards}
-    undo(); bus.run_for(800); back = snapshot()
+    undo(); bus.run_for(TIMEOUT_MS + 500); back = snapshot()
     matrix.append(dict(case=name, cmd=pre_cmd, before=before, after=after, change_ms=trace, recovered=back, status_age_ms=stale))
     print(f'  {name} (cmd {"ON" if pre_cmd else "OFF"}): after {after}  change at ms {trace}  recovered {back}')
 def ecu_off(): ecu.powered = False
@@ -152,11 +152,11 @@ case('board B CAN unplugged', 1, unplug('B'), plug('B'))
 m = {(r['case'], r['cmd']): r for r in matrix}
 r = m[('ECU stops sending', 1)]
 check('policy hold: stays ON when the ECU goes quiet', r['after'][1] == 1 and r['after'][21] == 1)
-check('policy off: switches OFF after the time-out', r['after'][2] == 0 and r['after'][22] == 0 and 400 <= r['change_ms'][2] <= 700, r['change_ms'])
+check('policy off: switches OFF after the time-out', r['after'][2] == 0 and r['after'][22] == 0 and TIMEOUT_MS - 100 <= r["change_ms"][2] <= TIMEOUT_MS + 200, r['change_ms'])
 check('policy on: stays ON', r['after'][3] == 1 and r['after'][23] == 1)
 r = m[('ECU stops sending', 0)]
 check('policy hold: stays OFF when it was off', r['after'][1] == 0 and r['after'][21] == 0)
-check('policy on: turns ON after the time-out when it was off', r['after'][3] == 1 and r['after'][23] == 1 and 400 <= r['change_ms'][3] <= 700, r['change_ms'])
+check('policy on: turns ON after the time-out when it was off', r['after'][3] == 1 and r['after'][23] == 1 and TIMEOUT_MS - 100 <= r["change_ms"][3] <= TIMEOUT_MS + 200, r['change_ms'])
 check('everything follows the ECU again when frames return', all(v == 0 for g, v in r['recovered'].items() if g != 5) and all(m[('ECU stops sending', 1)]['recovered'][g] == 1 for g in WATCH))
 r = m[('board A1 CAN unplugged', 1)]
 check('one board unplugged: only that board applies its policies, board B carries on', (r['after'][1], r['after'][2], r['after'][3]) == (1, 0, 1) and (r['after'][21], r['after'][22], r['after'][23]) == (1, 1, 1), r['after'])
@@ -164,7 +164,7 @@ check('merged view can flag the lost board: its status goes stale, the others st
 # cross-board rule when the source board drops off
 cmd[:] = [0] * 24; kb.set_input(2, '12v'); bus.run_for(500); pre = 5 in pins_on()
 boards['B'].connected = False; dt = settle_time(5, 0); boards['B'].connected = True; bus.run_for(500); post = 5 in pins_on(); kb.set_input(2, 'gnd'); bus.run_for(400)
-check('cross-board rule (policy off): output 5 drops when board B falls off the bus, returns when it is back', pre and 400 <= dt <= 700 and post, f'{dt} ms')
+check('cross-board rule (policy off): output 5 drops when board B falls off the bus, returns when it is back', pre and TIMEOUT_MS - 100 <= dt <= TIMEOUT_MS + 200 and post, f'{dt} ms')
 info['cross_rule_drop_ms'] = dt
 # power cycle of A1 while the ECU is silent, then while the ECU is talking
 def power_cycle(k):

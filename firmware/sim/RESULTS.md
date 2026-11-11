@@ -21,7 +21,7 @@ Analog settling and noise, interrupt timing, the LM324 output limit (sense clamp
 - `s2_boot_blip.py`: a "default ON on link loss" output pulses ON at every power-up, for up to one ECU frame period, even when commanded OFF.
 
 ## Numbers
-ECU bit to output pin 4.7 ms. Cross-board input to output 71 ms measured (20 ms debounce + up to 100 ms status period). Link-loss reaction 505 ms with a 500 ms time-out. Bus load 5.3 % at 1 Mbit/s. Output back on 506-516 ms after power-up.
+ECU bit to output pin 4.7 ms. Cross-board input to output 71 ms measured (20 ms debounce + up to 100 ms status period). Link-loss reaction about 1.0 s with the 1 s default time-out (adjustable per channel, up to 60 s). Bus load 5.3 % at 1 Mbit/s. Output back on 506-516 ms after power-up.
 
 ## Choices made on this branch that need Dan's OK
 - New status frame 27 (base + 29): 16 input bits, analog mV, analog raw. Byte 0 of frame 0 now carries inputs 1-8.

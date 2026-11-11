@@ -92,3 +92,6 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-10 (Dan, chat): D1: "retry mode" means both. Overcurrent: retry 3 times before Fault (default in the custom builds). Lost link: outputs follow commands again by themselves when messages return (stock behaviour, shown in `s1_system.py`).
 - 2026-11-10 (Dan, chat): D2a: build the full Renode bench, time-boxed.
 - 2026-11-10 (Dan, chat): F1: open questions and notes between sessions live in a shared non-repo folder, `C:\projects\_scratch\custom-pdm-shared\` (`SESSION-BOARD.md`), which Dan attaches to the Claude project. `STATE.md` is a shared document: point to it, never copy from it.
+- 2026-11-10 (Dan, chat): D3a: default link-loss time-out is 1 s, adjustable. (1 s is also the stock firmware default for a CAN input; range 0 to 60 s per input.)
+- 2026-11-10 (Dan, chat): D4a: CAN IDs 0x500 / 0x520 / 0x540 are fine for now and must stay user-editable (they are: device parameter over CAN / USB).
+- 2026-11-10 (Dan, chat): D5: research options for the PC-side single-PDM layer, or use Dan's existing design (which design: open, see the session board).
