@@ -17,7 +17,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 **Do this now**
 1. Check the tip first: `git log --oneline -3` on `main` must show "Merge feat/firmware" (2026-11-10) at or near the top, and `git status` must be clean. If not, stop and ask Dan.
-2. Next step = the Renode bench (Dan, D2a), time-boxed. Recipe: the "Next task, firmware session" bullet under "Next" below. Work on a new feature branch, then merge locally (repo rule in `AGENTS.md`).
+2. Next steps, in this order unless Dan says otherwise: (a) the Renode bench (Dan, D2a), time-boxed; (b) research options for the PC-side single-PDM layer and bring Dan choices (D5a). Nothing for that layer exists in the repo yet: the only code is the test stand-in in `firmware/sim/s1_system.py` (`set_output`, `can_input`, `Status`). For (a): Recipe: the "Next task, firmware session" bullet under "Next" below. Work on a new feature branch, then merge locally (repo rule in `AGENTS.md`).
 
 **Do not**
 - Do not push anything upstream to dingoPDM / dingoFW. No PRs: the repo is local-only.
@@ -36,7 +36,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Board folders are generated: change `firmware/tools_custom/port_boards.py`, re-run it, never hand-edit `firmware/boards/custompdm_*`.
 - `git diff --cached --stat` before every commit (repo rule).
 
-**Open decisions:** see "Open questions: firmware / simulation session" below. None blocks the Renode bench.
+**Open decisions:** none from this session. Session closed 2026-11-10.
 
 **Leftovers of this job (each needs Dan's keep / remove call)**
 - WSL `~/renode-pdm` (2.0 GB; `dl/` holds 330 MB of downloaded archives that can go).
@@ -68,7 +68,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 ### Open questions: firmware / simulation session (Claude-Session 014aA8s6LsbYkVVsAomAhpXK)
 Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map questions B2-B4 and the enclosure questions A-H belong to the orchestrator session: see "Waiting on Dan" above.
-- D5b. Dan (2026-11-10): "research options, or use my existing design" for the PC-side single-PDM layer. Which existing design is meant, and where is it?
+- None open. (D5 closed 2026-11-10: see `DECISIONS.md`.)
 - Overlap notes (questions owned by the orchestrator session; listed so both sides see them, not asked by this session):
   - B2 overlap: the firmware already uses a wake-up set that follows the B2 research (all inputs except the ones sharing a wake line). Change `WAKE_DIG_INPUT_MASK` in each board's `port.h` (via `port_boards.py`) once Dan answers B2.
   - B4 overlap: the firmware already sets `LINE_UNUSED` = PC13 on board B. Revert if Dan answers B4 "no".
