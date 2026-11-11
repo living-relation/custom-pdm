@@ -209,6 +209,31 @@ def pad(ref, num):
 failed = []
 
 
+def tie_to_via(ref, num, w=0.3, max_r=3.0):
+    """Real F.Cu track (straight run, then 45 degrees) from a pad to the nearest via of its net.
+    For a plane pad that reaches its plane only through a thin neck of the top pour: the router does not see pours,
+    so a new via beside the pad could cut it off."""
+    p = pad(ref, num)
+    net = p.GetNetname()
+    x, y = tomm(p.GetPosition().x), tomm(p.GetPosition().y)
+    vias = [(tomm(q.GetPosition().x), tomm(q.GetPosition().y)) for q in b.GetTracks() if q.GetClass() == "PCB_VIA" and q.GetNetname() == net]
+    vx, vy = min(vias, key=lambda v: math.hypot(v[0] - x, v[1] - y))
+    if math.hypot(vx - x, vy - y) > max_r:
+        raise SystemExit(f"{ref}.{num}: no {net} via within {max_r} mm")
+    kx = vx - abs(vy - y) * (1 if vx > x else -1)
+    obs = obstacles(net, x, y)
+    for p0, p1 in (((x, y), (kx, y)), ((kx, y), (vx, vy))):
+        if not clear(obs, pcbnew.SHAPE_SEGMENT(V(*p0), V(*p1), mm(w)), [pcbnew.F_Cu]):
+            raise SystemExit(f"{ref}.{num}: no clear track to the {net} via at ({vx:.2f}, {vy:.2f})")
+        add_track(net, p0, p1, mm(w))
+    R.refresh()
+    print(f"{ref}.{num} {net}: tied to the via at ({vx:.2f}, {vy:.2f})")
+
+
+# U7.11 (stock LM324 ground pin) hangs on the top pour only; the B_IN5 route from PC13 passes here (B1, 2026-11-10)
+tie_to_via("U7", "11")
+
+
 def join(net):
     try:
         if pcb_rework.reconnect(R, b, net):
@@ -259,7 +284,9 @@ for n in sorted(u22n, key=reach):
 
 # ---------------------------------------------------------------- MCU pins: fan out all (tightest first), then route
 # Each net is routed FROM ITS FAN-OUT VIA: starting at the 0.5 mm pitch pad itself boxes the grid router in.
-NEW_PINS = ["20", "24", "23", "27", "28", "29", "50", "54", "56", "57", "3", "4", "16", "33", "36", "39", "41"]
+# U4.28 (PB2 = BOOT1) is left unconnected: B_IN5 is on U4.2 (PC13), which keeps the stub of its old test point (TP2).
+NEW_PINS = ["20", "24", "23", "27", "29", "50", "54", "56", "57", "3", "4", "16", "33", "36", "39", "41"]
+STUB_PINS = ["51", "52", "2"]              # PC10, PC11, PC13: routed from the old test point stubs, no new fan-out
 fan = {}
 for num in NEW_PINS:
     p = pad("U4", num)
@@ -270,7 +297,7 @@ for num in NEW_PINS:
     print(f"fan-out U4.{num} {net}: " + (f"via at ({vg[0]:.2f}, {vg[1]:.2f})" if vg else "NONE (router tries from the pad)"))
     if vg:
         fan[net] = vg
-for num in NEW_PINS + ["51", "52"]:                           # 51 / 52 keep the stubs of the old test points
+for num in NEW_PINS + STUB_PINS:
     net = padnet[("U4", num)]
     if net in fan:
         vx, vy = fan[net]
@@ -278,6 +305,19 @@ for num in NEW_PINS + ["51", "52"]:                           # 51 / 52 keep the
                   key=lambda q: math.hypot(tomm(q.GetPosition().x) - vx, tomm(q.GetPosition().y) - vy))
         tl = [ly for ly in R.LAYERS if tgt.IsOnLayer(b.GetLayerID(ly))]
         R.run_jobs([(net, (vx, vy, list(R.LAYERS)), (*xy(tgt), tl))])
+    elif num == "2":
+        # PC13: start at the far end of the old test point stub (the TP2 spot, open board). The stub's near end sits
+        # between the fan-outs of pins 3 and 4, where the grid router is boxed in.
+        px, py = xy(pad("U4", num))
+        ends = [(tomm(e.x), tomm(e.y)) for q in b.GetTracks() if q.GetNetname() == net and q.GetClass() == "PCB_TRACK"
+                and q.GetLayer() == pcbnew.F_Cu for e in (q.GetStart(), q.GetEnd())]
+        if ends:
+            sx, sy = max(ends, key=lambda e: math.hypot(e[0] - px, e[1] - py))
+            tgt = min((q for f in b.GetFootprints() if f.GetReference() != "U4" for q in f.Pads() if q.GetNetname() == net),
+                      key=lambda q: math.hypot(tomm(q.GetPosition().x) - sx, tomm(q.GetPosition().y) - sy))
+            tl = [ly for ly in R.LAYERS if tgt.IsOnLayer(b.GetLayerID(ly))]
+            print(f"stub start U4.{num} {net}: ({sx:.2f}, {sy:.2f})")
+            R.run_jobs([(net, (sx, sy, ["F.Cu"]), (*xy(tgt), tl))])
     join(net)                                                 # whatever is still separate (third pads, failed first try)
     done.append(net)
 print("routed nets:", len(done) - len([f for f in failed if f in done]), "of", len(done), "| FAILED:", failed)

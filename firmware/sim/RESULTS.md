@@ -25,10 +25,10 @@ ECU bit to output pin 4.7 ms. Cross-board input to output 71 ms measured (20 ms 
 
 ## Choices made on this branch that need Dan's OK
 - New status frame 27 (base + 29): 16 input bits, analog mV, analog raw. Byte 0 of frame 0 now carries inputs 1-8.
-- Wake-up set (`WAKE_DIG_INPUT_MASK`): every input except the ones that share a wake line with input 1, USB or each other (A: PC10, PC11. B: PC10, PC11, PD2). This follows the Session 2 research; B2 itself is still open. `LINE_UNUSED` = PC13 on board B (Q4).
+- Wake-up set (`WAKE_DIG_INPUT_MASK`): every input except the ones that share a wake line with input 1, USB or each other (A: PC10, PC11. B: PC10, PC11; PD2 is back in since input 5 left PB2). This follows the Session 2 research; the B2 answer (`DECISIONS.md`) is not built yet. `LINE_UNUSED` = PB2 on board B, input with pull-down (Q4 in `docs/firmware-pin-map.md`).
 - Factory defaults per build (Dan, C1a/C2a 2026-11-10): 1 Mbit/s; base ID 0x500 (A unit 1), 0x520 (A unit 2), 0x540 (B), example values; overcurrent reset mode Count (3 tries). Build with `make BOARD=custompdm_a UNIT=2`. All stay changeable over CAN/USB.
 - Analog reading scaled x1.5 to volts at the wire. BTS7004 noise floor 0.5 A (not measured).
-- Board B input 5 is still on PB2 (B1 move to PC13 is not in the hardware yet).
+- Board B input 5 is on PC13 (B1 move, 2026-11-10: board scripts, firmware and the simulation's board model changed together).
 
 ## Seen in stock firmware (not changed)
 - Stock factory default is ID 0x0DE at 500 kbit/s on every board (custom builds override it).

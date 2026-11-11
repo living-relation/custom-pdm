@@ -140,7 +140,7 @@ for f in b.GetFootprints():
 for t in list(b.GetTracks()) + list(b.Zones()):
     if t.GetNetname() in rename:
         t.SetNet(netinfo(rename[t.GetNetname()]))
-dead = [t for t in b.GetTracks() if t.GetNetname().startswith("unconnected-")]      # the old PC13 test point stub
+dead = [t for t in b.GetTracks() if t.GetNetname().startswith("unconnected-")]      # stubs of no-connect pins (none today)
 if dead:
     b = pcb_rework.remove_and_reload(b, dead, PCB)
 print("copper renamed:", rename, "| dangling stub items removed:", len(dead))

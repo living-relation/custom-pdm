@@ -224,7 +224,7 @@
 #define LINE_DI2                    PAL_LINE(GPIOC, 9U)
 #define LINE_DI3                    PAL_LINE(GPIOC, 14U)
 #define LINE_DI4                    PAL_LINE(GPIOC, 15U)
-#define LINE_DI5                    PAL_LINE(GPIOB, 2U)
+#define LINE_DI5                    PAL_LINE(GPIOC, 13U)
 #define LINE_DI6                    PAL_LINE(GPIOD, 2U)
 #define LINE_DI7                    PAL_LINE(GPIOB, 4U)
 #define LINE_DI8                    PAL_LINE(GPIOB, 5U)
@@ -245,7 +245,7 @@
 #define LINE_SWDIO                  PAL_LINE(GPIOA, 13U)
 #define LINE_SWCLK                  PAL_LINE(GPIOA, 14U)
 #define LINE_SWO                    PAL_LINE(GPIOB, 3U)
-#define LINE_UNUSED                 PAL_LINE(GPIOC, 13U)
+#define LINE_UNUSED                 PAL_LINE(GPIOB, 2U)
 
 
 /*===========================================================================*/
@@ -473,7 +473,7 @@
                                      PIN_OSPEED_LOW(GPIOB_PIN15))
 #define VAL_GPIOB_PUPDR             (PIN_PUPDR_PULLDOWN(GPIOB_PIN0) |       \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN1) |         \
-                                     PIN_PUPDR_FLOATING(GPIOB_PIN2) |         \
+                                     PIN_PUPDR_PULLDOWN(GPIOB_PIN2) |         \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN3) |       \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN4) |         \
                                      PIN_PUPDR_FLOATING(GPIOB_PIN5) |         \
@@ -601,7 +601,7 @@
                                      PIN_PUPDR_FLOATING(GPIOC_PIN10) |      \
                                      PIN_PUPDR_FLOATING(GPIOC_PIN11) |      \
                                      PIN_PUPDR_PULLDOWN(GPIOC_PIN12) |      \
-                                     PIN_PUPDR_PULLUP(GPIOC_PIN13) |      \
+                                     PIN_PUPDR_FLOATING(GPIOC_PIN13) |      \
                                      PIN_PUPDR_FLOATING(GPIOC_PIN14) |        \
                                      PIN_PUPDR_FLOATING(GPIOC_PIN15))
 #define VAL_GPIOC_ODR               (PIN_ODR_LOW(GPIOC_PIN0) |              \
