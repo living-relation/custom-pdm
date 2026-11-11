@@ -76,3 +76,6 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): CAN bus runs at 1 Mbps.
 - 2026-11-08 (Dan, chat): CAN termination is install-specific (out of scope); every board keeps a selectable 120 ohm termination jumper.
 - 2026-11-08 (Dan, chat): Any CAN device (e.g. a keypad) can join later; it must use 1 Mbps and IDs that don't collide with the PDM boards.
+
+## Pin map and enclosure questions (asked one at a time from 2026-11-10)
+- 2026-11-10 (Dan, chat): B1 - board B input B_IN5 sits on PB2 (BOOT1, a startup pin). Try moving it to the spare PC13 now, before the board is ordered. If the reroute is too risky, keep PB2 and live with the rule (that input off during a USB firmware update). If a firmware-update UI is involved, it should warn to disconnect or switch off whatever is needed.
