@@ -3,6 +3,14 @@
 #include "config.h"
 #include "param_registry.h"
 
+// custom-pdm: a board may set its own factory defaults in port.h
+#ifndef DEFAULT_CAN_BITRATE
+#define DEFAULT_CAN_BITRATE CanBitrate::Bitrate_500K
+#endif
+#ifndef DEFAULT_RESET_MODE
+#define DEFAULT_RESET_MODE ProfetResetMode::None
+#endif
+
 // Parameter definitions for compile-time registration
 // Index = base + instance, SubIndex = parameter within instance
 
@@ -11,7 +19,7 @@
 //=============================================================================
 #define DEVICE_CONFIG_PARAMS() \
     {0x0000, 0, &stConfig.stDevice.nBaseId,            &stConfigTemp.stDevice.nBaseId,           ParamType::UInt16, DEFAULT_BASE_ID, 0, 0x7FF}, \
-    {0x0000, 1, &stConfig.stDevice.eCanSpeed,          &stConfigTemp.stDevice.eCanSpeed,         ParamType::Enum,   static_cast<uint32_t>(CanBitrate::Bitrate_500K), 0, 4}, \
+    {0x0000, 1, &stConfig.stDevice.eCanSpeed,          &stConfigTemp.stDevice.eCanSpeed,         ParamType::Enum,   static_cast<uint32_t>(DEFAULT_CAN_BITRATE), 0, 4}, \
     {0x0000, 2, &stConfig.stDevice.bSleepEnabled,      &stConfigTemp.stDevice.bSleepEnabled,     ParamType::Bool,   0, 0, 1}, \
     {0x0000, 3, &stConfig.stDevice.bCanFilterEnabled,  &stConfigTemp.stDevice.bCanFilterEnabled, ParamType::Bool,   0, 0, 1}, \
     {0x0000, 4, &stConfig.stDevice.bConnectUsbToCan,   &stConfigTemp.stDevice.bConnectUsbToCan,  ParamType::Bool,   1, 0, 1}
@@ -26,7 +34,7 @@
     {0x1000 + (i), 2,  &stConfig.stOutput[i].fCurrentLimit,              &stConfigTemp.stOutput[i].fCurrentLimit,              ParamType::Float,  F(20.0f), F(0.0f), F(100.0f)}, \
     {0x1000 + (i), 3,  &stConfig.stOutput[i].fInrushLimit,               &stConfigTemp.stOutput[i].fInrushLimit,               ParamType::Float,  F(50.0f), F(0.0f), F(100.0f)}, \
     {0x1000 + (i), 4,  &stConfig.stOutput[i].nInrushTime,                &stConfigTemp.stOutput[i].nInrushTime,                ParamType::UInt16, 1000, 0, 10000}, \
-    {0x1000 + (i), 5,  &stConfig.stOutput[i].eResetMode,                 &stConfigTemp.stOutput[i].eResetMode,                 ParamType::Enum,   static_cast<uint32_t>(ProfetResetMode::None), 0, 2}, \
+    {0x1000 + (i), 5,  &stConfig.stOutput[i].eResetMode,                 &stConfigTemp.stOutput[i].eResetMode,                 ParamType::Enum,   static_cast<uint32_t>(DEFAULT_RESET_MODE), 0, 2}, \
     {0x1000 + (i), 6,  &stConfig.stOutput[i].nResetTime,                 &stConfigTemp.stOutput[i].nResetTime,                 ParamType::UInt16, 1000, 0, 60000}, \
     {0x1000 + (i), 7,  &stConfig.stOutput[i].nResetLimit,                &stConfigTemp.stOutput[i].nResetLimit,                ParamType::UInt8,  3, 0, 20}, \
     {0x1000 + (i), 8,  &stConfig.stOutput[i].stPwm.bEnabled,             &stConfigTemp.stOutput[i].stPwm.bEnabled,             ParamType::Bool,   0, 0, 1}, \

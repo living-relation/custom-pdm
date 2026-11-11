@@ -76,6 +76,15 @@ public:
             fKILIS = BTS70012_1ESP_KILIS;
             nPwmReadDelay = PWM_READ_DELAY_SINGLE_CH;
             break;
+#ifdef BTS7004_1EPP_KILIS
+        case ProfetModel::BTS7004_1EPP:
+            fKILIS = BTS7004_1EPP_KILIS;
+            nPwmReadDelay = PWM_READ_DELAY_SINGLE_CH;
+            break;
+#else
+        case ProfetModel::BTS7004_1EPP:
+            break;
+#endif
         }
     }
 

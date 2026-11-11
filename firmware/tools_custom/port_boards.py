@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+"""Create custompdm_a / custompdm_b board folders from stock dingoFW boards.
+Source of pin truth: custom-pdm docs/firmware-pin-map.md (2026-11-10)."""
+import re, shutil, sys, pathlib
+FW = pathlib.Path(sys.argv[1]); B = FW/'boards'
+
+def clone(src, dst):
+    d = B/dst
+    if d.exists(): shutil.rmtree(d)
+    shutil.copytree(B/src, d)
+    (d/f'{src}.ld').rename(d/f'{dst}.ld')
+    mk = (d/'board.mk').read_text().replace(src, dst); (d/'board.mk').write_text(mk)
+    return d
+
+def pin_name(txt, port, pin):
+    m = re.search(rf'#define (GPIO{port}_\w+)\s+{pin}U\n', txt)
+    return m.group(1)
+
+def set_pin(txt, port, pin, mode, pupd, odr='LOW', speed='LOW', af=0):
+    n = pin_name(txt, port, pin)
+    def sub(pat, rep):
+        nonlocal txt
+        txt, k = re.subn(pat, rep, txt)
+        assert k == 1, (port, pin, pat, k)
+    sub(rf'PIN_MODE_\w+\({n}\)', f'PIN_MODE_{mode}({n})')
+    sub(rf'PIN_PUPDR_\w+\({n}\)', f'PIN_PUPDR_{pupd}({n})')
+    sub(rf'PIN_ODR_\w+\({n}\)', f'PIN_ODR_{odr}({n})')
+    sub(rf'PIN_OSPEED_\w+\({n}\)', f'PIN_OSPEED_{speed}({n})')
+    sub(rf'PIN_AFIO_AF\({n}, \d+U\)', f'PIN_AFIO_AF({n}, {af}U)')
+    sub(rf'PIN_OTYPE_\w+\({n}\)', f'PIN_OTYPE_PUSHPULL({n})')
+    return txt
+
+def set_lines(txt, lines, name):
+    a = txt.index('/*\n * IO lines assignments.'); b = txt.index('/*====', a)
+    body = '/*\n * IO lines assignments.\n */\n' + ''.join(
+        f'#define {k:<27} PAL_LINE(GPIO{v[0]}, {v[1:]}U)\n' for k, v in lines) + '\n\n'
+    txt = txt[:a] + body + txt[b:]
+    return re.sub(r'#define BOARD_NAME\s+".*"', f'#define BOARD_NAME                  "{name}"', txt)
+
+FACTORY = '''// Factory defaults (used only when the FRAM holds no valid config). All can be changed over CAN/USB later.
+#ifndef PDM_UNIT
+#define PDM_UNIT 1
+#endif
+#define DEFAULT_BASE_ID %s
+#define DEFAULT_CAN_BITRATE CanBitrate::Bitrate_1000K
+#define DEFAULT_RESET_MODE ProfetResetMode::Count // 3 tries (nResetLimit), 1 s apart, then Fault'''
+COMMON = [('LED_ERROR','C0'),('LED_STATUS','C1'),('BATT_SENSE','A3'),('USB_VBUS','A9'),
+          ('CAN_STANDBY','C12'),('I2C1_SCL','B6'),('I2C1_SDA','B7'),('CAN_RX','B8'),('CAN_TX','B9'),
+          ('USB_DM','A11'),('USB_DP','A12'),('SWDIO','A13'),('SWCLK','A14')]
+L = lambda items: [('LINE_'+k, v) for k, v in items]
+
+# ---------------- Board A (base dingopdm_v7) ----------------
+d = clone('dingopdm_v7', 'custompdm_a')
+t = (d/'board.h').read_text()
+t = set_lines(t, L([
+    ('PF1_2_IS','A0'),('PF1_IN','B10'),('PF2_IN','C8'),('PF1_2_DSEL','C7'),('PF1_2_DEN','B2'),
+    ('PF3_4_IS','C3'),('PF3_IN','C6'),('PF4_IN','B12'),('PF3_4_DSEL','B14'),('PF3_4_DEN','B15'),
+    ('PF5_6_IS','A1'),('PF5_IN','B1'),('PF6_IN','C4'),('PF5_6_DSEL','C5'),('PF5_6_DEN','B0'),
+    ('PF7_8_IS','A2'),('PF7_IN','A7'),('PF8_IN','A4'),('PF7_8_DSEL','A5'),('PF7_8_DEN','A6'),
+    ('DI1','A10'),('DI2','C9'),('DI3','C10'),('DI4','C11'),('DI5','B4'),('DI6','C13'),('DI7','B3'),
+    ('AIN1','C2')] + COMMON + [('UNUSED','A15')]), 'custom-pdm board A (dingoPDM v7.5 based)')
+for port, pin in [('C',10),('C',11),('C',13),('B',3),('B',4)]:   # new digital inputs (ex E1-E3, SWO)
+    t = set_pin(t, port, pin, 'INPUT', 'FLOATING')
+t = set_pin(t, 'C', 2, 'ANALOG', 'FLOATING')                      # AIN (ex PF2_IS)
+t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex DEN2)
+(d/'board.h').write_text(t)
+
+p = (d/'port.h').read_text()
+p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n// Wake-up: DI3 (PC10) and DI4 (PC11) share EXTI 10 / 11 with DI1 (PA10) and USB D- (PA11), which keep them\n#define WAKE_DIG_INPUT_MASK 0x73U')
+p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % ('(PDM_UNIT == 2 ? 0x520 : 0x500)'))
+p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
+p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
+p = p.replace('    IS1 = 0,\n    IS2,\n', '    IS1_2 = 0,\n    AnIn1, // PC2, ADC1_IN12 (old IS2 slot)\n')
+p = p.replace('uint16_t GetAdcRaw(AnalogChannel channel);', 'uint16_t GetAdcRaw(AnalogChannel channel);\nfloat GetAdcVolts(AnalogChannel channel);')
+(d/'port.h').write_text(p)
+
+c = (d/'port.cpp').read_text()
+c += '\n\nfloat GetAdcVolts(AnalogChannel channel)\n{\n    // Volts at the input-board wire (before the 10k/20k divider)\n    return (GetVDDA() / 4095) * GetAdcRaw(channel) * ANALOG_IN_DIVIDER;\n}\n'
+(d/'port.cpp').write_text(c)
+
+h = (d/'hw_devices.cpp').read_text()
+h = h.replace('Profet(1, ProfetModel::BTS7002_1EPP, LINE_PF1_IN, LINE_PF1_DEN, LINE_UNUSED, AnalogChannel::IS1,',
+              'Profet(1, ProfetModel::BTS7008_2EPA_CH1, LINE_PF1_IN, LINE_PF1_2_DEN, LINE_PF1_2_DSEL, AnalogChannel::IS1_2,')
+h = h.replace('Profet(2, ProfetModel::BTS7002_1EPP, LINE_PF2_IN, LINE_PF2_DEN, LINE_UNUSED, AnalogChannel::IS2,',
+              'Profet(2, ProfetModel::BTS7008_2EPA_CH2, LINE_PF2_IN, LINE_PF1_2_DEN, LINE_PF1_2_DSEL, AnalogChannel::IS1_2,')
+h = h.replace('    Digital_Input(LINE_DI2)};', '    Digital_Input(LINE_DI2),\n' + ''.join(f'    Digital_Input(LINE_DI{i}),\n' for i in range(3,7)) +
+              '    Digital_Input(LINE_DI7)};\n\nAnalog_Input analogIn[NUM_ANALOG_INPUTS] = {\n    Analog_Input(AnalogChannel::AnIn1)};')
+assert 'IS1_2' in h and 'DI7' in h
+(d/'hw_devices.cpp').write_text(h)
+
+def params(d, n_di, outputs8=None):
+    q = (d/'params.h').read_text()
+    q, k = re.subn(r'// Digital Inputs \(2\)\n#define ALL_DIGITAL_INPUT_PARAMS \\\n.*\n',
+        f'// Digital Inputs ({n_di})\n#define ALL_DIGITAL_INPUT_PARAMS \\\n    ' +
+        ', '.join(f'DIGITAL_INPUT_PARAMS({i})' for i in range(n_di)) +
+        '\n\n// Analog Inputs (1)\n#define ALL_ANALOG_INPUT_PARAMS \\\n    ANALOG_INPUT_PARAMS(0)\n', q)
+    assert k == 1
+    if outputs8:
+        q, k = re.subn(r'#define ALL_OUTPUT_PARAMS \\\n.*\n', '#define ALL_OUTPUT_PARAMS \\\n    ' +
+            ', '.join(f'OUTPUT_PARAMS({i})' for i in range(8)) + '\n', q); assert k == 1
+    (d/'params.h').write_text(q)
+params(d, 7)
+
+def msg(d):
+    m = (d/'msg.cpp').read_text()
+    old = '    stMsg.frame.data8[0] = (GetDigInputVal(1) << 1) + GetDigInputVal(0);'
+    assert old in m
+    m = m.replace(old, '    // Byte 0: digital inputs 1-8 (stock layout for 1-2). Inputs 9+ are in msg 27.\n'
+        '    uint8_t nDi = 0;\n    for (uint8_t i = 0; (i < NUM_DIG_INPUTS) && (i < 8); i++)\n        nDi |= (GetDigInputVal(i) ? 1 : 0) << i;\n    stMsg.frame.data8[0] = nDi;')
+    m += '''
+
+CANTxMsg TxMsg27()
+{
+    CANTxMsg stMsg;
+    //=======================================================
+    // Build Msg 27 (custom-pdm: all digital inputs, analog input)
+    //=======================================================
+    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 27;
+    stMsg.frame.DLC = 8; // Bytes to send
+    uint16_t nDi = 0;
+    for (uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+        nDi |= (GetDigInputVal(i) ? 1 : 0) << i;
+    stMsg.frame.data16[0] = nDi;
+    stMsg.frame.data16[1] = (uint16_t)analogIn[0].fValMillivolts;
+    stMsg.frame.data16[2] = (uint16_t)analogIn[0].fVal;
+    stMsg.frame.data16[3] = 0;
+
+    stMsg.bSend = true; // Always send
+
+    return stMsg;
+}
+'''
+    (d/'msg.cpp').write_text(m)
+    mh = (d/'msg.h').read_text()
+    mh = mh.replace('CANTxMsg TxMsg26();', 'CANTxMsg TxMsg26();\nCANTxMsg TxMsg27();').replace('    TxMsg26};', '    TxMsg26,\n    TxMsg27};')
+    (d/'msg.h').write_text(mh)
+msg(d)
+hh = (d/'hw_devices.h').read_text()
+if 'analogIn' not in hh:
+    hh = hh.replace('extern Digital_Input digIn[NUM_DIG_INPUTS];', 'extern Digital_Input digIn[NUM_DIG_INPUTS];\nextern Analog_Input analogIn[NUM_ANALOG_INPUTS];')
+    (d/'hw_devices.h').write_text(hh)
+
+# ---------------- Board B (base dingopdmmax_v1) ----------------
+d = clone('dingopdmmax_v1', 'custompdm_b')
+t = (d/'board.h').read_text()
+t = set_lines(t, L([
+    ('PF1_IS','C3'),('PF1_IN','B14'),('PF1_DEN','B13'),('PF2_IS','C2'),('PF2_IN','C7'),('PF2_DEN','C6'),
+    ('PF3_IS','A0'),('PF3_IN','B0'),('PF3_DEN','C5'),('PF4_IS','A1'),('PF4_IN','A6'),('PF4_DEN','A5'),
+    ('PF5_IS','A2'),('PF5_IN','A8'),('PF6_IS','A4'),('PF6_IN','B10'),('PF5_6_DEN','B12'),
+    ('PF7_IS','A7'),('PF7_IN','A15'),('PF8_IS','C4'),('PF8_IN','C8'),('PF7_8_DEN','B15'),
+    ('DI1','A10'),('DI2','C9'),('DI3','C14'),('DI4','C15'),('DI5','B2'),('DI6','D2'),('DI7','B4'),
+    ('DI8','B5'),('DI9','C10'),('DI10','C11'),('AIN1','B1')] + COMMON +
+    [('SWO','B3'),('UNUSED','C13')]), 'custom-pdm board B (dingoPDM-Max based)')
+for port, pin in [('A',8),('B',10),('A',15),('C',8),('B',12),('B',15)]:   # IN5-8, DEN5_6, DEN7_8
+    t = set_pin(t, port, pin, 'OUTPUT', 'PULLDOWN')
+for port, pin in [('A',2),('A',4),('A',7),('C',4),('B',1)]:                # IS5-8, AIN
+    t = set_pin(t, port, pin, 'ANALOG', 'FLOATING')
+for port, pin in [('C',14),('C',15),('B',2),('D',2),('B',4),('B',5),('C',10),('C',11)]:
+    t = set_pin(t, port, pin, 'INPUT', 'FLOATING')
+t = set_pin(t, 'C', 13, 'INPUT', 'PULLUP')                                  # free pin = LINE_UNUSED
+(d/'board.h').write_text(t)
+
+p = (d/'port.h').read_text()
+p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
+p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 and USB D-; DI6 (PD2) loses EXTI 2 to DI5 (PB2)\n#define WAKE_DIG_INPUT_MASK 0x0DFU')
+p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % '0x540')
+p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
+p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
+p = p.replace('#define ADC1_NUM_CHANNELS 7', '#define ADC1_NUM_CHANNELS 12')
+p = p.replace('#define BTS70012_1ESP_KILIS 35000', '#define BTS70012_1ESP_KILIS 35000\n#define BTS7004_1EPP_KILIS 20000 // Infineon BTS7004-1EPP datasheet, typ. at IL(NOM)')
+p = p.replace('    IS3,\n    IS4,\n', '    IS3,\n    IS4,\n    IS5,\n    IS6,\n    IS7,\n    IS8,\n')
+p = p.replace('    BattVolt,\n', '    BattVolt,\n    AnIn1, // PB1, ADC1_IN9\n')
+p = p.replace('uint16_t GetAdcRaw(AnalogChannel channel);', 'uint16_t GetAdcRaw(AnalogChannel channel);\nfloat GetAdcVolts(AnalogChannel channel);')
+assert 'IS8' in p and 'AnIn1' in p
+(d/'port.h').write_text(p)
+
+c = (d/'port.cpp').read_text()
+a = c.index('adcsample_t adc1_samples'); b = c.index('msg_t InitAdc()')
+c = c[:a] + '''adcsample_t adc1_samples[ADC1_NUM_CHANNELS] = {0};
+// 0 = OutIS1 - ADC1_IN13 (PC3)
+// 1 = OutIS2 - ADC1_IN12 (PC2)
+// 2 = OutIS3 - ADC1_IN0  (PA0)
+// 3 = OutIS4 - ADC1_IN1  (PA1)
+// 4 = OutIS5 - ADC1_IN2  (PA2)
+// 5 = OutIS6 - ADC1_IN4  (PA4)
+// 6 = OutIS7 - ADC1_IN7  (PA7)
+// 7 = OutIS8 - ADC1_IN14 (PC4)
+// 8 = BattVolt - ADC1_IN3 (PA3)
+// 9 = AnIn1 - ADC1_IN9 (PB1)
+// 10 = TempSensor
+// 11 = VRefInt
+
+static const ADCConversionGroup adc1_cfg = {
+    .circular = true,
+    .num_channels = ADC1_NUM_CHANNELS,
+    .end_cb = NULL,
+    .error_cb = NULL,
+    .cr1 = 0,
+    .cr2 = ADC_CR2_SWSTART | ADC_CR2_CONT,
+    .smpr1 = ADC_SMPR1_SMP_AN12(ADC_SAMPLE_15) |
+             ADC_SMPR1_SMP_AN13(ADC_SAMPLE_15) |
+             ADC_SMPR1_SMP_AN14(ADC_SAMPLE_15) |
+             ADC_SMPR1_SMP_SENSOR(ADC_SAMPLE_15) |
+             ADC_SMPR1_SMP_VREF(ADC_SAMPLE_15),
+    .smpr2 = ADC_SMPR2_SMP_AN0(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN1(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN2(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN3(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN4(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN7(ADC_SAMPLE_15) |
+             ADC_SMPR2_SMP_AN9(ADC_SAMPLE_15),
+    .htr = 0,
+    .ltr = 0,
+    .sqr1 = 0,
+    .sqr2 = ADC_SQR2_SQ7_N(ADC_CHANNEL_IN7) |
+            ADC_SQR2_SQ8_N(ADC_CHANNEL_IN14) |
+            ADC_SQR2_SQ9_N(ADC_CHANNEL_IN3) |
+            ADC_SQR2_SQ10_N(ADC_CHANNEL_IN9) |
+            ADC_SQR2_SQ11_N(ADC_CHANNEL_SENSOR) |
+            ADC_SQR2_SQ12_N(ADC_CHANNEL_VREFINT),
+    .sqr3 = ADC_SQR3_SQ1_N(ADC_CHANNEL_IN13) |
+            ADC_SQR3_SQ2_N(ADC_CHANNEL_IN12) |
+            ADC_SQR3_SQ3_N(ADC_CHANNEL_IN0) |
+            ADC_SQR3_SQ4_N(ADC_CHANNEL_IN1) |
+            ADC_SQR3_SQ5_N(ADC_CHANNEL_IN2) |
+            ADC_SQR3_SQ6_N(ADC_CHANNEL_IN4)};
+
+''' + c[b:]
+c += '\n\nfloat GetAdcVolts(AnalogChannel channel)\n{\n    // Volts at the input-board wire (before the 10k/20k divider)\n    return (GetVDDA() / 4095) * GetAdcRaw(channel) * ANALOG_IN_DIVIDER;\n}\n'
+(d/'port.cpp').write_text(c)
+
+shutil.copy(B/'dingopdm_v7'/'port_pwm.h', d/'port_pwm.h')   # all 8 software-PWM timers (TIM3,4,5,9,10,11,12,13)
+h = (d/'hw_devices.cpp').read_text()
+old4 = '    Profet(4, ProfetModel::BTS70012_1ESP, LINE_PF4_IN, LINE_PF4_DEN, LINE_UNUSED, AnalogChannel::IS4, &PWMD9, &pwm9Cfg, PwmChannel::Ch1)};'
+assert old4 in h
+new = old4[:-2] + ',\n' + ''.join(
+    f'    Profet({n}, ProfetModel::BTS7004_1EPP, LINE_PF{n}_IN, LINE_PF{den}_DEN, LINE_UNUSED, AnalogChannel::IS{n}, &PWMD{tim}, &pwm{tim}Cfg, PwmChannel::Ch1){end}\n'
+    for n, den, tim, end in [(5,'5_6',10,','),(6,'5_6',11,','),(7,'7_8',12,','),(8,'7_8',13,'};')])
+h = h.replace(old4, new)
+h = h.replace('    Digital_Input(LINE_DI2)};', '    Digital_Input(LINE_DI2),\n' + ''.join(f'    Digital_Input(LINE_DI{i}),\n' for i in range(3,10)) +
+              '    Digital_Input(LINE_DI10)};\n\nAnalog_Input analogIn[NUM_ANALOG_INPUTS] = {\n    Analog_Input(AnalogChannel::AnIn1)};')
+(d/'hw_devices.cpp').write_text(h)
+shutil.copy(B/'dingopdm_v7'/'params.h', d/'params.h')   # 8 outputs, 8 starter-disable entries
+params(d, 10)
+shutil.copy(B/'dingopdm_v7'/'msg.cpp', d/'msg.cpp'); shutil.copy(B/'dingopdm_v7'/'msg.h', d/'msg.h')  # 8-output status layout
+msg(d)
+hh = (d/'hw_devices.h').read_text()
+if 'analogIn' not in hh:
+    hh = hh.replace('extern Digital_Input digIn[NUM_DIG_INPUTS];', 'extern Digital_Input digIn[NUM_DIG_INPUTS];\nextern Analog_Input analogIn[NUM_ANALOG_INPUTS];')
+    (d/'hw_devices.h').write_text(hh)
+for b in ('custompdm_a', 'custompdm_b'):
+    f = B/b/'hw_devices.h'; s = f.read_text()
+    if 'analog_input.h' not in s: f.write_text(s.replace('#include "digital_input.h"', '#include "digital_input.h"\n#include "analog_input.h"'))
+    f = B/b/'board.mk'; s = f.read_text()
+    if 'functions/analog_input.cpp' not in s: f.write_text(s.replace('functions/profet.cpp \\\n', 'functions/profet.cpp \\\n\t\t\t\tfunctions/analog_input.cpp \\\n'))
+print('ok')

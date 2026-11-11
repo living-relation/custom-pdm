@@ -95,7 +95,12 @@ endif
 #
 
 # Define project name here
+# custom-pdm: UNIT picks the factory CAN address of a board built more than once (make BOARD=custompdm_a UNIT=2)
+ifeq ($(UNIT),)
 PROJECT = $(BOARD)
+else
+PROJECT = $(BOARD)_unit$(UNIT)
+endif
 
 # Target settings. MCU is set in boards/*/board.mk
 
@@ -186,6 +191,9 @@ CPPWARN = -Wall -Wextra -Wundef
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS = 
+ifneq ($(UNIT),)
+UDEFS += -DPDM_UNIT=$(UNIT)
+endif
 
 # Define ASM defines here
 UADEFS = 

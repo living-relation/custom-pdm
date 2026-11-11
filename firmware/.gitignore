@@ -18,3 +18,7 @@ __pycache__/
 *$py.class
 
 .idea/
+
+# host simulation outputs
+sim/__pycache__/
+sim/out/

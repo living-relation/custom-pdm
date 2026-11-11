@@ -144,7 +144,9 @@ void Profet::Update(bool bOutEnabled)
     fOvercurrent = eState == ProfetState::Overcurrent ? 1 : 0;
     fFault = eState == ProfetState::Fault ? 1 : 0;
 
+#ifdef LINE_E2
     palClearLine(LINE_E2);
+#endif
 }
 
 void Profet::FollowerUpdate()
@@ -239,8 +241,10 @@ void Profet::MeasureCurrent()
         {
             //==============================================================================
             //Trigger E2 on channel 1 for debug purposes to verify timing
+#ifdef LINE_E2
             if (m_num == 1)
                 palSetLine(LINE_E2);
+#endif
             //==============================================================================
 
             nIS = GetAdcRaw(m_ain);
@@ -276,6 +280,11 @@ void Profet::CalculateCurrent()
         break;
     case ProfetModel::BTS70012_1ESP:
         if (fCurrent <= 1.0f)
+            fCurrent = 0;
+        break;
+    case ProfetModel::BTS7004_1EPP:
+        // custom-pdm: same floor as BTS7002-1EPP (similar kILIS). Not measured.
+        if (fCurrent <= 0.5f)
             fCurrent = 0;
         break;
     }
