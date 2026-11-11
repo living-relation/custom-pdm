@@ -61,10 +61,22 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - **Firmware is in `firmware/` on `main` (merged 2026-11-10, Dan).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
 - Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
 - Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
-- **Waiting on Dan:** enclosure questions A-H (`docs/enclosure-layout.md` section 7) and firmware questions B1-B4 (`docs/firmware-pin-map.md`). Do not start 3D enclosure work, or a board change, before he answers.
+- **Waiting on Dan (orchestrator session):** see "Open questions: orchestrator session" below. Do not start 3D enclosure work before he answers the enclosure questions.
 - Open, small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 - Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
 - Docs changed since the last cleanup (2026-11-08): run iterative-cleaning (report-only) after Dan answers the questions (A2-b).
+
+### Open questions: orchestrator session (Claude-Session 014aA8s6qbju3vQ7x6q7vMNX)
+Asked one at a time, explained simply, each logged in `DECISIONS.md` once settled (Dan, 2026-11-10).
+- B1: answered (`DECISIONS.md`, "Pin map and enclosure questions"). The board B reroute of B_IN5 from PB2 to PC13 is NOT done yet; do it on a branch in its own worktree, fall back to keeping PB2 if risky.
+- B2 (which things wake the PDM): open, being asked now. Choices: (a) switch inputs + CAN + USB, as the firmware does today; (b) CAN + USB only (`WAKE_DIG_INPUT_MASK` 0); (c) reroute so all 24 inputs can wake it (routing not checked). Checked in code: a second pin armed on the same EXTI number replaces the first (ChibiOS `hal_pal_lld.c` @ 879cf757, asserts off); any edge on CAN RX wakes it, whatever the filter says; it only sleeps after 30 s with no accepted CAN frame, all outputs off and USB unplugged.
+- B3, B4, enclosure A-H (`docs/enclosure-layout.md` section 7), L1 (delete Fusion `board-A-dual` and `LINKED-COPY-unused`?): not asked yet.
+- Overlap notes for the firmware / simulation session (2026-11-10, checked on `main` f473b19):
+  - If the B1 reroute lands, board B `LINE_UNUSED` = PC13 collides with the new B_IN5 pin: pick another pin then.
+  - B2 to B4 were kept "for now" under C3a; B2 (b) would change `WAKE_DIG_INPUT_MASK`.
+  - Renode, 5 s run of `boot_a1.resc` (also with the board B binary): PC is in `Led::Code`, PC0 (error LED) is set, and the log has one "i2c1: Child address changed to 0x50, but target is not registered". So it ends in the fatal-error blink (no FRAM), not a plain idle.
+  - `platforms/cpus/stm32f4.repl` is not an F446RE: flash 2 MB and RAM 256 KB (ours 512 KB / 128 KB), I2C is the `STM32F1_I2C` model, no ADC and no USB entry. Renode 1.17.0 ships no F446 platform. `Infrastructure.dll` contains the names `MB85RC` and `STM32_ADC`, nothing for MCP9808 (fit not checked).
+  - Re-run on `main`: 4 ARM builds OK (31 % flash, linker RWX warning only), `s0` 36 of 36, `s1` 26 of 26.
 
 ### Open questions: firmware / simulation session (Claude-Session 014aA8s6LsbYkVVsAomAhpXK)
 Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map questions B2-B4 and the enclosure questions A-H belong to the orchestrator session: see "Waiting on Dan" above.
