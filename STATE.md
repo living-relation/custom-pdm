@@ -13,7 +13,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 ## HANDOFF - START HERE (firmware / simulation job, updated 2026-11-10 after the merge)
 
-**Owner:** the next firmware / simulation session only. Other agents: do not touch `firmware/`.
+**Owner (from 2026-11-10, Dan A1a):** the orchestrator session in "Orchestrator session 3" below and the sub-agents it deploys. Other sessions: do not touch `firmware/`.
 
 **Do this now**
 1. Check the tip first: `git log --oneline -3` on `main` must show "Merge feat/firmware" (2026-11-10) at or near the top, and `git status` must be clean. If not, stop and ask Dan.
@@ -54,6 +54,15 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - First measured the power-up ON pulse as 4 ms because every test case had the same message timing. Vary the timing before quoting a number.
 - Proposed new "front door" firmware before reading upstream; upstream already had most of it. Read the code first.
 - Put this session's questions into the orchestrator's "Waiting on Dan" line. Keep them in this session's own section.
+
+## Orchestrator session 3 (Claude-Session 014aA8s6rstT9Sxtn4fsxsmM, started 2026-11-10)
+Owns both earlier jobs (Dan A1a, `DECISIONS.md` "Orchestration and backup"). Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests; (3) enclosure with heat sink (handbuilt-cad tools + Fusion).
+- Remote: NOT attached yet. Adding the remote was blocked for the agent (permission layer), so Dan runs `git remote add origin https://github.com/living-relation/custom-pdm.git` and `git push -u origin main`. Checked 2026-11-10: the GitHub repo is private, its `main` (6d9596e) is an ancestor of local `main`, so the push is a fast-forward. After that: change the "Local-only repo" rule in `AGENTS.md`.
+- Jobs in flight (each in its own worktree `C:\projects\active\custom-pdm-wt-<job>`, sub-agents do not edit `STATE.md` / `DECISIONS.md`, the orchestrator reviews and merges):
+  - `feat/board-b-in5-pc13` (wt `-bin5`): B1 move of B_IN5 from PB2 to PC13 on board B, hardware plus the firmware pin and `LINE_UNUSED`. Status: started 2026-11-10.
+  - `feat/renode-bench` (wt `-renode`): the Renode bench from "Next" below. Only touches `firmware/sim/renode/`. Status: started 2026-11-10.
+  - `feat/parts-audit` (wt `-parts`): every part on the three boards checked against BOM v4, datasheets and stock; options for the open part choices. Status: started 2026-11-10.
+- Open questions for Dan from this session: none yet. Inherited and not asked yet: B3, B4, enclosure A-H, L1 (see the section below).
 
 ## Next (updated 2026-11-10)
 

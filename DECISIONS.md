@@ -99,3 +99,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-10 (Dan, chat): The shared non-repo folder / session board idea (F1) is dropped, and so is the "also update the shared document on every state update" rule. `STATE.md` stays the shared document and the one place for open questions and handoffs.
 - 2026-11-10 (Dan, chat): Merge everything on `feat/firmware` into `main` (replaces "do not merge" from earlier the same day).
 - 2026-11-10 (Dan, chat): D5 closed. Dan has no PC-side layer built as far as he knows; a check of everything on `main` found none (hardware, board scripts and docs only; `reference/` holds the stock KiCad projects). So: research options and bring Dan choices (D5a).
+
+## Orchestration and backup
+- 2026-11-10 (Dan, chat): A1a - one orchestrator session now owns both the hardware / enclosure job and the firmware / simulation job. It deploys sub-agents, reviews all their work, keeps state, tracking and memory current, manages PRs, keeps local and remote in sync, and reports everything to Dan in one place. It researches in the repo before asking Dan anything.
+- 2026-11-10 (Dan, chat): A5a - re-attach the private GitHub repo `living-relation/custom-pdm` as the remote, as an off-PC backup. Replaces "local-only" (2026-11-09) once the remote is attached.
+- 2026-11-10 (Dan, chat): A2a - the docs sweep (iterative-cleaning, report-only) waits until the enclosure questions are answered. A3a - stale working-memory lines get fixed. A4a - work order: goal 1 fixes and the Renode bench in parallel, open questions to Dan one at a time.
