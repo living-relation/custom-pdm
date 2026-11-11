@@ -1,10 +1,10 @@
 #!/bin/bash
-# Build the custom firmware from the feat/firmware branch inside the WSL sandbox (LF copy of the branch).
+# Build the custom firmware from a branch (default main; pass another branch name as $1) inside the WSL sandbox (LF copy of the branch).
 set -e
 S=~/renode-pdm; . $S/env.sh
 REPO=/mnt/c/projects/active/custom-pdm
 rm -rf $S/src; mkdir -p $S/src
-git -C $REPO archive feat/firmware firmware | tar x -C $S/src
+git -C $REPO archive ${1:-main} firmware | tar x -C $S/src
 if [ ! -d $S/ChibiOS/.git ]; then
   mkdir -p $S/ChibiOS; cd $S/ChibiOS; git init -q; git remote add origin https://github.com/corygrant/ChibiOS.git
   git fetch -q --depth 1 origin 879cf757d41ed3f9a6648efb666f244374d7f05a; git checkout -q FETCH_HEAD

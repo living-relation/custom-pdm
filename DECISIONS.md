@@ -95,3 +95,5 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-10 (Dan, chat): D3a: default link-loss time-out is 1 s, adjustable. (1 s is also the stock firmware default for a CAN input; range 0 to 60 s per input.)
 - 2026-11-10 (Dan, chat): D4a: CAN IDs 0x500 / 0x520 / 0x540 are fine for now and must stay user-editable (they are: device parameter over CAN / USB).
 - 2026-11-10 (Dan, chat): D5: research options for the PC-side single-PDM layer, or use Dan's existing design (which design: open, see the session board).
+- 2026-11-10 (Dan, chat): The shared non-repo folder / session board idea (F1) is dropped, and so is the "also update the shared document on every state update" rule. `STATE.md` stays the shared document and the one place for open questions and handoffs.
+- 2026-11-10 (Dan, chat): Merge everything on `feat/firmware` into `main` (replaces "do not merge" from earlier the same day).

@@ -1,36 +1,34 @@
 # STATE - custom-pdm
 
 > **Shared document: every agent and session reads and writes this file (Dan, 2026-11-10).**
-> - This is the one place for progress, open items and handoffs. Open questions for Dan and notes between sessions are on the session board (path under "Next").
+> - This is the one place for progress, open items, open questions and handoffs. It is how sessions talk to each other.
+> - Keep each session's open questions in its own section. Do not edit or answer another session's section; leave a note in your own.
 > - Do not copy or repeat anything from this file in any other file (docs, results, memory, handoffs). Point to it instead: `STATE.md`, section name.
 
 Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
-**Kept branches:** feat/firmware (unmerged on purpose: Dan 2026-11-10 "do not merge any work")
+**Kept branches:** none (feat/firmware merged locally 2026-11-10)
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
-## HANDOFF - START HERE (firmware / simulation job, written 2026-11-10)
+## HANDOFF - START HERE (firmware / simulation job, updated 2026-11-10 after the merge)
 
-**Owner:** the next firmware / simulation session only. Other agents: do not touch `firmware/` or branch `feat/firmware`.
+**Owner:** the next firmware / simulation session only. Other agents: do not touch `firmware/`.
 
 **Do this now**
-1. Check the tip first: `git log --oneline -3` on `feat/firmware` must show this handoff commit on top of `2ae3365`; `main` must still be `1bea42e`. If not, stop and ask Dan.
-2. Read the session board: `C:\projects\_scratch\custom-pdm-shared\SESSION-BOARD.md` (rules, open questions, notes from other sessions).
-3. Next step = the Renode bench (Dan, D2a), time-boxed. Recipe: the "Next task, firmware session" bullet under "Next" below.
+1. Check the tip first: `git log --oneline -3` on `main` must show "Merge feat/firmware" (2026-11-10) at or near the top, and `git status` must be clean. If not, stop and ask Dan.
+2. Next step = the Renode bench (Dan, D2a), time-boxed. Recipe: the "Next task, firmware session" bullet under "Next" below. Work on a new feature branch, then merge locally (repo rule in `AGENTS.md`).
 
 **Do not**
-- Do not merge `feat/firmware` into `main`, and do not create a PR (Dan, 2026-11-10: "don't merge it"; the repo is local-only anyway).
-- Do not push anything upstream to dingoPDM / dingoFW.
+- Do not push anything upstream to dingoPDM / dingoFW. No PRs: the repo is local-only.
 - Do not flash anything. No hardware exists yet.
-- Do not build firmware from `/mnt/c` (CRLF checkout): use `firmware/sim/renode/build_wsl.sh`, which builds from `git archive`.
+- Do not build firmware from `/mnt/c` (CRLF checkout): use `firmware/sim/renode/build_wsl.sh`, which builds from `git archive` (it names a branch: pass / edit it to `main`).
 - Do not answer or edit the orchestrator session's questions (B1-B4, enclosure A-H).
 
 **State**
-- `main` = `1bea42e`, untouched by this job. `feat/firmware` = 9 commits ahead: 2 firmware commits (`745c083` upstream import, `c7a4397` ports + sim), the rest are STATE / DECISIONS / sim-value updates.
-- One working tree, checked out on `feat/firmware`, clean. No remotes, no stashes, no other worktrees.
-- Answered decisions: `DECISIONS.md`, section "Firmware and coordination" (A3a, B2a, C1a+b, C2a, C3a, C4a, D1 both, D2a, D3a, D4a, F1).
-- Results, limits, and the firmware choices made on the branch: `firmware/sim/RESULTS.md`.
+- Everything from branch `feat/firmware` is merged into `main` (Dan, 2026-11-10) and the branch is deleted. One working tree on `main`. No remotes, no stashes, no other worktrees.
+- Answered decisions: `DECISIONS.md`, section "Firmware and coordination".
+- Results, limits, and the firmware choices made: `firmware/sim/RESULTS.md`.
 
 **Checks (run before any commit that touches `firmware/`)**
 - WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one.
@@ -38,19 +36,15 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Board folders are generated: change `firmware/tools_custom/port_boards.py`, re-run it, never hand-edit `firmware/boards/custompdm_*`.
 - `git diff --cached --stat` before every commit (repo rule).
 
-**Open decisions (one at a time with Dan; none blocks the Renode bench)**
-- On the session board: D5b (which "existing design" for the PC-side layer).
-- H1. Add one line to `AGENTS.md` pointing every agent at the session board and Dan's update rule? It is only on the board and in Claude project memory today, so an agent that reads just `AGENTS.md` will not know. Proposed: yes.
-- H2. Dan's two rules pull against each other: "nothing in STATE.md is repeated in any other file" and "every state update must also update the shared document". Reading used here: the board gets questions, notes and a dated pointer line, never copied content. Confirm.
-- H3. `STATE.md` on `feat/firmware` differs from `STATE.md` on `main` until a merge. Keep the folder checked out on `feat/firmware`, or move doc-only updates to `main`?
+**Open decisions:** see "Open questions: firmware / simulation session" below. None blocks the Renode bench.
 
 **Leftovers of this job (each needs Dan's keep / remove call)**
 - WSL `~/renode-pdm` (2.0 GB; `dl/` holds 330 MB of downloaded archives that can go).
 - `firmware/ChibiOS` (git-ignored local clone, needed to build).
 - `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
 - `firmware/.gitmodules` (from upstream; inert here).
-- The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 changes: the branch is the source of truth.
-- Three lines added to working memory `INDEX.md` on 2026-11-10 (sandbox gotchas, board pointer).
+- The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 changes: the repo is the source of truth.
+- Lines added to working memory `INDEX.md` on 2026-11-10 (sandbox gotchas).
 
 **Mistakes not to repeat (this job)**
 - Ran `sim/build.sh` with the unit number where the output folder goes: it created `firmware/1` and `firmware/2` full of build output, and they were committed once. List what is staged before committing.
@@ -59,12 +53,12 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Wrote a test that assumed the stock overcurrent default was "3 tries"; it is None. Read defaults from `core/param_defs.h`.
 - First measured the power-up ON pulse as 4 ms because every test case had the same message timing. Vary the timing before quoting a number.
 - Proposed new "front door" firmware before reading upstream; upstream already had most of it. Read the code first.
-- Put this session's questions into the orchestrator's "Waiting on Dan" line. Keep them on the board, in this session's section.
+- Put this session's questions into the orchestrator's "Waiting on Dan" line. Keep them in this session's own section.
 
 ## Next (updated 2026-11-10)
 
 - **Next task, firmware session (Dan D2a, 2026-11-10): build the full Renode bench, time-boxed.** Start point: `firmware/sim/renode/boot_a1.resc` boots the board A binary to the idle thread on Renode's `platforms/cpus/stm32f4.repl`. To add: (1) an I2C FRAM at 0x50 on `i2c1` (MB85RC256V: 2 address bytes, then data) so config load / save works; (2) MCP9808 at 0x18 on `i2c1` (check `renode/` for a ready model first); (3) an ADC1 model at 0x40012000 feeding the DMA2 stream the firmware uses, or a simpler stand-in, plus the PROFET sense model from `firmware/sim/pdmsim.py`; (4) a second and third machine on one CAN hub and a Robot test that repeats `s1_system.py` checks. Stop and report if any one of these takes more than a session. Sandbox: `~/renode-pdm` in WSL; rebuild binaries with `firmware/sim/renode/build_wsl.sh`.
-- **Firmware is on branch `feat/firmware` (not merged).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
+- **Firmware is in `firmware/` on `main` (merged 2026-11-10, Dan).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
 - Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
 - Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
 - **Waiting on Dan:** enclosure questions A-H (`docs/enclosure-layout.md` section 7) and firmware questions B1-B4 (`docs/firmware-pin-map.md`). Do not start 3D enclosure work, or a board change, before he answers.
@@ -72,8 +66,13 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
 - Docs changed since the last cleanup (2026-11-08): run iterative-cleaning (report-only) after Dan answers the questions (A2-b).
 
-### Open questions and notes between sessions
-They live outside the repo so every session sees them whatever branch is checked out: `C:\projects\_scratch\custom-pdm-shared\SESSION-BOARD.md` (Dan, 2026-11-10). Not repeated here.
+### Open questions: firmware / simulation session (Claude-Session 014aA8s6LsbYkVVsAomAhpXK)
+Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map questions B2-B4 and the enclosure questions A-H belong to the orchestrator session: see "Waiting on Dan" above.
+- D5b. Dan (2026-11-10): "research options, or use my existing design" for the PC-side single-PDM layer. Which existing design is meant, and where is it?
+- Overlap notes (questions owned by the orchestrator session; listed so both sides see them, not asked by this session):
+  - B2 overlap: the firmware already uses a wake-up set that follows the B2 research (all inputs except the ones sharing a wake line). Change `WAKE_DIG_INPUT_MASK` in each board's `port.h` (via `port_boards.py`) once Dan answers B2.
+  - B4 overlap: the firmware already sets `LINE_UNUSED` = PC13 on board B. Revert if Dan answers B4 "no".
+  - B1 overlap: board B input 5 is still on PB2 in the firmware. If the hardware move to PC13 happens, the firmware pin and `LINE_UNUSED` must change with it.
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.
@@ -89,7 +88,7 @@ They live outside the repo so every session sees them whatever branch is checked
 - Left debug files in the board folder and committed them; they are git-ignored now.
 
 ## Status
-- 2026-11-10: Firmware port + simulation (branch `feat/firmware`). Seven builds compile (A unit 1, A unit 2, B, 4 stock) with GCC 13.2.1 (cloud) and 14.2.1 (DansPC WSL); flash use 31 %. Host simulation of the real firmware logic against a board model written from the pin map: `s0_board_audit.py` 36 of 36, `s1_system.py` 26 of 26 (three boards as one 24-output PDM on stock logic, link-loss policies hold / off / on per channel). Planted wiring errors are caught. Config is 4364 / 4388 bytes (fits a 64 Kbit FRAM by size). Renode: the real board A binary boots to the ChibiOS idle thread on the stock `stm32f4` platform; no I2C FRAM / temperature sensor / ADC models yet, so it does not reach normal run. Limits and stock-firmware observations: `firmware/sim/RESULTS.md`.
+- 2026-11-10: Firmware port + simulation (merged to `main` the same day). Seven builds compile (A unit 1, A unit 2, B, 4 stock) with GCC 13.2.1 (cloud) and 14.2.1 (DansPC WSL); flash use 31 %. Host simulation of the real firmware logic against a board model written from the pin map: `s0_board_audit.py` 36 of 36, `s1_system.py` 26 of 26 (three boards as one 24-output PDM on stock logic, link-loss policies hold / off / on per channel). Planted wiring errors are caught. Config is 4364 / 4388 bytes (fits a 64 Kbit FRAM by size). Renode: the real board A binary boots to the ChibiOS idle thread on the stock `stm32f4` platform; no I2C FRAM / temperature sensor / ADC models yet, so it does not reach normal run. Limits and stock-firmware observations: `firmware/sim/RESULTS.md`.
 - 2026-11-10: Job B merged (docs/firmware-pin-map.md): one pin table per board, timers checked against DS10693. PA8 TIM1_CH1, PB10 TIM2_CH3, PA15 TIM2_CH1, PC8 TIM8_CH3 are correct as pin functions; stock dingoFW uses software PWM, so they do not matter. Traps: B_IN5 on PB2 = BOOT1; stock LINE_UNUSED = PA15; stock debug outputs on PC10, PC11, PC13; sleep wake-up (EXTI) clashes on PC10, PC11, PD2.
 - 2026-11-10: Job C merged: board B silk reference texts, one dangling PF_IN8 stub (only copper change) and Digi-Key/LCSC footprint fields are fixed by 	ools/tidy_board_b.py plus a second prune in oute_board_b.py. DRC vs stock Max: unconnected 0, clearance 7, hole_clearance 56, track_width 101, annular_width 20 unchanged. Re-import to Fusion is optional (one stub).
 - 2026-11-10: Job A merged: 2D enclosure proposal (docs/enclosure-layout.md, docs/diagrams/enclosure-layout.svg, 	ools/gen_enclosure_layout.py). Inner plan 314.2 x 261.3 mm with margins that are assumptions; worst-case heat 31.1 W (hand calc); lid height TBD (J3 DT15 housing 30.1 mm or 35.3 mm, sources conflict). Nothing decided.
