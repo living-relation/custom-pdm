@@ -31,10 +31,10 @@ automations:
     owner: claude
   - id: board-b-build
     script: tools/build_board_b.ps1
-    helpers: [tools/sch_board_b.py, tools/check_board_b.py, tools/netlist_pins.py]
+    helpers: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/board_b_geom.py, tools/check_board_b.py, tools/netlist_pins.py]
     trigger: manual
     reads: ["tools/*_board_b.py"]   # plus the baseline commit fe19c28 of hardware/board-b-max
-    writes: ["hardware/board-b-max/*.kicad_sch"]
+    writes: ["hardware/board-b-max/*.kicad_sch", "hardware/board-b-max/*.kicad_pcb"]
     committed: yes
     auto_commit: false
     enabled: true
@@ -50,6 +50,26 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python tools/gen_connector_maps.py
+    owner: claude
+  - id: drc-diff
+    script: tools/drc_diff.py
+    trigger: manual
+    reads: ["kicad-cli DRC JSON reports"]
+    writes: []                      # prints counts to the console
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/drc_diff.py <baseline.json> <new.json> [type ...]
+    owner: claude
+  - id: pcb-info
+    script: tools/pcb_info.py
+    trigger: manual
+    reads: ["**/*.kicad_pcb"]
+    writes: []                      # prints a board summary to the console
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python.exe tools/pcb_info.py <board.kicad_pcb> [ref ...]   # KiCad 9 python
     owner: claude
   - id: state-check
     script: .github/workflows/state-check.yml
