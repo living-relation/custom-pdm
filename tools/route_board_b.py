@@ -302,8 +302,13 @@ def prune(nets):
                     dead.add(id(q)); out.append(q); changed = True
                 continue
             for end in (q.GetStart(), q.GetEnd()):
+                # held = on a pad, on a via, or exactly on another track's END (touching a track's middle is not a
+                # connection for KiCad: DRC calls that stub dangling)
                 held = any(k.GetNetCode() == q.GetNetCode() and k.IsOnLayer(q.GetLayer()) and k.HitTest(end) for k in pads) or \
-                    any((u.GetClass() == "PCB_VIA" or u.GetLayer() == q.GetLayer()) and u.HitTest(end) for u in same)
+                    any((u.GetClass() == "PCB_VIA" and u.HitTest(end)) or
+                        (u.GetClass() != "PCB_VIA" and u.GetLayer() == q.GetLayer() and
+                         any(math.hypot(e.x - end.x, e.y - end.y) < mm(0.005) for e in (u.GetStart(), u.GetEnd())))
+                        for u in same)
                 if not held:
                     dead.add(id(q)); out.append(q); changed = True
                     break
@@ -366,5 +371,10 @@ for rnd in range(4):
     print(f"plane check round {rnd}: fixed {fixed}, still open {open_items}")
     if not fixed:
         break
+# the plane repair adds links and vias too: prune again so no stub it leaves behind dangles (PF_IN8 near 47.4, 42.4)
+junk = prune(set(done) | {"I2C1_SCL", "I2C1_SDA"})
+print("dangling stubs / unused vias removed after the plane repair:", len(junk))
+if junk:
+    b = pcb_rework.remove_and_reload(b, junk, PCB)
 b.Save(PCB)
 print("stage 2 saved | open plane items:", open_items)
