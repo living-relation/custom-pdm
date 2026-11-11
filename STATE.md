@@ -20,21 +20,15 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Ask Dan one at a time, researched first: R1-R4, B4-a, B4-c, parts choices C1-C7, L1, enclosure A-H (all under "Open questions" below). Plan B is final (b3a, 2026-11-11).
-2. Board-fix job (worktree + sub-agent) once Dan has answered: B4-b(b) 10k PB2-GND on board B (answered, not built); parts-audit P1 (one 5 V regulator per board, others removed or DNP), P2 (120 ohm CAN terminator + jumper per main board, matches DECISIONS 2026-11-08), P9 (35 V caps on +12 V): these need Dan's OK as choices C1 / C7 from `docs/parts-audit.md`.
+1. C3 CAN-chip data-sheet check, then enclosure A-G for Dan one at a time (see "Open questions"). Defaults rule: `AGENTS.md`. Plan B is final (b3a, 2026-11-11).
+2. Board-fix job (worktree + sub-agent): B4-b(b) 10k PB2-GND on board B; P1 / C1b (one 5 V regulator per board, check TSR 1-2450 pin clearance); P2 / C7b (120 ohm + jumper per main board); P9 (35 V caps on +12 V); C2b footprint check; C3 once picked; board A mask window (enclosure H). All settled in `DECISIONS.md` 2026-11-11.
 3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- R1: report the Renode NVIC bug upstream? Checked 2026-11-11: already fixed on renode-infrastructure master (RETTOBASE = `activeIRQs.Count() <= 1`; 1.17.0 at 066a7f1 counted system exceptions only), not yet in a release (latest 1.17.0). New rec.: no report; drop `PdmNvicFix.cs` once a release has the fix. Dan first said yes (r1a) before this check: re-confirm.
-- R2: delete the stale `firmware/sim/renode/boot_a1.resc` (rec. yes).
-- R3: keep the 29 MB Renode source copy in WSL `~/renode-pdm/bench/infra-src` (rec. keep for now).
-- R4: config save takes about 0.1 s and outputs return at 620 ms (rec. fine; the PC tool needs a longer save time-out).
-- B4-a: board B `LINE_UNUSED` pin: (A) PB2 input pull-down, built now, recommended; (B) a port bit with no physical pin (e.g. PD0), untested; (C) PB3 (SWO), not recommended. Checked: firmware writes it only for BTS7008 duals (`profet.cpp` HandleDsel), board B has none.
-- B4-c: board B build-time wake mask 0x0DF -> 0x0FF (PD2 no longer shares EXTI 2). (A) keep until B2 is built, recommended; (B) revert.
-- C1-C7: open part choices, `docs/parts-audit.md` section 3. Re-check stock against the assembler (`DECISIONS.md` 2026-11-11).
-- L1: delete Fusion `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`?
-- Enclosure A-H: `docs/enclosure-layout.md` section 7.
+- C3: CAN chip, see `docs/parts-audit.md` C3: data sheets of TJA1051T/3 and MCP2562FD being read (2026-11-11), then a pick.
+- Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time).
+- Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C2, C4, C5 studs, C6, C7, L1, enclosure H.
 - Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
 
 ## Wake lines (input for the B2 firmware work)

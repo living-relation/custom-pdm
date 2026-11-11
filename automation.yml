@@ -105,7 +105,7 @@ automations:
     owner: claude
   - id: renode-sandbox
     script: firmware/sim/renode/install_wsl.sh
-    helpers: [firmware/sim/renode/check_wsl.sh, firmware/sim/renode/build_wsl.sh, firmware/sim/renode/boot_a1.resc]
+    helpers: [firmware/sim/renode/check_wsl.sh, firmware/sim/renode/build_wsl.sh]
     trigger: manual
     reads: ["firmware/**"]
     writes: []                      # everything goes to ~/renode-pdm inside WSL
