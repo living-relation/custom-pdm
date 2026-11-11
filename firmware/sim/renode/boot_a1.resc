@@ -1,0 +1,14 @@
+mach create "pdm_a1"
+machine LoadPlatformDescription @platforms/cpus/stm32f4.repl
+sysbus LoadELF @/home/daniel/renode-pdm/fw/custompdm_a_unit1.elf
+emulation CreateCANHub "bus"
+connector Connect sysbus.can1 bus
+logFile @/home/daniel/renode-pdm/fw/boot_a1.log true
+logLevel 0 sysbus.can1
+emulation RunFor "00:00:02"
+echo "PC after 2 s:"
+sysbus.cpu PC
+sysbus FindSymbolAt `sysbus.cpu PC`
+echo "LEDs (PC0 error, PC1 status):"
+sysbus.gpioPortC GetGPIOs
+quit

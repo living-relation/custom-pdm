@@ -31,3 +31,8 @@ __pycache__/
 *.kicad_pcb.dbg
 *.kicad_pcb.kicad_pro
 *.kicad_pcb.kicad_prl
+
+# firmware: ChibiOS is a local clone (corygrant/ChibiOS @ 879cf757), build outputs
+firmware/ChibiOS/
+firmware/build/
+firmware/.dep/

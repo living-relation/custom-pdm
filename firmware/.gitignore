@@ -1,0 +1,24 @@
+# firmware artifacts
+deliver
+
+# Firmware build intermediates & products
+build/
+.dep/
+
+# Local Pixi environment and lockfile
+.pixi/
+pixi.lock
+
+# cortex-debug vscode extension local state
+.vscode/.cortex-debug*state.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.idea/
+
+# host simulation outputs
+sim/__pycache__/
+sim/out/

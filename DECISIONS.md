@@ -79,3 +79,21 @@ One dated line per decision, newest last. Who decided, then where it came from.
 
 ## Pin map and enclosure questions (asked one at a time from 2026-11-10)
 - 2026-11-10 (Dan, chat): B1 - board B input B_IN5 sits on PB2 (BOOT1, a startup pin). Try moving it to the spare PC13 now, before the board is ordered. If the reroute is too risky, keep PB2 and live with the rule (that input off during a USB firmware update). If a firmware-update UI is involved, it should warn to disconnect or switch off whatever is needed.
+
+## Firmware and coordination
+- 2026-11-10 (Dan, chat): The three boards must act as one PDM. Approach: stock dingoFW logic on every board plus a PC-side single-PDM layer (A3a); new "front door" firmware is the backup.
+- 2026-11-10 (Dan, chat): Nothing goes upstream to dingoPDM / dingoFW. Firmware lives in `firmware/` in this repo: dingoFW copied in, ChibiOS kept as a git-ignored local clone (B2a).
+- 2026-11-10 (Dan, chat): Firmware and simulation work stays on a feature branch or in a sandbox. Do not merge it.
+- 2026-11-10 (Dan, chat): CAN address: three firmware builds (A unit 1, A unit 2, B) with address and 1 Mbit/s built in by default; setting a board up by hand over CAN stays possible at any time (C1a + b).
+- 2026-11-10 (Dan, chat): Link loss: chosen per channel in the config, default Off, and including a retry mode (C2a). Branch reading of "retry mode": overcurrent reset mode defaults to Count (3 tries) in the custom builds; confirm.
+- 2026-11-10 (Dan, chat): Keep the four small firmware choices for now (C3a: status frame 27, wake-up set, `LINE_UNUSED` = PC13 on board B, analog scaling), guided by the Session 2 pin-map research.
+- 2026-11-10 (Dan, chat): Simulation order: compile, then host-side logic tests, then Renode if feasible (C4a). Renode goes in a sandbox on DansPC (WSL).
+- 2026-11-10 (Claude, finding): Renode 1.17.0 boots the board A binary on its stock `stm32f4` platform (CAN model present). Missing for a full run: I2C FRAM, MCP9808 and ADC models.
+- 2026-11-10 (Dan, chat): D1: "retry mode" means both. Overcurrent: retry 3 times before Fault (default in the custom builds). Lost link: outputs follow commands again by themselves when messages return (stock behaviour, shown in `s1_system.py`).
+- 2026-11-10 (Dan, chat): D2a: build the full Renode bench, time-boxed.
+- 2026-11-10 (Dan, chat): F1: open questions and notes between sessions live in a shared non-repo folder, `C:\projects\_scratch\custom-pdm-shared\` (`SESSION-BOARD.md`), which Dan attaches to the Claude project. `STATE.md` is a shared document: point to it, never copy from it.
+- 2026-11-10 (Dan, chat): D3a: default link-loss time-out is 1 s, adjustable. (1 s is also the stock firmware default for a CAN input; range 0 to 60 s per input.)
+- 2026-11-10 (Dan, chat): D4a: CAN IDs 0x500 / 0x520 / 0x540 are fine for now and must stay user-editable (they are: device parameter over CAN / USB).
+- 2026-11-10 (Dan, chat): D5: research options for the PC-side single-PDM layer, or use Dan's existing design (which design: open, see the session board).
+- 2026-11-10 (Dan, chat): The shared non-repo folder / session board idea (F1) is dropped, and so is the "also update the shared document on every state update" rule. `STATE.md` stays the shared document and the one place for open questions and handoffs.
+- 2026-11-10 (Dan, chat): Merge everything on `feat/firmware` into `main` (replaces "do not merge" from earlier the same day).
