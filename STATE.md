@@ -7,7 +7,7 @@
 
 Updated 2026-11-11. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules, git workflow and required checks: `AGENTS.md`.
 
-**Last cleanup:** 2026-11-11 @ (merge commit of the cleanup PR, filled after merge)
+**Last cleanup:** 2026-11-11 @ 8a0e5ad (repo-cleanup PR #16)
 **Kept branches:** none
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
@@ -23,7 +23,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 1. Ask Dan one at a time, researched first: R1-R4, B4-a, B4-c, parts choices C1-C7, L1, enclosure A-H (all under "Open questions" below). Plan B vs C: being discussed (2026-11-11).
 2. Board-fix job (worktree + sub-agent) once Dan has answered: B4-b(b) 10k PB2-GND on board B (answered, not built); parts-audit P1 (one 5 V regulator per board, others removed or DNP), P2 (120 ohm CAN terminator + jumper per main board, matches DECISIONS 2026-11-08), P9 (35 V caps on +12 V): these need Dan's OK as choices C1 / C7 from `docs/parts-audit.md`.
 3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
-4. Docs sweep (iterative-cleaning, report-only): Dan a2a, 2026-11-11.
+4. Docs sweep (iterative-cleaning, report-only, Dan a2a): done 2026-11-11, findings in `STALE-DOC-SWEEP-HANDOFF.md` (untracked, repo root); fixes wait for Dan's yes.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
 - R1: report the Renode NVIC bug upstream (rec. yes, needs Dan's GitHub account).
