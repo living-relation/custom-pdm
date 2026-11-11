@@ -1,5 +1,10 @@
 # STATE - custom-pdm
 
+> **Shared document: every agent and session reads and writes this file (Dan, 2026-11-10).**
+> - This is the one place for progress, open items, questions and handoffs. It is how sessions talk to each other.
+> - Do not copy or repeat anything from this file in any other file (docs, results, memory, handoffs). Point to it instead: `STATE.md`, section name.
+> - Keep each session's open questions in its own section. Do not edit or answer another session's section; leave a note in your own.
+
 Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
@@ -22,8 +27,11 @@ Kept apart from the other sessions' questions (Dan, 2026-11-10). The pin-map que
 - D2. Build the full Renode bench (FRAM, temperature-sensor and ADC models), time-boxed, or park it?
 - D3. Default link-loss time-out: 1 s / 500 ms / 2 s. The sim used 500 ms as an example; nothing is set in firmware.
 - D4. Keep the example CAN IDs 0x500 / 0x520 / 0x540, or check the Link ECU IDs first?
-- D5 (not asked yet). How the PC-side single-PDM layer gets built.
-- Note for the orchestrator session, not a question of this session: `feat/firmware` already uses a wake-up set that follows its B2 research, and `LINE_UNUSED` = PC13 on board B (its B4). Both are easy to change once Dan answers B2 / B4.
+- D5. How the PC-side single-PDM layer gets built.
+- Overlap notes (questions owned by the orchestrator session; listed here so both sides see them, not asked by this session):
+  - B2 overlap: `feat/firmware` already uses a wake-up set that follows the B2 research (all inputs except the ones sharing a wake line). Change `WAKE_DIG_INPUT_MASK` in each board's `port.h` once Dan answers B2.
+  - B4 overlap: `feat/firmware` already sets `LINE_UNUSED` = PC13 on board B. Revert in `board.h` if Dan answers B4 "no".
+  - B1 overlap: board B input 5 is still on PB2 in the firmware. If the hardware move to PC13 happens, the firmware pin and `LINE_UNUSED` must change with it.
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.
