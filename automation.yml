@@ -81,6 +81,39 @@ automations:
     enabled: true
     run_cmd: python.exe tools/gen_enclosure_layout.py   # KiCad python
     owner: claude
+  - id: firmware-port
+    script: firmware/tools_custom/port_boards.py
+    trigger: manual
+    reads: [firmware/boards/dingopdm_v7, firmware/boards/dingopdmmax_v1, docs/firmware-pin-map.md]   # pin map is read by a person, values are in the script
+    writes: [firmware/boards/custompdm_a, firmware/boards/custompdm_b]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python3 firmware/tools_custom/port_boards.py firmware
+    check_cmd: make -C firmware BOARD=custompdm_a UNIT=1   # needs firmware/ChibiOS and arm-none-eabi-gcc (WSL sandbox ~/renode-pdm)
+    owner: claude
+  - id: firmware-sim
+    script: firmware/sim/build.sh
+    helpers: [firmware/sim/pdmsim.py, firmware/sim/s0_board_audit.py, firmware/sim/s1_system.py, firmware/sim/s2_boot_blip.py, firmware/sim/sim_core.cpp]
+    trigger: manual
+    reads: ["firmware/**"]
+    writes: []                      # builds to an output folder outside the repo (e.g. /tmp/simout)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: firmware/sim/build.sh custompdm_a /tmp/simout 1   # Linux / WSL, g++; then python3 firmware/sim/s0_board_audit.py /tmp/simout
+    owner: claude
+  - id: renode-sandbox
+    script: firmware/sim/renode/install_wsl.sh
+    helpers: [firmware/sim/renode/check_wsl.sh, firmware/sim/renode/build_wsl.sh, firmware/sim/renode/boot_a1.resc]
+    trigger: manual
+    reads: ["firmware/**"]
+    writes: []                      # everything goes to ~/renode-pdm inside WSL
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl -d Ubuntu -- bash firmware/sim/renode/install_wsl.sh   # strip CR first if checked out with CRLF
+    owner: claude
   - id: state-check
     script: .github/workflows/state-check.yml
     helpers: [.github/state-check.sh, .github/registry-check.py]

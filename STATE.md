@@ -3,11 +3,14 @@
 Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `automation.yml`.
 
 **Last cleanup:** 2026-11-08 @ 46e5a49 (repo-cleanup PR)
-**Kept branches:** none (feat/board-b merged locally 2026-11-10)
+**Kept branches:** feat/firmware (unmerged on purpose: Dan 2026-11-10 "do not merge any work")
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Next (updated 2026-11-10)
 
+- **Firmware is on branch `feat/firmware` (not merged).** `firmware/` = upstream dingoFW `d594cd7` (MIT) plus boards `custompdm_a` / `custompdm_b`; ChibiOS is a git-ignored local clone in `firmware/ChibiOS` (corygrant/ChibiOS @ 879cf757). Results and open choices: `firmware/sim/RESULTS.md`.
+- **Waiting on Dan (firmware):** B2 wake-up set (branch follows the Session 2 research: all inputs except the shared-line ones); example CAN IDs 0x500 / 0x520 / 0x540; go / no-go on building the Renode bench (needs FRAM, temperature-sensor and ADC models); how the PC-side single-PDM layer is built.
+- Renode sandbox on DansPC: WSL Ubuntu, `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1). User-level only; remove with `rm -rf ~/renode-pdm`. Scripts: `firmware/sim/renode/`.
 - Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
 - **Waiting on Dan:** enclosure questions A-H (`docs/enclosure-layout.md` section 7) and firmware questions B1-B4 (`docs/firmware-pin-map.md`). Do not start 3D enclosure work, or a board change, before he answers.
 - Open, small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
@@ -28,6 +31,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Left debug files in the board folder and committed them; they are git-ignored now.
 
 ## Status
+- 2026-11-10: Firmware port + simulation (branch `feat/firmware`). Seven builds compile (A unit 1, A unit 2, B, 4 stock) with GCC 13.2.1 (cloud) and 14.2.1 (DansPC WSL); flash use 31 %. Host simulation of the real firmware logic against a board model written from the pin map: `s0_board_audit.py` 36 of 36, `s1_system.py` 26 of 26 (three boards as one 24-output PDM on stock logic, link-loss policies hold / off / on per channel). Planted wiring errors are caught. Config is 4364 / 4388 bytes (fits a 64 Kbit FRAM by size). Renode: the real board A binary boots to the ChibiOS idle thread on the stock `stm32f4` platform; no I2C FRAM / temperature sensor / ADC models yet, so it does not reach normal run. Limits and stock-firmware observations: `firmware/sim/RESULTS.md`.
 - 2026-11-10: Job B merged (docs/firmware-pin-map.md): one pin table per board, timers checked against DS10693. PA8 TIM1_CH1, PB10 TIM2_CH3, PA15 TIM2_CH1, PC8 TIM8_CH3 are correct as pin functions; stock dingoFW uses software PWM, so they do not matter. Traps: B_IN5 on PB2 = BOOT1; stock LINE_UNUSED = PA15; stock debug outputs on PC10, PC11, PC13; sleep wake-up (EXTI) clashes on PC10, PC11, PD2.
 - 2026-11-10: Job C merged: board B silk reference texts, one dangling PF_IN8 stub (only copper change) and Digi-Key/LCSC footprint fields are fixed by 	ools/tidy_board_b.py plus a second prune in oute_board_b.py. DRC vs stock Max: unconnected 0, clearance 7, hole_clearance 56, track_width 101, annular_width 20 unchanged. Re-import to Fusion is optional (one stub).
 - 2026-11-10: Job A merged: 2D enclosure proposal (docs/enclosure-layout.md, docs/diagrams/enclosure-layout.svg, 	ools/gen_enclosure_layout.py). Inner plan 314.2 x 261.3 mm with margins that are assumptions; worst-case heat 31.1 W (hand calc); lid height TBD (J3 DT15 housing 30.1 mm or 35.3 mm, sources conflict). Nothing decided.
