@@ -26,7 +26,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- R1: report the Renode NVIC bug upstream (rec. yes, needs Dan's GitHub account).
+- R1: report the Renode NVIC bug upstream? Checked 2026-11-11: already fixed on renode-infrastructure master (RETTOBASE = `activeIRQs.Count() <= 1`; 1.17.0 at 066a7f1 counted system exceptions only), not yet in a release (latest 1.17.0). New rec.: no report; drop `PdmNvicFix.cs` once a release has the fix. Dan first said yes (r1a) before this check: re-confirm.
 - R2: delete the stale `firmware/sim/renode/boot_a1.resc` (rec. yes).
 - R3: keep the 29 MB Renode source copy in WSL `~/renode-pdm/bench/infra-src` (rec. keep for now).
 - R4: config save takes about 0.1 s and outputs return at 620 ms (rec. fine; the PC tool needs a longer save time-out).
