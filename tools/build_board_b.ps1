@@ -10,7 +10,7 @@ $Baseline = "fe19c28"                       # "Board B: unmodified dingoPDM-Max 
 $BaselineA = "542b3b9"                      # board A baseline: source of the BTS700x-1EPP channel layout (dingoPDM v7.5, MIT)
 $Cli = "$env:LOCALAPPDATA\Programs\KiCad\10.0\bin\kicad-cli.exe"
 $Py9 = "$env:LOCALAPPDATA\Programs\KiCad\9.0\bin\python.exe"
-$Out = Join-Path $env:TEMP "board-b-build"
+$Out = if ($env:BOARD_B_OUT) { $env:BOARD_B_OUT } else { Join-Path $env:TEMP "board-b-build" }
 New-Item -ItemType Directory -Force $Out | Out-Null
 $Pcb = Join-Path $B "dingoPDM-Max.kicad_pcb"
 
@@ -49,6 +49,9 @@ try {
     Run-Py9 (Join-Path $Repo "tools\pcb_board_b.py") $Pcb "$Out\board-b.net" "$Out\board-a-baseline.kicad_pcb" (Join-Path $B "board-b-refs.json")
     $route = Join-Path $Repo "tools\route_board_b.py"
     if ((Test-Path $route) -and -not $NoRoute) { Run-Py9 $route $Pcb "$Out\board-b.net" }
+
+    $tidy = Join-Path $Repo "tools\tidy_board_b.py"
+    if ((Test-Path $tidy) -and -not $NoRoute) { Run-Py9 $tidy $Pcb "$Out\board-b.net" (Join-Path $Repo "reference\dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb") }
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"
