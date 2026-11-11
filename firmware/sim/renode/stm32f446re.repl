@@ -1,0 +1,200 @@
+// STM32F446RE as far as the custom-pdm firmware (dingoFW on ChibiOS) uses it.
+// Base: Renode 1.17.0 platforms/cpus/stm32f4.repl (which is an F40x: 2 MB flash, 256 KB RAM, no ADC).
+// Changed for the F446RE and this firmware:
+//   flash 512 KB, RAM 128 KB (DS10693);
+//   timers run at 72 MHz: HSE 8 MHz / 5 * 180 / 2 = 144 MHz, APB1 = APB2 = /4 = 36 MHz, timer clock = 2 x (mcuconf.h);
+//   i2c1 = PDM_I2Cv1 (bench model with DMA), dma1 / dma2 = STM32DMA_Circ (circular mode added), adc1 = PDM_ADC;
+//   only the peripherals the firmware touches are listed. USB OTG FS has no model: see the tag at the end.
+// Load models/*.cs before this file.
+
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x20000
+
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x80000
+
+flash_controller: MTD.STM32F4_FlashController @ {
+        sysbus 0x40023C00;
+        sysbus new Bus.BusMultiRegistration { address: 0x1FFFC000; size: 0x100; region: "optionBytes" }
+    }
+    flash: flash
+
+// system memory + OTP + factory calibration words (VREFINT_CAL 0x1FFF7A2A, TS_CAL 0x1FFF7A2C / 2E)
+rom1: Memory.MappedMemory @ sysbus 0x1FFF0000
+    size: 0xC000
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    priorityMask: 0xF0
+    systickFrequency: 144000000
+    IRQ -> cpu@0
+
+cpu: CPU.CortexM @ sysbus
+    cpuType: "cortex-m4f"
+    nvic: nvic
+
+// Corrects ICSR.RETTOBASE (see models/PdmNvicFix.cs). The address is unused space; run "sysbus.rettobaseFix Install" after loading.
+rettobaseFix: Miscellaneous.PDM_NvicRettobaseFix @ sysbus 0x5FFF0000
+    nvic: nvic
+
+// cycle counter: ChibiOS polled delays (osalSysPolledDelayX) wait on DWT_CYCCNT; core clock 144 MHz
+dwt: Miscellaneous.DWT @ sysbus 0xE0001000
+    frequency: 144000000
+
+pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
+
+rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    AlarmIRQ -> nvic@41
+
+rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
+    rtcPeripheral: rtc
+
+exti: IRQControllers.STM32F4_EXTI @ sysbus 0x40013C00
+    numberOfOutputLines: 24
+    [0-4] -> nvic@[6-10]
+    [5-9] -> nvicInput23@[0-4]
+    [10-15] -> nvicInput40@[0-5]
+    [16, 17, 18, 22] -> nvic@[1, 41, 42, 3]
+
+nvicInput23: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 5
+    -> nvic@23
+
+nvicInput40: Miscellaneous.CombinedInput @ none
+    numberOfInputs: 6
+    -> nvic@40
+
+gpioPortA: GPIOPort.STM32_GPIOPort @ sysbus <0x40020000, +0x400>
+    modeResetValue: 0xA8000000
+    outputSpeedResetValue: 0x0C000000
+    pullUpPullDownResetValue: 0x64000000
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortB: GPIOPort.STM32_GPIOPort @ sysbus <0x40020400, +0x400>
+    modeResetValue: 0x00000280
+    outputSpeedResetValue: 0x000000C0
+    pullUpPullDownResetValue: 0x00000100
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortC: GPIOPort.STM32_GPIOPort @ sysbus <0x40020800, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortD: GPIOPort.STM32_GPIOPort @ sysbus <0x40020C00, +0x400>
+    numberOfAFs: 16
+    [0-15] -> exti@[0-15]
+
+gpioPortE: GPIOPort.STM32_GPIOPort @ sysbus <0x40021000, +0x400>
+    numberOfAFs: 16
+
+gpioPortF: GPIOPort.STM32_GPIOPort @ sysbus <0x40021400, +0x400>
+    numberOfAFs: 16
+
+gpioPortG: GPIOPort.STM32_GPIOPort @ sysbus <0x40021800, +0x400>
+    numberOfAFs: 16
+
+gpioPortH: GPIOPort.STM32_GPIOPort @ sysbus <0x40021C00, +0x400>
+    numberOfAFs: 16
+
+can1: CAN.STMCAN @ sysbus <0x40006400, +0x400>
+    [0-3] -> nvic@[19-22]
+
+// remembers the last CAN_BTR write (see models/PdmWriteSpy.cs); run "sysbus.canBtrSpy Install" after loading
+canBtrSpy: Miscellaneous.PDM_WriteSpy @ sysbus 0x5FFF0010
+    target: can1
+    offset: 0x1C
+
+dma1: DMA.STM32DMA_Circ @ sysbus 0x40026000
+    [0-7] -> nvic@[11-17,47]
+
+dma2: DMA.STM32DMA_Circ @ sysbus 0x40026400
+    [0-7] -> nvic@[56-60,68-70]
+
+// RX DMA = DMA1 stream 0 (mcuconf.h STM32_I2C_I2C1_RX_DMA_STREAM); its CR register is at 0x40026010
+i2c1: I2C.PDM_I2Cv1 @ sysbus 0x40005400
+    rxDmaStreamCr: 0x40026010
+    busFrequency: 400000
+    EventInterrupt -> nvic@31
+    ErrorInterrupt -> nvic@32
+    RxDMARequest -> dma1@0
+
+fram: I2C.PDM_FRAM @ i2c1 0x50
+    size: 32768
+
+tempSensor: I2C.PDM_MCP9808 @ i2c1 0x18
+
+// ADC1 DMA = DMA2 stream 4 (mcuconf.h STM32_ADC_ADC1_DMA_STREAM)
+adc1: Analog.PDM_ADC @ sysbus 0x40012000
+    portA: gpioPortA
+    portB: gpioPortB
+    portC: gpioPortC
+    portD: gpioPortD
+    pclk2: 36000000
+    DMARequest -> dma2@4
+    IRQ -> nvic@18
+
+timer1: Timers.STM32_Timer @ sysbus 0x40010000
+    BreakInterrupt -> nvic@24
+    UpdateInterrupt -> nvic@25
+    [TriggerInterrupt, CommutationInterrupt] -> nvic@[26, 26]
+    CaptureCompareInterrupt -> nvic@27
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer2: Timers.STM32_Timer @ sysbus 0x40000000
+    -> nvic@28
+    frequency: 72000000
+    initialLimit: 0xFFFFFFFF
+
+timer3: Timers.STM32_Timer @ sysbus 0x40000400
+    -> nvic@29
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer4: Timers.STM32_Timer @ sysbus 0x40000800
+    -> nvic@30
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer5: Timers.STM32_Timer @ sysbus 0x40000C00
+    -> nvic@50
+    frequency: 72000000
+    initialLimit: 0xFFFFFFFF
+
+timer9: Timers.STM32_Timer @ sysbus 0x40014000
+    -> nvic@24
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer10: Timers.STM32_Timer @ sysbus 0x40014400
+    -> nvic@25
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer11: Timers.STM32_Timer @ sysbus 0x40014800
+    -> nvic@26
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer12: Timers.STM32_Timer @ sysbus 0x40001800
+    -> nvic@43
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+timer13: Timers.STM32_Timer @ sysbus 0x40001C00
+    -> nvic@44
+    frequency: 72000000
+    initialLimit: 0xFFFF
+
+bitbandPeripherals: Miscellaneous.BitBanding @ sysbus <0x42000000, +0x2000000>
+    peripheralBase: 0x40000000
+
+bitbandSram: Miscellaneous.BitBanding @ sysbus <0x22000000, +0x200000>
+    peripheralBase: 0x20000000
+
+sysbus:
+    init:
+        // USB OTG FS has no model. GRSTCTL reads "AHB idle, no reset pending" so the ChibiOS core reset returns;
+        // everything else at 0x50000000 reads 0, so USB never enumerates (the firmware sees "not connected").
+        Tag <0x50000010, 0x50000013> "USB_OTG_FS:GRSTCTL" 0x80000000

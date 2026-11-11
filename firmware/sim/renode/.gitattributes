@@ -1,0 +1,7 @@
+# These files run inside WSL: keep LF endings in every checkout.
+*.sh text eol=lf
+*.py text eol=lf
+*.resc text eol=lf
+*.repl text eol=lf
+*.robot text eol=lf
+*.cs text eol=lf
