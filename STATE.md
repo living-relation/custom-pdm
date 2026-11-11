@@ -57,7 +57,7 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 
 ## Orchestrator session 3 (Claude-Session 014aA8s6rstT9Sxtn4fsxsmM, started 2026-11-10)
 Owns both earlier jobs (Dan A1a, `DECISIONS.md` "Orchestration and backup"). Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests; (3) enclosure with heat sink (handbuilt-cad tools + Fusion).
-- Remote: NOT attached yet. Adding the remote was blocked for the agent (permission layer), so Dan runs `git remote add origin https://github.com/living-relation/custom-pdm.git` and `git push -u origin main`. Checked 2026-11-10: the GitHub repo is private, its `main` (6d9596e) is an ancestor of local `main`, so the push is a fast-forward. After that: change the "Local-only repo" rule in `AGENTS.md`.
+- Remote: attached 2026-11-10 (Dan ran the commands; agents are blocked from adding or changing a remote). `origin` = private GitHub repo, `main` level with local at d319ad3. Rules: `AGENTS.md`. This replaces every "local-only / no PRs" remark further down this file.
 - Jobs in flight (each in its own worktree `C:\projects\active\custom-pdm-wt-<job>`, sub-agents do not edit `STATE.md` / `DECISIONS.md`, the orchestrator reviews and merges):
   - `feat/board-b-in5-pc13` (wt `-bin5`): B1 move of B_IN5 from PB2 to PC13 on board B, hardware plus the firmware pin and `LINE_UNUSED`. Status: started 2026-11-10.
   - `feat/renode-bench` (wt `-renode`): the Renode bench from "Next" below. Only touches `firmware/sim/renode/`. Status: started 2026-11-10.
