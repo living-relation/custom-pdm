@@ -9,7 +9,7 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-08 (Dan, chat): Replaces the line above: inputs are on/off, not sensor inputs. Each input works as switch-to-ground or 12 V on/off, chosen per input in firmware. No 5 V sensor supply. Board A: 2 existing + 8 new inputs.
 - 2026-11-08 (Dan, chat): Future 5 V analog sensors, if ever needed, come in through external hardware (e.g. the Link ECU's own analog inputs sent over CAN); keep the spare analog pin reachable.
 - 2026-11-05 (Dan, chat): Controlled over CAN by a Link G4X XtremeX ECU; the ECU can send anything over CAN, so no CAN map work is needed up front.
-- 2026-11-05 (Dan, chat): Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) stays open until one clearly wins.
+- 2026-11-05 (Dan, chat): Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) stays open until one clearly wins. (Plan C closed 2026-11-11: b3a)
 - 2026-11-05 (Dan, chat): Plan B uses two board designs: board A (8 x 8 A outputs + 8 inputs, built twice) and board B (6 x 15 A + 2 x 30 A). (board B outputs replaced 2026-11-09: G1a, F1a)
 - 2026-11-05 (Dan, chat): Connectors: Deutsch DT-style for 8 A outputs; screw terminals or studs for 15 A and 30 A outputs. Sealed enclosure. (connectors replaced 2026-11-09: HD30/HDP20, studs, terminals)
 - 2026-11-05 (Dan, chat): Fab and assembly: JLCPCB and PCBWay both stay in the running until one clearly wins.
@@ -109,3 +109,4 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-11 (Dan, chat): Boards are assembled by JLCPCB or PCBWay, which source the parts; Dan does not buy board parts himself. Part checks must use the assembler's stock (JLCPCB = LCSC parts library; PCBWay = its own sourcing). Parts lookup: Octopart (e.g. https://octopart.com/part/stmicroelectronics/STM32F446RET6).
 - 2026-11-11 (Dan, chat): Run repo-cleanup now (a1a), then the docs sweep iterative-cleaning, report-only (a2a; replaces A2a's wait), and re-run the Renode bench with `--build` (a3a: 18 of 18).
 - 2026-11-11 (Dan, chat): Cleanup (b1a, b2a): one PR; replaced `DECISIONS.md` lines stay, tagged with what replaced them. Local memory fixes L-a and L-b approved (b4a).
+- 2026-11-11 (Dan, chat): b3a - Plan C is closed; Plan B (3 boards on CAN, one enclosure) is final. c1a - apply the docs sweep fixes (`firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn).

@@ -20,10 +20,10 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Ask Dan one at a time, researched first: R1-R4, B4-a, B4-c, parts choices C1-C7, L1, enclosure A-H (all under "Open questions" below). Plan B vs C: being discussed (2026-11-11).
+1. Ask Dan one at a time, researched first: R1-R4, B4-a, B4-c, parts choices C1-C7, L1, enclosure A-H (all under "Open questions" below). Plan B is final (b3a, 2026-11-11).
 2. Board-fix job (worktree + sub-agent) once Dan has answered: B4-b(b) 10k PB2-GND on board B (answered, not built); parts-audit P1 (one 5 V regulator per board, others removed or DNP), P2 (120 ohm CAN terminator + jumper per main board, matches DECISIONS 2026-11-08), P9 (35 V caps on +12 V): these need Dan's OK as choices C1 / C7 from `docs/parts-audit.md`.
 3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
-4. Docs sweep (iterative-cleaning, report-only, Dan a2a): done 2026-11-11, findings in `STALE-DOC-SWEEP-HANDOFF.md` (untracked, repo root); fixes wait for Dan's yes.
+4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
 - R1: report the Renode NVIC bug upstream (rec. yes, needs Dan's GitHub account).
@@ -87,7 +87,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Fusion `custom-pdm` project: root = clean import of the original; `board-A` = unmodified re-import (+ `LINKED-COPY-unused`, deletable); `board-A-dual-k9` = modified board A (143 parts, 111 nets = KiCad); `board-A-dual` = broken KiCad 10 import with no nets (deletable, L1).
 - Part and net lists from the import are in the models folder (`Desktop\models\custom-pdm-import-check`, OneDrive, add-only).
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
-- Plan B (3 boards on CAN, one enclosure) leads; Plan C (one brain + power slices) open, being discussed (2026-11-11).
+- Plan B (3 boards on CAN, one enclosure) is final; Plan C closed (Dan b3a, 2026-11-11).
 
 ## Leftovers (each needs Dan's keep / remove call; none are in the way)
 - WSL `~/renode-pdm` (2.0 GB; `dl/` holds 330 MB of downloaded archives that can go). R3 covers `bench/infra-src` inside it.
