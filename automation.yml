@@ -45,7 +45,7 @@ automations:
     script: tools/gen_connector_maps.py
     trigger: manual
     reads: []                       # tables are typed into the script by hand
-    writes: ["docs/diagrams/*.svg"]   # illustrations only, not a source of truth
+    writes: [docs/diagrams/board-connectors.svg, docs/diagrams/enclosure-connectors.svg, docs/diagrams/system-wiring.svg]   # illustrations only, not a source of truth
     committed: yes
     auto_commit: false
     enabled: true
