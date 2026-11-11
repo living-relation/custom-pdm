@@ -21,11 +21,12 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
 1. Enclosure A-G for Dan one at a time (see "Open questions"). Defaults rule: `AGENTS.md`. Plan B is final (b3a, 2026-11-11).
-2. Board-fix job (worktree + sub-agent): B4-b(b) 10k PB2-GND on board B; P1 / C1b (one 5 V regulator per board, check TSR 1-2450 pin clearance); P2 / C7b (120 ohm + jumper per main board); P9 (35 V caps on +12 V); C2b footprint check; C3d MCP2562FD swap and the P11 diode-drop check; board A mask window (enclosure H). All settled in `DECISIONS.md` 2026-11-11.
+2. P11 fix (+5V too low for the CAN chip / LD1117 worst case): waiting on Dan (question p1). Then: re-import boards A and B into Fusion, refresh `docs/diagrams/board-b-top-render.png`, refresh `docs/parts-audit.csv` for the changed parts, Digi-Key numbers for them (TBD).
 3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
+- p1: P11 fix, see `docs/parts-audit.md` section 9 and the board-fix PR #23.
 - Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time).
 - Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C3, C2, C4, C5 studs, C6, C7, L1, enclosure H.
 - Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
@@ -44,10 +45,11 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Design the 150 A feed busbar.
 - Pick connector part numbers.
 - Pick fab: JLCPCB vs PCBWay.
-- Board B: a human look at the layout before ordering. Stale since B1: Fusion `board-B` import and `docs/diagrams/board-b-top-render.png`.
+- Board B: a human look at the layout before ordering. Stale since the board-fix job: Fusion `board-A` / `board-B` imports and `docs/diagrams/board-b-top-render.png`. A human look at where JP2 / JP3 ended up.
 - Small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 
 ## Status (done work, newest first)
+- 2026-11-11: Board-fix job (PR #23): board B 10k PB2-GND (R81); one 5 V converter per main board (TSR 1-2450, others DNP; its pins stick out about 2.3 mm under the board, clear of the pedestals, sink needs about 3 mm recess there or trimmed pins); 120 ohm + open solder jumper per main board (A: JP3 + R59, B: JP2 + R80); +12 V caps 35 V / 50 V; FRAM MB85RC64TA; CAN chip MCP2562FD-E/SN (wiring already matched); board A mask window removed; maker part numbers on changed and safety parts. Checks vs main: 0 unconnected, DRC errors equal (lib_footprint_issues +2 library-config warnings on A), ERC errors -1 per board, parity 5 -> 4. P11 found failing (+5V 4.50 V typ / 4.34 V worst vs 4.5 V CAN-chip minimum). Details and sources: `docs/parts-audit.md` section 9.
 - 2026-11-11: Renode bench (PR #15): three real binaries (A1, A2, B) on one CAN hub plus an ECU / PC-tool node, 18 of 18 Robot tests pass. Re-run 2026-11-11 with `--build` from `main` after B1: 3 builds OK (linker RWX warning only), 18 of 18. Run: `powershell -ExecutionPolicy Bypass -File firmware\sim\renode\run_bench.ps1` (add `--build` to rebuild from main). Coverage, limits and findings: `firmware/sim/renode/RESULTS-renode.md`. Sandbox: WSL Ubuntu `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1), user-level only, remove with `rm -rf ~/renode-pdm`.
 - 2026-11-11: B1 (PR #12): B_IN5 moved from PB2 to PC13 on board B, hardware plus firmware pin; `LINE_UNUSED` = PB2 as input with pull-down; wake mask 0x0FF build-time. Checks: netlist OK; ERC errors unchanged (warnings +2 off-grid); DRC same as main in every category, unconnected 0; 4 firmware builds OK; s0 36/36, s1 26/26.
 - 2026-11-11: Parts audit (PR #13): every part on the three boards checked against BOM v4, datasheets and stock: `docs/parts-audit.md` (+ `.csv`), 16 problems (P1-P16) and 7 open part choices (C1-C7). Orchestrator check: the PCA82C250 CAN chip (P3) and its wiring come from stock dingoPDM v7.5 and Max (`reference/` MCU sheets), so P3 is inherited, not new.
