@@ -6,49 +6,13 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 **Kept branches:** none (feat/board-b merged locally 2026-11-10)
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
-## HANDOFF - START HERE (written 2026-11-10 by claude-cloud-dc, for the next session)
+## Next (updated 2026-11-10)
 
-**Do this now.** You are the orchestrator. Dan (2026-11-10): run the three jobs below with parallel agents, then review their work. Do not do the jobs yourself.
-
-1. Re-check the tip: `git status -sb` and `git log --oneline -1` in `C:\projects\active\custom-pdm`. Expected: `main`, clean, no remote. The commit that added this section is the tip (its parent is `5844e83`).
-2. Read `AGENTS.md`, this file, `DECISIONS.md`, and the working memory `%USERPROFILE%\.claude\working-memory\custom-pdm\INDEX.md`.
-3. Start one agent per job, each in its own git worktree and branch (the board B build rewrites `hardware/board-b-max` in whatever tree it runs in).
-4. Review each result, then merge into `main` locally, one at a time (`git merge --ff-only` or `--no-ff`). No push, no PR: the repo is local-only.
-5. Remove this section when the three jobs are merged, and update Status below.
-
-**Do not:** push or re-attach GitHub; start or stop workstation workers; run two agents in Fusion at once (one Fusion lock, see `C:\projects\active\workstation\agents\projects-AGENTS.md` section 5); make big design decisions without asking Dan; commit memory files; treat `docs/diagrams/` as a source of truth.
-
-### Job A - enclosure and heat sink layout (branch `feat/enclosure`)
-- Goal: a first enclosure layout proposal that Dan can approve or change. Start in 2D (board positions, wall items, heat path) before any 3D.
-- Inputs: boards A1, A2 = 72.4 x 95.3 mm; board B = 111.4 x 95.3 mm; three input boards 66 x 64 mm (they can stack over a main board on standoffs). Wall: X1 HD34-24-21SN, X2 HDP24-24-47SE-L017, six studs (BATT 150 A, GND, board B OUT1-4 at 31 A with rubber boots). Wiring: `docs/box-connectors.md`, pictures in `docs/diagrams/`.
-- Heat: switches are on top; the bare back side carries +12 V, so it needs an insulating gap pad to the heat sink. Board A: pedestals under U8/U11 and U10/U13, a pocket for J3's pins, a centre standoff. Board B: bottom mask openings under every switch (four BTS70012 near the centre, four BTS7004 in the right column). Dan: "we'll build in more than enough cooling capacity". Material so far: aluminium or MJF with a heat sink.
-- Only this job may use Fusion. Fusion work never needs asking (Dan), but hold the lock.
-- Open, ask Dan: mounting position in the car, size limits, lid and sealing, fan or no fan, how the 150 A feed is split to three boards (busbar).
-
-### Job B - firmware pin map (branch `feat/fw-pin-map`)
-- Goal: `docs/firmware-pin-map.md`, one table per board (A, B): every MCU pin the firmware must know (outputs IN / DEN or DSEL / current sense with ADC channel, inputs, CAN, I2C, LEDs), and what differs from stock dingoFW. No firmware code yet.
-- Source of truth: the schematics. Export a netlist with kicad-cli and read it with `tools/netlist_pins.py`. Board A: outputs 1-2 are a dual pair (DSEL on the old PF_DEN2 pin), inputs IN_3..IN_7 on PC10, PC11, PB4, PC13, PB3. Board B: see its Status entry below (IN5-8, DEN5_6, DEN7_8, IS5-8, B_IN3-10, B_AN).
-- Check each new pin's timer / ADC function against the STM32F446RE datasheet (cite it). PWM timers for the new IN pins were picked from memory and are UNCONFIRMED: PA8 TIM1_CH1, PB10 TIM2_CH3, PA15 TIM2_CH1, PC8 TIM8_CH3.
-- Read-only on `hardware/`.
-
-### Job C - tidy board B (branch `feat/board-b-tidy`)
-- Goal: clear the cosmetic leftovers without changing anything electrical.
-  - Overlapping silkscreen reference texts (DRC `silk_overlap`, `silk_over_copper`), mostly in the four copied channel blocks and at T1-T4.
-  - One dangling 1 mm stub on PF_IN8 near (47.4, 42.4): the pruning in `tools/route_board_b.py` runs before the plane repair; run it again after.
-  - New parts lack the Digi-Key / LCSC fields the schematic symbols have (47 parity field mismatches).
-- Work only in `tools/*board_b*` scripts, never by hand in the board file: `tools/build_board_b.ps1` regenerates everything from baseline `fe19c28` (about 10 minutes; start it with `Start-Process` and poll its log, Remote Desktop Commander calls return after about 5 s).
-- Pass condition: `python tools/drc_diff.py %TEMP%\board-b-build\drc_base.json %TEMP%\board-b-build\drc.json` shows 0 unconnected and unchanged clearance (7), hole_clearance (56), track_width (101), annular_width (20). Make `drc_base.json` from `reference\dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb`. `tools/check_board_b.py` must print ALL OK. The PCB must stay KiCad 9 format (`(version 20241229)`).
-- Only this job touches `hardware/board-b-max` and the board B scripts.
-
-### Review checklist for the orchestrator
-- Each job stayed in its own files; `git diff --stat main...<branch>` shows nothing unexpected (the board A build rewrites `hardware/board-a`: restore with `git checkout HEAD -- hardware/board-a` if it shows up).
-- Job C: rerun the build yourself and compare the DRC table; re-import to Fusion only if copper changed.
-- Job B: spot-check five pins against the netlist.
-- Job A: every assumption is listed as a question for Dan, none decided silently.
-- Update `STATE.md` and `DECISIONS.md`, then report to Dan in his format (TL;DR, bullets, lettered questions).
-
-### Decisions already made (do not re-ask)
-- All in `DECISIONS.md`. The ones that bite here: local-only repo; one pin per output on enclosure connectors, no ganged pins; power sources get socket contacts on the box side; X3 dropped; board B = one board; outputs leave board B on REDCUBE terminals; per-pin maker rating is the current criterion; at a finishing point keep going, stop only for something Dan must answer.
+- Jobs A, B, C from the 2026-11-10 handoff are merged (details in Status). Nothing is mid-flight; no open branches or worktrees.
+- **Waiting on Dan:** enclosure questions A-H (`docs/enclosure-layout.md` section 7) and firmware questions B1-B4 (`docs/firmware-pin-map.md`). Do not start 3D enclosure work, or a board change, before he answers.
+- Open, small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
+- Fusion lock is free (last release 2026-11-10 19:23). Do not run two agents in Fusion at once.
+- Docs changed since the last cleanup (2026-11-08): run iterative-cleaning (report-only) after Dan answers the questions (A2-b).
 
 ### Leftovers (each needs Dan's keep / remove call; none are in the way)
 - Fusion project `custom-pdm`: `board-A-dual` (broken import, no nets) and `LINKED-COPY-unused`.
@@ -64,6 +28,9 @@ Updated 2026-11-10. Decisions live in `DECISIONS.md`; scripts are listed in `aut
 - Left debug files in the board folder and committed them; they are git-ignored now.
 
 ## Status
+- 2026-11-10: Job B merged (docs/firmware-pin-map.md): one pin table per board, timers checked against DS10693. PA8 TIM1_CH1, PB10 TIM2_CH3, PA15 TIM2_CH1, PC8 TIM8_CH3 are correct as pin functions; stock dingoFW uses software PWM, so they do not matter. Traps: B_IN5 on PB2 = BOOT1; stock LINE_UNUSED = PA15; stock debug outputs on PC10, PC11, PC13; sleep wake-up (EXTI) clashes on PC10, PC11, PD2.
+- 2026-11-10: Job C merged: board B silk reference texts, one dangling PF_IN8 stub (only copper change) and Digi-Key/LCSC footprint fields are fixed by 	ools/tidy_board_b.py plus a second prune in oute_board_b.py. DRC vs stock Max: unconnected 0, clearance 7, hole_clearance 56, track_width 101, annular_width 20 unchanged. Re-import to Fusion is optional (one stub).
+- 2026-11-10: Job A merged: 2D enclosure proposal (docs/enclosure-layout.md, docs/diagrams/enclosure-layout.svg, 	ools/gen_enclosure_layout.py). Inner plan 314.2 x 261.3 mm with margins that are assumptions; worst-case heat 31.1 W (hand calc); lid height TBD (J3 DT15 housing 30.1 mm or 35.3 mm, sources conflict). Nothing decided.
 - Repo is local-only on DansPC (2026-11-09): detached from GitHub (`living-relation/custom-pdm` is now private; kept detached for now, Dan 2026-11-09). PR history saved in `docs/github-pr-history.md`. The GitHub state-check workflow no longer runs. Board B (dingoPDM-Max based) lives in `hardware/board-b-max/`.
 - Repo created (was public on GitHub). Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
 - Reference KiCad sources (dingoPDM v7.5, dingoPDM-Max) cloned locally under `reference/` (git-ignored, about 350 MB).
