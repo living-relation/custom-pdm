@@ -7,6 +7,8 @@ usage: python pcb_fix_board_a.py <board.kicad_pcb> <netlist.net>
 2. Enclosure H: the bottom mask window left at the old U9 spot (x -12.9..-8.94, y 11.38..14.02, no chip there) is removed.
 3. C7b: CAN terminator = open solder jumper + 120 ohm, placed on the nearest free top-side spot to U3's CANH/CANL pins
    and routed with route_board_a's router (CAN_H -> jumper -> resistor -> CAN_L).
+4. P11 (p1a): D18 (+5VP -> +5V Schottky, now PMEG2010AEH) gets the schematic's D_SOD-123F footprint in the same spot;
+   its tracks end inside the new pads, so no re-route (board_fix_pcb.swap_footprint).
 """
 import os
 import sys
@@ -36,7 +38,8 @@ for z in b.Zones():
         gone.append(z)
 if len(gone) != 1:
     raise SystemExit(f"expected one B.Mask window at the old U9 spot, found {len(gone)}")
-b = pcb_rework.remove_and_reload(b, gone, PCB)
+old_d18 = F.swap_footprint(b, "D18", comps["D18"])   # 4. P11: +5V Schottky footprint (removed in the same reload)
+b = pcb_rework.remove_and_reload(b, gone + [old_d18], PCB)
 print("enclosure H: B.Mask window at the old U9 spot removed")
 
 # ---- 1. fields, values, DNP

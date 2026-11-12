@@ -12,6 +12,8 @@ Decisions: DECISIONS.md 2026-11-11 (B4-b(b), C1b, C2b, C3d, C6c, C7b) and docs/p
          at the end of the bus).
   * B4-b(b) board B only: 10k from PB2 (BOOT1) to GND, so a DFU start always boots the system bootloader.
   * C6c  Manufacturer + MPN fields: on every part touched here and on the safety parts (TVS, switches, sense resistors).
+  * P11 (p1a)  +5V OR-ing Schottky (A: D18, B: D4; +5VP -> +5V) -> Nexperia PMEG2010AEH, SOD123F footprint
+         Diode_SMD:D_SOD-123F (290 mV max at 100 mA). The PCB footprint swap is board_fix_pcb.swap_footprint.
 Digi-Key numbers that could not be confirmed are written as "TBD".
 """
 import glob
@@ -41,6 +43,9 @@ SAFETY = {"C2150060": ("Infineon", "BTS70082EPAXUMA1"), "C534830": ("Infineon", 
 SAFETY_BY_VALUE = {"BTS7004-1EPP": ("Infineon", "BTS70041EPPXUMA1", "C534825")}   # had no supplier fields (P13)
 R120 = ("120R", "C17437", "TBD", "UNI-ROYAL", "0805W8F1200T5E")
 R10K = ("10K", "C17414", "311-10.0KCRDKR-ND", "UNI-ROYAL", "0805W8F1002T5E")
+OR5V = {"A": "D18", "B": "D4"}[BOARD]                                          # P11: +5VP -> +5V Schottky
+SCHOTTKY_5V = ("PMEG2010AEH", "C110921", "1727-PMEG2010AEH,115CT-ND", "Nexperia", "PMEG2010AEH,115")
+SCHOTTKY_5V_FP = "Diode_SMD:D_SOD-123F"
 JP_LIB, JP_FP = "Jumper:SolderJumper_2_Open", "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
 
 
@@ -306,6 +311,15 @@ for ref in DNP + (FITTED,):
                 raise SystemExit(f"{ref}: no (dnp no) line")
         return b
     edit_symbol("Power.kicad_sch", ref, reg)
+
+
+# ---------------------------------------------------------------- P11 (p1a) lower-drop Schottky on the +5V feed
+def or5v(b):
+    if get_prop(b, "LCSC") != "C179426" or get_prop(b, "Footprint") != "Diode_SMD:D_SOD-123":
+        raise SystemExit(f"{OR5V}: not the expected PMEG10010ELR (C179426) on D_SOD-123")
+    return set_prop(apply_part(b, SCHOTTKY_5V), "Footprint", SCHOTTKY_5V_FP)
+edit_symbol("Power.kicad_sch", OR5V, or5v)
+print(f"P11: {OR5V} -> {SCHOTTKY_5V[4]} ({SCHOTTKY_5V_FP})")
 
 # ---------------------------------------------------------------- P9 + C6c over every sheet
 changed_caps, tagged = [], []

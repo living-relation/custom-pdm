@@ -7,6 +7,7 @@
   * power pins of the new parts: a via to the +3V3 plane (bottom) or the GND plane (inner 1)
   * board fix (2026-11-11): CAN terminator (open solder jumper + 120 ohm, C7b) beside U3, and the 10k BOOT1 pull-down on
     PB2 (U4.28, B4-b(b)); both placed by tools/board_fix_pcb.py on the nearest free spot, then routed here
+  * P11 (p1a, 2026-11-11): D4 footprint D_SOD-123 -> D_SOD-123F (board_fix_pcb.swap_footprint), first thing
 Reports every net it could not finish; the build's DRC is the final word.
 """
 import math
@@ -28,6 +29,9 @@ mm, tomm = pcbnew.FromMM, pcbnew.ToMM
 V = lambda x, y: pcbnew.VECTOR2I(mm(x), mm(y))
 
 b = pcbnew.LoadBoard(PCB)
+# P11 (p1a): D4 (+5VP -> +5V Schottky, now PMEG2010AEH) gets the schematic's D_SOD-123F footprint in the same spot
+# (its stock tracks end inside the new pads). Done first: the removal needs a save + reload.
+b = pcb_rework.remove_and_reload(b, [F.swap_footprint(b, "D4", F.read_netlist(NET)["D4"])], PCB)
 nl = netlist_pins.parse(NET)
 padnet = {(r, p): n for r, rows in nl.items() for p, fn, n in rows}
 edge = [d for d in b.GetDrawings() if d.GetLayerName() == "Edge.Cuts"][0]
