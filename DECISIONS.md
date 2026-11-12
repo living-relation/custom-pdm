@@ -127,3 +127,4 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-11 (Claude, default under the 2026-11-11 rule): the Elmer heat analysis models the TEST 2 style stack (aluminium base-plate sink, fins down, pedestals + insulating gap pad, boards side by side), read from the pack's STEPs without changing them.
 - 2026-11-11 (Dan, chat): t1a - "terminals always horizontal" = the ring lug lies flat and the stud points up (as in TEST 2), wherever the terminal sits on the enclosure.
 - 2026-11-11 (Dan, chat): u1a - delete the superseded Fusion imports `board-A`, `board-A-dual-k9`, `board-A-inputs`, `board-B` (done; current boards are the `-2026-11-11` folders).
+- 2026-11-11 (Claude, orchestrator review): heat analysis branch accepted (energy balance within 0.01 W per run, mesh check +1.2 K on chip spots). It informs enclosure questions A-C; it decides nothing by itself.
