@@ -388,7 +388,7 @@ for n, x in IN_X.items():                          # input-board J2 wires -> X2,
 usbc = []
 UR = WALL_IN + 29.3
 # bulkhead rear -> north 6, drop to the sink field, back south UNDER the bulkhead body (body bottom z 13), west to the hub
-usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (27.0, -95.0, P["usb_z"]), (27.0, -100.5, P["usb_z"]), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))   # bulkhead rear -> lane over the board front strips at z 30 (above parts, below the input deck's south edge) -> down beside board B to the hub
+usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))   # bulkhead rear -> lane over the board front strips at z 30 under the main lid, z 22 under the low terrace (inner top 27) -> down beside board B to the hub
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
     usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.0), (X, -99.0, 7.0), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
