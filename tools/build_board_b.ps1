@@ -1,7 +1,8 @@
 # Rebuild board B (dingoPDM-Max based) from the unmodified baseline, then check it.
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\build_board_b.ps1 [-SchOnly] [-NoRoute]
 # Steps: restore baseline files -> tools\sch_board_b.py -> tools\sch_board_fix.py B -> netlist checks (tools\check_board_b.py) -> ERC summary
-#        -> tools\pcb_board_b.py (parts, outline, zones) -> tools\route_board_b.py (if present) -> DRC summary + renders.
+#        -> tools\pcb_board_b.py (parts, outline, zones) -> tools\route_board_b.py (if present) -> tools\tidy_board_b.py
+#        -> tools\wirepads.py pcb J6 (a2b: wire pads in the J6 holes) -> DRC summary + renders.
 param([switch]$SchOnly, [switch]$NoRoute)
 $ErrorActionPreference = "Stop"
 $Repo = Split-Path $PSScriptRoot -Parent
@@ -34,6 +35,8 @@ try {
     }
     Push-Location $B
     try {
+        python (Join-Path $Repo "tools\wirepads.py") lib                # a2b 2026-11-12: J6 -> wire pads in the same holes
+        if ($LASTEXITCODE) { throw "wirepads.py lib failed" }
         python (Join-Path $Repo "tools\sch_board_b.py")
         if ($LASTEXITCODE) { throw "sch_board_b.py failed" }
         python (Join-Path $Repo "tools\sch_board_fix.py") B         # board fix 2026-11-11 (DECISIONS.md)
@@ -54,6 +57,7 @@ try {
 
     $tidy = Join-Path $Repo "tools\tidy_board_b.py"
     if ((Test-Path $tidy) -and -not $NoRoute) { Run-Py9 $tidy $Pcb "$Out\board-b.net" (Join-Path $Repo "reference\dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb") }
+    Run-Py9 (Join-Path $Repo "tools\wirepads.py") pcb $Pcb J6         # a2b: Micro-Fit J6 -> wire pads, same 4 holes
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"

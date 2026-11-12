@@ -1,0 +1,152 @@
+(footprint "MicroFit_2x02_WirePads"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "Wire solder pads in the Molex Micro-Fit 3.0 2x02 hole pattern (4 x 1.02 mm drill, 1.5 mm pad), 20 AWG. CL/CH = CAN_L/CAN_H, I1/I2 = IN1/IN2.")
+	(tags "wire solder pad")
+	(property "Reference" "REF**"
+		(at 1.5 6.6 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "e5b12194-4da9-5332-ae26-c26efff7860a")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(property "Value" "WIRE PADS CAN + IN1-2"
+		(at 0 7.1 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "f1e4bd2e-3c3c-5fef-a841-91ccfb6f16b7")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6c002e7d-299d-5e17-b429-ea80eed7776f")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "9aea57b6-c6b6-5a29-8446-12dda177d4c9")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(attr through_hole)
+	(fp_text user "CL"
+		(at 0 -1.65 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "7864c3ea-4982-5b90-aecc-ca1ace33fb2a")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(fp_text user "CH"
+		(at 3 -1.65 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "3b9baa8a-0f15-5f07-981e-f9859d1e526d")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(fp_text user "I2"
+		(at 0 4.65 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "b5c136dd-59e0-5f02-9ece-54eff11b7c1a")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(fp_text user "I1"
+		(at 3 4.65 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "33049ce7-a28b-58d6-a888-9479ba9ef252")
+		(effects
+			(font
+				(size 1.02 1.02)
+				(thickness 0.16)
+			)
+		)
+	)
+	(fp_rect
+		(start -1.25 -2.6)
+		(end 4.25 5.6)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "c12f5b56-6356-5560-8456-e8b90590ee28")
+	)
+	(pad "1" thru_hole roundrect
+		(at 0 0)
+		(size 1.5 1.5)
+		(drill 1.02)
+		(roundrect_rratio 0.166667)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "b5df5ae5-e477-55fa-a7ab-f4fae716675c")
+	)
+	(pad "2" thru_hole circle
+		(at 3 0)
+		(size 1.5 1.5)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "d3ae1fbc-b78f-576a-a7e6-52ea0e8b7d2f")
+	)
+	(pad "3" thru_hole circle
+		(at 0 3)
+		(size 1.5 1.5)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "ac4f8902-4c49-5c1f-8a88-e4220773eec3")
+	)
+	(pad "4" thru_hole circle
+		(at 3 3)
+		(size 1.5 1.5)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "284fb277-437d-549a-a171-136a6b7bac79")
+	)
+	(embedded_fonts no)
+)

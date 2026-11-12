@@ -17,7 +17,8 @@ What it adds
         B_IN3..B_IN10 = PC14 PC15 PC13 PD2 PB4 PB5 PC10 PC11       B_AN = PB1 (ADC_IN9)
         (B_IN5 is on PC13, not PB2: PB2 is BOOT1, a start-up pin. Dan, 2026-11-10, B1. PB2 stays no-connect.)
   * Connectors sheet: T1-T8 = bolt-down output terminals (Wuerth REDCUBE THR M4), one per output; J4 (Deutsch DT) removed.
-                      J6 = Molex Micro-Fit 2x2: 1 CAN_L, 2 CAN_H, 3 INPUT2, 4 INPUT1 (order follows the old J4 track ends).
+                      J6 = wire pads in the Micro-Fit 2x2 hole pattern (a2b, 2026-11-12): 1 CAN_L, 2 CAN_H, 3 INPUT2,
+                      4 INPUT1 (order follows the old J4 track ends).
                       J7 = JST GH 12 to input board #3: 1-8 B_IN3..10, 9 B_AN, 10 +3V3, 11-12 GND.
   * All test points removed (Dan: no test points).
 """
@@ -518,7 +519,7 @@ items.append(f'(text "Output terminals: one wire per output (no ganged pins).\\n
              f'T5-T8 = OUT5-8, 15 A.  All Wuerth REDCUBE M4 74650074R (50 A)."\n\t\t(exclude_from_sim no)\n\t\t(at 142.24 35.56 0)\n\t\t(effects\n\t\t\t(font\n'
              f'\t\t\t\t(size 1.27 1.27)\n\t\t\t)\n\t\t\t(justify left bottom)\n\t\t)\n\t\t(uuid "{u()}")\n\t)')
 
-# J6: Micro-Fit 2x2 (CAN + stock inputs)
+# J6: CAN + stock inputs; wire pads in the old Micro-Fit 2x2 holes since a2b (2026-11-12)
 LIB4 = "Connector_Generic:Conn_01x04"
 if f'(symbol "{LIB4}"' not in t:
     lt = rd(os.path.join(os.environ["LOCALAPPDATA"], r"Programs\KiCad\10.0\share\kicad\symbols\Connector_Generic.kicad_sym"))
@@ -531,7 +532,7 @@ if f'(symbol "{LIB4}"' not in t:
     k = t.index("(lib_symbols") + len("(lib_symbols")
     t = t[:k] + "\n\t\t" + sym.lstrip("\t") + t[k:]
 J6_AT = (106.68, 50.8)
-j6 = part(j4, J6_AT, "J6", "CAN + IN1-2 (Micro-Fit 2x2)", "Connector_Molex:Molex_Micro-Fit_3.0_43045-0412_2x02_P3.00mm_Vertical")
+j6 = part(j4, J6_AT, "J6", "WIRE PADS CAN + IN1-2", "dingoPDM:MicroFit_2x02_WirePads")   # a2b: wire pads in the old Micro-Fit holes (tools/wirepads.py)
 j6 = j6.replace('(lib_id "Connector_Generic:Conn_01x12")', f'(lib_id "{LIB4}")')
 pins = re.findall(r'\n\t\t\(pin "\d+"\s*\(uuid "[^"]+"\)\s*\)', j6)
 if len(pins) != 12:
