@@ -378,7 +378,8 @@ zr = Z_TOP + 7.0                                   # A ribbons over the boards: 
 wires = []
 for n, xc, xe in (("A1", None, CONN["X1"] - 6.0), ("A2", 223.0, CONN["X1"] + 6.0)):
     cx, cy = W(n, 0, 0); xc = xc or cx
-    wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc, cy - 8, zr), (xc, -97.0, zr), (xe, YR, TZ - 8)], 20.0, P["ribbon_t"]))
+    via = [(165.0, -99.5, zr + 6.0)] if n == "A2" else []   # A2 ribbon passes behind X2's rear body (y -107.4) with 1 mm to spare
+    wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc, cy - 8, zr), (xc, -97.0, zr)] + via + [(xe, YR, TZ - 8)], 14.0, P["ribbon_t"]))   # 12 wires (8 x 16 AWG + 4 x 20 AWG) in two layers
 bx_, by_ = W("B", -1.5, -1.5)                      # B J6 pads (CAN + IN1/2) -> X2: low along the sink field south of the boards
 wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (bx_, by_ - 6, Z_TOP + 6.0), (bx_, -103.0, Z_TOP + 6.0), (bx_, -106.0, 4.0), (CONN["X2"] - 6, -105.0, 4.0), (CONN["X2"] - 6, -103.5, TZ + 4)], 10.0, 3.0))
 tx = 96.5                                          # B T5-T8 wires (ring lugs on the M4 terminals, x 106.2) gathered west of the H5/H6 standoffs
@@ -391,7 +392,7 @@ UR = WALL_IN + 29.3
 usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))   # bulkhead rear -> lane over the board front strips at z 30 under the main lid, z 22 under the low terrace (inner top 27) -> down beside board B to the hub
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
-    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.0), (X, -99.0, 7.0), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
+    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 8.5), (X, -99.0, 8.5), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
 addp("wire-ribbons", Compound(wires), (0.85, 0.75, 0.1), "harness to X1/X2 as flat taped ribbons (A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2); ASSUMED routing")
 addp("usb-cables", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables bulkhead -> hub -> 3 boards (USB-C at the board front edges), ASSUMED routing; plugs not modelled")
 ties = [box(x - 4, x + 4, -107.0 - 4, -107.0 + 4, 0.0, 2.5) for x in (60.0, 140.0)]
