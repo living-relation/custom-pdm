@@ -160,3 +160,4 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat): a2a - board B wire pads (CAN_L, CAN_H, IN1, IN2) move from the J6 spot to the board B front edge, clear of T1-T8, the M6 terminals and the strap / wrench area. Replaced by a2b.
 - 2026-11-12 (Dan, chat): y1a - one sealed USB-C bulkhead (jam nut) on the front wall feeds a small bus-powered USB hub inside, with a short USB cable to each board. Check at hub part pick that the boards do not back-feed 5 V into VBUS.
 - 2026-11-12 (Dan, chat): a2b - board B wire pads stay in J6's 4 holes in the board centre (pads-only footprint, no re-route, same as a1a). The wires lie flat on the top surface under the raised T1-T4 straps, so they do not block the straps or the wrench; check the REDCUBE terminal height leaves room for them.
+- 2026-11-12 (Claude, orchestrator review): wire-pads PR #41 accepted (checks equal to main, same holes, no copper change).
