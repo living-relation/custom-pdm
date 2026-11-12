@@ -10,6 +10,12 @@ size 16 = 13 A (14-20 AWG), size 12 = 25 A (12-14 AWG), size 8 = 60 A (8-10 AWG)
 
 Rule (Dan, standing): anything that sources power has **socket** contacts on the box side, so no live pins are exposed when the connector is unplugged.
 
+Inside the box, wires solder straight to the boards (Dan 2026-11-12, e6a / a1a / a2b): board A J3 = wire pads in the old
+DT15-12PA holes (1.77 mm drill: 16 AWG outputs, 20 AWG IN / CAN), silkscreen CL CH O1-O8 I1 I2 between the pad rows;
+board B J6 = wire pads in the old Micro-Fit 2x2 holes (1.02 mm drill, 20 AWG), silkscreen CL CH I1 I2. Footprints:
+`tools/wirepads.py`. "J3 pad 8" below = the J3 hole numbered 8. Board B J6 wires run flat on the top surface under the
+T1-T4 straps (REDCUBE 74650074R body is 3.0 mm tall).
+
 ## Overview
 
 | # | Box side (panel) | Harness side | Insert | Carries |
@@ -24,14 +30,14 @@ Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17
 
 | Cavity | Signal | Board connector | Cavity | Signal | Board connector |
 |---|---|---|---|---|---|
-| H | A1_OUT1 | A1 J3-8 | S | A2_OUT1 | A2 J3-8 |
-| J | A1_OUT2 | A1 J3-7 | T | A2_OUT2 | A2 J3-7 |
-| K | A1_OUT3 | A1 J3-10 | U | A2_OUT3 | A2 J3-10 |
-| L | A1_OUT4 | A1 J3-9 | V | A2_OUT4 | A2 J3-9 |
-| M | A1_OUT5 | A1 J3-6 | W | A2_OUT5 | A2 J3-6 |
-| N | A1_OUT6 | A1 J3-5 | X | A2_OUT6 | A2 J3-5 |
-| P | A1_OUT7 | A1 J3-4 | A | A2_OUT7 | A2 J3-4 |
-| R | A1_OUT8 | A1 J3-3 | C | A2_OUT8 | A2 J3-3 |
+| H | A1_OUT1 | A1 J3 pad 8 (O1) | S | A2_OUT1 | A2 J3 pad 8 (O1) |
+| J | A1_OUT2 | A1 J3 pad 7 (O2) | T | A2_OUT2 | A2 J3 pad 7 (O2) |
+| K | A1_OUT3 | A1 J3 pad 10 (O3) | U | A2_OUT3 | A2 J3 pad 10 (O3) |
+| L | A1_OUT4 | A1 J3 pad 9 (O4) | V | A2_OUT4 | A2 J3 pad 9 (O4) |
+| M | A1_OUT5 | A1 J3 pad 6 (O5) | W | A2_OUT5 | A2 J3 pad 6 (O5) |
+| N | A1_OUT6 | A1 J3 pad 5 (O6) | X | A2_OUT6 | A2 J3 pad 5 (O6) |
+| P | A1_OUT7 | A1 J3 pad 4 (O7) | A | A2_OUT7 | A2 J3 pad 4 (O7) |
+| R | A1_OUT8 | A1 J3 pad 3 (O8) | C | A2_OUT8 | A2 J3 pad 3 (O8) |
 
 | Cavity | Signal | Board connector |
 |---|---|---|
@@ -50,10 +56,10 @@ The drawing labels only some numbers (1, 2, 20, 30, 40, 47); the rest come from 
 | Cavity | Signal | Source inside the box |
 |---|---|---|
 | 2, 3 | CAN_H, CAN_L | CAN bus to the Link ECU (twisted pair; daisy-chained inside the box) |
-| 7, 8 | A1_IN1, A1_IN2 | board A1 J3 pins 12, 11 |
+| 7, 8 | A1_IN1, A1_IN2 | board A1 J3 pads 12 (I1), 11 (I2) |
 | 9-13 | A1_IN3 .. A1_IN7 | input board #1 J2 pins 1-5 |
 | 14 | A1_AN | input board #1 J2 pin 9 (0-5 V) |
-| 15, 16 | A2_IN1, A2_IN2 | board A2 J3 pins 12, 11 |
+| 15, 16 | A2_IN1, A2_IN2 | board A2 J3 pads 12 (I1), 11 (I2) |
 | 17-21 | A2_IN3 .. A2_IN7 | input board #2 J2 pins 1-5 |
 | 22 | A2_AN | input board #2 J2 pin 9 |
 | 23, 24 | B_IN1, B_IN2 | board B stock inputs |

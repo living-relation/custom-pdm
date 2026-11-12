@@ -58,14 +58,14 @@ Eight outputs, 7.5 A each: four BTS7008-2EPA duals. Pairs: OUT1+2 on U8 (NEW: wa
 
 | Out | IN pin (PIN) | DEN pin | DSEL pin | IS pin, ADC1 channel | Driver | Enclosure pin | Stock v7 | Diff |
 |---|---|---|---|---|---|---|---|---|
-| 1 | PB10 (29) PF_IN1 | PB2 (28) PF_DEN1 | PC7 (38) PF_DSEL1_2 | PA0 (14) PF_IS1, IN0 | U8 ch0 | J3.8 | single BTS7002, DEN1 = PB2 | now dual CH1. DEN is shared with out 2. DSEL is NEW (on the old DEN2 pin PC7). IS shared with out 2. |
-| 2 | PC8 (39) PF_IN2 | PB2 (28), shared | PC7 (38), shared | PA0 (14), shared | U8 ch1 | J3.7 | single, DEN2 = PC7, IS2 = PC2 | now dual CH2. Old IS2 (PC2) no longer a current sense. |
-| 3 | PC6 (37) PF_IN3 | PB15 (36) PF_DEN3_4 | PB14 (35) PF_DSEL3_4 | PC3 (11) PF_IS3_4, IN13 | U11 ch0 | J3.10 | same | none |
-| 4 | PB12 (33) PF_IN4 | PB15 (36) | PB14 (35) | PC3 (11) | U11 ch1 | J3.9 | same | none |
-| 5 | PB1 (27) PF_IN5 | PB0 (26) PF_DEN5_6 | PC5 (25) PF_DSEL5_6 | PA1 (15) PF_IS5_6, IN1 | U10 ch0 | J3.6 | same | none |
-| 6 | PC4 (24) PF_IN6 | PB0 (26) | PC5 (25) | PA1 (15) | U10 ch1 | J3.5 | same | none |
-| 7 | PA7 (23) PF_IN7 | PA6 (22) PF_DEN7_8 | PA5 (21) PF_DSEL7_8 | PA2 (16) PF_IS7_8, IN2 | U13 ch0 | J3.4 | same | none |
-| 8 | PA4 (20) PF_IN8 | PA6 (22) | PA5 (21) | PA2 (16) | U13 ch1 | J3.3 | same | none |
+| 1 | PB10 (29) PF_IN1 | PB2 (28) PF_DEN1 | PC7 (38) PF_DSEL1_2 | PA0 (14) PF_IS1, IN0 | U8 ch0 | J3 pad 8 (O1) | single BTS7002, DEN1 = PB2 | now dual CH1. DEN is shared with out 2. DSEL is NEW (on the old DEN2 pin PC7). IS shared with out 2. |
+| 2 | PC8 (39) PF_IN2 | PB2 (28), shared | PC7 (38), shared | PA0 (14), shared | U8 ch1 | J3 pad 7 (O2) | single, DEN2 = PC7, IS2 = PC2 | now dual CH2. Old IS2 (PC2) no longer a current sense. |
+| 3 | PC6 (37) PF_IN3 | PB15 (36) PF_DEN3_4 | PB14 (35) PF_DSEL3_4 | PC3 (11) PF_IS3_4, IN13 | U11 ch0 | J3 pad 10 (O3) | same | none |
+| 4 | PB12 (33) PF_IN4 | PB15 (36) | PB14 (35) | PC3 (11) | U11 ch1 | J3 pad 9 (O4) | same | none |
+| 5 | PB1 (27) PF_IN5 | PB0 (26) PF_DEN5_6 | PC5 (25) PF_DSEL5_6 | PA1 (15) PF_IS5_6, IN1 | U10 ch0 | J3 pad 6 (O5) | same | none |
+| 6 | PC4 (24) PF_IN6 | PB0 (26) | PC5 (25) | PA1 (15) | U10 ch1 | J3 pad 5 (O6) | same | none |
+| 7 | PA7 (23) PF_IN7 | PA6 (22) PF_DEN7_8 | PA5 (21) PF_DSEL7_8 | PA2 (16) PF_IS7_8, IN2 | U13 ch0 | J3 pad 4 (O7) | same | none |
+| 8 | PA4 (20) PF_IN8 | PA6 (22) | PA5 (21) | PA2 (16) | U13 ch1 | J3 pad 3 (O8) | same | none |
 
 Dual pairs rely on the stock rule: DSEL low = channel 0, high = channel 1, wait 60 us, then read IS (`profet.cpp` `HandleDsel`).
 
@@ -73,8 +73,8 @@ Dual pairs rely on the stock rule: DSEL low = channel 0, high = channel 1, wait 
 
 | Name | MCU pin (PIN) | Goes to | Type | Stock v7 | Diff |
 |---|---|---|---|---|---|
-| IN_1 (DI1) | PA10 (43) | J3.12 (INPUT1), 4.7k + BAT54S + 10 nF on board | digital | same | none |
-| IN_2 (DI2) | PC9 (40) | J3.11 (INPUT2) | digital | same | none |
+| IN_1 (DI1) | PA10 (43) | J3 pad 12 (I1, INPUT1), 4.7k + BAT54S + 10 nF on board | digital | same | none |
+| IN_2 (DI2) | PC9 (40) | J3 pad 11 (I2, INPUT2) | digital | same | none |
 | IN_3 | PC10 (51) | J6.1 -> input board ch 1 | digital | debug output E1 | NEW |
 | IN_4 | PC11 (52) | J6.2 -> ch 2 | digital | debug output E2 | NEW |
 | IN_5 | PB4 (56) | J6.3 -> ch 3 | digital | unused (input, pull-up) | NEW |
@@ -121,8 +121,8 @@ The IS to channel link was traced through the buffers: CH5 -> U22C -> PF_IS5, CH
 
 | Name | MCU pin (PIN) | Goes to | Type | Diff |
 |---|---|---|---|---|
-| IN_1 (DI1) | PA10 (43) | J6.4 (INPUT1) | digital | none |
-| IN_2 (DI2) | PC9 (40) | J6.3 (INPUT2) | digital | none |
+| IN_1 (DI1) | PA10 (43) | J6 pad 4 (I1, INPUT1; wire pad) | digital | none |
+| IN_2 (DI2) | PC9 (40) | J6 pad 3 (I2, INPUT2; wire pad) | digital | none |
 | B_IN3 | PC14 (3) | J7.1 -> input board ch 1 | digital | NEW |
 | B_IN4 | PC15 (4) | J7.2 -> ch 2 | digital | NEW |
 | B_IN5 | PC13 (2) | J7.3 -> ch 3 | digital | NEW (moved from PB2 = BOOT1, B1) |
@@ -135,7 +135,7 @@ The IS to channel link was traced through the buffers: CH5 -> U22C -> PF_IS5, CH
 
 PB2 (pin 28) carries no signal on board B: only the 10k BOOT1 pull-down. The numbering B_IN3..B_IN10 is the schematic net name; the input board calls the same wires ch 1..8 (section 8).
 
-**System pins**: same as board A (section 3) for CAN1 (PB8, PB9; connector J6.1 CAN_L, J6.2 CAN_H), CAN standby PC12, I2C1 (PB6, PB7; U5, U6; R12, R13), battery sense PA3, USB (PA11, PA12, PA9), LEDs PC0 red (D7) and PC1 green (D8), SWD PA13/PA14 and NRST (J5 Tag-Connect). Differences: J5.6 = SWO is wired to PB3 (55); BOOT0 via R10 and SW1. PB2: net `/MCU/BOOT1`, 10k to GND only (board fix, B4-b(b)).
+**System pins**: same as board A (section 3) for CAN1 (PB8, PB9; wire pads J6 1 CAN_L (CL), 2 CAN_H (CH)), CAN standby PC12, I2C1 (PB6, PB7; U5, U6; R12, R13), battery sense PA3, USB (PA11, PA12, PA9), LEDs PC0 red (D7) and PC1 green (D8), SWD PA13/PA14 and NRST (J5 Tag-Connect). Differences: J5.6 = SWO is wired to PB3 (55); BOOT0 via R10 and SW1. PB2: net `/MCU/BOOT1`, 10k to GND only (board fix, B4-b(b)).
 
 ## 5. ADC channels and PWM timers
 
