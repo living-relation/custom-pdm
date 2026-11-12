@@ -48,7 +48,7 @@ P = dict(
     terrace_top=30.0, collar_top=38.23,                       # Grok 32.23; +6 so the M6 boss is 15 tall (stud 6 + lug screw 8 engagement)
     main_top=66.0,           # raised from 55: the front turrets (dia 62, axis Z 33) and the panel nut must fit under the body top
     turret_d=62.0, turret_z=33.0, turret_bore=54.0, turret_len=24.0,
-    usb_turret_d=46.0, usb_z=24.0,
+    usb_turret_d=46.0, usb_z=30.0,   # raised so the bulkhead's rear cable runs above the board components (max z 19.2)
     deck_t=3.0, in_boss=4.0, so_m3_len=25.0,
     bar_t=5.0, batt_w=20.0, batt_yc=-63.5, gnd_w=15.0, gnd_yc=-5.0,   # copper bars (C110) 20x5 / 15x5, offset in Y to clear the OUT-bay liner
     boss6_af=13.0, boss4_d=9.5, boss4_flats=8.0, lug_t=2.0,
@@ -167,7 +167,7 @@ if VAR == "F1":
     while y + P["fin_t"] <= LY1 - fe + 1e-6:
         fins.append(box(LX0 + fe + 16, bay_x0, y, y + P["fin_t"], zf0, -pt)); y += P["fin_pitch"]
     finf = Compound(fins)
-    fan_y = [(LY0 + LY1) / 2 - 24, (LY0 + LY1) / 2 + 19]; fan_z = zf0 + 15.0   # north fan clear of the east-mid foot web
+    fan_y = [(LY0 + LY1) / 2 - 16, (LY0 + LY1) / 2 + 16]; fan_z = zf0 + 15.0   # both fans near mid, clear of the east-mid foot web
     wall_x = bay_x0 + 1.0                                         # 3 mm fan wall (part of the sink), fans bolt to its east face
     fwall = box(wall_x, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
     for fy in fan_y: fwall = fwall.cut(cyl(28.0, (wall_x - 1, fy, fan_z), 5.0, (1, 0, 0)))
@@ -380,7 +380,7 @@ for n, xc, xe in (("A1", None, CONN["X1"] - 6.0), ("A2", 223.0, CONN["X1"] + 6.0
     cx, cy = W(n, 0, 0); xc = xc or cx
     wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc, cy - 8, zr), (xc, -97.0, zr), (xe, YR, TZ - 8)], 20.0, P["ribbon_t"]))
 bx_, by_ = W("B", -1.5, -1.5)                      # B J6 pads (CAN + IN1/2) -> X2: low along the sink field south of the boards
-wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (bx_, by_ - 6, Z_TOP + 6.0), (bx_, -100.5, Z_TOP + 6.0), (bx_, -104.0, 4.0), (CONN["X2"] - 6, -107.0, 4.0), (CONN["X2"] - 6, -103.5, TZ + 4)], 10.0, 3.0))
+wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (bx_, by_ - 6, Z_TOP + 6.0), (bx_, -103.0, Z_TOP + 6.0), (bx_, -106.0, 4.0), (CONN["X2"] - 6, -105.0, 4.0), (CONN["X2"] - 6, -103.5, TZ + 4)], 10.0, 3.0))
 tx = 96.5                                          # B T5-T8 wires (ring lugs on the M4 terminals, x 106.2) gathered west of the H5/H6 standoffs
 wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 14, YR, 19.0)], 12.0, 2.5))
 for n, x in IN_X.items():                          # input-board J2 wires -> X2, from the deck south edge
@@ -388,10 +388,10 @@ for n, x in IN_X.items():                          # input-board J2 wires -> X2,
 usbc = []
 UR = WALL_IN + 29.3
 # bulkhead rear -> north 6, drop to the sink field, back south UNDER the bulkhead body (body bottom z 13), west to the hub
-usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, UR + 6.0, P["usb_z"]), (USB_X, UR + 6.0, 6.0), (USB_X - 6, -115.0, 5.0), (hb.xmax + 6, -115.0, 5.0), (hb.xmax + 1, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
+usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (27.0, -95.0, P["usb_z"]), (27.0, -100.5, P["usb_z"]), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))   # bulkhead rear -> lane over the board front strips at z 30 (above parts, below the input deck's south edge) -> down beside board B to the hub
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
-    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 9.5), (X, -99.0, 9.5), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
+    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.0), (X, -99.0, 7.0), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
 addp("wire-ribbons", Compound(wires), (0.85, 0.75, 0.1), "harness to X1/X2 as flat taped ribbons (A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2); ASSUMED routing")
 addp("usb-cables", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables bulkhead -> hub -> 3 boards (USB-C at the board front edges), ASSUMED routing; plugs not modelled")
 ties = [box(x - 4, x + 4, -107.0 - 4, -107.0 + 4, 0.0, 2.5) for x in (60.0, 140.0)]
