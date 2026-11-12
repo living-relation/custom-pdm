@@ -5684,7 +5684,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x12"
+		(property "Value" "WIRE PADS X1/X2/CAN"
 			(at 108.712 59.0623 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5695,7 +5695,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "dingoPDM:DT15-12PA"
+		(property "Footprint" "dingoPDM:DT15-12PA_WirePads"
 			(at 106.68 56.515 0)
 			(hide yes)
 			(show_name no)
@@ -5728,7 +5728,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C5341788"
+		(property "LCSC" ""
 			(at 106.68 56.515 0)
 			(hide yes)
 			(show_name no)
@@ -5739,7 +5739,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1734-1027-ND"
+		(property "Digi-Key_PN" ""
 			(at 106.68 56.515 0)
 			(hide yes)
 			(show_name no)
