@@ -140,5 +140,8 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat, standing): enclosure size and appearance are the main goal; cooling adapts to them (not the other way round).
 - 2026-11-12 (Dan, chat): j1a - board A's DT15 headers are not used as outside connectors (they are sealed bulkhead parts not doing that job here). X1 (HD30) and X2 (HDP24) stay as the box connectors, on one side wall, pointing horizontal.
 - 2026-11-12 (Dan, chat): e6a (enclosure F) - remove the DT15-12PA (J3) from both board A's; its wires (8 outputs, IN1, IN2) are soldered straight to board A and run to X1 / X2. No plugs between boards inside the box (Dan: nothing inside ever needs to be disconnected). Board A change, to do. This removes the DT15 height, so the enclosure gets lower.
-- 2026-11-12 (Claude, from Dan's 'stick to my original design', TEST 2 layout; Dan to confirm): e5a (enclosure E) - each input board sits on standoffs above its own main board.
+- 2026-11-12 (Dan, chat; 'much easier to stack the boards'): e5a (enclosure E) - each input board sits on standoffs above its own main board.
 - 2026-11-12 (Claude, default under the 2026-11-11 rule; Dan may override): k1a - a cable-tie point built into the base near the board A solder joints holds the board A to X1 / X2 wire bundles (vibration). No tie-down between boards (Dan).
+- 2026-11-12 (Dan, chat): n1b - each input board plugs straight onto its main board with a board-to-board stacking header (e.g. 2.54 mm pin header + socket); fallback n1a = keep the short JST GH cable. Board change on all boards (connector spots must line up), to do.
+- 2026-11-12 (Dan, chat): p1a - board B J6 (Micro-Fit 2x2: CAN + 2 inputs) is removed; its wires are soldered straight to board B (same as e6a).
+- 2026-11-12 (Dan, chat): p2a - board B OUT1-4 reach their enclosure studs by short copper straps on the REDCUBE M4 terminals (no thick wires); the studs also shed heat.
