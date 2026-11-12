@@ -145,3 +145,5 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat): n1b - each input board plugs straight onto its main board with a board-to-board stacking header (e.g. 2.54 mm pin header + socket); fallback n1a = keep the short JST GH cable. Board change on all boards (connector spots must line up), to do.
 - 2026-11-12 (Dan, chat): p1a - board B J6 (Micro-Fit 2x2: CAN + 2 inputs) is removed; its wires are soldered straight to board B (same as e6a).
 - 2026-11-12 (Dan, chat): p2a - board B OUT1-4 reach their enclosure studs by short copper straps on the REDCUBE M4 terminals (no thick wires); the studs also shed heat.
+- 2026-11-12 (Dan, chat): e7b (enclosure G) - board A is held on the heat sink by its 4 corner M3 screws plus a compliant gap pad; no centre hole or lid post (small boards bend little).
+- 2026-11-12 (Dan, chat): the planned layout sketch is the target: A1, A2, B in a row; input boards stacked on each via stacking headers; BATT / GND copper bars across to their studs; board B OUT1-4 straps to studs; soldered wires to X1 / X2 on the front wall. Header spots, stud and wall positions still TBD.

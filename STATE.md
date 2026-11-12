@@ -21,7 +21,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
 1. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
-2. Enclosure (main goal: size and appearance, cooling adapts; Dan 2026-11-12): A-F answered (e1-e6, 2026-11-12); G next (e7), then the board changes: DT15 removal on board A (e6a), J6 removal on board B (p1a), stacking headers on all boards (n1b, fallback JST cable), then our own 3D version (handbuilt-cad, TEST 2 as direction, rules in `DECISIONS.md` 2026-11-11/12); also firmware thermal protection and temperature-triggered fan control with a software-set limit (to plan, e3c), now that the heat analysis is done; Plan B is final (b3a). Heat results that shape them: `docs/heat-analysis.md`. Defaults rule: `AGENTS.md`.
+2. Enclosure (main goal: size and appearance, cooling adapts; Dan 2026-11-12): A-G answered (e1-e7, 2026-11-12; target layout in `DECISIONS.md` 2026-11-12); next the board changes: DT15 removal on board A (e6a), J6 removal on board B (p1a), stacking headers on all boards (n1b, fallback JST cable), then our own 3D version (handbuilt-cad, TEST 2 as direction, rules in `DECISIONS.md` 2026-11-11/12); also firmware thermal protection and temperature-triggered fan control with a software-set limit (to plan, e3c), now that the heat analysis is done; Plan B is final (b3a). Heat results that shape them: `docs/heat-analysis.md`. Defaults rule: `AGENTS.md`.
 3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
@@ -96,6 +96,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - `%LOCALAPPDATA%\Workstation\claude-fusion\`: helper scripts (`call.ps1`, `up*.py`, `chk*.py`, `*.ulp`, `kicad\`), TE drawings in `te-drawings\`.
 
 ## Mistakes not to repeat
+- Commit 458ef4c (2026-11-12) went to main without a PR: another session switched the shared folder to main mid-turn. Check `git branch --show-current` right before every commit; one orchestrator per repo folder.
 - Committed staged files by accident twice (baseline board files in 1b16fdf; build output in `firmware/1`, `firmware/2` after passing the unit number where the output folder goes). Check `git diff --cached --stat` before every commit.
 - `device_commit_files` delivered an older copy of a tarball that had just been rebuilt. Check contents after extracting.
 - PowerShell `$ErrorActionPreference = 'Stop'` plus a git warning on stderr stopped a multi-step command half way. Do not combine them; send git stderr to `$null`.
