@@ -16,7 +16,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 
 ## Where work is
 - `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). No other branches or worktrees.
-- Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm-wt-<job>` and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges.
+- Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (inside the repo root, git-ignored; rule in `AGENTS.md`) and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges.
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)

@@ -12,6 +12,7 @@ Rules:
 - Fusion on DansPC: follow the lock rules in `C:\projects\active\workstation\agents\projects-AGENTS.md` section 5.
 - Upstream design is dingoPDM (MIT): keep its license notice on any reused files.
 - `tools/build_board_a.ps1` rewrites `hardware/board-a/` in the working tree. Check `git diff --cached --stat` before every commit, and restore board files you did not mean to change (`git checkout HEAD -- hardware/board-a`).
+- Worktrees and feature branches (Dan, 2026-11-11): every worktree lives inside the repo root, `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (git-ignored), never beside it in `C:\projects\active` (same rule as `C:\projects\AGENTS.md`).
 - Defaults (Dan, 2026-11-11): if a question only amounts to "keep going or not" and the step is a normal part of the process that breaks nothing, take the common-sense answer, log it in `DECISIONS.md` as a default, and move on. Ask Dan only about real problems or real design choices. Do not invent problems.
 - At a finishing point, do not stop and wait: update STATE/DECISIONS/plans and working memory, then continue with the next task. Stop only for something Dan must answer or do (Dan, 2026-11-09).
 
