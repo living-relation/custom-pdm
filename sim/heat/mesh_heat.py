@@ -26,7 +26,8 @@ for (x0, x1, y0, y1) in G.pedestals():
     ents.append(box(x0, x1, y0, y1, 0.0, G.PED_H))
     ents.append(box(x0, x1, y0, y1, G.PED_H, G.Z_BOT))
 for n in ("B", "A1", "A2"):
-    ents.append(box(G.X0[n], G.X0[n] + G.BOARD_W[n], -G.BOARD_D, 0.0, G.Z_BOT, G.Z_TOP))
+    x0, x1, y0, y1 = G.board_rect(n)
+    ents.append(box(x0, x1, y0, y1, G.Z_BOT, G.Z_TOP))
 CH = G.chips()
 for c in CH:
     x0, x1, y0, y1 = c["rect"]; ents.append(box(x0, x1, y0, y1, G.Z_BOT, G.Z_TOP))

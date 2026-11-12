@@ -1,9 +1,15 @@
 """Shared geometry and load data for the steady heat model (docs/heat-analysis.md).
 
-World frame = Grok TEST 2 pack frame (handoff/HANDOFF.md S1): X east, Y north, Z up, mm.
-Z = 0 is the sink field (plate top between pedestals). Variant b sink (no J3 pocket).
-Board KiCad (x, y) -> world X = X0 + x + 37.846, Y = -(y + 33.274).
+Two geometries, picked by the environment variable HEAT_GEOM:
+- "test2" (default, 2026-11-11 run): Grok TEST 2 pack frame (handoff/HANDOFF.md S1): X east, Y north, Z up, mm.
+  Z = 0 is the sink field (plate top between pedestals). Variant b sink (no J3 pocket).
+  Board KiCad (x, y) -> world X = X0 + x + 37.846, Y = -(y + 33.274).
+- "lowpro" (2026-11-12): enclosure/lowpro/src/build_lowpro.py frame: X along the length, front wall -Y, Z up,
+  boards A1, A2, B turned 180 deg: world X = TX - x, Y = y. Plate 8, fins down 25 x 2 @ 6 along X, fins start
+  after the 75 mm fan plenum, ducted (cover on the fin tips), one Noctua NF-A6x15 FLX pushing.
 """
+import os
+VARIANT = os.environ.get("HEAT_GEOM", "test2")
 # ---- stack (TEST 2 pack, build_test2.py P dict; all ASSUMED there) ----
 PLATE_T = 8.0          # sink base plate
 PED_H = 3.0            # pedestal height above the field
@@ -28,6 +34,29 @@ LY0 = LY1 - 119.25
 
 def W(n, xk, yk):
     return (X0[n] + xk + 37.846, -(yk + 33.274))
+
+
+def board_rect(n):
+    return (X0[n], X0[n] + BOARD_W[n], -BOARD_D, 0.0)
+
+
+if VARIANT == "lowpro":   # numbers = build_lowpro.py P dict and its derived values
+    FIN_H = 25.0
+    TX = {"A1": 34.544}
+    TX["A2"] = TX["A1"] + 37.846 + 2.0 + 34.544
+    TX["B"] = TX["A2"] + 37.846 + 2.0 + 73.544
+    BOARD_W = {"B": 111.39, "A1": 72.39, "A2": 72.39}
+    _LX0, _LX1 = 0.0 - 6.0 - 3.0, TX["B"] + 37.846 + 6.0 + 3.0
+    LX0, LX1 = _LX0 - 34.0, _LX1 + 34.0            # base plate incl. both stud ledges
+    LY0, LY1 = -33.274 - 35.0 - 3.0, 61.976 + 14.0 + 3.0
+    FX0 = LX0 + 75.0                              # fins start after the fan plenum
+
+    def W(n, xk, yk):
+        return (TX[n] - xk, yk)
+
+    def board_rect(n):
+        xmax = 73.544 if n == "B" else 34.544
+        return (TX[n] - xmax, TX[n] + 37.846, -33.274, 61.976)
 
 
 # pedestals = bottom-mask window hull + 1.5 mm (pack PED dict, repo doc 4.2), KiCad coords
@@ -75,7 +104,13 @@ def pedestals():
 
 
 def fins():
-    """fin boxes (x0, x1, y0, y1); pack build_test2.py fin loop"""
+    """fin boxes (x0, x1, y0, y1); pack build_test2.py fin loop (test2) / build_lowpro.py fin loop (lowpro, feet ignored)"""
+    if VARIANT == "lowpro":
+        ys, y = [], LY0
+        while y + FIN_T <= LY1 + 1e-6:
+            ys.append(y); y += FIN_PITCH
+        if LY1 - (ys[-1] + FIN_T) > 0.5: ys.append(LY1 - FIN_T)
+        return [((LX0 if i in (0, len(ys) - 1) else FX0), LX1, y, y + FIN_T) for i, y in enumerate(ys)]
     out, y = [], LY0 + FIN_EDGE
     while y + FIN_T <= LY1 - FIN_EDGE + 1e-6:
         near_foot = any(y < fy + FOOT_D / 2 + 2 and y + FIN_T > fy - FOOT_D / 2 - 2 for fy in (LY0 + 12, LY1 - 12))

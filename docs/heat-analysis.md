@@ -105,3 +105,69 @@ python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6            # system 
 
 `run_cases.py` is resumable (finished identical cases are only re-read). Add `quick` to run one case (worst, 1a, k = 3).
 Meshes and results are not in git. WSL scratch on DansPC: `/home/daniel/scratch/heat/` (`runs/m1` 246k tets, `runs/m2` 829k tets = reported, `runs/m3` 2.33M tets = mesh check, partial; `pack/` = extracted copy of the TEST 2 pack).
+
+## 6. Low-profile v1 enclosure (2026-11-12, branch `feat/enclosure-lowpro`)
+
+Same model and method as sections 2-5, new geometry from `enclosure/lowpro/src/build_lowpro.py` (`HEAT_GEOM=lowpro` in `sim/heat/geometry.py`; design note `docs/enclosure-3d.md`). Sections 1-5 above stay as the TEST 2 record.
+
+**Answer in short**
+- **Fan on (one Noctua NF-A6x15 FLX pushing, flat or wall): passes everything at worst case.** Sink 66-69 C (85 C target met), hottest junction 119 C at pad k = 3 (B-U11 BTS70012, +31 K margin), 139 C at k = 1. Slightly better than TEST 2 with two 30 mm fans (121 C at k = 3), because the duct sends all the air through the fins.
+- **The fan sits in 60 C intake air** (it pushes); exhaust 67.7 C. Within the fan's -10 to +70 C rating.
+- **Fan off fails at worst case** (flat: sink 125 C, junctions 166-195 C; wall: worse, sink 142 C). At typical load, flat mount, fan off: sink about 100 C, junctions 124-140 C, under 150. So the fan must switch on before full load, and firmware thermal protection is still needed for a fan failure (e3c; heat targets are guides, DECISIONS 2026-11-12).
+- **Wall mounting with the fan off is worse than flat**: the 4 mm x 271 mm ducts are too long and narrow to draw air by themselves. With the fan on, mounting does not matter.
+- The weak link is still the board (9 plain vias under each BTS70012 pad), as in section 1.
+
+**Geometry used:** plate 8 mm over the full base (346.2 x 150.3 mm incl. both stud ledges), 26 fins down 25 x 2 mm @ 6 mm along X from the end of the 75 mm fan plenum to the right end, pedestals and pads as before, boards A1, A2, B in a row (turned 180 degrees). Feet, duct cover, plenum wall, screws and lid left out (as before).
+
+**Air side:**
+- Fan on: one NF-A6x15 FLX, 13.77 CFM free air, 2.43 mm H2O max ([noctua.at](https://www.noctua.at/en/products/nf-a6x15-flx/specifications)), straight-line fan curve **ASSUMED**, K = 2.5 for plenum turn + entry + exit **ASSUMED**, no bypass (ducted). Operating point 8.24 CFM, 1.55 m/s in the channels, Re 630, Nu 7.93, h = 28.9 W/m2K. Air rises linearly from 60 C to 67.7 C along the fins.
+- Fan off, flat: envelope method (case 1b of section 3) on the outer box of the base.
+- Fan off, wall (long axis vertical, fan end down, **ASSUMED** orientation): ducts as vertical parallel plates, Elenbaas, L = 271 mm, S = 4 mm (inlet through the stopped fan left out).
+- Not in the model: heat from the copper bars (about 2.2 W per bar at 150 A, `docs/enclosure-3d.md` section 3) and from the input boards.
+
+| Load | Air case | Pad k | h fins (W/m2K) | Sink base mean / max (C) | Sink vs 85/95/105 | Hottest chip (board top) | Tj est. (C) | Tj <= 150 |
+|---|---|---|---|---|---|---|---|---|
+| worst | fan off, flat (envelope) | 1 | 1.1 | 122.6 / 125.1 | fails 105 | A1-U10 BTS7008 193.0 | 195.5 | FAIL (-45 K) |
+| worst | fan off, flat (envelope) | 3 | 1.1 | 122.6 / 125.2 | fails 105 | B-U11 BTS70012 172.3 | 174.0 | FAIL (-24 K) |
+| worst | fan off, flat (envelope) | 6 | 1.1 | 122.6 / 125.2 | fails 105 | B-U11 BTS70012 166.5 | 168.1 | FAIL (-18 K) |
+| worst | fan off, wall, vertical ducts (Elenbaas) | 1 | 0.8 | 139.4 / 141.9 | fails 105 | A1-U10 BTS7008 209.7 | 212.2 | FAIL (-62 K) |
+| worst | fan off, wall, vertical ducts (Elenbaas) | 3 | 0.8 | 139.4 / 141.9 | fails 105 | B-U11 BTS70012 189.2 | 190.9 | FAIL (-41 K) |
+| worst | fan off, wall, vertical ducts (Elenbaas) | 6 | 0.8 | 139.4 / 142.0 | fails 105 | B-U11 BTS70012 183.4 | 185.0 | FAIL (-35 K) |
+| worst | fan on (flat or wall), 1 x NF-A6x15 pushing | 1 | 28.9 | 66.0 / 68.7 | meets 85 | B-U11 BTS70012 137.4 | 139.1 | PASS (+11 K) |
+| worst | fan on (flat or wall), 1 x NF-A6x15 pushing | 3 | 28.9 | 66.0 / 68.8 | meets 85 | B-U11 BTS70012 117.1 | 118.8 | PASS (+31 K) |
+| worst | fan on (flat or wall), 1 x NF-A6x15 pushing | 6 | 28.9 | 66.0 / 68.8 | meets 85 | B-U11 BTS70012 111.3 | 113.0 | PASS (+37 K) |
+| typical | fan off, flat (envelope) | 1 | 1.0 | 99.0 / 100.4 | meets 105 | A1-U10 BTS7008 138.6 | 140.0 | PASS (+10 K) |
+| typical | fan off, flat (envelope) | 3 | 1.0 | 99.0 / 100.5 | meets 105 | B-U11 BTS70012 127.2 | 128.2 | PASS (+22 K) |
+| typical | fan off, flat (envelope) | 6 | 1.0 | 99.0 / 100.5 | meets 105 | B-U11 BTS70012 123.9 | 124.8 | PASS (+25 K) |
+| typical | fan off, wall, vertical ducts (Elenbaas) | 1 | 0.7 | 115.5 / 116.8 | fails 105 | A1-U10 BTS7008 155.0 | 156.4 | FAIL (-6 K) |
+| typical | fan off, wall, vertical ducts (Elenbaas) | 3 | 0.7 | 115.5 / 116.9 | fails 105 | B-U11 BTS70012 143.7 | 144.7 | PASS (+5 K) |
+| typical | fan off, wall, vertical ducts (Elenbaas) | 6 | 0.7 | 115.5 / 116.9 | fails 105 | B-U11 BTS70012 140.4 | 141.4 | PASS (+9 K) |
+| typical | fan on (flat or wall), 1 x NF-A6x15 pushing | 1 | 28.9 | 63.4 / 64.9 | meets 85 | B-U11 BTS70012 103.9 | 104.8 | PASS (+45 K) |
+| typical | fan on (flat or wall), 1 x NF-A6x15 pushing | 3 | 28.9 | 63.4 / 64.9 | meets 85 | B-U11 BTS70012 92.4 | 93.3 | PASS (+57 K) |
+| typical | fan on (flat or wall), 1 x NF-A6x15 pushing | 6 | 28.9 | 63.4 / 65.0 | meets 85 | B-U11 BTS70012 89.1 | 90.0 | PASS (+60 K) |
+
+Per chip, worst load, pad k = 3 (board top / Tj est., C):
+
+| Chip | Type | W | fan off, flat (envelope) board / Tj | fan off, wall, vertical ducts (Elenbaas) board / Tj | fan on (flat or wall), 1 x NF-A6x15 pushing board / Tj |
+|---|---|---|---|---|---|
+| B-U8 | BTS70012 | 2.37 | 172 / 173 | 189 / 190 | 116 / 118 |
+| B-U9 | BTS70012 | 2.37 | 172 / 174 | 189 / 191 | 117 / 119 |
+| B-U10 | BTS70012 | 2.37 | 172 / 173 | 189 / 190 | 116 / 118 |
+| B-U11 | BTS70012 | 2.37 | 172 / 174 | 189 / 191 | 117 / 119 |
+| B-U23 | BTS7004 | 1.80 | 160 / 164 | 177 / 181 | 104 / 108 |
+| B-U24 | BTS7004 | 1.80 | 158 / 162 | 175 / 179 | 102 / 106 |
+| B-U25 | BTS7004 | 1.80 | 158 / 162 | 175 / 179 | 102 / 106 |
+| B-U26 | BTS7004 | 1.80 | 160 / 164 | 176 / 181 | 104 / 108 |
+| A1-U8 | BTS7008 | 1.80 | 165 / 168 | 182 / 184 | 107 / 110 |
+| A1-U11 | BTS7008 | 1.80 | 165 / 168 | 182 / 184 | 107 / 110 |
+| A1-U10 | BTS7008 | 1.80 | 166 / 168 | 183 / 185 | 108 / 110 |
+| A1-U13 | BTS7008 | 1.80 | 166 / 168 | 183 / 185 | 108 / 110 |
+| A2-U8 | BTS7008 | 1.80 | 165 / 167 | 182 / 184 | 108 / 110 |
+| A2-U11 | BTS7008 | 1.80 | 165 / 167 | 182 / 184 | 108 / 110 |
+| A2-U10 | BTS7008 | 1.80 | 166 / 168 | 182 / 185 | 108 / 111 |
+| A2-U13 | BTS7008 | 1.80 | 166 / 168 | 182 / 185 | 108 / 111 |
+
+Plots: `docs/diagrams/heat-lowpro-hottest-junction.png`, `docs/diagrams/heat-lowpro-board-top-fans.png` (board top, worst load, fan on, k = 3).
+Checks: energy balance within 0.05 W in every run (31.13 of 31.08 W with the fan; 0.00 W otherwise); mesh 981k tetrahedra (size factor 0.6, same as m2).
+
+Re-run (WSL, repo checkout): as section 5 with `export HEAT_GEOM=lowpro` first and a new run folder (e.g. `~/scratch/encl-lowpro/heat/runs/m2`); about 40 min.

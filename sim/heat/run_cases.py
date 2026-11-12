@@ -201,6 +201,8 @@ def solve(name, k_pad, load, h):
 
 
 CASES = {"passive_upper": C.passive_upper, "passive_lower": C.passive_lower, "fans": C.forced}
+if G.VARIANT == "lowpro":   # fans: flat and wall the same (forced flow does not care); fan off: flat (envelope) and wall (vertical ducts)
+    CASES = {"passive_lower": C.passive_lower, "passive_wall": C.passive_wall, "fans": C.forced}
 loads = ["worst"] if QUICK else ["worst", "typical"]
 cases = ["passive_upper"] if QUICK else list(CASES)
 kpads = [3.0] if QUICK else [1.0, 3.0, 6.0]

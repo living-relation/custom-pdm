@@ -16,6 +16,11 @@ RUN, PNG = sys.argv[1], sys.argv[2]
 R = json.load(open(os.path.join(RUN, "results.json")))
 NAMES = {"passive_upper": "1a passive, Elenbaas (optimistic)", "passive_lower": "1b passive, envelope (conservative)",
          "fans": "2 two 30 mm fans"}
+PFX, FANS = "heat-", "two fans"
+if G.VARIANT == "lowpro":
+    NAMES = {"passive_lower": "fan off, flat (envelope)", "passive_wall": "fan off, wall, vertical ducts (Elenbaas)",
+             "fans": "fan on (flat or wall), 1 x NF-A6x15 pushing"}
+    PFX, FANS = "heat-lowpro-", "one 60 mm fan pushing"
 TIERS = (85.0, 95.0, 105.0)
 
 
@@ -37,7 +42,7 @@ for key, r in R["runs"].items():
           f"{'PASS' if tj <= 150 else 'FAIL'} ({150 - tj:+.0f} K) |")
 
 # per-chip table, worst load, k = 3
-print("\n| Chip | Type | W | " + " | ".join(f"{NAMES[c].split(',')[0]} board / Tj" for c in NAMES) + " |")
+print("\n| Chip | Type | W | " + " | ".join(f"{(NAMES[c] if G.VARIANT == 'lowpro' else NAMES[c].split(',')[0])} board / Tj" for c in NAMES) + " |")
 print("|---|---|---|" + "---|" * len(NAMES))
 for cid in R["runs"]["worst|fans|3"]["chips"]:
     t = R["runs"]["worst|fans|3"]["chips"][cid]["type"]
@@ -58,9 +63,9 @@ for i, cs in enumerate(NAMES):
     ax.bar_label(b, fmt="%.0f", fontsize=7)
 ax.axhline(150, color="k", lw=1, ls="--"); ax.text(2.45, 151, "Tj max 150 C", ha="right", va="bottom", fontsize=7)
 ax.set_xticks(range(3), [f"gap pad k = {k} W/mK" for k in ks]); ax.set_ylabel("hottest junction, est. (C)")
-ax.set_title("Worst case 31.1 W, 60 C air: hottest driver junction", fontsize=9); ax.legend(fontsize=7, loc="upper right")
+ax.set_title(("Low-profile v1: " if G.VARIANT == "lowpro" else "") + "worst case 31.1 W, 60 C air: hottest driver junction", fontsize=9); ax.legend(fontsize=7, loc="upper right")
 ax.set_ylim(60, 220); ax.spines[["top", "right"]].set_visible(False)
-fig.tight_layout(); fig.savefig(os.path.join(PNG, "heat-hottest-junction.png")); plt.close(fig)
+fig.tight_layout(); fig.savefig(os.path.join(PNG, PFX + "hottest-junction.png")); plt.close(fig)
 
 # plot 2: board-top temperature map, worst load, fans, k = 3
 vt = sorted(x for x in os.listdir(os.path.join(RUN, "mesh")) if x.startswith("worst_fans_k3_t"))[-1]
@@ -69,9 +74,10 @@ P = m.points * sc; T = np.asarray(m.point_data["temperature"]); s = np.abs(P[:, 
 fig, ax = plt.subplots(figsize=(7.5, 3.2), dpi=110)
 tc = ax.tricontourf(P[s, 0], P[s, 1], T[s], levels=24, cmap="inferno")
 for n in ("B", "A1", "A2"):
-    ax.add_patch(plt.Rectangle((G.X0[n], -G.BOARD_D), G.BOARD_W[n], G.BOARD_D, fill=False, lw=0.8, ec="w"))
-    ax.text(G.X0[n] + 3, -8, n, color="w", fontsize=8)
+    x0, x1, y0, y1 = G.board_rect(n)
+    ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, lw=0.8, ec="w"))
+    ax.text(x0 + 3, y1 - 8, n, color="w", fontsize=8)
 fig.colorbar(tc, ax=ax, label="board top (C)"); ax.set_aspect("equal"); ax.set_xlabel("X (mm)"); ax.set_ylabel("Y (mm)")
-ax.set_title("Board top, worst case 31.1 W, two fans, gap pad k = 3 W/mK", fontsize=9)
-fig.tight_layout(); fig.savefig(os.path.join(PNG, "heat-board-top-fans.png")); plt.close(fig)
+ax.set_title(f"Board top, worst case 31.1 W, {FANS}, gap pad k = 3 W/mK", fontsize=9)
+fig.tight_layout(); fig.savefig(os.path.join(PNG, PFX + "board-top-fans.png")); plt.close(fig)
 print("PNGs written")

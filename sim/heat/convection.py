@@ -80,6 +80,21 @@ Q_FREE = 2 * 5.5 * 0.000471947      # m3/s, two fans in parallel
 P_MAX = 0.25 * 249.089              # Pa
 K_MINOR = 1.5                       # ASSUMED entrance + exit loss coefficient
 BYPASS = 0.5                        # ASSUMED share of fan flow that really passes through the fin channels
+if G.VARIANT == "lowpro":
+    # one Noctua NF-A6x15 FLX (noctua.at spec page, read 2026-11-12): 23.4 m3/h = 13.77 CFM free air, 2.43 mm H2O max
+    Q_FREE = 13.77 * 0.000471947
+    P_MAX = 2.43 * 9.80665
+    K_MINOR = 2.5                   # ASSUMED: plenum turn + duct entry + exit
+    BYPASS = 1.0                    # ducted: the cover on the fin tips sends all fan air through the channels
+    ENV_H = (G.PLATE_T + G.FIN_H + 1.5) / 1000.0
+
+
+def passive_wall(t_sink, t_amb, a_field, a_edge):
+    """lowpro, wall mount with the long axis vertical (fan end down), fan off: the ducted channels as vertical
+    parallel plates of length L_F (Elenbaas). Leaves out that the only inlet is the stopped fan's opening
+    (makes it optimistic) and the feet / cover outer faces (conservative)."""
+    dT = t_sink - t_amb; p = air((t_sink + t_amb) / 2)
+    return dict(h_field=h_elenbaas(p, dT, S_CH, L_F), h_edge=h_vertical(p, dT, ENV_X), t_air=None)
 
 
 def fan_point(t_air):
