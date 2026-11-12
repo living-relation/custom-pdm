@@ -83,6 +83,16 @@ automations:
     enabled: true
     run_cmd: python.exe tools/gen_enclosure_layout.py   # KiCad python
     owner: claude
+  - id: parts-audit-csv
+    script: tools/gen_parts_audit_csv.py
+    trigger: manual
+    reads: ["hardware/board-a/*.kicad_sch", "hardware/board-b-max/*.kicad_sch", "hardware/input-board/*.kicad_sch"]   # plus the old CSV (LCSC stock/price carried over); new LCSC numbers looked up on lcsc.com
+    writes: [docs/parts-audit.csv]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/gen_parts_audit_csv.py [--offline]   # uses KiCad 10 kicad-cli
+    owner: claude
   - id: firmware-port
     script: firmware/tools_custom/port_boards.py
     trigger: manual

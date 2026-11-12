@@ -323,7 +323,7 @@ What changed on the boards (choices from `DECISIONS.md` 2026-11-11). Scripts: `t
 - USB diode D15 (A) / D6 (B), VBUS -> +5V, unchanged: with the TSR running, +5V sits above VBUS minus that diode's drop, so it does not carry the load and does not affect the numbers above. On USB power alone (no 12 V) +5V is VBUS minus about 0.5 V, as before; CAN is not needed then.
 - Checks vs `main` 9745129 (KiCad 10 kicad-cli): board A ERC 625 (35 errors), DRC 214 (86 errors), board B ERC 778 (81 errors), DRC 413 (206 errors): every category equal on both boards, 0 unconnected, parity 4 / 4 with the same items; `tools/check_board_b.py` ALL OK.
 
-`docs/parts-audit.csv` still lists the parts as before the board fix.
+`docs/parts-audit.csv` is regenerated from the schematics by `tools/gen_parts_audit_csv.py` (2026-11-11; LCSC data of the new part numbers looked up 2026-11-12 03:21 UTC, the rest carried over from 2026-11-10).
 
 ## 8. Sources
 
