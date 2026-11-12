@@ -136,3 +136,27 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
     owner: claude
+  - id: enclosure-lowpro
+    script: enclosure/lowpro/src/build_lowpro.py
+    helpers: [enclosure/lowpro/src/run.sh, enclosure/lowpro/src/check_lowpro.py, enclosure/lowpro/src/render_lowpro.py,
+              enclosure/lowpro/src/export_lowpro.py, enclosure/lowpro/src/measure_boards.py, enclosure/lowpro/src/fp_find.py]
+    trigger: manual
+    reads: ["board STEP exports (REF_BOARDS, not in git, see enclosure/lowpro/README.md)"]
+    writes: ["enclosure/lowpro/step/*.step", "docs/diagrams/enclosure-lowpro-*.png"]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl bash enclosure/lowpro/src/run.sh build_lowpro.py   # then check_lowpro.py, render_lowpro.py, export_lowpro.py; CRLF note in run.sh
+    check_cmd: wsl bash enclosure/lowpro/src/run.sh check_lowpro.py   # expect "unexpected: 0"
+    owner: claude
+  - id: heat-model
+    script: sim/heat/run_cases.py
+    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py]
+    trigger: manual
+    reads: ["sim/heat/geometry.py"]   # HEAT_GEOM=test2 (default) or lowpro
+    writes: ["docs/diagrams/heat-*.png"]   # tables are pasted into docs/heat-analysis.md by hand
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl  # see docs/heat-analysis.md "Re-run" (mesh_heat.py, run_cases.py, make_report.py)
+    owner: claude

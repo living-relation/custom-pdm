@@ -1,0 +1,344 @@
+{
+ "P": {
+  "gap_boards": 2.0,
+  "ped_h": 3.0,
+  "pad_t": 1.0,
+  "plate_t": 8.0,
+  "fin_h": 25.0,
+  "fin_t": 2.0,
+  "fin_pitch": 6.0,
+  "fan_zone": 75.0,
+  "cover_t": 1.5,
+  "foot_h": 10.0,
+  "foot_d": 16.0,
+  "wall": 3.0,
+  "lid_top": 60.0,
+  "lid_r": 10.0,
+  "lid_fillet": 6.0,
+  "clr_left": 6.0,
+  "clr_right": 6.0,
+  "clr_back": 14.0,
+  "clr_front": 35.0,
+  "ledge": 34.0,
+  "bar_w": 20.0,
+  "bar_t": 3.0,
+  "in_boss": 4.0
+ },
+ "Z_BOT": 4.0,
+ "Z_TOP": 5.7698719999999994,
+ "M6_TOP": 19.23,
+ "T_TOP": 8.73,
+ "TX": {
+  "A1": 34.544,
+  "A2": 108.93399999999998,
+  "B": 222.32399999999996
+ },
+ "lid": [
+  -9.0,
+  269.16999999999996,
+  -71.274,
+  78.976,
+  0,
+  60.0
+ ],
+ "base": [
+  -43.0,
+  303.16999999999996,
+  -71.274,
+  78.976,
+  -44.5,
+  0
+ ],
+ "fin_x": [
+  32.0,
+  303.16999999999996
+ ],
+ "fins_y": [
+  -71.274,
+  -65.274,
+  -59.274,
+  -53.274,
+  -47.274,
+  -41.274,
+  -35.274,
+  -29.274,
+  -23.274,
+  -17.274,
+  -11.274000000000001,
+  -5.274000000000001,
+  0.7259999999999991,
+  6.725999999999999,
+  12.725999999999999,
+  18.726,
+  24.726,
+  30.726,
+  36.726,
+  42.726,
+  48.726,
+  54.726,
+  60.726,
+  66.726,
+  72.726,
+  76.976
+ ],
+ "fan_c": [
+  -4.5,
+  3.850999999999999
+ ],
+ "peds": [
+  [
+   19.912,
+   37.949,
+   9.879,
+   15.521
+  ],
+  [
+   22.121999999999996,
+   38.025,
+   -15.47,
+   -9.727
+  ],
+  [
+   94.30199999999998,
+   112.33899999999998,
+   9.879,
+   15.521
+  ],
+  [
+   96.51199999999999,
+   112.41499999999998,
+   -15.47,
+   -9.727
+  ],
+  [
+   208.50399999999996,
+   236.04399999999995,
+   9.65,
+   15.57
+  ],
+  [
+   208.50399999999996,
+   236.04399999999995,
+   -15.57,
+   -9.65
+  ],
+  [
+   164.55899999999997,
+   170.20099999999996,
+   -28.915,
+   47.917
+  ]
+ ],
+ "overall": [
+  -43.0,
+  303.16999999999996,
+  -97.274,
+  78.9760001,
+  -44.5,
+  60.0000001
+ ],
+ "XC": {
+  "X1": [
+   103.38999999999999,
+   31.0
+  ],
+  "X2": [
+   176.77999999999997,
+   31.0
+  ],
+  "USB": [
+   226.77999999999997,
+   31.0
+  ]
+ },
+ "STUD": {
+  "BATT": [
+   -26.0,
+   27.178
+  ],
+  "GND": [
+   -26.0,
+   -27.178
+  ]
+ },
+ "OUTS": {
+  "Tm-": [
+   286.16999999999996,
+   -12.0
+  ],
+  "Tm+": [
+   286.16999999999996,
+   12.0
+  ],
+  "To-": [
+   286.16999999999996,
+   -40.0
+  ],
+  "To+": [
+   286.16999999999996,
+   40.0
+  ]
+ },
+ "TIES": [
+  [
+   34.544,
+   -45.274
+  ],
+  [
+   108.93399999999998,
+   -45.274
+  ]
+ ],
+ "IB": {
+  "A1": [
+   3.194999999999993,
+   -17.649
+  ],
+  "A2": [
+   77.58499999999998,
+   -17.649
+  ],
+  "B": [
+   171.47499999999997,
+   -17.649
+  ]
+ },
+ "HUB": [
+  210.77999999999997,
+  -56.274
+ ],
+ "mass_g": {
+  "heat-sink-base": 2172.4,
+  "duct-cover": 196.6,
+  "lid": 264.9,
+  "bar-BATT": 127.4,
+  "bar-GND": 124.2,
+  "straps-OUT1-4": 46.2,
+  "stud-blocks": 50.1
+ },
+ "n_fins": 26,
+ "colors": {
+  "board-A1": [
+   0.1,
+   0.45,
+   0.15
+  ],
+  "board-A2": [
+   0.1,
+   0.45,
+   0.15
+  ],
+  "board-B": [
+   0.1,
+   0.45,
+   0.15
+  ],
+  "heat-sink-base": [
+   0.72,
+   0.72,
+   0.76
+  ],
+  "gap-pads": [
+   0.95,
+   0.5,
+   0.6
+  ],
+  "duct-cover": [
+   0.6,
+   0.6,
+   0.62
+  ],
+  "fan-Noctua-NF-A6x15-FLX": [
+   0.55,
+   0.35,
+   0.25
+  ],
+  "bar-BATT": [
+   0.85,
+   0.5,
+   0.25
+  ],
+  "bar-GND": [
+   0.55,
+   0.4,
+   0.3
+  ],
+  "straps-OUT1-4": [
+   0.85,
+   0.55,
+   0.3
+  ],
+  "stud-blocks": [
+   0.25,
+   0.3,
+   0.25
+  ],
+  "studs": [
+   0.8,
+   0.75,
+   0.45
+  ],
+  "input-board-A1": [
+   0.1,
+   0.35,
+   0.55
+  ],
+  "input-board-A2": [
+   0.1,
+   0.35,
+   0.55
+  ],
+  "input-board-B": [
+   0.1,
+   0.35,
+   0.55
+  ],
+  "lid": [
+   0.18,
+   0.18,
+   0.2
+  ],
+  "X1-HD34-24-21SN-envelope": [
+   0.55,
+   0.55,
+   0.6
+  ],
+  "X2-HDP24-24-47SE-envelope": [
+   0.55,
+   0.55,
+   0.6
+  ],
+  "USB-C-bulkhead-envelope": [
+   0.3,
+   0.3,
+   0.32
+  ],
+  "USB-hub-Adafruit-5997-envelope": [
+   0.15,
+   0.15,
+   0.5
+  ]
+ },
+ "labels": {
+  "board-A1": "KiCad STEP export (board-fix era), J3 / J6 bodies removed (a1a, a2b)",
+  "board-A2": "KiCad STEP export (board-fix era), J3 / J6 bodies removed (a1a, a2b)",
+  "board-B": "KiCad STEP export (board-fix era), J3 / J6 bodies removed (a1a, a2b)",
+  "heat-sink-base": "6061-T6 (or 6063) aluminium, one machined part: plate 8, fins down 25 x 2 @ 6, stud ledges, feet; ASSUMED sizes",
+  "gap-pads": "insulating gap pad 1.0, product TBD (heat model k 1-6)",
+  "duct-cover": "1.5 aluminium sheet on the fin tips: closes the channels into ducts; fan hole 57; ASSUMED",
+  "fan-Noctua-NF-A6x15-FLX": "Noctua NF-A6x15 FLX 60x60x15 12 V (19.8 dB(A), 13.77 CFM, 2.43 mmH2O, -10..+70 C); envelope; blows up into the plenum",
+  "bar-BATT": "Cu-ETP bar 20 x 3 (60 mm2), left-ledge stud to the three boards' +12 V M6 terminals; ASSUMED",
+  "bar-GND": "Cu-ETP bar 20 x 3 (60 mm2), left-ledge stud to the three boards' GND M6 terminals; ASSUMED",
+  "straps-OUT1-4": "Cu-ETP straps, middle 8 x 2, outer 5 x 3 (16 / 15 mm2 for 31 A), M4 hole on the REDCUBE terminal, M6 at the stud; ASSUMED",
+  "stud-blocks": "G10 insulating blocks on the Al ledges (studs insulated from the base); ASSUMED",
+  "studs": "BATT / GND M8 studs (Blue Sea 2202 / 2201 per C5, real geometry TBD), OUT1-4 M6 studs; stud up, lug flat (t1a)",
+  "input-board-A1": "KiCad STEP of the input board, upside down (parts toward the main board)",
+  "input-board-A2": "KiCad STEP of the input board, upside down (parts toward the main board)",
+  "input-board-B": "KiCad STEP of the input board, upside down (parts toward the main board)",
+  "lid": "MJF PA12 lid, wall / top 3, M4 screws from the top into the base; sizes ASSUMED",
+  "X1-HD34-24-21SN-envelope": "SIMPLIFIED envelope: flange 50.8 (TE catalog), 28 behind the wall ASSUMED, cut-out TBD",
+  "X2-HDP24-24-47SE-envelope": "SIMPLIFIED envelope: 26.2 in front, about 30 behind (TE drawing -L015), cut-out TBD",
+  "USB-C-bulkhead-envelope": "SIMPLIFIED IP67 jam-nut USB-C panel receptacle envelope (Amphenol LTW UC / USC family, PN and cut-out TBD)",
+  "USB-hub-Adafruit-5997-envelope": "Adafruit 5997 CH334F mini 4-port hub 31.6 x 20.4 x 4.8 on 4 mm standoffs; bus powered (y1a)"
+ }
+}
