@@ -1,0 +1,164 @@
+Header
+  Mesh DB "." "mesh"
+End
+Simulation
+  Coordinate System = Cartesian
+  Coordinate Scaling = 0.001
+  Simulation Type = Steady state
+  Steady State Max Iterations = 1
+  Output Intervals = 1
+End
+Body 1
+  Target Bodies(1) = 1
+  Equation = 1
+  Material = 1
+End
+Body 2
+  Target Bodies(1) = 2
+  Equation = 1
+  Material = 2
+End
+Body 3
+  Target Bodies(1) = 3
+  Equation = 1
+  Material = 3
+End
+Body 4
+  Target Bodies(1) = 4
+  Equation = 1
+  Material = 4
+End
+Body 5
+  Target Bodies(1) = 5
+  Equation = 1
+  Material = 5
+End
+Material 1
+  Heat Conductivity = 167.0
+  Density = 2700.0
+End
+Material 2
+  Heat Conductivity = 3.0
+  Density = 3000.0
+End
+Material 3
+  Heat Conductivity(3,3) = 13.4399 0 0 0 13.4399 0 0 0 0.3
+  Density = 1900.0
+End
+Material 4
+  Heat Conductivity(3,3) = 13.4399 0 0 0 13.4399 0 0 0 10.6983
+  Density = 1900.0
+End
+Material 5
+  Heat Conductivity(3,3) = 13.4399 0 0 0 13.4399 0 0 0 4.96303
+  Density = 1900.0
+End
+Equation 1
+  Active Solvers(3) = 1 2 3
+End
+Solver 1
+  Equation = Heat Equation
+  Procedure = "HeatSolve" "HeatSolver"
+  Variable = Temperature
+  Linear System Solver = Iterative
+  Linear System Iterative Method = CG
+  Linear System Preconditioning = ILU0
+  Linear System Max Iterations = 5000
+  Linear System Convergence Tolerance = 1.0e-10
+  Linear System Residual Output = 100
+  Steady State Convergence Tolerance = 1.0e-6
+End
+Solver 2
+  Exec Solver = After Simulation
+  Equation = ResultOutput
+  Procedure = "ResultOutputSolve" "ResultOutputSolver"
+  Output File Name = "worst_fans_k3"
+  Output Format = vtu
+  Save Geometry Ids = True
+End
+Solver 3
+  Exec Solver = After Simulation
+  Equation = SaveScalars
+  Procedure = "SaveData" "SaveScalars"
+  Filename = "worst_fans_k3_scalars.dat"
+  Variable 1 = Temperature
+  Operator 1 = boundary int
+  Operator 2 = area
+End
+Boundary Condition 1
+  Target Boundaries(1) = 1
+  Save Scalars = True
+  Heat Transfer Coefficient = 28.558207534612183
+  External Temperature = Variable Coordinate 1
+    Real MATC "60.0 + 14.185306920570955*(tx-(0.016))/(0.24417)"
+End
+Boundary Condition 2
+  Target Boundaries(1) = 2
+  Save Scalars = True
+  Heat Transfer Coefficient = 6.6188776264256175
+  External Temperature = 60.0
+End
+Boundary Condition 3
+  Target Boundaries(1) = 3
+  Heat Flux = 133686.82310469323
+End
+Boundary Condition 4
+  Target Boundaries(1) = 4
+  Heat Flux = 133686.82310469297
+End
+Boundary Condition 5
+  Target Boundaries(1) = 5
+  Heat Flux = 133686.8231046932
+End
+Boundary Condition 6
+  Target Boundaries(1) = 6
+  Heat Flux = 133686.82310469338
+End
+Boundary Condition 7
+  Target Boundaries(1) = 7
+  Heat Flux = 169811.32075471664
+End
+Boundary Condition 8
+  Target Boundaries(1) = 8
+  Heat Flux = 169811.32075471664
+End
+Boundary Condition 9
+  Target Boundaries(1) = 9
+  Heat Flux = 169811.32075471664
+End
+Boundary Condition 10
+  Target Boundaries(1) = 10
+  Heat Flux = 169811.32075471664
+End
+Boundary Condition 11
+  Target Boundaries(1) = 11
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 12
+  Target Boundaries(1) = 12
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 13
+  Target Boundaries(1) = 13
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 14
+  Target Boundaries(1) = 14
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 15
+  Target Boundaries(1) = 15
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 16
+  Target Boundaries(1) = 16
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 17
+  Target Boundaries(1) = 17
+  Heat Flux = 169811.3207547171
+End
+Boundary Condition 18
+  Target Boundaries(1) = 18
+  Heat Flux = 169811.3207547171
+End
