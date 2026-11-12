@@ -20,13 +20,12 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Re-import boards A and B into Fusion (Fusion lock held by `grokbot-fh201` on 2026-11-11 21:34 ET; wait for it), refresh `docs/diagrams/board-b-top-render.png`, refresh `docs/parts-audit.csv` for the changed parts, Digi-Key numbers for them (TBD).
+1. Refresh `docs/parts-audit.csv` for the parts changed in PR #23 / #24 (LCSC stock and price), Digi-Key numbers for them (TBD).
 2. Heat analysis (Elmer, handbuilt-cad sim stack, `sim-stack` skill): boards on the base-plate sink, 60 C cabin air, worst-case losses. Enclosure A, B, C wait for it (Dan, 2026-11-11); D-G after that, one at a time. Plan B is final (b3a, 2026-11-11). Defaults rule: `AGENTS.md`.
 3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- t1 (asked 2026-11-11): "terminals always horizontal" means (a) ring lug lies flat, stud points up, as in TEST 2, or (b) stud axis horizontal, lug on a vertical face. Reference: `docs/enclosure-layout.md` section 9.
 - Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time). On hold until testing and the heat analysis are done (Dan, 2026-11-11).
 - Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C3, C2, C4, C5 studs, C6, C7, L1, enclosure H.
 - Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
@@ -45,10 +44,11 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Design the 150 A feed busbar.
 - Pick connector part numbers.
 - Pick fab: JLCPCB vs PCBWay.
-- Board B: a human look at the layout before ordering. Stale since the board-fix job: Fusion `board-A` / `board-B` imports and `docs/diagrams/board-b-top-render.png`. A human look at where JP2 / JP3 ended up.
+- Board B: a human look at the layout before ordering, incl. where JP2 / JP3 ended up (render: `docs/diagrams/board-b-top-render.png`). T1-T4 courtyards overlap the BTS70012 courtyards (known); checked 2026-11-11: terminal bodies (7.1 mm square) clear every BTS70012 pad by 0.75 mm or more, and the copper they share is the same output net. Ask the assembler about the courtyard overlap at quote time.
 - Small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 
 ## Status (done work, newest first)
+- 2026-11-11: Fusion re-import after PR #23 / #24 (`main` 549f285; KiCad 9 PCBs): folders `board-A-2026-11-11` and `board-B-2026-11-11` in project `custom-pdm`. Check vs the KiCad PCBs: board A 137 / 137 parts, 113 / 113 multi-pin nets; board B 203 / 203 parts, 139 / 139 nets (repeated pad numbers renamed `_1`.. by Fusion, same as before). `docs/diagrams/board-b-top-render.png` re-rendered with kicad-cli 10 `pcb render` (top, 1376 x 1288).
 - 2026-11-11: P11 fix (PR #24, Dan p1a): D18 (A) / D4 (B) = Nexperia PMEG2010AEH (SOD-123F, LCSC C110921), footprint swapped by script, no re-route. +5V worst case 4.61 V at 25 C, about 4.52-4.55 V at -40 C (graph value; no cold max in the data sheet) vs 4.5 V CAN-chip minimum; if every TSR tolerance stacks at -40 C it could reach about 4.44 V. Ideal diode (p1b) is the fallback if cold use matters. ERC/DRC equal to main in every category. Details: `docs/parts-audit.md` section 9.
 - 2026-11-11: Board-fix job (PR #23): board B 10k PB2-GND (R81); one 5 V converter per main board (TSR 1-2450, others DNP; its pins stick out about 2.3 mm under the board, clear of the pedestals, sink needs about 3 mm recess there or trimmed pins); 120 ohm + open solder jumper per main board (A: JP3 + R59, B: JP2 + R80); +12 V caps 35 V / 50 V; FRAM MB85RC64TA; CAN chip MCP2562FD-E/SN (wiring already matched); board A mask window removed; maker part numbers on changed and safety parts. Checks vs main: 0 unconnected, DRC errors equal (lib_footprint_issues +2 library-config warnings on A), ERC errors -1 per board, parity 5 -> 4. P11 found failing (+5V 4.50 V typ / 4.34 V worst vs 4.5 V CAN-chip minimum). Details and sources: `docs/parts-audit.md` section 9.
 - 2026-11-11: Renode bench (PR #15): three real binaries (A1, A2, B) on one CAN hub plus an ECU / PC-tool node, 18 of 18 Robot tests pass. Re-run 2026-11-11 with `--build` from `main` after B1: 3 builds OK (linker RWX warning only), 18 of 18. Run: `powershell -ExecutionPolicy Bypass -File firmware\sim\renode\run_bench.ps1` (add `--build` to rebuild from main). Coverage, limits and findings: `firmware/sim/renode/RESULTS-renode.md`. Sandbox: WSL Ubuntu `~/renode-pdm` (Renode 1.17.0 portable, xPack arm-none-eabi-gcc 14.2.1, Python venv with Robot Framework 6.1), user-level only, remove with `rm -rf ~/renode-pdm`.
@@ -69,7 +69,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
   - PCB (2026-11-10, `tools/pcb_board_b.py` then `tools/route_board_b.py`, both run by the build, about 12-13 min): board grows 39 mm to the right (72.4 -> 111.4 x 95.3 mm). Old area: T1-T4 on the four output pours, J6 where J4's centre pins were. New column: four 15 A channels whose placement and copper are copied from dingoPDM v7.5's BTS700x-1EPP block (board A baseline, MIT), turned 90 degrees, each with its terminal and output pour; bottom layer there is +12 V. A 7.5 mm strip between old edge and blocks holds J7, U22 (LM324) and R52-R55/C46. Two extra mounting holes H5/H6 (board only).
   - Routing: all 27 new nets routed (17 MCU pins fanned out with a stub + via each, tightest first; each net routed from its via). Unused fan-out vias and leftover stubs pruned; GND / +3V3 pieces cut off by new tracks re-joined.
   - DRC vs the stock Max (`tools/drc_diff.py`): 0 unconnected; clearance 7 = 7, hole clearance 56 = 56, track width 101 = 101, annular 20 = 20 (all inherited). New: 6 courtyard overlaps (terminals T1-T4 beside each other and beside the BTS70012s: bodies are 7 x 7 mm and clear), silkscreen overlaps (cosmetic).
-  - Fusion: imported as `board-B` in project `custom-pdm`; 200/200 parts, 137/137 nets match (10 nets differ only in how repeated pad numbers are named: T1-T8, J1, J3). Stale since B1 (see Open items).
+  - Fusion: current import `board-B-2026-11-11` (see the 2026-11-11 Fusion line above).
 - Input board (`hardware/input-board/`, PR #8): generated by `tools/build_input_board.ps1` (schematic text -> netlist -> KiCad 9 PCB: place, route, pour). 2-layer, 66 x 64 mm. 8 digital channels + 1 analog (0-5 V divider 10k/20k). Per channel 4.7k + BAT54S + 10 nF; 10k pull-up (SW1) / pull-down (SW2) on the wire side, Omron A6S-8104 DIPs. J2 Molex Micro-Fit 2x6 (wires: 1-8 IN, 9 analog, 10-12 GND), J1 JST GH 12 (to board A J6). ERC/DRC clean (0 unconnected, 0 parity issues). Fusion import `input-board` checked: 50/50 parts, 36/36 nets match.
 - Board A inputs (PR #7, 2026-11-09), part of the default build. Fusion re-import `board-A-inputs` checked: 135/135 parts, all nets match by pin set (J1/J2/J5 multi-pad pins only renamed).
   - J6 (JST GH 12-pin, side entry) at the left edge: 1-5 IN_3..IN_7 = PC10, PC11, PB4, PC13, PB3 (ex-SWO); 6-8 NC; 9 PC2 spare analog (R12 DNP); 10 +3V3; 11-12 GND.
@@ -80,7 +80,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
 - Reference KiCad sources (dingoPDM v7.5, dingoPDM-Max) cloned locally under `reference/` (git-ignored, about 350 MB).
 - dingoPDM v7.5 imported into Fusion Electronics (Fusion project `custom-pdm`, Sheets translation): design, schematic and board files created. Check: 115/115 named nets match; all 156 parts. Board checked: outline 72.39 x 95.25 mm, 4 copper layers, 522 pads, board image looks right.
-- Fusion `custom-pdm` project: root = clean import of the original; `board-A` = unmodified re-import (+ `LINKED-COPY-unused`, deletable); `board-A-dual-k9` = modified board A (143 parts, 111 nets = KiCad); `board-A-dual` = broken KiCad 10 import with no nets (deletable, L1).
+- Fusion `custom-pdm` project: root = clean import of the original; current boards `board-A-2026-11-11` and `board-B-2026-11-11`; older imports `board-A`, `board-A-dual-k9`, `board-A-inputs`, `board-B` are superseded (Leftovers). `board-A-dual` and `LINKED-COPY-unused` deleted 2026-11-11 (L1).
 - Part and net lists from the import are in the models folder (`Desktop\models\custom-pdm-import-check`, OneDrive, add-only).
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Plan B (3 boards on CAN, one enclosure) is final; Plan C closed (Dan b3a, 2026-11-11).
@@ -91,7 +91,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
 - `%TEMP%\custom-pdm-parts-audit\`; `%TEMP%\board-b-build\` build outputs; B1 job temp folders `%TEMP%\bin5-build-base`, `%TEMP%\bin5-build-pc13`, `%TEMP%\bin5-stock-max`, `%TEMP%\bin5-fwcheck.*`, WSL `~/bin5-pdm`; `%TEMP%\renode-bench-2026-11-11.log*`.
 - The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 firmware changes: the repo is the source of truth.
-- Fusion project `custom-pdm`: `board-A-dual` and `LINKED-COPY-unused` (L1).
+- Fusion project `custom-pdm`: superseded imports `board-A`, `board-A-dual-k9`, `board-A-inputs`, `board-B` (current ones are the `-2026-11-11` folders).
 - `%LOCALAPPDATA%\Workstation\claude-fusion\`: helper scripts (`call.ps1`, `up*.py`, `chk*.py`, `*.ulp`, `kicad\`), TE drawings in `te-drawings\`.
 
 ## Mistakes not to repeat
