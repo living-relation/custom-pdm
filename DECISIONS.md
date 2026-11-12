@@ -136,3 +136,5 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat): f2a - remove the superseded handoffs (`.claude/handoff/HANDOFF-2026-11-11*.md`) and fix out-of-date `STATE.md` lines in one small PR after the enclosure draft PR.
 - 2026-11-12 (Dan, chat): e3c (enclosure C) - fans fitted, pushing air in. Pick the quietest fans possible; one larger fan is preferred if it lowers noise. Fans switch on from a temperature trigger whose limit is adjustable in software (firmware item).
 - 2026-11-12 (Dan, chat): h1a - keep the stopped helper's leftovers (`feat/enclosure-lowpro` worktree and branch, WSL `~/scratch/encl-lowpro/`) until e3-e7 are answered; reuse its measuring scripts for the 3D build.
+- 2026-11-12 (Dan, chat): e4a (enclosure D) - the 150 A feed (and GND) reaches the three boards' M6 terminals by flat copper bars from the studs, slotted holes for tolerance.
+- 2026-11-12 (Dan, chat, standing): enclosure size and appearance are the main goal; cooling adapts to them (not the other way round).
