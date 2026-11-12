@@ -129,3 +129,10 @@ Stud sizes (BATT 150 A, GND, OUT1-4 at 31 A) and boot diameter: TBD (drawn as 20
 
 ## 8. Not done
 3D layout; stacking check; gap pad and sink product choice; Elmer; the TE drawings for DT15-12PA, DT06-12SA, HD34-24 and HDP24 -L017 (only product pages, STEP and catalog data used).
+
+## 9. Reference example: Grok TEST 2 (Dan, 2026-11-11)
+
+- Where: `C:\Users\danie\_staging\custom-pdm-enclosure-handoff\custom-pdm-enclosure-handoff.zip` (SHA-256 5CECA59B99EEEBACC2F2919588C3A61917103FEBDE41B35D3A9F4E95CCA5764B). Start with `handoff/HANDOFF.md` (spec, renders, STEPs, build scripts; `history-test1/` is history only). Read-only: never edit that model or pack.
+- Use: the direction Dan wants (contoured lid styled after motorsport PDMs, aluminium sink on the bottom with fins down, terminals lifted to the lid, input boards over the main boards). Our own version may differ, e.g. connectors moved to the sides.
+- Hard rule (Dan): screw-terminal studs and ring-terminal points are always horizontal, wherever they sit on the enclosure.
+- The pack's requirement list (Dan's rules for Grok) and its chat-vs-repo conflicts C1-C6 are suggestions, not decisions (Dan). `DECISIONS.md` and section 7 above still decide.

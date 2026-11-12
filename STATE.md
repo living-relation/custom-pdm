@@ -20,12 +20,13 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Re-import boards A and B into Fusion, refresh `docs/diagrams/board-b-top-render.png`, refresh `docs/parts-audit.csv` for the changed parts, Digi-Key numbers for them (TBD).
+1. Re-import boards A and B into Fusion (Fusion lock held by `grokbot-fh201` on 2026-11-11 21:34 ET; wait for it), refresh `docs/diagrams/board-b-top-render.png`, refresh `docs/parts-audit.csv` for the changed parts, Digi-Key numbers for them (TBD).
 2. Heat analysis (Elmer, handbuilt-cad sim stack, `sim-stack` skill): boards on the base-plate sink, 60 C cabin air, worst-case losses. Enclosure A, B, C wait for it (Dan, 2026-11-11); D-G after that, one at a time. Plan B is final (b3a, 2026-11-11). Defaults rule: `AGENTS.md`.
-3. Then: re-import board B (and any changed board) into Fusion; refresh `docs/diagrams/board-b-top-render.png`; B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
+3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
+- t1 (asked 2026-11-11): "terminals always horizontal" means (a) ring lug lies flat, stud points up, as in TEST 2, or (b) stud axis horizontal, lug on a vertical face. Reference: `docs/enclosure-layout.md` section 9.
 - Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time). On hold until testing and the heat analysis are done (Dan, 2026-11-11).
 - Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C3, C2, C4, C5 studs, C6, C7, L1, enclosure H.
 - Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
