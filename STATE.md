@@ -21,7 +21,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
 1. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
-2. Enclosure (main goal: size and appearance, cooling adapts; Dan 2026-11-12): A-D answered (e1-e4, 2026-11-12); E-G one at a time next (e5 = E), then our own 3D version (handbuilt-cad, TEST 2 as direction, rules in `DECISIONS.md` 2026-11-11/12); also firmware thermal protection and temperature-triggered fan control with a software-set limit (to plan, e3c), now that the heat analysis is done; Plan B is final (b3a). Heat results that shape them: `docs/heat-analysis.md`. Defaults rule: `AGENTS.md`.
+2. Enclosure (main goal: size and appearance, cooling adapts; Dan 2026-11-12): A-F answered (e1-e6, 2026-11-12; e5a to confirm); G next (e7), then the DT15 removal on board A (e6a, board change), then our own 3D version (handbuilt-cad, TEST 2 as direction, rules in `DECISIONS.md` 2026-11-11/12); also firmware thermal protection and temperature-triggered fan control with a software-set limit (to plan, e3c), now that the heat analysis is done; Plan B is final (b3a). Heat results that shape them: `docs/heat-analysis.md`. Defaults rule: `AGENTS.md`.
 3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
 
