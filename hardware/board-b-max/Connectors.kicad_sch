@@ -7682,7 +7682,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "CAN + IN1-2 (Micro-Fit 2x2)"
+		(property "Value" "WIRE PADS CAN + IN1-2"
 			(at 108.712 53.3473 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7693,7 +7693,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Micro-Fit_3.0_43045-0412_2x02_P3.00mm_Vertical"
+		(property "Footprint" "dingoPDM:MicroFit_2x02_WirePads"
 			(at 106.68 50.8 0)
 			(hide yes)
 			(show_name no)

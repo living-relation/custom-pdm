@@ -22,7 +22,7 @@ board-a,FB1,1,2,2,Ferrite_Bead_Small,R_0805_2012Metric,,490-1054-1-ND,C85840,BLM
 board-a,G2,1,2,2,DingoFace,DingoFaceNoFill,,,,,,,
 board-a,H1 H2 H3 H4,4,2,8,M3,MountingHole_3.2mm_M3_ISO7380_Pad,,,,,,,
 board-a,J1 J2,2,2,4,RedCubeTerminal,M6_Hole_8Pin_7461084,,732-3203-ND,C6828431,,,,:
-board-a,J3,1,2,2,Conn_01x12,DT15-12PA,,1734-1027-ND,C5341788,DT15-12PA,TE Connectivity,236,1:11.1311 10:9.7250 25:8.8681 100:8.1486
+board-a,J3,1,2,2,WIRE PADS X1/X2/CAN,DT15-12PA_WirePads,,,,,,,
 board-a,J4,1,2,2,TC,Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical,,,,,,,
 board-a,J5,1,2,2,USB_C_Receptacle_USB2.0,USB_C_Receptacle_GCT_USB4085,,2073-USB4085-GF-ACT-ND,C7095263,USB4085-GF-A,Global Connector Technology,0,1:1.4153 10:1.1772 30:1.0466 100:0.8994 700:0.8333 1400:0.8035
 board-a,J6,1,2,2,INPUTS IN3-IN10,JST_GH_SM12B-GHS-TB_1x12-1MP_P1.25mm_Horizontal,,,,,,,
@@ -76,7 +76,7 @@ board-b,H1 H2 H3 H4,4,1,4,M3,MountingHole_3.2mm_M3_ISO7380_Pad,,,,,,,
 board-b,J1 J3,2,1,2,RedCubeTerminal,M6_Hole_8Pin_7461084,,732-3203-ND,C6828431,,,,:
 board-b,J2,1,1,1,USB_C_Receptacle_USB2.0,USB_C_Receptacle_GCT_USB4085,,2073-USB4085-GF-ACT-ND,C7095263,USB4085-GF-A,Global Connector Technology,0,1:1.4153 10:1.1772 30:1.0466 100:0.8994 700:0.8333 1400:0.8035
 board-b,J5,1,1,1,TC,Tag-Connect_TC2030-IDC-NL_2x03_P1.27mm_Vertical,,,,,,,
-board-b,J6,1,1,1,CAN + IN1-2 (Micro-Fit 2x2),Molex_Micro-Fit_3.0_43045-0412_2x02_P3.00mm_Vertical,,,,,,,
+board-b,J6,1,1,1,WIRE PADS CAN + IN1-2,MicroFit_2x02_WirePads,,,,,,,
 board-b,J7,1,1,1,INPUT BOARD B_IN3-10,JST_GH_BM12B-GHS-TBT_1x12-1MP_P1.25mm_Vertical,,,,,,,
 board-b,JP1,1,1,1,PowerLED_Jumper,SolderJumper-2_P1.3mm_Bridged_RoundedPad1.0x1.5mm,,,,,,,
 board-b,R1,1,1,1,47K,R_0805_2012Metric,,311-47.0KCRCT-ND,C327035,RT0805DRD0747KL,YAGEO,0,50:0.0202 500:0.0166 1500:0.0146 5000:0.0133 25000:0.0123 50000:0.0117

@@ -6,6 +6,7 @@
 # Usage (repo root, on a branch):  powershell -File tools\build_board_a.ps1 [-Out <folder for reports>] [-NoInputs]
 # The input expansion (J6, 5 new inputs, test points removed) is part of the design; -NoInputs builds without it.
 # Last stage (board fix, 2026-11-11): tools/sch_board_fix.py A + tools/pcb_fix_board_a.py.
+# Then (a1a, 2026-11-12): tools/wirepads.py - J3 DT15 header -> wire pads in the same 12 holes.
 param([string]$Out = "$env:LOCALAPPDATA\Workstation\claude-fusion\kicad9", [switch]$NoInputs)
 $repo = Split-Path $PSScriptRoot -Parent
 $py9 = "$env:LOCALAPPDATA\Programs\KiCad\9.0\bin\python.exe"
@@ -28,6 +29,10 @@ try {
     }
     & $py9 "$repo\tools\sch_board_fix.py" A                     # board fix 2026-11-11: parts, CAN terminator (DECISIONS.md)
     if ($LASTEXITCODE) { throw 'sch_board_fix.py failed' }
+    & $py9 "$repo\tools\wirepads.py" lib                       # a1a 2026-11-12: DT15 -> wire pads in the same holes
+    if ($LASTEXITCODE) { throw 'wirepads.py lib failed' }
+    & $py9 "$repo\tools\wirepads.py" sch-a Connectors.kicad_sch
+    if ($LASTEXITCODE) { throw 'wirepads.py sch-a failed' }
     & $kc10 sch export netlist --format kicadxml -o "$Out\net.xml" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_swap_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_swap_board_a.py failed' }
@@ -41,6 +46,8 @@ try {
     & $kc10 sch export netlist -o "$Out\board-a.net" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_fix_board_a.py" DingoPDM.kicad_pcb "$Out\board-a.net" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_fix_board_a.py failed' }
+    & $py9 "$repo\tools\wirepads.py" pcb DingoPDM.kicad_pcb J3 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
+    if ($LASTEXITCODE) { throw 'wirepads.py pcb failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3
