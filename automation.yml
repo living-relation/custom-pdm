@@ -136,3 +136,37 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
     owner: claude
+  - id: enclosure-v2b-build
+    script: enclosure/v2b/src/build_check_all.sh
+    helpers: [enclosure/v2b/src/run.sh, enclosure/v2b/src/build_v2b.py, enclosure/v2b/src/clearance_v2b.py, enclosure/v2b/src/show_check.py,
+              enclosure/v2b/src/inspect_vendor.py, enclosure/v2b/src/bg.sh]
+    trigger: manual
+    reads: ["enclosure/v2b/src/*.py", "hardware/*/*.step"]   # plus Grok's pack copy and vendor STEPs in .claude/tmp (not in git)
+    writes: []                      # STEP/BREP/meta/check.json go to WSL ~/scratch/encl-v2b/runs (not in git)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl -e bash -c "tr -d '\015' < enclosure/v2b/src/build_check_all.sh > /tmp/bca.sh && HERE=$PWD/enclosure/v2b/src bash /tmp/bca.sh F1 F2"   # WSL path of the checkout
+    check_cmd: wsl -e bash enclosure/v2b/src/run.sh show_check.py F1
+    owner: claude
+  - id: enclosure-v2b-render
+    script: enclosure/v2b/src/render_v2b.py
+    trigger: manual
+    reads: ["~/scratch/encl-v2b/runs/*/brep/*.brep"]   # output of enclosure-v2b-build
+    writes: ["docs/diagrams/enclosure-v2b-*.png"]      # illustration only; copied from ~/scratch/encl-v2b/renders
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl -e bash -c "CAD_HOME=~/projects/handbuilt-cad RENDER_DIR=~/scratch/encl-v2b/renders bash enclosure/v2b/src/run.sh render_v2b.py F1 iso front"   # views as args
+    owner: claude
+  - id: heat-sim
+    script: sim/heat/run_cases.py
+    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py]
+    trigger: manual
+    reads: ["sim/heat/*.py"]        # HEAT_GEOM env: "" = Grok TEST 2 sink, v2b-F1 / v2b-F2 = enclosure v2b variants
+    writes: ["docs/diagrams/heat-*.png", sim/heat/example_worst_fans_k3.sif]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: wsl -e bash -c "python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/scratch/heat/runs/m2"
+    owner: claude

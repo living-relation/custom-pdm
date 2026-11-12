@@ -24,6 +24,13 @@ BOARD_D = 95.25
 LX0, LX1 = -10.0, X0["A2"] + 72.39 + 10.0
 LY1 = 10.0
 LY0 = LY1 - 119.25
+# enclosure v2b (docs/enclosure-v2b.md): HEAT_GEOM=v2b-F1 / v2b-F2 -> deeper sink (front side at Y -130),
+# F1 fins stop at the 18 mm east fan bay; F2 = straight-fin field of the same wetted area as the swept radial
+# fins (equivalent-area model, convection.py scales nothing further). Default (unset) = Grok TEST 2 b as before.
+import os as _os
+HEAT_GEOM = _os.environ.get("HEAT_GEOM", "")
+if HEAT_GEOM.startswith("v2b"):
+    LY0 = -130.0
 
 
 def W(n, xk, yk):
@@ -75,7 +82,17 @@ def pedestals():
 
 
 def fins():
-    """fin boxes (x0, x1, y0, y1); pack build_test2.py fin loop"""
+    """fin boxes (x0, x1, y0, y1); pack build_test2.py fin loop (v2b-F1: east fan bay; v2b-F2: equivalent area)"""
+    if HEAT_GEOM in ("v2b-F1", "v2b-F2"):
+        out, y = [], LY0 + FIN_EDGE
+        xe = LX1 - FIN_EDGE - 18.0
+        if HEAT_GEOM == "v2b-F2":
+            L_TOT = float(_os.environ.get("F2_FIN_LEN_MM", "4000"))   # total swept-fin length from the CAD (build meta)
+            n = int(round((LY1 - LY0 - 2 * FIN_EDGE) / FIN_PITCH)) + 1
+            xe = LX0 + FIN_EDGE + 16 + L_TOT / n
+        while y + FIN_T <= LY1 - FIN_EDGE + 1e-6:
+            out.append((LX0 + FIN_EDGE + 16, min(xe, LX1 - FIN_EDGE), y, y + FIN_T)); y += FIN_PITCH
+        return out
     out, y = [], LY0 + FIN_EDGE
     while y + FIN_T <= LY1 - FIN_EDGE + 1e-6:
         near_foot = any(y < fy + FOOT_D / 2 + 2 and y + FIN_T > fy - FOOT_D / 2 - 2 for fy in (LY0 + 12, LY1 - 12))
