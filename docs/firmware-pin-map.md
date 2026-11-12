@@ -21,13 +21,13 @@ Status: first version, 2026-11-10 (job B, branch `feat/fw-pin-map`). No firmware
 | PC8 | 39 | PF_IN8 | TIM8_CH3 | TIM8_CH3 = AF3 (TIM3_CH3 = AF2 also exists) | CONFIRMED. TIM8 is not used by stock FW (TIM3 belongs to output 1). |
 
 - No ADC clash: every analog pin below has its own ADC1 channel (table in section 5), 12 conversions on board B, 16 are possible.
-- Conflicts and traps (details in section 2): PB2 is BOOT1 (board B: B_IN5 moved off it to PC13 on 2026-11-10, B1; PB2 is now unconnected there); PA15, PB3, PB4 are JTAG pins (SWD still works); stock `LINE_UNUSED` is PA15 (now a live pin on board B); stock debug lines E1-E3 are PC10, PC11, PC13 (now inputs); two digital inputs cannot share an EXTI line (sleep wake-up).
+- Conflicts and traps (details in section 2): PB2 is BOOT1 (board B: B_IN5 moved off it to PC13 on 2026-11-10, B1; PB2 now only has a 10k pull-down to GND there, board fix 2026-11-11); PA15, PB3, PB4 are JTAG pins (SWD still works); stock `LINE_UNUSED` is PA15 (now a live pin on board B); stock debug lines E1-E3 are PC10, PC11, PC13 (now inputs); two digital inputs cannot share an EXTI line (sleep wake-up).
 
 ## 2. Flags for the new pins
 
 | Pin | PIN | Used as | ADC (Table 10) | Reserved / shared function | Flag |
 |---|---|---|---|---|---|
-| PB2 | 28 | A: PF_DEN1 (DEN1_2). B: not connected (firmware `LINE_UNUSED`) | none | Table 10 prints "PB2-BOOT1" (p. 49) | Board A: output, same as stock v7. Board B: nothing on the pin, as on the stock Max. Its level at reset selects the boot target when BOOT0 is high (SW1 closed, DFU), and nothing on the board holds it low: see Q1. |
+| PB2 | 28 | A: PF_DEN1 (DEN1_2). B: 10k to GND only (net `/MCU/BOOT1`; firmware `LINE_UNUSED`) | none | Table 10 prints "PB2-BOOT1" (p. 49) | Board A: output, same as stock v7. Board B: no signal. Its level at reset selects the boot target when BOOT0 is high (SW1 closed, DFU); a 10k to GND holds it low since the board fix (B4-b(b)): see Q1. |
 | PB3 | 55 | A: IN_7. B: SWO (J5.6), unused as input | none | JTDO / TRACESWO, AF0 (p. 55, 59) | Board A drops SWO (Dan 2026-11-08). Board B keeps SWO on J5.6, so PB3 must stay an SWO/AF0 pin there. |
 | PB4 | 56 | A: IN_5. B: B_IN7 | none | NJTRST, AF0 (p. 56, 59) | JTAG reset pin. Only SWD is usable on these boards (stock already sets PB4 to plain input). |
 | PA15 | 50 | B: PF_IN7 | none | JTDI, AF0 (p. 53, 58) | Board B drives an output IN pin from a JTAG pin: firmware must set it to output at start. After reset PA15 is JTDI with a pull-up (reset-state detail: RM0390, TBD, not read). Stock `LINE_UNUSED = PA15`: see section 7. |
@@ -87,9 +87,9 @@ Dual pairs rely on the stock rule: DSEL low = channel 0, high = channel 1, wait 
 
 | Function | MCU pin (PIN) | Note |
 |---|---|---|
-| CAN1 RX / TX | PB8 (61) / PB9 (62) | AF9. Transceiver U3 (PCA82C250, 5 V, 3.3 V Vref). |
+| CAN1 RX / TX | PB8 (61) / PB9 (62) | AF9. Transceiver U3: MCP2562FD-E/SN since the board fix (C3d): VDD on +5V, pin 5 VIO on +3V3, pin 8 STBY from PC12 (high = standby). 120 ohm terminator behind an open solder jumper (C7b). |
 | CAN standby (Rs) | PC12 (53) | GPIO output. |
-| I2C1 SCL / SDA | PB6 (58) / PB7 (59) | AF4. FRAM U5 MB85RC256V, temp sensor U6 MCP9808, pull-ups R6, R7. |
+| I2C1 SCL / SDA | PB6 (58) / PB7 (59) | AF4. FRAM U5 MB85RC64TA (C2b, board fix), temp sensor U6 MCP9808, pull-ups R6, R7. |
 | Battery sense | PA3 (17), ADC1_IN3 | 47k / 4.7k divider. |
 | USB D- / D+ / VBUS | PA11 (44) / PA12 (45) / PA9 (42) | AF10 for D-, D+. |
 | LEDs | PC0 (8) red (error), PC1 (9) green (status) | via 120 R. |
@@ -133,9 +133,9 @@ The IS to channel link was traced through the buffers: CH5 -> U22C -> PF_IS5, CH
 | B_IN10 | PC11 (52) | J7.8 -> ch 8 | digital | NEW |
 | B_AN | PB1 (27), ADC1_IN9 | J7.9 -> input board analog | analog | NEW |
 
-PB2 (pin 28) is the only free pin on board B. The numbering B_IN3..B_IN10 is the schematic net name; the input board calls the same wires ch 1..8 (section 8).
+PB2 (pin 28) carries no signal on board B: only the 10k BOOT1 pull-down. The numbering B_IN3..B_IN10 is the schematic net name; the input board calls the same wires ch 1..8 (section 8).
 
-**System pins**: same as board A (section 3) for CAN1 (PB8, PB9; connector J6.1 CAN_L, J6.2 CAN_H), CAN standby PC12, I2C1 (PB6, PB7; U5, U6; R12, R13), battery sense PA3, USB (PA11, PA12, PA9), LEDs PC0 red (D7) and PC1 green (D8), SWD PA13/PA14 and NRST (J5 Tag-Connect). Differences: J5.6 = SWO is wired to PB3 (55); BOOT0 via R10 and SW1. Not connected (free): PB2 only (checked in the netlist: `unconnected-(U4-PB2-Pad28)`).
+**System pins**: same as board A (section 3) for CAN1 (PB8, PB9; connector J6.1 CAN_L, J6.2 CAN_H), CAN standby PC12, I2C1 (PB6, PB7; U5, U6; R12, R13), battery sense PA3, USB (PA11, PA12, PA9), LEDs PC0 red (D7) and PC1 green (D8), SWD PA13/PA14 and NRST (J5 Tag-Connect). Differences: J5.6 = SWO is wired to PB3 (55); BOOT0 via R10 and SW1. PB2: net `/MCU/BOOT1`, 10k to GND only (board fix, B4-b(b)).
 
 ## 5. ADC channels and PWM timers
 
@@ -230,10 +230,10 @@ Same input board for both, so a board-A build only has 5 live channels. Firmware
 
 ## 9. Questions for Dan
 
-- **Q1. B_IN5 sat on PB2 = BOOT1 (board B). Answered: moved to PC13** (`DECISIONS.md`, B1; done in the board scripts and the firmware). Left over: PB2 now has nothing on it, exactly as on the stock Max. BOOT1 is read only at a reset with BOOT0 high (SW1 closed): low = system bootloader (DFU), high = boot from SRAM. The update command over CAN / USB does not use the pins (`boards/cortex-m4/enter_bootloader.S` jumps to the bootloader itself). Open choice: (A) leave PB2 open like the stock Max; (B) add a 10k resistor from PB2 to GND so the SW1 way never depends on a floating pin (one new part, one more routing pass). Not decided.
+- **Q1. B_IN5 sat on PB2 = BOOT1 (board B). Answered: moved to PC13** (`DECISIONS.md`, B1; done in the board scripts and the firmware). Left over: PB2 now has nothing on it, exactly as on the stock Max. BOOT1 is read only at a reset with BOOT0 high (SW1 closed): low = system bootloader (DFU), high = boot from SRAM. The update command over CAN / USB does not use the pins (`boards/cortex-m4/enter_bootloader.S` jumps to the bootloader itself). Open choice: (A) leave PB2 open like the stock Max; (B) add a 10k resistor from PB2 to GND so the SW1 way never depends on a floating pin (one new part, one more routing pass). Answered (B): `DECISIONS.md` B4-b(b), built in the board fix.
 - **Q2. Sleep wake-up (section 6).** Two EXTI clashes (three before the B1 move; answered as B2 in `DECISIONS.md`). Options as asked: (A) only IN_1 and IN_2 (PA10, PC9) plus CAN wake the PDM; the new input-board channels never wake it (firmware arms only those two); (B) re-pin PC10 / PC11 / PD2 on a later revision. Recommendation: A. In a car with CAN-controlled switching the ECU wakes it over CAN anyway.
 - **Q3. Hardware PWM (section 1).** Stock uses software PWM, so the IN pin timers are irrelevant. Options: (A) keep stock software PWM, no pin change; (B) hardware PWM on the IN pins later (PA8 TIM1_CH1 and PC8 TIM8_CH3 would work; PB10 and PA15 would need the system tick moved off TIM2). Recommendation: A.
-- **Q4. `LINE_UNUSED` (board B).** Must not be PA15 (output 7's IN pin). It was PC13 until B_IN5 took that pin; the only pin with no net now is PB2, so the firmware uses PB2, set as input with pull-down (a write to it changes nothing on the pin). Other choices: (B) a port bit with no pin on this 64-pin package (for example PD0), (C) PB3 (SWO, wired to J5.6). To confirm with Dan.
+- **Q4. `LINE_UNUSED` (board B).** Must not be PA15 (output 7's IN pin). It was PC13 until B_IN5 took that pin; the only pin with no signal now is PB2, so the firmware uses PB2, set as input with pull-down (a write to it changes nothing on the pin; the pull-down matches the 10k BOOT1 resistor). Other choices: (B) a port bit with no pin on this 64-pin package (for example PD0), (C) PB3 (SWO, wired to J5.6). To confirm with Dan.
 
 ## 10. Spot-check against the netlist and regenerate
 
@@ -256,7 +256,7 @@ Five quick checks:
 | A | PC7 (38) | PF_DSEL1_2 | U8 pin 5 DSEL via R20 |
 | A | PB3 (55) | /MCU/IN_7 | J6 pin 5 (not SWO) |
 | B | PA15 (50) | PF_IN7 | U25 IN via R58, output 7 |
-| B | PC13 (2) | B_IN5 | J7 pin 3 (PB2, pin 28, has no net) |
+| B | PC13 (2) | B_IN5 | J7 pin 3 (PB2, pin 28: 10k to GND only) |
 | B | PC4 (24) | PF_IS8 | R53 -> U22A buffer <- CH8 (U26 sense) |
 
 Not yet checked (TBD): RM0390 reset states of PA15 / PB3 / PB4 and drive limits of PC13-PC15; ChibiOS behaviour for a repeated EXTI line; BTS7004-1EPP kILIS; whether `NUM_DIG_INPUTS` / `NUM_ANALOG_INPUTS` can be raised in dingoFW without changes to the CAN message layout.

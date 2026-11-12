@@ -352,9 +352,11 @@ a_pocket = (j3p[0] - 1.0, j3p[1] - 1.0, j3p[2] + 1.0, j3p[3] + 1.0)
 a_centre = ((a_ped[0][0] + a_ped[0][2]) / 2, 0.05)
 detail("A", A, 20, DY + 30, "Board A heat path (top view)", a_ped, a_pocket, a_centre, housing=True)
 # leftover mask window at the old U9 spot
-lm = [m for m in amasks if m[0] < -5][0]
+lm = [m for m in amasks if m[0] < -5]   # removed in the board-fix job (enclosure H); label only if still there
 a0 = A["outline"]
-add(f'<text class="t" font-size="8" x="{20 + (lm[0] - a0[0]) * DS:.0f}" y="{DY + 30 + (lm[3] - a0[1]) * DS + 11:.0f}">old U9 window</text>')
+if lm:
+    lm = lm[0]
+    add(f'<text class="t" font-size="8" x="{20 + (lm[0] - a0[0]) * DS:.0f}" y="{DY + 30 + (lm[3] - a0[1]) * DS + 11:.0f}">old U9 window</text>')
 # board B pedestals: two pairs (BTS70012) + one rail (BTS7004 column)
 bm = B["masks"]
 b70012 = [m for m in bm if (m[2] - m[0]) > 5]

@@ -3965,6 +3965,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "BORN"
+			(at 35.56 38.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "SMCJ20CA"
+			(at 35.56 38.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "6da0ad1d-f8c5-4d6d-a0f8-f91b9f8c39b2")
 		)
@@ -4092,7 +4114,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "00000000-0000-0000-0000-00005f5bcc35")
 		(property "Reference" "U1"
 			(at 99.06 25.019 0)
@@ -4159,6 +4181,28 @@
 			)
 		)
 		(property "LCSC" "C5137464"
+			(at 99.06 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "CUI"
+			(at 99.06 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "VXO7805-500-M-TR"
 			(at 99.06 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4256,7 +4300,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "445-11516-1-ND"
+		(property "Digi-Key_PN" "TBD"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4267,7 +4311,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C15850"
+		(property "LCSC" "C162422"
+			(at 71.12 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Murata"
+			(at 71.12 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "GRM21BR6YA106KE43L"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -6058,6 +6124,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Traco"
+			(at 36.83 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "TSR 1-2450"
+			(at 36.83 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "1bf60344-3c34-4ad4-a1fc-19e442f1156f")
 		)
@@ -6839,7 +6927,7 @@
 		(in_bom yes)
 		(on_board yes)
 		(in_pos_files yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "c34a12af-4de6-4cd4-8dad-e928307e2564")
 		(property "Reference" "U12"
@@ -6909,6 +6997,28 @@
 			)
 		)
 		(property "LCSC" "C266374"
+			(at 36.83 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Murata"
+			(at 36.83 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "OKI-78SR-5/1.5-W36H-C"
 			(at 36.83 74.93 0)
 			(hide yes)
 			(show_name no)

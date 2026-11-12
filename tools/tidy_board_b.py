@@ -9,6 +9,7 @@
 Nothing but text fields is touched: tracks, vias, pads, zones stay as they are.
 """
 import math
+import os
 import re
 import sys
 
@@ -41,6 +42,11 @@ for fp in b.GetFootprints():
         fp.AddField(f)
         added += 1
 print("fields added:", added)
+# board fix (C6c, C1b, C2b, C3d, P9): values, DNP and supplier / maker fields follow the schematic exactly
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import board_fix_pcb  # noqa: E402
+synced = board_fix_pcb.sync_fields(b, board_fix_pcb.read_netlist(NET))
+print("fields / values / DNP synced from the schematic:", len(synced), "changes")
 
 # ---------------------------------------------------------------- silkscreen
 base_refs = set(re.findall(r'\(property "Reference" "([^"]+)"', open(BASE, encoding="utf-8").read()))

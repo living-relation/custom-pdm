@@ -5,6 +5,7 @@
 # - kicad-cli 10 is used read-only (netlist, ERC, DRC); it can read both formats.
 # Usage (repo root, on a branch):  powershell -File tools\build_board_a.ps1 [-Out <folder for reports>] [-NoInputs]
 # The input expansion (J6, 5 new inputs, test points removed) is part of the design; -NoInputs builds without it.
+# Last stage (board fix, 2026-11-11): tools/sch_board_fix.py A + tools/pcb_fix_board_a.py.
 param([string]$Out = "$env:LOCALAPPDATA\Workstation\claude-fusion\kicad9", [switch]$NoInputs)
 $repo = Split-Path $PSScriptRoot -Parent
 $py9 = "$env:LOCALAPPDATA\Programs\KiCad\9.0\bin\python.exe"
@@ -25,6 +26,8 @@ try {
         & $py9 "$repo\tools\sch_inputs_board_a.py"
         if ($LASTEXITCODE) { throw 'sch_inputs_board_a.py failed' }
     }
+    & $py9 "$repo\tools\sch_board_fix.py" A                     # board fix 2026-11-11: parts, CAN terminator (DECISIONS.md)
+    if ($LASTEXITCODE) { throw 'sch_board_fix.py failed' }
     & $kc10 sch export netlist --format kicadxml -o "$Out\net.xml" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_swap_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_swap_board_a.py failed' }
@@ -35,6 +38,9 @@ try {
         & $py9 "$repo\tools\pcb_inputs_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
         if ($LASTEXITCODE) { throw 'pcb_inputs_board_a.py failed' }
     }
+    & $kc10 sch export netlist -o "$Out\board-a.net" DingoPDM.kicad_sch | Out-Null
+    & $py9 "$repo\tools\pcb_fix_board_a.py" DingoPDM.kicad_pcb "$Out\board-a.net" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
+    if ($LASTEXITCODE) { throw 'pcb_fix_board_a.py failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3

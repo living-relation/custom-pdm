@@ -1,6 +1,6 @@
 # Rebuild board B (dingoPDM-Max based) from the unmodified baseline, then check it.
 #   powershell -NoProfile -ExecutionPolicy Bypass -File tools\build_board_b.ps1 [-SchOnly] [-NoRoute]
-# Steps: restore baseline files -> tools\sch_board_b.py -> netlist checks (tools\check_board_b.py) -> ERC summary
+# Steps: restore baseline files -> tools\sch_board_b.py -> tools\sch_board_fix.py B -> netlist checks (tools\check_board_b.py) -> ERC summary
 #        -> tools\pcb_board_b.py (parts, outline, zones) -> tools\route_board_b.py (if present) -> DRC summary + renders.
 param([switch]$SchOnly, [switch]$NoRoute)
 $ErrorActionPreference = "Stop"
@@ -36,6 +36,8 @@ try {
     try {
         python (Join-Path $Repo "tools\sch_board_b.py")
         if ($LASTEXITCODE) { throw "sch_board_b.py failed" }
+        python (Join-Path $Repo "tools\sch_board_fix.py") B         # board fix 2026-11-11 (DECISIONS.md)
+        if ($LASTEXITCODE) { throw "sch_board_fix.py failed" }
     } finally { Pop-Location }
 
     & $Cli sch export netlist (Join-Path $B "dingoPDM-Max.kicad_sch") -o "$Out\board-b.net" | Out-Null
