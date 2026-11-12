@@ -20,7 +20,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Refresh `docs/parts-audit.csv` for the parts changed in PR #23 / #24 (LCSC stock and price), Digi-Key numbers for them (TBD).
+1. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
 2. Heat analysis (Elmer, handbuilt-cad sim stack, `sim-stack` skill): boards on the base-plate sink, 60 C cabin air, worst-case losses. Enclosure A, B, C wait for it (Dan, 2026-11-11); D-G after that, one at a time. Plan B is final (b3a, 2026-11-11). Defaults rule: `AGENTS.md`.
 3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
 4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
@@ -48,6 +48,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 
 ## Status (done work, newest first)
+- 2026-11-11: `docs/parts-audit.csv` regenerated from the schematics by `tools/gen_parts_audit_csv.py` (new, in `automation.yml`; `--offline` skips LCSC lookups): 114 rows, only the PR #23 / #24 parts changed, plus board B U23-U26 now carry LCSC C534825 (added in the board fix). New parts looked up at LCSC 2026-11-12 03:21 UTC; lowest stock: MCP2562FD 903, MB85RC64TA 474 (enough for one PDM). Superseded Fusion imports deleted (u1a).
 - 2026-11-11: Fusion re-import after PR #23 / #24 (`main` 549f285; KiCad 9 PCBs): folders `board-A-2026-11-11` and `board-B-2026-11-11` in project `custom-pdm`. Check vs the KiCad PCBs: board A 137 / 137 parts, 113 / 113 multi-pin nets; board B 203 / 203 parts, 139 / 139 nets (repeated pad numbers renamed `_1`.. by Fusion, same as before). `docs/diagrams/board-b-top-render.png` re-rendered with kicad-cli 10 `pcb render` (top, 1376 x 1288).
 - 2026-11-11: P11 fix (PR #24, Dan p1a): D18 (A) / D4 (B) = Nexperia PMEG2010AEH (SOD-123F, LCSC C110921), footprint swapped by script, no re-route. +5V worst case 4.61 V at 25 C, about 4.52-4.55 V at -40 C (graph value; no cold max in the data sheet) vs 4.5 V CAN-chip minimum; if every TSR tolerance stacks at -40 C it could reach about 4.44 V. Ideal diode (p1b) is the fallback if cold use matters. ERC/DRC equal to main in every category. Details: `docs/parts-audit.md` section 9.
 - 2026-11-11: Board-fix job (PR #23): board B 10k PB2-GND (R81); one 5 V converter per main board (TSR 1-2450, others DNP; its pins stick out about 2.3 mm under the board, clear of the pedestals, sink needs about 3 mm recess there or trimmed pins); 120 ohm + open solder jumper per main board (A: JP3 + R59, B: JP2 + R80); +12 V caps 35 V / 50 V; FRAM MB85RC64TA; CAN chip MCP2562FD-E/SN (wiring already matched); board A mask window removed; maker part numbers on changed and safety parts. Checks vs main: 0 unconnected, DRC errors equal (lib_footprint_issues +2 library-config warnings on A), ERC errors -1 per board, parity 5 -> 4. P11 found failing (+5V 4.50 V typ / 4.34 V worst vs 4.5 V CAN-chip minimum). Details and sources: `docs/parts-audit.md` section 9.
@@ -80,7 +81,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Board A design source is KiCad (`hardware/board-a/`). Rebuild it with `tools/build_board_a.ps1` (baseline + scripts, then ERC/DRC). The PCB must stay KiCad 9 format (KiCad 9.0.8 python edits it): Fusion's importer loses all nets from a KiCad 10 PCB. Schematics are KiCad 10 format upstream and import fine. kicad-cli 10 is used read-only. Fusion is for viewing, 3D and later checks (re-import after each round).
 - Reference KiCad sources (dingoPDM v7.5, dingoPDM-Max) cloned locally under `reference/` (git-ignored, about 350 MB).
 - dingoPDM v7.5 imported into Fusion Electronics (Fusion project `custom-pdm`, Sheets translation): design, schematic and board files created. Check: 115/115 named nets match; all 156 parts. Board checked: outline 72.39 x 95.25 mm, 4 copper layers, 522 pads, board image looks right.
-- Fusion `custom-pdm` project: root = clean import of the original; current boards `board-A-2026-11-11` and `board-B-2026-11-11`; older imports `board-A`, `board-A-dual-k9`, `board-A-inputs`, `board-B` are superseded (Leftovers). `board-A-dual` and `LINKED-COPY-unused` deleted 2026-11-11 (L1).
+- Fusion `custom-pdm` project: root = clean import of the original; current boards `board-A-2026-11-11` and `board-B-2026-11-11`; `input-board`; superseded imports deleted 2026-11-11 (u1a). `board-A-dual` and `LINKED-COPY-unused` deleted 2026-11-11 (L1).
 - Part and net lists from the import are in the models folder (`Desktop\models\custom-pdm-import-check`, OneDrive, add-only).
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Plan B (3 boards on CAN, one enclosure) is final; Plan C closed (Dan b3a, 2026-11-11).
@@ -91,7 +92,6 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
 - `%TEMP%\custom-pdm-parts-audit\`; `%TEMP%\board-b-build\` build outputs; B1 job temp folders `%TEMP%\bin5-build-base`, `%TEMP%\bin5-build-pc13`, `%TEMP%\bin5-stock-max`, `%TEMP%\bin5-fwcheck.*`, WSL `~/bin5-pdm`; `%TEMP%\renode-bench-2026-11-11.log*`.
 - The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 firmware changes: the repo is the source of truth.
-- Fusion project `custom-pdm`: superseded imports `board-A`, `board-A-dual-k9`, `board-A-inputs`, `board-B` (current ones are the `-2026-11-11` folders).
 - `%LOCALAPPDATA%\Workstation\claude-fusion\`: helper scripts (`call.ps1`, `up*.py`, `chk*.py`, `*.ulp`, `kicad\`), TE drawings in `te-drawings\`.
 
 ## Mistakes not to repeat
