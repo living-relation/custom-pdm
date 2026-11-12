@@ -134,3 +134,5 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat): e2a (enclosure B) - lid is 3D-printed MJF PA12 nylon with heat-set inserts, on the one-piece machined aluminium base.
 - 2026-11-12 (Dan, chat): f1a - any enclosure 3D model built before e3-e7 are answered (e.g. the low-profile draft on `feat/enclosure-lowpro`) is a rough draft only; it is redone once e3-e7 are answered.
 - 2026-11-12 (Dan, chat): f2a - remove the superseded handoffs (`.claude/handoff/HANDOFF-2026-11-11*.md`) and fix out-of-date `STATE.md` lines in one small PR after the enclosure draft PR.
+- 2026-11-12 (Dan, chat): e3c (enclosure C) - fans fitted, pushing air in. Pick the quietest fans possible; one larger fan is preferred if it lowers noise. Fans switch on from a temperature trigger whose limit is adjustable in software (firmware item).
+- 2026-11-12 (Dan, chat): h1a - keep the stopped helper's leftovers (`feat/enclosure-lowpro` worktree and branch, WSL `~/scratch/encl-lowpro/`) until e3-e7 are answered; reuse its measuring scripts for the 3D build.
