@@ -131,3 +131,4 @@ One dated line per decision, newest last. Who decided, then where it came from.
 - 2026-11-12 (Dan, chat): e1 (enclosure A) - mount flat, lid up (a), or the same unit on a vertical wall; semi-universal mounting if possible, else flat only. Size limit about 14 x 6 x 5 in (356 x 152 x 127 mm, L x W x H); best look = use the length and width, stay as low as possible.
 - 2026-11-12 (Dan, chat): X1 and X2 go on one side wall of the enclosure, pointing horizontal (replaces 'both on top' from the Grok TEST 2 brief). Terminal studs / bosses also act as heat sinks. The base may be one machined aluminium part with fins on more than one side.
 - 2026-11-12 (Dan, chat): heat targets (85 / 95 / 105 C) are guides, not hard fails: full load is not continuous, and firmware thermal protection can be added (to plan with the firmware work).
+- 2026-11-12 (Dan, chat): e2a (enclosure B) - lid is 3D-printed MJF PA12 nylon with heat-set inserts, on the one-piece machined aluminium base.
