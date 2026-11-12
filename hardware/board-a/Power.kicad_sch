@@ -5953,7 +5953,7 @@
 				)
 			)
 		)
-		(property "Value" "Schottky"
+		(property "Value" "PMEG2010AEH"
 			(at 124.7775 28.7599 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5963,7 +5963,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_SOD-123"
+		(property "Footprint" "Diode_SMD:D_SOD-123F"
 			(at 124.46 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -5996,7 +5996,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1727-2394-1-ND"
+		(property "Digi-Key_PN" "1727-PMEG2010AEH,115CT-ND"
 			(at 124.46 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -6007,7 +6007,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C179426"
+		(property "LCSC" "C110921"
+			(at 124.46 31.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 124.46 31.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "PMEG2010AEH,115"
 			(at 124.46 31.75 0)
 			(hide yes)
 			(show_name no)

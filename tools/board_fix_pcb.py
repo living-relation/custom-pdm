@@ -5,7 +5,8 @@ sync_fields(b, comps)         -> footprints follow the schematic: value, DNP, Di
 add_part(b, comp, padnet, anchor, ...)
                               -> load a new part's footprint from the KiCad library, link it to its symbol, give its pads
                                  their nets and put it on the nearest free spot to `anchor` (exact shapes, not a grid)
-Decisions: DECISIONS.md 2026-11-11 (C6c fields, C7b terminator, B4-b(b) BOOT1 pull-down).
+swap_footprint(b, ref, comp)  -> new library footprint in place of an old one (P11 Schottky: D_SOD-123 -> D_SOD-123F)
+Decisions: DECISIONS.md 2026-11-11 (C6c fields, C7b terminator, B4-b(b) BOOT1 pull-down, p1a P11 Schottky).
 """
 import math
 import os
@@ -166,6 +167,59 @@ def add_part(b, comp, padnet, anchor, max_r=12.0, rots=(0, 90, 180, 270), cleara
                     print(f"{comp['ref']} placed at ({x:.2f}, {y:.2f}) rot {rot} ({r:.2f} mm from the anchor)")
                     return fp
     raise SystemExit(f"{comp['ref']}: no free spot within {max_r} mm of {anchor}")
+
+
+def swap_footprint(b, ref, comp):
+    """P11: put the schematic's footprint (comp["footprint"], KiCad library) in place of the board's footprint `ref`:
+    same position, rotation, side, symbol link, pad nets (by pad number) and reference-text placement. Tracks are
+    left as they are (they must end inside the new pads: the build's DRC checks it). Returns the OLD footprint; the
+    caller removes it with pcb_rework.remove_and_reload (KiCad 9: BOARD.Remove breaks the item lists)."""
+    old = b.FindFootprintByReference(ref)
+    if old is None or old.IsFlipped():
+        raise SystemExit(f"{ref}: not on the board, or on the bottom side (not handled)")
+    lib, name = comp["footprint"].split(":", 1)
+    if old.GetFPID().GetUniStringLibId() == comp["footprint"]:
+        raise SystemExit(f"{ref}: already {comp['footprint']}")
+    fp = pcbnew.FootprintLoad(os.path.join(KFP, lib + ".pretty"), name)
+    if fp is None:
+        raise SystemExit(f"footprint {comp['footprint']} not found")
+    fp.SetFPID(pcbnew.LIB_ID(lib, name))
+    fp.SetReference(ref)
+    fp.SetValue(comp["value"])
+    for fld in fp.GetFields():
+        if fld.GetName() == "Datasheet":
+            fld.SetText("")
+    fp.SetPath(old.GetPath())
+    fp.SetSheetname(old.GetSheetname())
+    fp.SetSheetfile(old.GetSheetfile())
+    fp.SetPosition(old.GetPosition())
+    fp.SetOrientation(old.GetOrientation())
+    olds = {p.GetNumber(): p for p in old.Pads()}
+    if sorted(olds) != sorted(p.GetNumber() for p in fp.Pads()):
+        raise SystemExit(f"{ref}: pad numbers differ between {old.GetFPID().GetUniStringLibId()} and {comp['footprint']}")
+    for p in fp.Pads():
+        p.SetNet(olds[p.GetNumber()].GetNet())
+    ot, nt = old.Reference(), fp.Reference()
+    nt.SetTextSize(ot.GetTextSize())
+    nt.SetTextThickness(ot.GetTextThickness())
+    nt.SetVisible(ot.IsVisible())
+    nt.SetLayer(ot.GetLayer())
+    nt.SetTextAngle(ot.GetTextAngle())
+    nt.SetPosition(ot.GetPosition())
+    b.Add(fp)
+    for f in old.GetFields():                                   # keep any other field the old one carried
+        if f.GetName() not in ("Reference", "Value", "Footprint", "Datasheet", "Description") and _field(fp, f.GetName()) is None:
+            nf = pcbnew.PCB_FIELD(fp, fp.GetNextFieldId(), f.GetName())
+            nf.SetText(f.GetText())
+            nf.SetVisible(False)
+            nf.SetLayer(pcbnew.F_Fab)
+            nf.SetPosition(fp.GetPosition())
+            nf.thisown = False
+            fp.AddField(nf)
+    fp.SetDNP(old.IsDNP())
+    print(f"{ref}: footprint {old.GetFPID().GetUniStringLibId()} -> {comp['footprint']} at "
+          f"({tomm(fp.GetPosition().x):.3f}, {tomm(fp.GetPosition().y):.3f}) rot {fp.GetOrientationDegrees():.0f}")
+    return old
 
 
 def pad(b, ref, num):

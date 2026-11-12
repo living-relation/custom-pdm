@@ -10686,7 +10686,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1d32fa98-39b3-48e8-87ee-a3049101e3e3")
+		(uuid "2e515274-4eb2-4726-a882-c5662168b86d")
 	)
 	(label "IN_4"
 		(at 53.975 85.725 0)
@@ -10696,7 +10696,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "74e24a55-06ac-45c6-bdcd-a2ffcd315e9b")
+		(uuid "ed1391c4-0f33-4303-88e0-e09fcdaaa7aa")
 	)
 	(label "IN_5"
 		(at 127 90.805 0)
@@ -10706,7 +10706,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "3fb1cd99-fef8-41a6-92ee-89ea090c75d0")
+		(uuid "32784ab5-ff62-4d00-b500-16b4d2fd87ea")
 	)
 	(label "IN_6"
 		(at 45.085 88.265 0)
@@ -10716,7 +10716,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "3f390afa-00a9-49df-911e-682e3ff5a876")
+		(uuid "744c9b50-d0c5-42a6-a67b-88ba736ad0cb")
 	)
 	(label "IN_3"
 		(at 215.9 48.26 180)
@@ -10726,7 +10726,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "37b7d365-1b00-4516-a54c-1083335cd706")
+		(uuid "28927d78-7d16-44cf-937e-0554d8abfe0f")
 	)
 	(label "IN_4"
 		(at 215.9 50.8 180)
@@ -10736,7 +10736,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "483abc55-772c-46e4-8ff5-9c80150c84f7")
+		(uuid "11916e5e-3797-4d07-8f5f-f34591d1f5a4")
 	)
 	(label "IN_5"
 		(at 215.9 53.34 180)
@@ -10746,7 +10746,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "bcb8eddd-616c-4d5b-9029-ab3b53cefdea")
+		(uuid "90fbee06-2923-42ca-bb72-741d360cf176")
 	)
 	(label "IN_6"
 		(at 215.9 55.88 180)
@@ -10756,7 +10756,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "ab534658-920c-43d4-bc44-168ae398ed97")
+		(uuid "c7c21cdf-9929-4b03-9ccd-a8f03e732d45")
 	)
 	(label "IN_7"
 		(at 215.9 58.42 180)
@@ -10766,19 +10766,19 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "bd03eaf6-9a79-48df-9e60-0a12e2837823")
+		(uuid "9d391d8d-59a5-4b8e-8c04-189c87e0366b")
 	)
 	(no_connect
 		(at 215.9 60.96)
-		(uuid "ceb1ea7b-06a7-4632-a641-a679aa8082c5")
+		(uuid "9fa9f381-3a0f-4f7d-a76a-8c4208b66594")
 	)
 	(no_connect
 		(at 215.9 63.5)
-		(uuid "a23abcf8-3f10-4fc0-9dda-a704c1bb6311")
+		(uuid "393c1b90-06ae-4b1d-af18-e05679f3c303")
 	)
 	(no_connect
 		(at 215.9 66.04)
-		(uuid "533ae635-0488-4371-882d-5a668ac0df83")
+		(uuid "f842db7a-c9ab-47a5-a7b9-be443b8e8bd6")
 	)
 	(hierarchical_label "PF2_IS"
 		(shape input)
@@ -10789,7 +10789,7 @@
 			)
 			(justify right)
 		)
-		(uuid "4cc81f3b-6434-475d-ab17-db14ef1a9a86")
+		(uuid "5bb3351a-9d01-40dc-a178-d671c6ec7e61")
 	)
 	(symbol
 		(lib_id "power:+3V3")
@@ -10801,7 +10801,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "15a644d4-f2a1-4116-9672-c9b80ba1f8f3")
+		(uuid "645e2ee4-6240-4e82-8240-9351fa2d0286")
 		(property "Reference" "#PWR122"
 			(at 215.9 74.93 0)
 			(hide yes)
@@ -10857,7 +10857,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "46b9274f-47d2-4a7b-9e05-41f173a82d02")
+			(uuid "ff250036-7f5d-44b1-88d6-8a1447846bc1")
 		)
 		(instances
 			(project "DingoPDM"
@@ -10878,7 +10878,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "6bb16938-dfb0-4195-a796-d85ddd6de103")
+		(uuid "893e09a3-7763-4eea-8aa8-dbb3c370f4e7")
 		(property "Reference" "#PWR123"
 			(at 209.55 73.66 0)
 			(hide yes)
@@ -10935,7 +10935,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "66e8c310-beaf-4bec-8be7-4214289c064f")
+			(uuid "3e767c89-89b9-4761-a4ae-dc54c35e347e")
 		)
 		(instances
 			(project "DingoPDM"
@@ -10956,7 +10956,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "03692833-e8a1-4241-91cf-cf6837058a16")
+		(uuid "ecc2b320-87cb-4f28-8aea-d5e6a8d2e0a1")
 		(property "Reference" "#PWR124"
 			(at 209.55 76.2 0)
 			(hide yes)
@@ -11013,7 +11013,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "f504e89d-89e4-48ac-b9ba-3455f928db0e")
+			(uuid "e5253c52-4a33-41ab-8b3f-71da715de8f7")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11034,7 +11034,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7ca4e695-5819-42b1-b07e-b4608ae74fa5")
+		(uuid "bdf25442-428f-4a2e-9a54-af0f999c9e55")
 		(property "Reference" "J6"
 			(at 220.98 43.18 0)
 			(show_name no)
@@ -11089,40 +11089,40 @@
 			)
 		)
 		(pin "1"
-			(uuid "4302f078-5312-4a83-a017-5ab1a85ed36d")
+			(uuid "d26a4935-0ad8-48be-8a54-84182e7b0fde")
 		)
 		(pin "2"
-			(uuid "bec151cf-dae4-48f8-9460-ae97efe44e2b")
+			(uuid "af097dca-c2b2-45b5-94c6-6465ac09c284")
 		)
 		(pin "3"
-			(uuid "69b36e00-8781-4c59-88fc-0037024cb1b2")
+			(uuid "578f3a32-7d68-4a95-a829-bcdd240977db")
 		)
 		(pin "4"
-			(uuid "07afdca1-2618-4248-960b-3cf14f219f82")
+			(uuid "8317bd3e-ebea-4e17-8115-bb310f165dd7")
 		)
 		(pin "5"
-			(uuid "31bc599b-22d1-481e-84ac-64028aad0f5e")
+			(uuid "1a7395d5-644f-4adc-80d9-de0c25484b22")
 		)
 		(pin "6"
-			(uuid "58e84a1e-50c5-4295-9e68-90b8ef5eb34b")
+			(uuid "6f883c09-9efb-465e-845f-4a4d93bcca08")
 		)
 		(pin "7"
-			(uuid "6b5a6b64-0376-43e5-92a3-c93bcd89e3d3")
+			(uuid "51ad7273-d3e0-4504-96df-192e0e9dea2c")
 		)
 		(pin "8"
-			(uuid "eb1a38e9-1927-4c34-a0bb-cce520c23190")
+			(uuid "319dcb93-4916-4700-aded-64f5f1019464")
 		)
 		(pin "9"
-			(uuid "490e896d-1039-42c8-a641-ffb4a9ed4e37")
+			(uuid "124bf154-6787-42d2-beb4-2cf90636dec4")
 		)
 		(pin "10"
-			(uuid "db7df4d5-d25f-4682-99d0-aa99ff0e9405")
+			(uuid "83a86be0-f805-404e-8ce3-07f056ecd545")
 		)
 		(pin "11"
-			(uuid "e8ee54e0-e2a1-4671-bd1d-9f16b752417b")
+			(uuid "2ea9d437-512f-4d93-9214-c8c496d1b22b")
 		)
 		(pin "12"
-			(uuid "ca2763fd-9117-49e1-b938-37a6079e13d8")
+			(uuid "b126f227-161f-4204-ad41-74750e7e4980")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11142,7 +11142,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "7749749f-8acf-449e-89c0-4bcad66757bc")
+		(uuid "1438bc4d-683f-406c-8315-3c0c0821094e")
 	)
 	(symbol
 		(lib_id "Jumper:SolderJumper_2_Open")
@@ -11154,7 +11154,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "95297dad-c4b7-4685-bc57-106b72971980")
+		(uuid "a71e9225-3ef1-478c-a722-9eba9764d697")
 		(property "Reference" "JP3"
 			(at 132.08 17.78 90)
 			(show_name no)
@@ -11209,10 +11209,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "cffacd7a-c9f4-4ffd-b853-2b4402d6162b")
+			(uuid "00b4dc4b-1b77-43c8-9984-c3bdb8b80352")
 		)
 		(pin "2"
-			(uuid "a8dc0717-f696-4e18-8ce3-9741ee454397")
+			(uuid "dc28f664-8cf6-49d3-a62f-4aa8a5de53d8")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11232,7 +11232,7 @@
 			)
 			(justify right)
 		)
-		(uuid "8c878afa-b24a-407d-bbe6-4d3dafe588d7")
+		(uuid "74d9e534-a017-4fd1-9b17-a4e70f784d2c")
 	)
 	(label "CAN_TERM"
 		(at 142.24 17.78 0)
@@ -11242,7 +11242,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "92a3115f-2640-471c-a78f-7036aadad1b9")
+		(uuid "c3cd27d9-f6a6-4539-a402-c0aac12a788e")
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
@@ -11254,7 +11254,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "dff618dd-fc08-4d01-8f3c-28048e5e857f")
+		(uuid "1d26db1b-3ead-49e8-8886-2cbc6fa723f4")
 		(property "Reference" "R59"
 			(at 149.86 17.78 90)
 			(show_name no)
@@ -11353,10 +11353,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "000b3cb4-217c-4285-a724-a1ddd2b53606")
+			(uuid "98d5495d-8836-4de6-a558-5055b25a9a13")
 		)
 		(pin "2"
-			(uuid "799602f4-4b7c-4332-a146-cf0b4d6d8568")
+			(uuid "68084ced-937c-4877-8b08-fa19dd8e20c8")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11375,7 +11375,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0da86fce-8b6b-4676-b455-976adfe1b088")
+		(uuid "f0f507e8-7a85-4a3a-88e6-d66565360e35")
 	)
 	(hierarchical_label "CAN_L"
 		(shape bidirectional)
@@ -11386,7 +11386,7 @@
 			)
 			(justify left)
 		)
-		(uuid "7a9e88d9-86b7-499c-9f27-023757d23b79")
+		(uuid "2be30716-640d-4df1-948e-7749a0c9e969")
 	)
 	(text "CAN termination (C7b): bridge JP3 only on the board at the end of the bus."
 		(exclude_from_sim no)
@@ -11397,6 +11397,6 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "783f222f-aa2f-4b6c-af2f-918980565e14")
+		(uuid "ead355c8-3453-47f1-b4a2-99f77e15e082")
 	)
 )
