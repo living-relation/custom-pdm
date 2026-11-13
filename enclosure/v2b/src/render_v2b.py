@@ -9,7 +9,7 @@ from build123d import import_brep, Compound
 sys.path.insert(0, os.path.join(os.environ["CAD_HOME"], "tools", "render"))
 import section as SEC
 pv.OFF_SCREEN = True
-VAR = sys.argv[1]; which = sys.argv[2:] or ["outbay", "iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded", "outstack", "sec_fan"]
+VAR = sys.argv[1]; which = sys.argv[2:] or ["outbay", "iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded", "outstack", "sec_fan", "cone"]
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(HERE, ".."))
 OUT = os.path.join(os.environ.get("RUN_DIR", os.path.join(ROOT, "runs", "latest")), VAR)
 RD = os.environ.get("RENDER_DIR", os.path.join(OUT, "..", "renders")); os.makedirs(RD, exist_ok=True)
@@ -117,6 +117,11 @@ if "sec_fan" in which and VAR == "F2":                # section through the Noct
     X = meta["fan"]["c"][0]
     sh = {k: halfcut(k, v, "x", X, "lt") for k, v in S.items() if bb(v)[0][0] < X and bb(v)[0][2] < 0.0}   # only what hangs below the sink plate: sink, fins, feet, fan, cone
     scene(sh, [(X + 500, cy, -20), (X, cy, -20), (0, 0, 1)], "section-fan-cone-fins", T + f"  capped section X={X:.1f} through the fan, flow cone and fins (looking west)", parallel=True, zoom=2.4)
+if "cone" in which and VAR == "F2":                    # close-up of the reverse-velocity-stack flow cone, fan hidden (Dan 2026-11-13 16:05)
+    fx, fy = meta["fan"]["c"]
+    sh = {k: v for k, v in S.items() if k in ("flow-cone-PA12", "vendor-fan-Noctua-NF-A6x15", "screws_CSK-M3-0.5_x_12_(ISO_10642)")}
+    col["flow-cone-PA12"] = (0.85, 0.45, 0.2)      # light tone for this close-up only (PA12 is black in the other views)
+    scene(sh, [(fx - 140, fy - 170, -60), (fx, fy, -15), (0, 0, 1)], "cone-iso", T + "  flow cone alone (orange) over the Noctua fan (40 % opaque); plate and fins hidden", zoom=1.9, opac={"vendor-fan-Noctua-NF-A6x15": 0.4})
 if "sec_stack" in which:
     X = meta["X0"]["A1"] + 37.846 + 6.0
     sh = {k: halfcut(k, v, "x", X, "lt") for k, v in S.items() if bb(v)[0][0] < X}
