@@ -108,8 +108,8 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 | Copper bosses BATT / GND (Cu) | 34 g | 34 g |
 | OUT1-4 risers (Cu) | 28 g | 28 g |
 | OUT1-4 carrier (G10, 1.85 g/cm3) | 24 g | 24 g |
-| Flow cone (PA12) | - | 11 g |
-| Total | 2413 g | 2195 g |
+| Flow cone (PA12) | - | 3 g |
+| Total | 2413 g | 2187 g |
 
 (2026-11-13 builds, `enclosure/v2b/src/mass_v2b.py`.)
 
@@ -131,10 +131,10 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 
 - Swept fins rebuilt as SMOOTH solids: each fin centreline is one tangent-continuous spline through the log spiral (points every 2 mm, theta = theta0 + 0.55 ln(r / 31)), offset +/- 1.25 to a constant 2.5 mm thickness with round (arc) ends, extruded to the 30 mm fin depth, fin tips filleted 1.0; no polyline facets, so the 3-axis toolpath follows one smooth curve per side. 24 long fins from r 31 + 24 splitters from r 62.
 - Narrowest channel 4.61 mm (normal pitch r x 2 pi / N x cos 28.8 deg minus the 2.5 mm fin, at r 31 for the long fins and r 62 where the splitters start; channels widen outward). Tool: dia 4 mm 3-flute carbide end mill for aluminium with 0.5 corner radius (0.3 mm per side to the channel walls, 0.5 mm root radius at the plate), long-reach for the 30 mm fin depth, with step-downs; fin root fillets come from that corner radius. Fin ends are R 1.25 (convex), no concave corner tighter than the tool.
-- Flow cone: MJF PA12 paraboloid, base R 26 on the plate underside, 10.5 tall, apex 1.5 mm above the Noctua outlet face (over the hub), profile r = 26 sqrt((z - z_apex) / 10.5); it turns the fan's axial (upward) flow outward into the swept fin channels. Fixed by one M3 x 12 through the apex counterbore into an M3 tap in the plate (axisymmetric, no anti-rotation needed). PA12 is the lid material; it sits on the plate (up to about 78 C fan-on); check the HP MJF PA12 heat-deflection rating against the fan-off case before relying on it there.
+- Flow cone (replaced 2026-11-13 16:05, Dan's sketch: "the reverse shape of a velocity stack"): MJF PA12, revolved CONCAVE trumpet flare. Generator = quarter-ellipse centred at (r 29, z_apex): r = 29 - 28 cos(phi), z = z_apex + 10.5 sin(phi), phi 0..90 deg. It starts as a narrow point (tip R 1.0, rounded) aimed down at the Noctua hub with a vertical tangent, 1.5 mm above the fan outlet face (z_apex -18.5; the hub is solid, no flow there), and flares outward to base R 29 on the plate underside (z -8) with a HORIZONTAL tangent, so it blends tangentially into the plate and the axial flow turns smoothly 90 deg into the radial channels. R 29 is about the NF-A6x15 blade-tip circle and ends 2 mm inside the fin roots (r 31), so no fin is trimmed and no channel is blocked; the fan posts (r 35.4, dia 8) clear it by 2.4 mm. Height 10.5, volume 2.86 cm3, about 3 g. Mount: the pointed tip leaves no room for a screw head, so one M3 x 12 countersunk screw (ISO 10642) goes in from the plate TOP (90 deg countersink, head flush) into an M3 heat-set insert (short, 4 long, bore dia 4.0 x 4.3 deep) in the cone base; the insert wall is >= 4 mm. The old paraboloid (convex dome, R 26) and its M3 tap from below are gone.
 - Fan inlet: the Noctua inlet face is at z -36, the mounting surface (foot bottoms) at z -48, so 12 mm free inlet gap under the fan.
-- Heat: F2 numbers in section 4 are from the straight-fin-equivalent estimate and do not include the cone; not re-run (an F2 flow simulation is still excluded by Noctua's CAD licence).
-- Renders: `enclosure-v2b-F2-iso.png`, `-under.png`, `-section-fan-cone-fins.png` (2026-11-13).
+- Heat: F2 numbers in section 4 are from the straight-fin-equivalent estimate and do not include the cone (old or new); the cone change does not alter that estimate method, so they were not re-run (an F2 flow simulation is still excluded by Noctua's CAD licence).
+- Renders: `enclosure-v2b-F2-iso.png`, `-under.png`, `-section-fan-cone-fins.png`, `-cone-iso.png` (re-rendered 2026-11-13 after the cone change). The cone change was applied to the existing F2 build with `enclosure/v2b/src/cone_patch_v2b.py` (the full build needs the git-ignored PACK / VENDOR folders); `build_v2b.py` carries the same geometry for the next full build.
 
 ## 7. Open items
 
