@@ -235,18 +235,33 @@ if VAR == "F2":
         for dy in (-25, 25):                                          # 4 posts from the plate to the fan top face, M3 tapped (Noctua 50 mm hole pitch)
             sink = sink.fuse(cyl(8.0, (FCX + dx, FCY + dy, zf0 + 18.0), -pt - zf0 - 18.0))
             sink = sink.cut(cyl(2.5, (FCX + dx, FCY + dy, zf0 + 17.9), 8.0))
-    sink = sink.cut(cyl(2.5, (FCX, FCY, -pt - 0.1), 7.0))           # M3 tap drill 7 deep: flow-cone screw
-    # flow cone (Dan 2026-11-13): MJF PA12 paraboloid hanging from the plate underside over the fan hub, apex 1.5 above
-    # the fan outlet face; turns the fan's axial (upward) flow outward into the swept fin channels. r = R * sqrt((z - z_apex) / H)
-    z_apex = fan_info["z_top"] + 1.5; Hc = -pt - z_apex; Rc = 26.0
-    prof = [(Rc * math.sqrt(t), z_apex + t * Hc) for t in [i / 16 for i in range(17)]]
+    # flow cone v2 (Dan 2026-11-13 16:05, sketch): "reverse velocity stack" - a CONCAVE trumpet flare, narrow point aimed
+    # down at the fan hub, flaring outward and blending TANGENTIALLY into the plate underside, so the fan's axial (upward)
+    # flow turns smoothly 90 deg into the radial fin channels. Generator = quarter-ellipse centred (r = Rc, z = z_apex):
+    #   r(phi) = Rc - (Rc - rt) cos(phi),  z(phi) = z_apex + Hc sin(phi),  phi 0..90 deg
+    # -> vertical tangent at the tip (phi 0), horizontal tangent at the plate (phi 90, r = Rc). Rc 29 = about the NF-A6x15
+    # blade-tip circle and inside the fin roots (r0 31), so the flare ends before the first fin. MJF PA12, mounted by one
+    # M3 x 12 countersunk screw (ISO 10642) from the plate TOP (head flush in a 90 deg countersink) into an M3 heat-set
+    # insert in the cone base (the pointed tip leaves no room for a screw head below).
+    z_apex = fan_info["z_top"] + 1.5; Hc = -pt - z_apex; Rc = 29.0; rt = 1.0
+    prof = [(Rc - (Rc - rt) * math.cos(ph), z_apex + Hc * math.sin(ph)) for ph in [math.pi / 2 * i / 24 for i in range(25)]]
     sp = Spline(*[Vector(FCX + r_, FCY, z_) for (r_, z_) in prof])
-    wr = Wire([sp, Line((FCX + Rc, FCY, -pt), (FCX, FCY, -pt)), Line((FCX, FCY, -pt), (FCX, FCY, z_apex))])
+    wr = Wire([Line((FCX, FCY, z_apex), (FCX + rt, FCY, z_apex)), sp,
+               Line((FCX + Rc, FCY, -pt), (FCX, FCY, -pt)), Line((FCX, FCY, -pt), (FCX, FCY, z_apex))])
     cone = revolve(Face(wr), Axis((FCX, FCY, 0), (0, 0, 1)), 360).solid()
-    cone = cone.cut(cyl(3.4, (FCX, FCY, z_apex - 1), Hc + 2)).cut(cyl(6.2, (FCX, FCY, z_apex - 1), 5.0))   # M3 clearance + head counterbore from the apex
+    try:
+        cone = cone.fillet(0.9, cone.faces().sort_by(Axis.Z)[0].edges())          # round the 1 mm tip flat
+    except Exception:
+        pass
+    cone = cone.cut(cyl(4.0, (FCX, FCY, -pt - 4.2), 4.3))                         # heat-set insert bore (short M3 insert, 4 long; wall >= 4 mm)
+    sink = sink.cut(cyl(3.4, (FCX, FCY, -pt - 0.1), pt + 0.2))                    # M3 clearance through the plate
+    sink = sink.cut(Solid.make_cone(3.4 / 2, 6.6 / 2, 1.6, Plane(origin=(FCX, FCY, -1.6))))   # 90 deg countersink, head flush
     flow_cone = cone
-    PRE_SCR.append(("SSH-M3-0.5 x 12", shcs("M3", 12.0, (FCX, FCY, z_apex + 4.0), down=False)))
-    fan_info.update(cone=dict(R=Rc, H=round(Hc, 2), apex_gap=1.5, z_apex=round(z_apex, 2)))
+    csk = Solid.make_cone(1.5, 3.0, 1.5, Plane(origin=(FCX, FCY, -1.5))).fuse(cyl(3.0, (FCX, FCY, -12.0), 10.5))
+    PRE_SCR.append(("CSK-M3-0.5 x 12 (ISO 10642)", csk))
+    fan_info.update(cone=dict(profile="reverse velocity stack, quarter-ellipse concave flare", R=Rc, tip_r=rt,
+                              H=round(Hc, 2), apex_gap=1.5, z_apex=round(z_apex, 2),
+                              mount="M3 x 12 countersunk from plate top into M3 heat-set insert"))
 for (X, Y, sx, sy) in FEET:
     sink = sink.cut(cyl(6.6, (X, Y, zfoot - 1), -zfoot + 2))           # M6 clearance, bolt-through mounting
 LID_SCREWS = []
@@ -258,7 +273,7 @@ LID_SCREWS += [(LX0 + 5.0, (LY0 + LY1) / 2), (LX1 - 5.0, (LY0 + LY1) / 2)]
 for (X, Y) in LID_SCREWS:
     sink = sink.cut(cyl(4.5, (X, Y, -pt - 1), pt + 2)); sink = sink.cut(cyl(7.5, (X, Y, -pt - 1), 5.0))   # counterbore to Z -4
 addp("heat-sink", sink, (0.72, 0.72, 0.76), f"6061-T6 aluminium, one machined part (3-axis), {VAR}; reinforced hex feet; all sizes ASSUMED")
-if VAR == "F2": addp("flow-cone-PA12", flow_cone, (0.22, 0.22, 0.25), "MJF PA12 paraboloid flow cone R26 x 10.5, apex 1.5 above the Noctua outlet, M3 x 12 into the plate (Dan 2026-11-13)")
+if VAR == "F2": addp("flow-cone-PA12", flow_cone, (0.22, 0.22, 0.25), "MJF PA12 reverse-velocity-stack flow cone (concave flare, base R29 tangent to the plate, tip 1.5 above the Noctua hub), M3 x 12 CSK from the plate top into a heat-set insert (Dan 2026-11-13)")
 addp("gap-pads", Compound(pads), (0.95, 0.5, 0.6), "insulating gap pad 1.0, product TBD")
 
 # ---------------- vendor models ----------------
