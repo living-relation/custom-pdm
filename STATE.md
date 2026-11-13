@@ -5,30 +5,31 @@
 > - Keep each session's open questions in its own section. Do not edit or answer another session's section; leave a note in your own.
 > - Do not copy or repeat anything from this file in any other file (docs, results, memory, handoffs). Point to it instead: `STATE.md`, section name.
 
-Updated 2026-11-11. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules, git workflow and required checks: `AGENTS.md`.
+Updated 2026-11-13. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules, git workflow and required checks: `AGENTS.md`.
 
-**Last cleanup:** 2026-11-11 @ 8a0e5ad (repo-cleanup PR #16)
+**Last cleanup:** 2026-11-13 (f2a docs and state cleanup PR, from main 83508cf; before: 2026-11-11 @ 8a0e5ad, PR #16)
 **Kept branches:** none
 **Hook:** state-check workflow installed, comment mode (2026-11-08)
 
 ## Goal now
-Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests (done 2026-11-11); (3) enclosure with heat sink (handbuilt-cad tools + Fusion).
+Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests (done 2026-11-11); (3) enclosure with heat sink (handbuilt-cad tools + Fusion; v2b done 2026-11-13).
 
 ## Where work is
-- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). No other branches or worktrees.
+- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Only other branch / worktree: `docs/f2a-cleanup` (`.claude\worktrees\docs-cleanup`, this cleanup), removed after merge.
 - Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (inside the repo root, git-ignored; rule in `AGENTS.md`) and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges.
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
-## Next (in this order unless Dan says otherwise; updated 2026-11-11)
-1. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
-2. Enclosure (main goal: size and appearance, cooling adapts; Dan 2026-11-12): A-G answered (e1-e7, 2026-11-12; target layout in `DECISIONS.md` 2026-11-12); next the board changes (q1a; board-stack job: DT15 / J6 wire pads done (PR #41); enclosure v2b done (PR #46: `docs/enclosure-v2b.md`, Fusion folder enclosure-v2b, F1 chosen); next: Fusion lock / leftovers cleanup, f2a docs cleanup, firmware thermal + fan control plan; USB hub + bulkhead (y1a) to pick; docs still naming DT15 / Micro-Fit as fitted (`docs/enclosure-layout.md`, `docs/parts-audit.md` text) for the docs sweep; input boards and JST links unchanged, x1a): DT15 removal on board A (e6a), J6 removal on board B (p1a), stacking headers on all boards (n1b, fallback JST cable), then our own 3D version (handbuilt-cad, TEST 2 as direction, rules in `DECISIONS.md` 2026-11-11/12); also firmware thermal protection and temperature-triggered fan control with a software-set limit (to plan, e3c), now that the heat analysis is done; Plan B is final (b3a). Heat results that shape them: `docs/heat-analysis.md`. Defaults rule: `AGENTS.md`.
-3. Then: B2 wake firmware (see "Wake lines"); PC-side single-PDM layer research and choices for Dan (D5a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`); enclosure 3D only once A-H are answered.
-4. Docs sweep (iterative-cleaning, Dan a2a / c1a): done 2026-11-11; fixes in `firmware/sim/RESULTS.md`, `docs/firmware-pin-map.md`, enclosure picture re-drawn after B1.
+## Next (in this order unless Dan says otherwise; updated 2026-11-13)
+1. Firmware thermal protection plus temperature-triggered fan control with a software-set limit (e3c): plan first, then build. Heat results: `docs/heat-analysis.md`.
+2. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
+3. B2 wake firmware (see "Wake lines").
+4. PC-side single-PDM layer research and choices for Dan (D5a, z1a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`).
+5. Enclosure open items listed in `docs/enclosure-v2b.md` (USB-C bulkhead part number and cut-out, seals, wire lengths, manufacturing drawings, CNC check).
+6. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- Enclosure A-G: `docs/enclosure-layout.md` section 7 (real design choices; one at a time). On hold until testing and the heat analysis are done (Dan, 2026-11-11).
-- Answered or defaulted 2026-11-11 (`DECISIONS.md`): R1-R4, B4-a, B4-c, C1, C3, C2, C4, C5 studs, C6, C7, L1, enclosure H.
-- Answered: B1, B2, B3, B4-b (`DECISIONS.md`).
+- None open (2026-11-13).
+- Answered: enclosure A-H (e1-e7 and the v2 / v2b follow-ups, `DECISIONS.md` 2026-11-12/13); R1-R4, B1-B4, C1-C7, L1 and the board / wiring questions of 2026-11-12 (`DECISIONS.md`).
 
 ## Wake lines (input for the B2 firmware work)
 - Shared wake lines, one input per pair at most: board A IN_1 (PA10) / IN_3 (PC10), and IN_4 (PC11) / USB D- (PA11); board B IN_1 (PA10) / B_IN9 (PC10), B_IN10 (PC11) / USB D- (PA11). The board B B_IN5 / B_IN6 pair is gone since B1 (B_IN5 on PC13).
@@ -36,22 +37,21 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - To build (not started): default wake set = no inputs, plus a per-input "may wake" setting. Today `WAKE_DIG_INPUT_MASK` is build-time only, set per board in `firmware/tools_custom/port_boards.py`. The config or tool must stop two inputs of one shared wake line from both being selected, and an input sharing a line with USB D- from taking it silently.
 
 ## Open items (hardware)
-- Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; studs = BATT, GND, board B OUT1-4. X3 dropped. Wire list in `docs/box-connectors.md`. To buy: size 20 contacts, sealing plugs, 6 studs with boots. X1 current check done: every pin is at about 60% of its TE rating; TE publishes no total-connector limit (Dan: per-pin rating is enough). Illustrations (not a source of truth): `docs/diagrams/*.svg`, drawn by `tools/gen_connector_maps.py`.
-- Heat sink design: two pedestals (U8/U11 and U10/U13), insulating gap pad, pocket for J3 pins, center standoff.
-- Harness: J3 pinout changed on board A (see Status).
+- Box connectors (Dan): X1 HD30 24-21 = all connector outputs (16 x 7.5 A from A1/A2 + board B OUT5-8 on size 12 cavities B, D, E, G); X2 HDP 24-47 = signals; BATT, GND and board B OUT1-4 come out as copper bosses / offset risers through the lid (b4a, d1a; no separate studs). X3 dropped. Wire list in `docs/box-connectors.md`; enclosure parts in `docs/enclosure-v2b.md`. To buy: size 20 contacts, sealing plugs. X1 current check done: every pin is at about 60% of its TE rating; TE publishes no total-connector limit (Dan: per-pin rating is enough). Illustrations (not a source of truth): `docs/diagrams/*.svg`, drawn by `tools/gen_connector_maps.py`.
+- Harness: board A J3 and board B J6 are wire pads now (PR #41); the pad labels are the harness reference (`docs/box-connectors.md`).
 - Review the 28 pre-existing DRC clearance findings before ordering.
 - Decide 256 Kbit FRAM vs 64 Kbit substitute.
-- Design the 150 A feed busbar.
-- Pick connector part numbers.
+- Pick the remaining connector part numbers (USB-C bulkhead exact part, mating crimp contacts; see `docs/enclosure-v2b.md`).
 - Pick fab: JLCPCB vs PCBWay.
 - Board B: a human look at the layout before ordering, incl. where JP2 / JP3 ended up (render: `docs/diagrams/board-b-top-render.png`). T1-T4 courtyards overlap the BTS70012 courtyards (known); checked 2026-11-11: terminal bodies (7.1 mm square) clear every BTS70012 pad by 0.75 mm or more, and the copper they share is the same output net. Ask the assembler about the courtyard overlap at quote time.
 - Small: leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 
 ## Status (done work, newest first)
+- 2026-11-13: f2a docs and state cleanup (g1a): stale STATE.md sections rewritten, DT15 / Micro-Fit current-state notes in `docs/enclosure-layout.md` (marked superseded by `docs/enclosure-v2b.md`) and `docs/parts-audit.md`; finished worktrees / branches (enclosure v1, v2 concept, v2b, f2-cone) and about 3.6 GB of WSL scratch removed; old handoffs HANDOFF-2026-11-11*.md deleted.
 - 2026-11-13: F2 flow cone rebuilt as a reverse velocity-stack flare (PR #47): quarter-ellipse concave profile, R29 x 10.5 mm, tip 1.5 mm above the Noctua outlet, no fin trimmed, Fusion F2 updated. Renders: `docs/diagrams/enclosure-v2b-F2-*.png`.
 - 2026-11-13: Enclosure v2b (PR #46): Grok TEST 2 variant b look, round X1/X2 (real TE models) on the front long side, copper bosses, OUT1-4 copper offset risers in a G10 carrier with a lid wire-way, fans F1 (2 x 30 mm, chosen) / F2 (Noctua + smooth radial fins + PA12 cone). Body 280 x 144 x 104 mm (114 with feet), about 2.4 kg made parts. Heat worst case with fans: sink 74.5 C, hottest chip 119 C (pad k 3). Details: `docs/enclosure-v2b.md`.
 - 2026-11-12: Wire pads (PR #41, a1a / a2b): board A J3 DT15 and board B J6 Micro-Fit replaced by pads-only footprints in the same holes (`tools/wirepads.py`, footprints in `hardware/board-a/libraries/dingoPDM.pretty/`), net labels on the top surface, no copper change. ERC / DRC / parity equal to main on both boards, 0 unconnected; no MCU pin change. REDCUBE 74650074R stands 3.0 mm, so a 20 AWG wire fits flat under the T1-T4 straps. Renders: `docs/diagrams/board-a-top-render.png`, `docs/diagrams/board-b-top-render.png`.
-- 2026-11-11: Heat analysis (Elmer 3D steady, `docs/heat-analysis.md`, inputs `sim/heat/`, scratch WSL `/home/daniel/scratch/heat/` 1.8 GB): TEST 2 style fins-down sink, 60 C air. Worst case 31.1 W: passive misses (sink 90-138 C depending on the convection correlation); with 2 x 30 mm fans sink about 71-75 C and every chip under Tj 150 C (hottest 121 C at pad k 3). Bottleneck is the board (9 plain vias under each BTS70012 pad, about 35 K), then the gap pad (k 1 vs 3 moves chips about 20 K). Pulling fans sit in about 74 C exhaust vs the Sunon 70 C rating; pushing keeps them at 60 C.
+- 2026-11-11: Heat analysis (Elmer 3D steady, `docs/heat-analysis.md`, inputs `sim/heat/`, scratch WSL `/home/daniel/scratch/heat/`, removed 2026-11-13; re-runnable from `sim/heat/`): TEST 2 style fins-down sink, 60 C air. Worst case 31.1 W: passive misses (sink 90-138 C depending on the convection correlation); with 2 x 30 mm fans sink about 71-75 C and every chip under Tj 150 C (hottest 121 C at pad k 3). Bottleneck is the board (9 plain vias under each BTS70012 pad, about 35 K), then the gap pad (k 1 vs 3 moves chips about 20 K). Pulling fans sit in about 74 C exhaust vs the Sunon 70 C rating; pushing keeps them at 60 C.
 - 2026-11-11: `docs/parts-audit.csv` regenerated from the schematics by `tools/gen_parts_audit_csv.py` (new, in `automation.yml`; `--offline` skips LCSC lookups): 114 rows, only the PR #23 / #24 parts changed, plus board B U23-U26 now carry LCSC C534825 (added in the board fix). New parts looked up at LCSC 2026-11-12 03:21 UTC; lowest stock: MCP2562FD 903, MB85RC64TA 474 (enough for one PDM). Superseded Fusion imports deleted (u1a).
 - 2026-11-11: Fusion re-import after PR #23 / #24 (`main` 549f285; KiCad 9 PCBs): folders `board-A-2026-11-11` and `board-B-2026-11-11` in project `custom-pdm`. Check vs the KiCad PCBs: board A 137 / 137 parts, 113 / 113 multi-pin nets; board B 203 / 203 parts, 139 / 139 nets (repeated pad numbers renamed `_1`.. by Fusion, same as before). `docs/diagrams/board-b-top-render.png` re-rendered with kicad-cli 10 `pcb render` (top, 1376 x 1288).
 - 2026-11-11: P11 fix (PR #24, Dan p1a): D18 (A) / D4 (B) = Nexperia PMEG2010AEH (SOD-123F, LCSC C110921), footprint swapped by script, no re-route. +5V worst case 4.61 V at 25 C, about 4.52-4.55 V at -40 C (graph value; no cold max in the data sheet) vs 4.5 V CAN-chip minimum; if every TSR tolerance stacks at -40 C it could reach about 4.44 V. Ideal diode (p1b) is the fallback if cold use matters. ERC/DRC equal to main in every category. Details: `docs/parts-audit.md` section 9.
@@ -90,7 +90,8 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - BOM v4 is in `docs/custom-pdm-bom-v4.xlsx` (prices are estimates, many yellow guesses).
 - Plan B (3 boards on CAN, one enclosure) is final; Plan C closed (Dan b3a, 2026-11-11).
 
-## Leftovers (each needs Dan's keep / remove call; none are in the way)
+## Leftovers (each needs Dan's keep / remove call; none are in the way; all checked present 2026-11-13)
+- WSL `~/scratch/encl-v2b/` (about 1.8 GB: pack copy, F1 / F2 build runs; the run dirs are what `cone_patch_v2b.py` patched). Keep until the next full enclosure build, then re-runnable.
 - WSL `~/renode-pdm` (2.0 GB; `dl/` holds 330 MB of downloaded archives that can go). R3 covers `bench/infra-src` inside it.
 - `firmware/ChibiOS` (git-ignored local clone, needed to build). `firmware/.gitmodules` (from upstream; inert here).
 - `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
