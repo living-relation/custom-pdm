@@ -9,7 +9,7 @@ from build123d import import_brep, Compound
 sys.path.insert(0, os.path.join(os.environ["CAD_HOME"], "tools", "render"))
 import section as SEC
 pv.OFF_SCREEN = True
-VAR = sys.argv[1]; which = sys.argv[2:] or ["iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded"]
+VAR = sys.argv[1]; which = sys.argv[2:] or ["outbay", "iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded"]
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(HERE, ".."))
 OUT = os.path.join(os.environ.get("RUN_DIR", os.path.join(ROOT, "runs", "latest")), VAR)
 RD = os.environ.get("RENDER_DIR", os.path.join(OUT, "..", "renders")); os.makedirs(RD, exist_ok=True)
@@ -83,6 +83,10 @@ if "left" in which:
     scene(S, [(cx - 900, cy, 25), (cx, cy, 25), (0, 0, 1)], "left", T + "  left (west) end", parallel=True, zoom=1.9)
 if "right" in which:
     scene(S, [(cx + 900, cy, 25), (cx, cy, 25), (0, 0, 1)], "right", T + "  right (east) end", parallel=True, zoom=1.9)
+if "outbay" in which:                                # OUT1-4 bay + wire-way close-ups (Dan 2026-11-12 wire-way fix)
+    bx = (meta["OUTT"]["OUT1"][0] + meta["OUTT"]["OUT2"][0]) / 2 - 12; by = (meta["OUTT"]["OUT1"][1] + meta["OUTT"]["OUT3"][1]) / 2
+    scene(S, [(bx - 150, by - 170, 170), (bx, by, 22), (0, 0, 1)], "outbay-sw", T + "  OUT1-4 bay + wire-way to the west edge (from south-west)", zoom=1.0)
+    scene(S, [(bx - 150, by + 170, 150), (bx, by, 22), (0, 0, 1)], "outbay-nw", T + "  OUT1-4 bay + wire-way (from north-west)", zoom=1.0)
 if "iso_sw" in which:
     scene(S, [(cx - 330, cy - 420, 330), (cx, cy, 10), (0, 0, 1)], "iso-sw", T + "  iso (south-west)", zoom=1.25)
 if "iso_ne" in which:

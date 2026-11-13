@@ -52,7 +52,9 @@ P = dict(
     deck_t=3.0, in_boss=4.0, so_m3_len=25.0,
     bar_t=5.0, batt_w=20.0, batt_yc=-63.5, gnd_w=15.0, gnd_yc=-5.0,   # copper bars (C110) 20x5 / 15x5, offset in Y to clear the OUT-bay liner
     boss6_af=13.0, boss4_d=9.5, boss4_flats=8.0, lug_t=2.0,
-    bay_floor_top=19.73,
+    bay_floor_top=19.2,      # OUT1-4 bay floor; lowered 0.53 so the ring-lug barrels (OD 6) clear it
+    out_lug_t=1.0, out_lug_w=8.0, out_lug_L=17.5, out_barrel_d=6.0, out_barrel_L=8.0, out_wire_d=4.2,   # Phoenix 3240083 M4 ring 10-14 AWG (catalogue dims); 10 AWG GXL OD ~4.2 ASSUMED
+    wireway_y0=-47.2, wireway_y1=-19.3,                      # OUT1-4 wire-way (Dan 2026-11-12): between the BATT and GND collars, open at the west lid edge
     corner_r=14.0, draft_deg=6.0, shoulder_z=10.0, shoulder_in=2.0,
     ribbon_w=28.0, ribbon_t=4.0,                               # flat taped wire ribbons (ASSUMED harness form)
 )
@@ -346,9 +348,34 @@ for k, (X, Y) in OUTT.items():
     bo = bo.cut(cyl(3.3, (X, Y, TTOP + L4 - 8), 8.1)).cut(cyl(3.3, (X, Y, TTOP - 0.1), 8.1))   # M4 tap drill 3.3 both ends
     bosses4.append(bo)
     scr.append(("M4 stud 11 (threaded rod)", cyl(4.0, (X, Y, TTOP - 6.0), 11.0)))   # 5 into the boss; lug screw 6 in; 1 mm gap
-    scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (X, Y, TTOP + L4 + P["lug_t"]))))
+    scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (X, Y, TTOP + L4 + P["out_lug_t"]))))
 addp("copper-boss-M4-OUT1-4", Compound(bosses4), (0.85, 0.5, 0.25), f"custom C110 copper boss dia {P['boss4_d']} with {P['boss4_flats']} flats (Y), M4 female both ends, 3-axis machinable")
 M6_EXT_TOP = P["collar_top"] + 1.0; M4_EXT_TOP = TTOP + 12.0
+# OUT1-4 ring lugs (Phoenix Contact 3240083, M4, 10-14 AWG; modelled from catalogue dims: 8.0 wide, 17.5 long, 0.99 thick) + 10 AWG wires to the west lid edge
+OB_TOP = TTOP + 12.0
+def ring_lug(X, Y, ang):
+    t, wdt, Lg, bd, bL = P["out_lug_t"], P["out_lug_w"], P["out_lug_L"], P["out_barrel_d"], P["out_barrel_L"]
+    pl = Plane(origin=(X, Y, OB_TOP), x_dir=(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0), z_dir=(0, 0, 1))
+    tongue = extrude(pl * Circle(wdt / 2), amount=t).solid()      # ring (OD = width 8.0)
+    tongue = tongue.fuse(extrude(pl * Pos((Lg - bL) / 2, 0) * Rectangle(Lg - bL, bd), amount=t).solid())
+    tongue = tongue.cut(cyl(4.3, (X, Y, OB_TOP - 1), t + 2))
+    d = Vector(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0)
+    b0 = Vector(X, Y, OB_TOP + bd / 2) + d * (Lg - bL)
+    barrel = Solid.make_cylinder(bd / 2, bL, Plane(origin=b0, z_dir=d))
+    return tongue.fuse(barrel), b0 + d * bL
+WZ = OB_TOP + P["out_barrel_d"] / 2                      # wire centre height (barrel axis)
+XE = LX0 - 15.0                                          # wires drawn 15 mm past the west lid edge
+LUGS = {"OUT2": 180.0, "OUT4": 180.0, "OUT1": 210.0, "OUT3": 150.0}
+LANE = {"OUT1": -44.8, "OUT2": -37.6, "OUT4": -30.0, "OUT3": -22.0}
+lugs, owires = [], []
+for k, ang in LUGS.items():
+    X, Y = OUTT[k]; lg, e = ring_lug(X, Y, ang); lugs.append(lg)
+    if k == "OUT1":   path = [(e.X, e.Y, WZ), (28.0, -46.0, WZ), (20.0, -44.9, WZ), (13.0, -44.8, WZ), (5.0, LANE[k], WZ), (XE, LANE[k], WZ)]
+    elif k == "OUT3": path = [(e.X, e.Y, WZ), (28.0, -20.6, WZ), (20.0, -21.5, WZ), (13.0, -22.0, WZ), (5.0, LANE[k], WZ), (XE, LANE[k], WZ)]
+    else:             path = [(e.X, e.Y, WZ), (0.0, LANE[k], WZ), (XE, LANE[k], WZ)]
+    owires.append(tube(path, P["out_wire_d"]))
+addp("ring-lugs-OUT1-4", Compound(lugs), (0.85, 0.6, 0.3), "Phoenix Contact 3240083 ring terminal M4, 10-14 AWG (no maker CAD reachable; modelled from catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED)", step=False)
+addp("wires-OUT1-4-10AWG", Compound(owires), (0.75, 0.1, 0.1), "OUT1-4 wires 10 AWG GXL (OD 4.2 ASSUMED), 31 A each, out through the lid wire-way to the west edge; ASSUMED routing", step=False)
 # T5-T8 ring lugs + M4 screws (v2b), wires to X1
 for k, (X, Y) in T58.items(): scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (X, Y, TTOP + P["lug_t"]))))
 
@@ -426,8 +453,13 @@ bft = P["bay_floor_top"]
 well = dblock(bx0, bx1, by0, by1, bft, P["terrace_top"] + 5, r=4)
 liner = dblock(bx0 - w, bx1 + w, by0 - w, by1 + w, bft - w, P["terrace_top"] - 0.5, r=4 + w)
 lid = lid.fuse(liner).cut(well)
-xm = (OUTT["OUT1"][0] + OUTT["OUT2"][0]) / 2
-lid = lid.fuse(box(xm - 1.0, xm + 1.0, by0, by1, bft, P["terrace_top"] - 2.0))
+# (Grok's centre divider rib removed: the OUT1/OUT3 wires pass through there to the wire-way)
+# OUT1-4 wire-way (Dan 2026-11-12): open channel from the bay to the west lid edge, floor = bay floor, between the BATT and GND collars
+wy0, wy1 = P["wireway_y0"], P["wireway_y1"]
+ww_liner = box(LX0 + 0.5, bx0 + 1.0, wy0 - w, wy1 + w, bft - w, P["terrace_top"] - 0.5)
+lid = lid.fuse(ww_liner.cut(box(LX0 - 5, bx0 + 2, wy0, wy1, bft, 200)))
+ww = box(LX0 - 5, bx0 + 2.0, wy0, wy1, bft, P["terrace_top"] + 20)
+lid = lid.cut(ww)
 for k, (X, Y) in OUTT.items(): lid = lid.cut(cyl(10.2, (X, Y, bft - w - 1), w + 2))  # boss dia 9.5 + 0.35 clearance
 # panel cut-outs per TE spec 0425-021-0000 (shell 24): D-hole A 43.08, B 41.45 (flat 19.91 below centre, matching the thread flat in the TE models)
 DFLAT = {}
