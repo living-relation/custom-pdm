@@ -119,8 +119,9 @@ if "sec_fan" in which and VAR == "F2":                # section through the Noct
     scene(sh, [(X + 500, cy, -20), (X, cy, -20), (0, 0, 1)], "section-fan-cone-fins", T + f"  capped section X={X:.1f} through the fan, flow cone and fins (looking west)", parallel=True, zoom=2.4)
 if "cone" in which and VAR == "F2":                    # close-up of the reverse-velocity-stack flow cone, fan hidden (Dan 2026-11-13 16:05)
     fx, fy = meta["fan"]["c"]
-    sh = {k: v for k, v in S.items() if k in ("heat-sink", "flow-cone-PA12")}
-    scene(sh, [(fx - 120, fy - 150, -150), (fx, fy, -14), (0, 0, 1)], "cone-iso", T + "  flow cone (reverse velocity stack) under the fan, fan hidden", zoom=3.2)
+    sh = {k: v for k, v in S.items() if k in ("flow-cone-PA12", "vendor-fan-Noctua-NF-A6x15", "screws_CSK-M3-0.5_x_12_(ISO_10642)")}
+    col["flow-cone-PA12"] = (0.85, 0.45, 0.2)      # light tone for this close-up only (PA12 is black in the other views)
+    scene(sh, [(fx - 140, fy - 170, -60), (fx, fy, -15), (0, 0, 1)], "cone-iso", T + "  flow cone alone (orange) over the Noctua fan (40 % opaque); plate and fins hidden", zoom=1.9, opac={"vendor-fan-Noctua-NF-A6x15": 0.4})
 if "sec_stack" in which:
     X = meta["X0"]["A1"] + 37.846 + 6.0
     sh = {k: halfcut(k, v, "x", X, "lt") for k, v in S.items() if bb(v)[0][0] < X}
