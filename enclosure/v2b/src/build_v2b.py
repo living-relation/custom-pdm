@@ -54,7 +54,7 @@ P = dict(
     boss6_af=13.0, boss4_d=9.5, boss4_flats=8.0, lug_t=2.0,
     bay_floor_top=19.2,      # OUT1-4 bay floor; lowered 0.53 so the ring-lug barrels (OD 6) clear it
     out_lug_t=1.0, out_lug_w=8.0, out_lug_L=17.5, out_barrel_d=6.0, out_barrel_L=8.0, out_wire_d=4.2,   # Phoenix 3240083 M4 ring 10-14 AWG (catalogue dims); 10 AWG GXL OD ~4.2 ASSUMED
-    out_seat_lo=19.0, out_seat_hi=25.0,                       # OUT1-4 lug seat tops: west pair (OUT2/OUT4) low tier, east pair (OUT1/OUT3) high tier (Dan d1a 2026-11-13)
+    out_seat_lo=19.0, out_seat_hi=29.0,                       # OUT1-4 lug seat tops: west pair (OUT2/OUT4) low tier, east pair (OUT1/OUT3) high tier (Dan d1a 2026-11-13)
     riser_r=4.0, riser_foot=4.0, pocket_d=5.0, ear_t=5.0,     # copper offset risers: foot arm R4 x 4 thick, seat column R4 (= lug ring OD 8); lug pockets 5 deep in the G10 carrier; ears 5 thick
     wireway_y0=-47.2, wireway_y1=-19.3,                      # OUT1-4 wire-way (Dan 2026-11-12): between the BATT and GND collars, open at the west lid edge
     corner_r=14.0, draft_deg=6.0, shoulder_z=10.0, shoulder_in=2.0,
@@ -378,9 +378,9 @@ addp("copper-boss-M6-BATT-GND", Compound(bosses6), (0.85, 0.5, 0.25), f"custom C
 # so lug-screw torque goes into the carrier and the heat-sink posts, not into the soldered REDCUBE terminals.
 Z_CB = Z_TOP + 8.0                                   # carrier bottom = top of the M3 x 8 standoffs (below the copper bars, ZB0)
 Z_L, Z_U = P["out_seat_lo"], P["out_seat_hi"]
-SEAT = {"OUT2": (29.5, -45.3, Z_L), "OUT4": (29.5, -21.24, Z_L), "OUT1": (44.0, -43.6, Z_U), "OUT3": (44.0, -22.94, Z_U)}   # seat >= 8 mm from the T centre (foot-screw head clears the column); 6.5 mm lane between the pairs for the B J6 wires
-LUGANG = {"OUT2": 165.0, "OUT4": 195.0, "OUT1": 159.0, "OUT3": 201.0}   # upper barrels end 8 mm apart (2 mm air), clear of the lower screw heads
-LANE = {"OUT2": -41.0, "OUT1": -37.3, "OUT3": -29.2, "OUT4": -25.5}
+SEAT = {"OUT2": (28.9, -45.7, Z_L), "OUT4": (28.9, -20.84, Z_L), "OUT1": (43.5, -43.2, Z_U), "OUT3": (43.5, -23.34, Z_U)}   # e1a (Dan 2026-11-13): upper tier +4 mm, seats/angles/lanes moved for >= 4 mm lug-to-lug and lug-to-screw-head; mirrored about y -33.27; seats >= 8 mm from the T centres
+LUGANG = {"OUT2": 176.0, "OUT4": 184.0, "OUT1": 166.0, "OUT3": 194.0}   # e1a
+LANE = {"OUT2": -43.3, "OUT1": -37.8, "OUT3": -28.7, "OUT4": -23.2}   # e1a; insulated wire may touch plastic (Dan 2026-11-13)
 RR = P["riser_r"]
 def obround(p, q, r, z0, z1):
     a_, b_ = Vector(p[0], p[1], 0), Vector(q[0], q[1], 0); d = b_ - a_; L = d.length; ang = math.degrees(math.atan2(d.Y, d.X)); m = (a_ + b_) * 0.5
@@ -398,7 +398,7 @@ for k, (sx, sy, sz) in SEAT.items():
     scr.append(("SSH-M4-0.7 x 6", shcs("M4", 6.0, (tx, ty, TTOP + P["riser_foot"]))))                        # foot screw: 2.0 into the 2.5 REDCUBE thread, max 1.2 N*m
     scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (sx, sy, sz + P["out_lug_t"]))))                            # lug screw into the copper seat (7 mm engagement)
 addp("copper-risers-OUT1-4", Compound(risers), (0.85, 0.5, 0.25), "custom C110 copper offset risers (foot arm R4 x 4 + seat column dia 8, 3-axis from 20 mm square bar): M4 foot to REDCUBE T1-T4, lug seat M4 x 10 tapped (Dan d1a)")
-CX0, CXM, CX1, CY0, CY1 = 20.0, 36.5, 58.0, -52.0, -14.0
+CX0, CXM, CX1, CY0, CY1 = 20.0, 36.5, 58.0, -54.2, -11.8   # e1a: carrier +2.2 each long side for >= 3 mm G10 beside the outer lug pockets
 ZCL, ZCU = Z_L + P["pocket_d"], Z_U + P["pocket_d"]
 car = dblock(CX0, CXM + 1.0, CY0, CY1, Z_CB, ZCL, r=3)
 car = car.fuse(dblock(CXM, CX1, CY0 + 2, CY1 - 2, Z_CB, ZCU, r=3))
