@@ -20,7 +20,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-13)
-1. Firmware thermal protection (r5a, plan `docs/firmware-thermal-plan.md`): settable warn / critical limits, self-recovering critical, die temp on CAN, default load-shed config, sim + Renode tests; limits set after bench measurements (r6c). Fans always on while awake (r3c), no fan-fail detection (r4c); fan supply source still to decide.
+1. Firmware thermal protection (r5a, plan `docs/firmware-thermal-plan.md`): settable warn / critical limits, self-recovering critical, die temp on CAN, default load-shed config, sim + Renode tests; limits set after bench measurements (r6c). Fans always on while awake (r3c) from one always-on PDM output wired inside the box (r7a; its X1 cavity becomes a spare), no fan-fail detection (r4c).
 2. MCU change to STM32F446RET7 on boards A and B (r2a; fallback r2b): footprint-equal swap, check assembler stock, firmware build unchanged.
 3. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
 4. B2 wake firmware (see "Wake lines").
