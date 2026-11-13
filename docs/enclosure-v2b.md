@@ -113,12 +113,16 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 
 (2026-11-13 builds, `enclosure/v2b/src/mass_v2b.py`.)
 
-## 5b. OUT1-4 risers + carrier (2026-11-13, Dan c1b / d1a)
+## 5b. OUT1-4 risers + carrier (2026-11-13, Dan c1b / d1a / e1a)
 
-- REDCUBE 74650074R (board B T1-T4): M4 internal thread, thread length 2.5 mm (Wurth product page), max tightening torque 1.2 N*m, 50 A at 20 C (Wurth datasheet). The foot screw (M4 x 6) is tightened to that limit once; afterwards every lug torque goes into the copper seat and the G10 carrier, which is keyed on the risers and bolted to the heat-sink posts through two M3 standoffs.
-- Lug seats: OUT2 / OUT4 at z 19.0 (west pair), OUT1 / OUT3 at z 25.0 (east pair); lugs flat on the seat columns, wires leave horizontally (t1a) in four lanes y -41.0 / -37.3 / -29.2 / -25.5 (low / high / high / low tier, z 22 / 28 / 28 / 22).
-- Separation: west pair lugs sit in separate G10 pockets with solid G10 between them (no line of sight); east pair rings are separated by a solid G10 wall >= 4.9 mm in the raised carrier block, their barrels end 2 mm apart in air; east lugs pass 1.0 mm above the west lug-screw heads. Riser feet of neighbouring terminals (T1-T4 pitch 9.5 mm) are 1.5 mm apart with a G10 web between.
-- Tool access: every M4 lug screw has an open dia 11 pocket above it (3 mm hex key / bit); west screw heads top z 24 (6 below the terrace), east heads top z 30 (flush with the terrace). The foot screws are reached through the open key slots before the lugs go on.
+- e1a (Dan 2026-11-13, after reviewing the riser / carrier render): the first riser layout had the upper (east) lug ring 0.9 mm from a lower lug and 1.0 mm from a lower lug-screw head. Fix applied: upper lug tier raised 4 mm (seat z 25 -> 29, lug top about flush with the terrace top z 30), seats moved to OUT2 / OUT4 (28.9, -45.7 / -20.84) and OUT1 / OUT3 (43.5, -43.2 / -23.34) (mirrored about y -33.27), lug angles OUT2 176, OUT4 184, OUT1 166, OUT3 194 deg, wire lanes y -43.3 / -37.8 / -28.7 / -23.2, G10 carrier widened 2.2 mm on each long side (y -54.2 to -11.8). The wire-way between the BATT and GND collars is unchanged.
+- Bare-metal clearances after e1a (`enclosure/v2b/src/lugcheck_v2b.py`, F1 build, 3-D min distance): lug to lug min 5.57 mm (OUT1-OUT3); lug to any other-net screw min 5.31 mm (upper lug over the lower lug-screw head); lug to other risers min 6.81 mm. Same-net pairs (a lug and its own riser foot screw) are not counted. G10 carrier walls (from the build geometry): lower-pocket to carrier edge 3.0 mm, upper-pocket to edge 3.5 mm, lower-to-upper pocket wall 3.8 mm (no line of sight between lugs).
+- Wires: insulated wire may touch plastic (Dan 2026-11-13); only bare metal (lugs, screws, risers) is held to real clearance, so no wire-to-wall gap is required.
+
+- REDCUBE 74650074R (board B T1-T4): M4 internal thread, max tightening torque 1.2 N*m and 50 A max at 20 C (Wurth datasheet 74650074R, properties table, https://www.we-online.com/catalog/datasheet/74650074R.pdf); thread length 2.5 mm per the Wurth product page (not legible in the datasheet text; check on the drawing); body 3.0 mm tall (KiCad / Wurth 3D model). The foot screw (M4 x 6) is tightened to that limit once; afterwards every lug torque goes into the copper seat and the G10 carrier, which is keyed on the risers and bolted to the heat-sink posts through two M3 standoffs.
+- Lug seats (after e1a): OUT2 / OUT4 at z 19.0 (west pair), OUT1 / OUT3 at z 29.0 (east pair); lugs flat on the seat columns, wires leave horizontally (t1a) in four lanes y -43.3 / -37.8 / -28.7 / -23.2 (low / high / high / low tier, z 22 / 32 / 32 / 22).
+- Separation: west pair lugs sit in separate G10 pockets with solid G10 between them (no line of sight); east pair rings are separated by a solid G10 wall >= 4.9 mm in the raised carrier block, their barrels end 2 mm apart in air; east lugs pass 5.3 mm above the west lug-screw heads (was 1.0 before e1a). Riser feet of neighbouring terminals (T1-T4 pitch 9.5 mm) are 1.5 mm apart with a G10 web between.
+- Tool access: every M4 lug screw has an open dia 11 pocket above it (3 mm hex key / bit); west screw heads top z 24 (6 below the terrace), east heads top z 34 (4 above the terrace). The foot screws are reached through the open key slots before the lugs go on.
 - Assembly: 1) risers onto T1-T4 (M4 x 6, 1.2 N*m max, threadlocker); 2) standoffs into the sink posts through board B H2 / H4; 3) carrier down over the risers, 2 x M3 x 8 into the standoffs; 4) lugs + M4 x 8.
 - Copper bars: notched dia 11 (insulating sleeve) where the carrier standoffs pass at board B H2 / H4: BATT 20 x 5 keeps about 13 x 5 there, GND 15 x 5 keeps about 8.7 x 5 (about 3.5 A/mm2 at 150 A over a few mm).
 - Clashes (F1 rebuild): see section 5; renders `enclosure-v2b-F1-outbay-sw.png`, `-outbay-nw.png`, `-outstack-exploded.png`, `-section-OUT-bay.png`, `-iso.png`, `-iso-nw.png`, `-iso-lid-off.png`, `-top.png`, `-section-BATT-stud.png` re-rendered 2026-11-13.
@@ -135,7 +139,7 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 ## 7. Open items
 
 - Dan's v2b review (2026-11-12): b1a connectors sticking out 21 mm (61 mm with plugs) are fine; b2a F1 goes forward (F2 files kept, no more work); b3a gap pad k >= 3 W/mK; b4a no OUT1-4 straps (bosses straight on T1-T4).
-- OUT1-4: superseded 2026-11-13 by the copper offset risers + G10 carrier (section 5b); the 1.5 mm lug-to-lug spacing of the first wire-way build is gone.
+- OUT1-4: superseded 2026-11-13 by the copper offset risers + G10 carrier (section 5b), clearances fixed by e1a (lug-to-lug >= 5.5 mm, lug-to-other-screw >= 5.3 mm, carrier walls >= 3.0 mm).
 - BATT / GND collars: boss top z 39.23, 9.2 above the terrace, so their M6 lugs lie flat and the wires leave horizontally clear of the lid; open tool access from above; route those wires west, north or south (the main body starts about 40 mm east).
 
 - USB-C bulkhead, F1 Sunon fans and the TE panel nut are modelled from vendor drawings (no maker STEP reachable); check against real parts.
