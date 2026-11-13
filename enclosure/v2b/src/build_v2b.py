@@ -392,7 +392,7 @@ UR = WALL_IN + 29.3
 usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))   # bulkhead rear -> lane over the board front strips at z 30 under the main lid, z 22 under the low terrace (inner top 27) -> down beside board B to the hub
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
-    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 8.5), (X, -99.0, 8.5), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
+    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, Z_TOP + 1.6)], 4.0))   # run at z 9.5, over the B J6 ribbon
 addp("wire-ribbons", Compound(wires), (0.85, 0.75, 0.1), "harness to X1/X2 as flat taped ribbons (A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2); ASSUMED routing")
 addp("usb-cables", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables bulkhead -> hub -> 3 boards (USB-C at the board front edges), ASSUMED routing; plugs not modelled")
 ties = [box(x - 4, x + 4, -107.0 - 4, -107.0 + 4, 0.0, 2.5) for x in (60.0, 140.0)]
