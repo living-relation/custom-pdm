@@ -54,4 +54,4 @@ Status: research and plan only, no firmware changes. Decisions it serves: e3c (f
 4. Sim + Renode tests above, then bench calibration.
 
 ## 6. Open questions (answers go to DECISIONS.md)
-r2 MCU grade, r3 fan power, r4 fan-fail detection, r5 protection approach, r6 default limits (details in PR #? report).
+r2 MCU grade, r3 fan power, r4 fan-fail detection, r5 protection approach, r6 default limits (details in the PR description).
