@@ -139,7 +139,8 @@ automations:
   - id: enclosure-v2b-build
     script: enclosure/v2b/src/build_check_all.sh
     helpers: [enclosure/v2b/src/run.sh, enclosure/v2b/src/build_v2b.py, enclosure/v2b/src/clearance_v2b.py, enclosure/v2b/src/show_check.py,
-              enclosure/v2b/src/inspect_vendor.py, enclosure/v2b/src/bg.sh]
+              enclosure/v2b/src/inspect_vendor.py, enclosure/v2b/src/bg.sh, enclosure/v2b/src/bbox_parts.py,
+              enclosure/v2b/src/mass_v2b.py, enclosure/v2b/src/screwtool_twin.py]
     trigger: manual
     reads: ["enclosure/v2b/src/*.py", "hardware/*/*.step"]   # plus Grok's pack copy and vendor STEPs in .claude/tmp (not in git)
     writes: []                      # STEP/BREP/meta/check.json go to WSL ~/scratch/encl-v2b/runs (not in git)
