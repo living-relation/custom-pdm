@@ -9,7 +9,7 @@ from build123d import import_brep, Compound
 sys.path.insert(0, os.path.join(os.environ["CAD_HOME"], "tools", "render"))
 import section as SEC
 pv.OFF_SCREEN = True
-VAR = sys.argv[1]; which = sys.argv[2:] or ["outbay", "iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded"]
+VAR = sys.argv[1]; which = sys.argv[2:] or ["outbay", "iso", "iso_sw", "iso_ne", "iso_nw", "iso_open", "iso_open_nw", "lidT", "top", "front", "back", "left", "right", "sec_stack", "sec_stud", "under", "exploded", "outstack", "sec_fan"]
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.abspath(os.path.join(HERE, ".."))
 OUT = os.path.join(os.environ.get("RUN_DIR", os.path.join(ROOT, "runs", "latest")), VAR)
 RD = os.environ.get("RENDER_DIR", os.path.join(OUT, "..", "renders")); os.makedirs(RD, exist_ok=True)
@@ -105,8 +105,18 @@ if "exploded" in which:
         if k.startswith(("heat-sink", "fans", "vendor-fan", "tie", "hub-standoffs")): dz = -60
         ex[k] = v.translate((0, 0, dz)) if dz else v
     scene(ex, [(cx + 380, cy - 480, 330), (cx, cy, 30), (0, 0, 1)], "exploded", T + "  exploded: lid + connectors up, deck + input boards, sink down", zoom=1.0)
+if "outstack" in which:                              # OUT1-4 riser / carrier stack, exploded upward (Dan d1a 2026-11-13)
+    bx, by = 40.0, -33.0
+    keep = {"board-B": 0, "copper-risers-OUT1-4": 25, "carrier-G10-OUT1-4": 55, "standoffs-M3x8-MF-carrier": 0, "ring-lugs-OUT1-4": 85, "wires-OUT1-4-10AWG": 85}
+    ex = {k: (S[k].translate((0, 0, dz)) if dz else S[k]) for k, dz in keep.items() if k in S}
+    ex["board-B"] = ex["board-B"].intersect(Compound.make_box(80, 70, 40).translate((bx - 40, by - 35, 0))) if False else ex["board-B"]
+    scene(ex, [(bx - 160, by - 200, 210), (bx, by, 45), (0, 0, 1)], "outstack-exploded", T + "  OUT1-4 copper risers + G10 carrier + lugs, exploded up", zoom=1.6)
 if "under" in which:
     scene(S, [(cx - 300, cy - 380, -330), (cx, cy, -10), (0, 0, 1)], "under", T + "  underside: fins, feet, fan(s)", zoom=1.25)
+if "sec_fan" in which and VAR == "F2":                # section through the Noctua fan, flow cone and swept fins (Dan 2026-11-13)
+    X = meta["fan"]["c"][0]
+    sh = {k: halfcut(k, v, "x", X, "lt") for k, v in S.items() if bb(v)[0][0] < X and bb(v)[0][2] < 0.0}   # only what hangs below the sink plate: sink, fins, feet, fan, cone
+    scene(sh, [(X + 500, cy, -20), (X, cy, -20), (0, 0, 1)], "section-fan-cone-fins", T + f"  capped section X={X:.1f} through the fan, flow cone and fins (looking west)", parallel=True, zoom=2.4)
 if "sec_stack" in which:
     X = meta["X0"]["A1"] + 37.846 + 6.0
     sh = {k: halfcut(k, v, "x", X, "lt") for k, v in S.items() if bb(v)[0][0] < X}
@@ -120,7 +130,7 @@ if "sec_stud" in which:
     X, Y = meta["OUTT"]["OUT1"]
     sh = {k: halfcut(k, v, "y", Y, "gt") for k, v in S.items() if bb(v)[1][1] > Y}
     scene(sh, [(X - 10, Y - 600, 20), (X - 10, Y, 20), (0, 0, 1)], "section-OUT-bay",
-          T + f"  capped section Y={Y:.2f} through OUT1/OUT2 copper bosses and terminal bay (looking north)", parallel=True, zoom=3.6)
+          T + f"  capped section Y={Y:.2f} through OUT1/OUT2 terminals, copper risers, G10 carrier and bay (looking north)", parallel=True, zoom=3.6)
 from collections import Counter
 print("section cuts refused (solid left out):", dict(Counter(k for k, _ in skipped)))
 json.dump(skipped, open(os.path.join(RD, f"{VAR}-section-refused.json"), "w"), indent=0)

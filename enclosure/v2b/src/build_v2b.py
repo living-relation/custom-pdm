@@ -23,7 +23,7 @@ OUT = os.path.join(os.environ.get("RUN_DIR", "/tmp/v2b"), VAR)
 import shutil
 for _d in ("parts", "brep"):                                         # clear stale outputs so the clearance check sees only this build
     shutil.rmtree(os.path.join(OUT, _d), ignore_errors=True); os.makedirs(os.path.join(OUT, _d), exist_ok=True)
-from screwtool_twin import shcs
+from screwtool_twin import shcs, standoff_mf
 class _BB:
     def __init__(self, b):
         self.xmin, self.ymin, self.zmin = b.min.X, b.min.Y, b.min.Z
@@ -54,6 +54,8 @@ P = dict(
     boss6_af=13.0, boss4_d=9.5, boss4_flats=8.0, lug_t=2.0,
     bay_floor_top=19.2,      # OUT1-4 bay floor; lowered 0.53 so the ring-lug barrels (OD 6) clear it
     out_lug_t=1.0, out_lug_w=8.0, out_lug_L=17.5, out_barrel_d=6.0, out_barrel_L=8.0, out_wire_d=4.2,   # Phoenix 3240083 M4 ring 10-14 AWG (catalogue dims); 10 AWG GXL OD ~4.2 ASSUMED
+    out_seat_lo=19.0, out_seat_hi=25.0,                       # OUT1-4 lug seat tops: west pair (OUT2/OUT4) low tier, east pair (OUT1/OUT3) high tier (Dan d1a 2026-11-13)
+    riser_r=4.0, riser_foot=4.0, pocket_d=5.0, ear_t=5.0,     # copper offset risers: foot arm R4 x 4 thick, seat column R4 (= lug ring OD 8); lug pockets 5 deep in the G10 carrier; ears 5 thick
     wireway_y0=-47.2, wireway_y1=-19.3,                      # OUT1-4 wire-way (Dan 2026-11-12): between the BATT and GND collars, open at the west lid edge
     corner_r=14.0, draft_deg=6.0, shoulder_z=10.0, shoulder_in=2.0,
     ribbon_w=28.0, ribbon_t=4.0,                               # flat taped wire ribbons (ASSUMED harness form)
@@ -160,7 +162,7 @@ for (X, Y, sx, sy) in FEET:
     feet = f if feet is None else feet.fuse(f)
     foot_keepout.append(box(X - 15 * sx, X + sx * (P["foot_web_L"] + 3), Y - 15 * sy, Y + sy * (P["foot_web_L"] + 3), zf0 - 1, -pt))
 # ---------------- fins + fans ----------------
-fe = P["fin_edge"]; fan_info = {}
+fe = P["fin_edge"]; fan_info = {}; PRE_SCR = []
 if VAR == "F1":
     # Grok's straight east-west fins, stopped at a 16 mm fan bay at the east end; 2 x Sunon 30x30x10 inside the outline, push west
     bay_x0 = LX1 - fe - 18.0
@@ -192,21 +194,36 @@ else:
             pts.append((x, y)); r += 5.0
         return pts
     fins = []
+    def spiral_dense(theta0, rstart, step=2.0):
+        pts = []; r = rstart
+        while True:
+            th = theta0 + 0.55 * math.log(r / r0)
+            x, y = FCX + r * math.cos(th), FCY + r * math.sin(th)
+            if not (xs0 + 1 < x < xs1 - 1 and ys0 + 1 < y < ys1 - 1): break
+            pts.append((x, y)); r += step
+        return pts
     def fin_from(pts):
-        s = None
-        for (ax, ay), (bx, by) in zip(pts[:-1], pts[1:]):
-            L = math.hypot(bx - ax, by - ay); ang = math.degrees(math.atan2(by - ay, bx - ax))
-            seg = Pos((ax + bx) / 2, (ay + by) / 2, (zf0 - pt) / 2) * Rot(0, 0, ang) * Box(L + ft, ft, -pt - zf0)
-            seg = seg.solid() if hasattr(seg, "solid") else seg
-            s = seg if s is None else s.fuse(seg)
-        return s
+        """SMOOTH fin (Dan 2026-11-13): tangent-continuous spline centreline, constant thickness ft by a 2-D offset with
+        round (arc) ends, extruded to the fin depth; fin tips filleted 1.0. One smooth curve for the 3-axis toolpath."""
+        c = Spline(*[Vector(x, y, -pt) for (x, y) in pts])
+        w2 = Wire([c]).offset_2d(ft / 2, kind=Kind.ARC, side=Side.BOTH, closed=False)
+        f = Face(w2)
+        sol = extrude(f, amount=-(zf0 - (-pt))).solid() if False else Solid.extrude(f, Vector(0, 0, zf0 + pt))
+        try:
+            sol = sol.fillet(1.0, sol.faces().sort_by(Axis.Z)[0].edges())          # fin tip edges
+        except Exception:
+            pass
+        return sol
     N = 24; fin_len = 0.0
     for i in range(N):
-        p = spiral(2 * math.pi * i / N, r0)
-        if len(p) > 2: fins.append(fin_from(p)); fin_len += sum(math.dist(a, b) for a, b in zip(p[:-1], p[1:]))
-        p = spiral(2 * math.pi * (i + 0.5) / N, 62.0)                 # splitter fins between the long ones
-        if len(p) > 2: fins.append(fin_from(p)); fin_len += sum(math.dist(a, b) for a, b in zip(p[:-1], p[1:]))
+        p = spiral_dense(2 * math.pi * i / N, r0)
+        if len(p) > 3: fins.append(fin_from(p)); fin_len += sum(math.dist(a_, b_) for a_, b_ in zip(p[:-1], p[1:]))
+        p = spiral_dense(2 * math.pi * (i + 0.5) / N, 62.0)                 # splitter fins between the long ones
+        if len(p) > 3: fins.append(fin_from(p)); fin_len += sum(math.dist(a_, b_) for a_, b_ in zip(p[:-1], p[1:]))
     fan_info["fin_len_total_mm"] = round(fin_len, 1); fan_info["fin_t"] = ft; fan_info["N"] = N
+    # narrowest channel: log spiral (tan psi = 0.55): normal pitch = r * (2 pi / N) * cos(psi); long fins from r0, splitters from r 62
+    psi = math.atan(0.55)
+    fan_info["min_channel_mm"] = round(min(r0 * 2 * math.pi / N * math.cos(psi), 62.0 * math.pi / N * math.cos(psi)) - ft, 2)
     finf = Compound(fins)
     pocket = dblock(FCX - 31.5, FCX + 31.5, FCY - 31.5, FCY + 31.5, zf0 - 1, zf0 + 18.0, r=4.0)   # NF-A6x15 model is 16 tall (frame Y -0.5..15.5) + 2 recess
     fan_info.update(kind="1 x Noctua NF-A6x15 PWM", c=(FCX, FCY), z_bottom=zf0 + 2.0, z_top=zf0 + 18.0)
@@ -218,6 +235,18 @@ if VAR == "F2":
         for dy in (-25, 25):                                          # 4 posts from the plate to the fan top face, M3 tapped (Noctua 50 mm hole pitch)
             sink = sink.fuse(cyl(8.0, (FCX + dx, FCY + dy, zf0 + 18.0), -pt - zf0 - 18.0))
             sink = sink.cut(cyl(2.5, (FCX + dx, FCY + dy, zf0 + 17.9), 8.0))
+    sink = sink.cut(cyl(2.5, (FCX, FCY, -pt - 0.1), 7.0))           # M3 tap drill 7 deep: flow-cone screw
+    # flow cone (Dan 2026-11-13): MJF PA12 paraboloid hanging from the plate underside over the fan hub, apex 1.5 above
+    # the fan outlet face; turns the fan's axial (upward) flow outward into the swept fin channels. r = R * sqrt((z - z_apex) / H)
+    z_apex = fan_info["z_top"] + 1.5; Hc = -pt - z_apex; Rc = 26.0
+    prof = [(Rc * math.sqrt(t), z_apex + t * Hc) for t in [i / 16 for i in range(17)]]
+    sp = Spline(*[Vector(FCX + r_, FCY, z_) for (r_, z_) in prof])
+    wr = Wire([sp, Line((FCX + Rc, FCY, -pt), (FCX, FCY, -pt)), Line((FCX, FCY, -pt), (FCX, FCY, z_apex))])
+    cone = revolve(Face(wr), Axis((FCX, FCY, 0), (0, 0, 1)), 360).solid()
+    cone = cone.cut(cyl(3.4, (FCX, FCY, z_apex - 1), Hc + 2)).cut(cyl(6.2, (FCX, FCY, z_apex - 1), 5.0))   # M3 clearance + head counterbore from the apex
+    flow_cone = cone
+    PRE_SCR.append(("SSH-M3-0.5 x 12", shcs("M3", 12.0, (FCX, FCY, z_apex + 4.0), down=False)))
+    fan_info.update(cone=dict(R=Rc, H=round(Hc, 2), apex_gap=1.5, z_apex=round(z_apex, 2)))
 for (X, Y, sx, sy) in FEET:
     sink = sink.cut(cyl(6.6, (X, Y, zfoot - 1), -zfoot + 2))           # M6 clearance, bolt-through mounting
 LID_SCREWS = []
@@ -229,6 +258,7 @@ LID_SCREWS += [(LX0 + 5.0, (LY0 + LY1) / 2), (LX1 - 5.0, (LY0 + LY1) / 2)]
 for (X, Y) in LID_SCREWS:
     sink = sink.cut(cyl(4.5, (X, Y, -pt - 1), pt + 2)); sink = sink.cut(cyl(7.5, (X, Y, -pt - 1), 5.0))   # counterbore to Z -4
 addp("heat-sink", sink, (0.72, 0.72, 0.76), f"6061-T6 aluminium, one machined part (3-axis), {VAR}; reinforced hex feet; all sizes ASSUMED")
+if VAR == "F2": addp("flow-cone-PA12", flow_cone, (0.22, 0.22, 0.25), "MJF PA12 paraboloid flow cone R26 x 10.5, apex 1.5 above the Noctua outlet, M3 x 12 into the plate (Dan 2026-11-13)")
 addp("gap-pads", Compound(pads), (0.95, 0.5, 0.6), "insulating gap pad 1.0, product TBD")
 
 # ---------------- vendor models ----------------
@@ -326,7 +356,7 @@ batt = bar([p[0] for p in bp], P["batt_yc"], P["batt_w"], bp)
 gnd = bar([p[0] for p in gp], P["gnd_yc"], P["gnd_w"], gp)
 addp("copper-bar-BATT", batt, (0.85, 0.45, 0.2), f"C110 copper bar {P['batt_w']}x{P['bar_t']}, B J1 -> A1 J1 -> A2 J1; insulating film under, sleeves at standoffs; ASSUMED")
 addp("copper-bar-GND", gnd, (0.6, 0.35, 0.2), f"C110 copper bar {P['gnd_w']}x{P['bar_t']}, B J3 -> A1 J2 -> A2 J2; ASSUMED")
-scr = []
+scr = list(PRE_SCR)
 bosses6, bosses4 = [], []
 LID_COLLAR = {}
 for k, (X, Y) in FEED.items():
@@ -340,42 +370,75 @@ for n in ("A1", "A2"):
     for k, (X, Y) in FEED_A[n].items():
         scr.append(("SSH-M6-1 x 16", shcs("M6", 16.0, (X, Y, ZB1))))
 addp("copper-boss-M6-BATT-GND", Compound(bosses6), (0.85, 0.5, 0.25), f"custom C110 copper hex boss AF{P['boss6_af']:.0f}, M6 female both ends, 3-axis machinable from hex bar")
-for k, (X, Y) in OUTT.items():
-    L4 = 12.0
-    bo = cyl(P["boss4_d"], (X, Y, TTOP), L4)
-    f = P["boss4_flats"] / 2
-    bo = bo.cut(box(X - 10, X + 10, Y + f, Y + 10, TTOP - 1, TTOP + L4 + 1)).cut(box(X - 10, X + 10, Y - 10, Y - f, TTOP - 1, TTOP + L4 + 1))
-    bo = bo.cut(cyl(3.3, (X, Y, TTOP + L4 - 8), 8.1)).cut(cyl(3.3, (X, Y, TTOP - 0.1), 8.1))   # M4 tap drill 3.3 both ends
-    bosses4.append(bo)
-    scr.append(("M4 stud 11 (threaded rod)", cyl(4.0, (X, Y, TTOP - 6.0), 11.0)))   # 5 into the boss; lug screw 6 in; 1 mm gap
-    scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (X, Y, TTOP + L4 + P["out_lug_t"]))))
-addp("copper-boss-M4-OUT1-4", Compound(bosses4), (0.85, 0.5, 0.25), f"custom C110 copper boss dia {P['boss4_d']} with {P['boss4_flats']} flats (Y), M4 female both ends, 3-axis machinable")
-M6_EXT_TOP = P["collar_top"] + 1.0; M4_EXT_TOP = TTOP + 12.0
+# ---- OUT1-4: copper OFFSET RISERS held in ONE G10 carrier (Dan d1a / c1b, 2026-11-13) ----
+# Each riser is a C110 obround block: foot on board B T1-T4 (Wurth REDCUBE 74650074R, M4, 2.5 mm thread, max 1.2 N*m per datasheet),
+# lug seat offset 8+ mm away (taller AND spread). Two tiers: west pair (OUT2/OUT4) low, east pair (OUT1/OUT3) high, so the east pair's
+# wires pass over the carrier ridge between the west lugs. The G10 carrier is keyed on the risers (obround slots: they can't turn),
+# holds every lug in its own slot with solid G10 walls between, and is bolted to M3 x 8 M-F standoffs on board B H2/H4,
+# so lug-screw torque goes into the carrier and the heat-sink posts, not into the soldered REDCUBE terminals.
+Z_CB = Z_TOP + 8.0                                   # carrier bottom = top of the M3 x 8 standoffs (below the copper bars, ZB0)
+Z_L, Z_U = P["out_seat_lo"], P["out_seat_hi"]
+SEAT = {"OUT2": (29.5, -45.3, Z_L), "OUT4": (29.5, -21.24, Z_L), "OUT1": (44.0, -43.6, Z_U), "OUT3": (44.0, -22.94, Z_U)}   # seat >= 8 mm from the T centre (foot-screw head clears the column); 6.5 mm lane between the pairs for the B J6 wires
+LUGANG = {"OUT2": 165.0, "OUT4": 195.0, "OUT1": 159.0, "OUT3": 201.0}   # upper barrels end 8 mm apart (2 mm air), clear of the lower screw heads
+LANE = {"OUT2": -41.0, "OUT1": -37.3, "OUT3": -29.2, "OUT4": -25.5}
+RR = P["riser_r"]
+def obround(p, q, r, z0, z1):
+    a_, b_ = Vector(p[0], p[1], 0), Vector(q[0], q[1], 0); d = b_ - a_; L = d.length; ang = math.degrees(math.atan2(d.Y, d.X)); m = (a_ + b_) * 0.5
+    return extrude(Pos(m.X, m.Y, z0) * Rot(0, 0, ang) * SlotCenterToCenter(L, 2 * r), amount=z1 - z0).solid()
+def slot_along(x, y, ang, wd, L, z0, z1):
+    pl = Plane(origin=(x, y, z0), x_dir=(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0), z_dir=(0, 0, 1))
+    return extrude(pl * Pos(L / 2, 0) * Rectangle(L, wd), amount=z1 - z0).solid()
+risers = []
+for k, (sx, sy, sz) in SEAT.items():
+    tx, ty = OUTT[k]; H = sz - TTOP
+    rb = obround((tx, ty), (sx, sy), RR, TTOP, TTOP + P["riser_foot"]).fuse(cyl(2 * RR, (sx, sy, TTOP), H))   # foot arm 4 thick + seat column
+    rb = rb.cut(cyl(4.5, (tx, ty, TTOP - 0.1), P["riser_foot"] + 0.2))                                     # M4 clearance at the foot (screw head sits on the arm)
+    rb = rb.cut(cyl(3.3, (sx, sy, sz - 10.0), 10.1))                                                      # M4 tap drill 3.3 x 10 deep (lug screw)
+    risers.append(rb)
+    scr.append(("SSH-M4-0.7 x 6", shcs("M4", 6.0, (tx, ty, TTOP + P["riser_foot"]))))                        # foot screw: 2.0 into the 2.5 REDCUBE thread, max 1.2 N*m
+    scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (sx, sy, sz + P["out_lug_t"]))))                            # lug screw into the copper seat (7 mm engagement)
+addp("copper-risers-OUT1-4", Compound(risers), (0.85, 0.5, 0.25), "custom C110 copper offset risers (foot arm R4 x 4 + seat column dia 8, 3-axis from 20 mm square bar): M4 foot to REDCUBE T1-T4, lug seat M4 x 10 tapped (Dan d1a)")
+CX0, CXM, CX1, CY0, CY1 = 20.0, 36.5, 58.0, -52.0, -14.0
+ZCL, ZCU = Z_L + P["pocket_d"], Z_U + P["pocket_d"]
+car = dblock(CX0, CXM + 1.0, CY0, CY1, Z_CB, ZCL, r=3)
+car = car.fuse(dblock(CXM, CX1, CY0 + 2, CY1 - 2, Z_CB, ZCU, r=3))
+ANCH = [W("B", 26.67, -21.59), W("B", 26.67, 21.59)]                 # board B H2, H4 (H1 / H3 sit inside the BATT / GND collars)
+for (X, Y) in ANCH:
+    yA, yB = (CY1 - 8, Y + 6) if Y > CY1 - 3 else (Y - 6, CY0 + 8)
+    car = car.fuse(dblock(X - 14, X + 6, min(yA, yB), max(yA, yB), Z_CB, Z_CB + P["ear_t"], r=3))
+for k, (sx, sy, sz) in SEAT.items():
+    tx, ty = OUTT[k]
+    car = car.cut(obround((tx, ty), (sx, sy), RR + 0.1, Z_CB - 1, 80))                                   # key slot = riser + 0.1
+    car = car.cut(cyl(11.0, (sx, sy, sz), 40)).cut(slot_along(sx, sy, LUGANG[k], P["out_lug_w"] + 1.0, 40.0, sz, 80))   # lug ring pocket + tongue slot
+for (X, Y) in ANCH:
+    car = car.cut(cyl(3.4, (X, Y, Z_CB - 1), 20)).cut(cyl(6.5, (X, Y, Z_CB + P["ear_t"] - 3.2), 10))
+    scr.append(("SSH-M3-0.5 x 8", shcs("M3", 8.0, (X, Y, Z_CB + P["ear_t"] - 3.2))))
+addp("carrier-G10-OUT1-4", car, (0.75, 0.78, 0.55), "G10 / FR4 carrier (3-axis): keys the 4 copper risers, separates the lugs with solid walls, takes lug torque; bolted to M3 x 8 standoffs on board B H2/H4 (Dan d1a)")
+sos2 = [standoff_mf(5.5, 8.0, 3.0, 6.0, 6.0, (X, Y, Z_TOP)) for (X, Y) in ANCH]
+addp("standoffs-M3x8-MF-carrier", Compound(sos2), (0.8, 0.7, 0.3), "M3 M-F hex standoff AF5.5 x 8 (carrier anchors, replace the board B H2/H4 screws; male end into the sink posts), PN TBD")
+for nm in ("copper-bar-BATT", "copper-bar-GND"):                        # standoff pass-through at the bar edges (insulating sleeve)
+    sh = parts[nm]["shape"]
+    for (X, Y) in ANCH: sh = sh.cut(cyl(11.0, (X, Y, ZB0 - 1), P["bar_t"] + 2))
+    parts[nm]["shape"] = one(sh)
+M6_EXT_TOP = P["collar_top"] + 1.0; M4_EXT_TOP = Z_U
 # OUT1-4 ring lugs (Phoenix Contact 3240083, M4, 10-14 AWG; modelled from catalogue dims: 8.0 wide, 17.5 long, 0.99 thick) + 10 AWG wires to the west lid edge
-OB_TOP = TTOP + 12.0
-def ring_lug(X, Y, ang):
+def ring_lug(X, Y, ang, z):
     t, wdt, Lg, bd, bL = P["out_lug_t"], P["out_lug_w"], P["out_lug_L"], P["out_barrel_d"], P["out_barrel_L"]
-    pl = Plane(origin=(X, Y, OB_TOP), x_dir=(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0), z_dir=(0, 0, 1))
-    tongue = extrude(pl * Circle(wdt / 2), amount=t).solid()      # ring (OD = width 8.0)
+    pl = Plane(origin=(X, Y, z), x_dir=(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0), z_dir=(0, 0, 1))
+    tongue = extrude(pl * Circle(wdt / 2), amount=t).solid()
     tongue = tongue.fuse(extrude(pl * Pos((Lg - bL) / 2, 0) * Rectangle(Lg - bL, bd), amount=t).solid())
-    tongue = tongue.cut(cyl(4.3, (X, Y, OB_TOP - 1), t + 2))
+    tongue = tongue.cut(cyl(4.3, (X, Y, z - 1), t + 2))
     d = Vector(math.cos(math.radians(ang)), math.sin(math.radians(ang)), 0)
-    b0 = Vector(X, Y, OB_TOP + bd / 2) + d * (Lg - bL)
-    barrel = Solid.make_cylinder(bd / 2, bL, Plane(origin=b0, z_dir=d))
-    return tongue.fuse(barrel), b0 + d * bL
-WZ = OB_TOP + P["out_barrel_d"] / 2                      # wire centre height (barrel axis)
-XE = LX0 - 15.0                                          # wires drawn 15 mm past the west lid edge
-LUGS = {"OUT2": 180.0, "OUT4": 180.0, "OUT1": 210.0, "OUT3": 150.0}
-LANE = {"OUT1": -44.8, "OUT2": -37.6, "OUT4": -30.0, "OUT3": -22.0}
+    b0 = Vector(X, Y, z + bd / 2) + d * (Lg - bL)
+    return tongue.fuse(Solid.make_cylinder(bd / 2, bL, Plane(origin=b0, z_dir=d))), b0 + d * bL
+XE = LX0 - 15.0
 lugs, owires = [], []
-for k, ang in LUGS.items():
-    X, Y = OUTT[k]; lg, e = ring_lug(X, Y, ang); lugs.append(lg)
-    if k == "OUT1":   path = [(e.X, e.Y, WZ), (28.0, -46.0, WZ), (20.0, -44.9, WZ), (13.0, -44.8, WZ), (5.0, LANE[k], WZ), (XE, LANE[k], WZ)]
-    elif k == "OUT3": path = [(e.X, e.Y, WZ), (28.0, -20.6, WZ), (20.0, -21.5, WZ), (13.0, -22.0, WZ), (5.0, LANE[k], WZ), (XE, LANE[k], WZ)]
-    else:             path = [(e.X, e.Y, WZ), (0.0, LANE[k], WZ), (XE, LANE[k], WZ)]
-    owires.append(tube(path, P["out_wire_d"]))
+for k, (sx, sy, sz) in SEAT.items():
+    lg, e = ring_lug(sx, sy, LUGANG[k], sz); lugs.append(lg)
+    wz = sz + P["out_barrel_d"] / 2
+    owires.append(tube([(e.X, e.Y, wz), (min(e.X - 6.0, 20.0), LANE[k], wz), (XE, LANE[k], wz)], P["out_wire_d"]))
 addp("ring-lugs-OUT1-4", Compound(lugs), (0.85, 0.6, 0.3), "Phoenix Contact 3240083 ring terminal M4, 10-14 AWG (no maker CAD reachable; modelled from catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED)", step=False)
-addp("wires-OUT1-4-10AWG", Compound(owires), (0.75, 0.1, 0.1), "OUT1-4 wires 10 AWG GXL (OD 4.2 ASSUMED), 31 A each, out through the lid wire-way to the west edge; ASSUMED routing", step=False)
+addp("wires-OUT1-4-10AWG", Compound(owires), (0.75, 0.1, 0.1), "OUT1-4 wires 10 AWG GXL (OD 4.2 ASSUMED), 31 A each, two tiers out through the lid wire-way to the west edge; ASSUMED routing", step=False)
 # T5-T8 ring lugs + M4 screws (v2b), wires to X1
 for k, (X, Y) in T58.items(): scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (X, Y, TTOP + P["lug_t"]))))
 
@@ -394,6 +457,7 @@ sos = [standoff_mf(5.5, P["so_m3_len"], 3.0, 6.0, 6.0, (X, Y, Z_TOP)) for (n, h,
 addp("standoffs-M3x25-MF", Compound(sos), (0.8, 0.7, 0.3), "M3 M-F hex standoff AF5.5 x 25, PN TBD")
 for n, h, (X, Y) in SO: scr.append(("SSH-M3-0.5 x 8", shcs("M3", 8.0, (X, Y, z_deck_top))))
 so_set = {(n, h) for (n, h, _) in SO}
+so_set |= {("B", "H2"), ("B", "H4")}                 # carrier standoffs replace these board screws
 for n, h, (X, Y) in BOSS:
     if (n, h) not in so_set: scr.append(("SSH-M3-0.5 x 8", shcs("M3", 8.0, (X, Y, Z_TOP))))
 for (X, Y) in in_pts: scr.append(("SSH-M3-0.5 x 8", shcs("M3", 8.0, (X, Y, Z_IN + 1.51))))
@@ -408,7 +472,8 @@ for n, xc, xe in (("A1", None, CONN["X1"] - 6.0), ("A2", 223.0, CONN["X1"] + 6.0
     via = [(165.0, -99.5, zr + 6.0)] if n == "A2" else []   # A2 ribbon passes behind X2's rear body (y -107.4) with 1 mm to spare
     wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc, cy - 8, zr), (xc, -97.0, zr)] + via + [(xe, YR, TZ - 8)], 14.0, P["ribbon_t"]))   # 12 wires (8 x 16 AWG + 4 x 20 AWG) in two layers
 bx_, by_ = W("B", -1.5, -1.5)                      # B J6 pads (CAN + IN1/2) -> X2: low along the sink field south of the boards
-wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (bx_, by_ - 6, Z_TOP + 6.0), (bx_, -103.0, Z_TOP + 6.0), (bx_, -106.0, 4.0), (CONN["X2"] - 6, -105.0, 4.0), (CONN["X2"] - 6, -103.5, TZ + 4)], 10.0, 3.0))
+jx = (SEAT["OUT2"][0] + RR + SEAT["OUT1"][0] - RR) / 2   # lane between the OUT2/OUT4 and OUT1/OUT3 copper risers (d1a)
+wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (jx, by_, Z_TOP + 5.0), (jx, -60.0, Z_TOP + 5.0), (jx, -103.0, Z_TOP + 6.0), (jx, -106.0, 4.4), (CONN["X2"] - 6, -105.0, 4.4), (CONN["X2"] - 6, -103.5, TZ + 4)], 3.5, 3.5))   # 4 x 20 AWG round bundle
 tx = 96.5                                          # B T5-T8 wires (ring lugs on the M4 terminals, x 106.2) gathered west of the H5/H6 standoffs
 wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 14, YR, 19.0)], 12.0, 2.5))
 for n, x in IN_X.items():                          # input-board J2 wires -> X2, from the deck south edge
@@ -446,21 +511,14 @@ for k, (X, Y) in FEED.items():
     outer = outer.fuse(dround(X, Y, 26.0, 20.0, P["collar_top"], draft=10, tf=1.5))
 lid = outer.cut(inner)
 for k, (X, Y) in FEED.items(): lid = lid.cut(cyl(16.0, (X, Y, 10), 40))          # AF13 hex across corners 15.0
-OUT_BAY = None
-bx0, bx1 = OUTT["OUT2"][0] - 10.0, OUTT["OUT1"][0] + 9.0
-by0, by1 = OUTT["OUT1"][1] - 12.0, OUTT["OUT3"][1] + 12.0
-bft = P["bay_floor_top"]
-well = dblock(bx0, bx1, by0, by1, bft, P["terrace_top"] + 5, r=4)
-liner = dblock(bx0 - w, bx1 + w, by0 - w, by1 + w, bft - w, P["terrace_top"] - 0.5, r=4 + w)
-lid = lid.fuse(liner).cut(well)
-# (Grok's centre divider rib removed: the OUT1/OUT3 wires pass through there to the wire-way)
-# OUT1-4 wire-way (Dan 2026-11-12): open channel from the bay to the west lid edge, floor = bay floor, between the BATT and GND collars
-wy0, wy1 = P["wireway_y0"], P["wireway_y1"]
-ww_liner = box(LX0 + 0.5, bx0 + 1.0, wy0 - w, wy1 + w, bft - w, P["terrace_top"] - 0.5)
-lid = lid.fuse(ww_liner.cut(box(LX0 - 5, bx0 + 2, wy0, wy1, bft, 200)))
-ww = box(LX0 - 5, bx0 + 2.0, wy0, wy1, bft, P["terrace_top"] + 20)
-lid = lid.cut(ww)
-for k, (X, Y) in OUTT.items(): lid = lid.cut(cyl(10.2, (X, Y, bft - w - 1), w + 2))  # boss dia 9.5 + 0.35 clearance
+# OUT1-4 bay: open well over the G10 carrier (its top is the bay floor, lugs in its pockets); wire-way from the well to the west lid edge
+wl = dblock(CX0 - 0.6, CX1 + 0.6, CY0 - 0.6, CY1 + 0.6, ZCL - 2.0, P["terrace_top"] + 5, r=3.5)
+liner = dblock(CX0 - 0.6 - w, CX1 + 0.6 + w, CY0 - 0.6 - w, CY1 + 0.6 + w, max(ZCL - 2.0, ZB1 + 0.3), P["terrace_top"] - 0.5, r=3.5 + w)   # stays above the copper bars
+lid = lid.fuse(liner).cut(wl)
+wy0, wy1 = P["wireway_y0"], P["wireway_y1"]; wff = Z_L - 0.5                          # wire-way floor 0.5 under the low-tier lug barrels
+ww_liner = box(LX0 + 0.5, CX0 - 0.6, wy0 - w, wy1 + w, wff - w, P["terrace_top"] - 0.5)
+lid = lid.fuse(ww_liner.cut(box(LX0 - 5, CX0 + 2, wy0, wy1, wff, 200)))
+lid = lid.cut(box(LX0 - 5, CX0 + 2.0, wy0, wy1, wff, P["terrace_top"] + 20))
 # panel cut-outs per TE spec 0425-021-0000 (shell 24): D-hole A 43.08, B 41.45 (flat 19.91 below centre, matching the thread flat in the TE models)
 DFLAT = {}
 for k, X in CONN.items():
@@ -505,7 +563,7 @@ export_step(Compound(children=kids, label=f"custom-pdm-enclosure-v2b-{VAR}"), os
 export_step(Compound(children=[k for k in kids if not k.label.startswith(("board", "input-board"))], label="noboards"), os.path.join(OUT, f"v2b-{VAR}-noboards.step"))
 bb = bbx(Compound([d["shape"] for nm, d in parts.items() if not nm.startswith("vendor-plug")]))
 lb = bbx(parts["lid"]["shape"]); sb = bbx(parts["heat-sink"]["shape"])
-meta = dict(variant=VAR, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6TOP, TTOP=TTOP, M6_EXT_TOP=M6_EXT_TOP, M4_EXT_TOP=M4_EXT_TOP,
+meta = dict(variant=VAR, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6TOP, TTOP=TTOP, M6_EXT_TOP=M6_EXT_TOP, M4_EXT_TOP=M4_EXT_TOP, OUT_SEAT=SEAT, OUT_LUGANG=LUGANG, CARRIER=dict(x=(CX0, CXM, CX1), y=(CY0, CY1), z=(Z_CB, ZCL, ZCU), anchors=ANCH),
             footprint=(LX0, LX1, LY0, LY1), lid_bbox=(lb.xmin, lb.xmax, lb.ymin, lb.ymax, lb.zmin, lb.zmax),
             sink_bbox=(sb.xmin, sb.xmax, sb.ymin, sb.ymax, sb.zmin, sb.zmax), overall_no_plugs=(bb.xmin, bb.xmax, bb.ymin, bb.ymax, bb.zmin, bb.zmax),
             CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, feet=FEET, lid_screws=LID_SCREWS,

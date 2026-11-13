@@ -19,3 +19,11 @@ The maker models are downloaded to `.claude/tmp/vendor/` in the checkout (git-ig
 | Fan (F1) Sunon MF30101V1-1000U-A99, 30x30x10 | Sunon spec D03033580G-01 dimensions | No STEP on Sunon or distributor sites (checked 2026-11-12) |
 | USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001 | UC series catalog: cut-out 20.8 with 19.4 flat, flange 25.4, panel up to 4.0 | Digi-Key blocked by Cloudflare, LTW site redirect; depths ASSUMED |
 | TE panel nut 2411-001-2405 | AF 47.6 from the 1-7/8 in socket in spec 0425-021-0000 | Thickness 6 ASSUMED |
+
+## Data sheets used for the OUT1-4 risers (2026-11-13)
+
+| Part | Value used | Source |
+|---|---|---|
+| Wurth REDCUBE THR 74650074R (board B T1-T4) | M4 internal thread, thread length 2.5 mm, height 3 mm | [Wurth WP-THRBU product page](https://www.we-online.com/de/components/products/WP-THRBU_THROUGH-HOLE) |
+| Wurth REDCUBE THR 74650074R | max tightening torque 1.2 N*m, 50 A max at 20 C | [74650074R datasheet](https://prod-parts-data.s3.amazonaws.com/74650074R/datasheet/1_74650074R-Wurth-Elektronik-datasheet-168495882.pdf) |
+| Phoenix Contact 3240083 ring lug (M4, 10-14 AWG) | no maker 3D model reachable; modelled from catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED | [Digi-Key 3240083](https://www.digikey.com/en/products/detail/phoenix-contact/3240083/3603843) |

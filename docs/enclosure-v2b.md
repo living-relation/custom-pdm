@@ -1,6 +1,6 @@
 # Enclosure v2b (Grok TEST 2 b based, Fusion, real vendor models)
 
-Status: build of 2026-11-12, branch `feat/enclosure-v2b`. Decisions behind it: `DECISIONS.md` 2026-11-12 (enclosure lines, h2a, v1-v5, A1a; Dan's v2b review: b1a, b2a, b3a, b4a and the OUT1-4 wire-way). Results, not decisions.
+Status: build of 2026-11-12, branch `feat/enclosure-v2b`. Decisions behind it: `DECISIONS.md` 2026-11-12 (enclosure lines, h2a, v1-v5, A1a; Dan's v2b review: b1a, b2a, b3a, b4a and the OUT1-4 wire-way) and Dan 2026-11-13 (c1b, d1a: OUT1-4 copper offset risers in a G10 carrier). Results, not decisions.
 Scripts: `enclosure/v2b/src/` (build123d, WSL; `automation.yml` ids `enclosure-v2b-build`, `enclosure-v2b-render`). Vendor models: `enclosure/v2b/vendor/README.md`.
 Fusion: project `custom-pdm`, folder `enclosure-v2b`, design `custom-pdm-enclosure-v2b-F1` (imported from the build STEP).
 
@@ -27,6 +27,7 @@ Two base variants share everything above the base plate:
 | Fans embedded in the sink (F1) or pocketed blowing up (F2) | v5; F1 goes forward (b2a), F2 kept as an alternative only |
 | OUT1-4 wire-way: an open channel in the terrace from the OUT1-4 bay to the west lid edge (27.9 wide, floor z 19.2, 10.8 below the terrace top), between the BATT and GND collars; Grok's centre divider rib in the bay removed; bay floor 19.73 -> 19.2. The four ring lugs lie flat on the boss tops (z 20.73) and the 10 AWG wires leave horizontally at z 23.7 in four lanes (y -44.8 / -37.6 / -30.0 / -22.0); OUT1 / OUT3 lugs are turned 30 deg so their wires pass beside, not over, the OUT2 / OUT4 screws | Dan 2026-11-12: "the 4 terminals in the recess are too deep to connect a wire to; there needs to be a recess along the lid to the edge so there's a wire way" (t1a: lug flat, stud up) |
 | Input boards kept on Grok's deck (25 mm M3 standoffs on board H holes) | v2: no clash with the real connector models |
+| OUT1-4 (2026-11-13): the plain copper bosses on T1-T4 are replaced by 4 copper OFFSET RISERS held in ONE G10 carrier. Each riser = a 4 mm thick foot arm (R4) screwed to its REDCUBE terminal + a dia 8 seat column 8.1 mm away, so the lug seats are taller AND further apart. Two tiers: OUT2 / OUT4 (west pair) seats at z 19.0, OUT1 / OUT3 (east pair) at z 25.0, so the east pair's lugs and wires pass over the carrier between the west lugs. The carrier keys every riser (slots follow the riser outline, they can't turn), holds each lug in its own pocket with solid G10 walls between, and bolts to two M3 x 8 standoffs on board B H2 / H4, so lug-screw torque goes into the carrier and the heat-sink posts, not into the soldered REDCUBEs. The bay is now an open well over the carrier (its top is the bay floor); the wire-way still runs to the west lid edge, floor z 18.5. Grok-style thin ribs were not used (Dan: too thin / flexible). | c1b, d1a (Dan 2026-11-13) |
 
 ## 3. Size and mass
 
@@ -66,7 +67,8 @@ F1 (final build): no unintended overlaps. Every remaining overlap is by design: 
 Fixed in this build: F1 fan against a foot web (fans moved to mid +/-16 mm), USB-C cable through board A2 and through the terrace (bulkhead raised to z 30, cable lane at z 30 under the main lid and z 22 under the low terrace), USB cables against the B J6 ribbon (board lane at z 7.8), A2 ribbon against X2's rear body (routed 1 mm clear), B J6 ribbon against X2.
 F2 (final build): same result, no unintended overlaps. Fixed: the Noctua fan sat 1 mm into its four mounting posts (the public model is 16 mm tall, not 15); pocket and posts now sized to the model.
 F1 rebuild with the OUT1-4 wire-way (2026-11-12, after Dan's review): still no unintended overlaps. New by-design overlaps: each 10 AWG wire end inside its ring-lug barrel (crimp), lugs touching their boss tops and screw heads. Closest new gaps: OUT1 wire to the wire-way wall 0.25 mm (flexible wire), OUT3 lug to the bay wall 0.65 mm, wires to the OUT2 / OUT4 screws 2.0 mm, wires to the bosses 2.4 mm. Fixed on the way: OUT3 and OUT1 wires against the wire-way walls (lanes re-spaced).
-Both Fusion designs (`custom-pdm-enclosure-v2b-F1`, `-F2`) hold these final builds. The F1 design does NOT yet have the wire-way version: the Fusion lock was held by another session (fusebox) during this fix; re-import `custom-pdm-enclosure-v2b-F1-assembly.step` from WSL `~/scratch/encl-v2b/runs/F1/` when the lock is free.
+F1 rebuild with the OUT1-4 copper risers + G10 carrier (2026-11-13, c1b / d1a): no unintended overlaps. New by-design overlaps: M4 x 6 foot screws in the REDCUBE threads, M4 x 8 lug screws in the copper seats, M3 standoffs in board B H2 / H4 and the sink posts, wire ends crimped in the lug barrels. Closest new gaps: carrier to BATT / GND bars 0.46 mm (bars notched dia 11 at the standoffs), lid to lugs 0.5 mm, carrier to lid 0.6 mm, carrier to foot screws 0.6 mm, carrier to J6 bundle 1.03 mm, lid to wires 1.4 mm, risers to J6 bundle 1.5 mm, carrier to wires 1.9 mm, lugs to foot screws 2.27 mm. Fixed on the way: risers OUT2 / OUT4 touching (R5.5 obrounds at the 9.5 mm T pitch; now foot arm R4 + column, 1.5 mm apart with a G10 web), upper lug barrels 0.39 mm apart (now 2.1 mm), carrier against the wire-way liner and the well, J6 ribbon through the risers (rerouted between the tiers).
+Both Fusion designs (`custom-pdm-enclosure-v2b-F1`, `-F2`) hold the 2026-11-13 builds (F1 risers + carrier, F2 smooth fins + flow cone), imported from WSL `~/scratch/encl-v2b/runs/<variant>/custom-pdm-enclosure-v2b-<variant>-assembly.step`.
 
 ## 6. Parts (purchased parts from real models; see `enclosure/v2b/vendor/README.md` for sources and licences)
 
@@ -84,9 +86,13 @@ Both Fusion designs (`custom-pdm-enclosure-v2b-F1`, `-F2`) hold these final buil
 | Boards A1, A2, B, input boards | this repo | board STEPs (J3 DT15 / J6 Micro-Fit bodies removed, a1a / a2b) |
 | Heat-set inserts | M4 | modelled to standard dims |
 | Screws | ISO 4762 / threaded rod | build123d fasteners (screw_dimensions.csv) |
-| OUT1-4 ring lugs | Phoenix Contact 3240083 (M4, 10-14 AWG, non-insulated) | modelled from catalogue dims 8.0 x 17.5 x 0.99 (Digi-Key / TraceParts model page would not load; barrel OD 6 ASSUMED) |
+| OUT1-4 ring lugs | Phoenix Contact 3240083 (M4, 10-14 AWG, non-insulated; M4 kept: the lug screw goes into copper, not into the REDCUBE) | modelled from catalogue dims 8.0 x 17.5 x 0.99 (Digi-Key / TraceParts model page would not load; barrel OD 6 ASSUMED) |
 | OUT1-4 wires | 10 AWG GXL (31 A each) | OD 4.2 ASSUMED |
-| Copper bosses (custom, 3-axis mill) | M6: hex AF 13 x 15, M6 female both ends; M4: round 9.5 with 8 mm wrench flats, M4 female; C110 copper | this build |
+| Copper bosses BATT / GND (custom, 3-axis mill) | hex AF 13 x 15, M6 female both ends, C110 copper | this build |
+| Copper offset risers OUT1-4 (custom, 3-axis mill) | C110; foot arm R4 x 4 thick with M4 clearance hole on the T centre, seat column dia 8, seat 8.1 mm from the T centre, M4 tapped 10 deep; height 10.27 (OUT2 / OUT4) and 16.27 (OUT1 / OUT3); from 12 x 20 flat bar (low) and 20 x 20 square bar (high), 2 setups (top profile + holes, flip and face to height); no undercuts | this build |
+| Carrier OUT1-4 (custom, 3-axis mill) | G10 / FR4 (stiffer than PEEK so it does not creep under bolt load at 70-80 C, cheap, good insulator; PEEK would be tougher and cleaner to cut but softer and dearer); about 50.5 x 55.2 x 16.2 mm (with ears) from 3/4 in plate; all features from the top (riser key slots through, lug pockets 5 deep, ears 5 thick, M3 counterbores), flip and face; carbide tools + dust extraction for glass-epoxy | this build |
+| Carrier standoffs | 2 x M3 x 8 M-F hex AF 5.5 on board B H2 / H4 (replace those board screws; male end into the sink posts) + 2 x M3 x 8 SHCS | PN TBD |
+| Riser screws | foot: 4 x M4 x 6 ISO 4762 into the REDCUBE (2.0 of its 2.5 mm thread), max 1.2 N*m, threadlocker; lug: 4 x M4 x 8 ISO 4762 into the copper seat (7 mm engagement) | build123d fasteners |
 | Copper bars (custom) | BATT 20 x 5, GND 15 x 5, C110, insulating film under | this build |
 | Base (custom, one-piece 6061) | F1 / F2 | this build |
 | Lid, input deck (MJF PA12) | | this build |
@@ -95,17 +101,41 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 
 | Part | F1 | F2 |
 |---|---|---|
-| Base / heat sink (6061) | 1774 g | 1540 g |
-| Lid (PA12) | 240 g | 240 g |
+| Base / heat sink (6061) | 1774 g | 1544 g |
+| Lid (PA12) | 233 g | 233 g |
 | Input deck (PA12) | 25 g | 25 g |
-| BATT + GND bars (Cu) | 300 g | 300 g |
-| Copper bosses | 59 g | 59 g |
-| Total | 2398 g | 2163 g |
+| BATT + GND bars (Cu) | 295 g | 295 g |
+| Copper bosses BATT / GND (Cu) | 34 g | 34 g |
+| OUT1-4 risers (Cu) | 28 g | 28 g |
+| OUT1-4 carrier (G10, 1.85 g/cm3) | 24 g | 24 g |
+| Flow cone (PA12) | - | 11 g |
+| Total | 2413 g | 2195 g |
+
+(2026-11-13 builds, `enclosure/v2b/src/mass_v2b.py`.)
+
+## 5b. OUT1-4 risers + carrier (2026-11-13, Dan c1b / d1a)
+
+- REDCUBE 74650074R (board B T1-T4): M4 internal thread, thread length 2.5 mm (Wurth product page), max tightening torque 1.2 N*m, 50 A at 20 C (Wurth datasheet). The foot screw (M4 x 6) is tightened to that limit once; afterwards every lug torque goes into the copper seat and the G10 carrier, which is keyed on the risers and bolted to the heat-sink posts through two M3 standoffs.
+- Lug seats: OUT2 / OUT4 at z 19.0 (west pair), OUT1 / OUT3 at z 25.0 (east pair); lugs flat on the seat columns, wires leave horizontally (t1a) in four lanes y -41.0 / -37.3 / -29.2 / -25.5 (low / high / high / low tier, z 22 / 28 / 28 / 22).
+- Separation: west pair lugs sit in separate G10 pockets with solid G10 between them (no line of sight); east pair rings are separated by a solid G10 wall >= 4.9 mm in the raised carrier block, their barrels end 2 mm apart in air; east lugs pass 1.0 mm above the west lug-screw heads. Riser feet of neighbouring terminals (T1-T4 pitch 9.5 mm) are 1.5 mm apart with a G10 web between.
+- Tool access: every M4 lug screw has an open dia 11 pocket above it (3 mm hex key / bit); west screw heads top z 24 (6 below the terrace), east heads top z 30 (flush with the terrace). The foot screws are reached through the open key slots before the lugs go on.
+- Assembly: 1) risers onto T1-T4 (M4 x 6, 1.2 N*m max, threadlocker); 2) standoffs into the sink posts through board B H2 / H4; 3) carrier down over the risers, 2 x M3 x 8 into the standoffs; 4) lugs + M4 x 8.
+- Copper bars: notched dia 11 (insulating sleeve) where the carrier standoffs pass at board B H2 / H4: BATT 20 x 5 keeps about 13 x 5 there, GND 15 x 5 keeps about 8.7 x 5 (about 3.5 A/mm2 at 150 A over a few mm).
+- Clashes (F1 rebuild): see section 5; renders `enclosure-v2b-F1-outbay-sw.png`, `-outbay-nw.png`, `-outstack-exploded.png`, `-section-OUT-bay.png`, `-iso.png`, `-iso-nw.png`, `-iso-lid-off.png`, `-top.png`, `-section-BATT-stud.png` re-rendered 2026-11-13.
+
+## 5c. F2 update (2026-11-13, Dan: smooth fins + flow cone; F1 stays the pick, b2a)
+
+- Swept fins rebuilt as SMOOTH solids: each fin centreline is one tangent-continuous spline through the log spiral (points every 2 mm, theta = theta0 + 0.55 ln(r / 31)), offset +/- 1.25 to a constant 2.5 mm thickness with round (arc) ends, extruded to the 30 mm fin depth, fin tips filleted 1.0; no polyline facets, so the 3-axis toolpath follows one smooth curve per side. 24 long fins from r 31 + 24 splitters from r 62.
+- Narrowest channel 4.61 mm (normal pitch r x 2 pi / N x cos 28.8 deg minus the 2.5 mm fin, at r 31 for the long fins and r 62 where the splitters start; channels widen outward). Tool: dia 4 mm 3-flute carbide end mill for aluminium with 0.5 corner radius (0.3 mm per side to the channel walls, 0.5 mm root radius at the plate), long-reach for the 30 mm fin depth, with step-downs; fin root fillets come from that corner radius. Fin ends are R 1.25 (convex), no concave corner tighter than the tool.
+- Flow cone: MJF PA12 paraboloid, base R 26 on the plate underside, 10.5 tall, apex 1.5 mm above the Noctua outlet face (over the hub), profile r = 26 sqrt((z - z_apex) / 10.5); it turns the fan's axial (upward) flow outward into the swept fin channels. Fixed by one M3 x 12 through the apex counterbore into an M3 tap in the plate (axisymmetric, no anti-rotation needed). PA12 is the lid material; it sits on the plate (up to about 78 C fan-on); check the HP MJF PA12 heat-deflection rating against the fan-off case before relying on it there.
+- Fan inlet: the Noctua inlet face is at z -36, the mounting surface (foot bottoms) at z -48, so 12 mm free inlet gap under the fan.
+- Heat: F2 numbers in section 4 are from the straight-fin-equivalent estimate and do not include the cone; not re-run (an F2 flow simulation is still excluded by Noctua's CAD licence).
+- Renders: `enclosure-v2b-F2-iso.png`, `-under.png`, `-section-fan-cone-fins.png` (2026-11-13).
 
 ## 7. Open items
 
 - Dan's v2b review (2026-11-12): b1a connectors sticking out 21 mm (61 mm with plugs) are fine; b2a F1 goes forward (F2 files kept, no more work); b3a gap pad k >= 3 W/mK; b4a no OUT1-4 straps (bosses straight on T1-T4).
-- OUT1-4 wire-way clearances: wire bottom 2.4 above the channel floor, wire top 4.2 below the terrace top; lug barrels 1.5 above the floor; M4 screw heads (top z 25.7) 4.3 below the terrace, reachable with a 3 mm hex key from above (nearest passing wire 4.9-5.9 mm from a screw axis, so a 10 mm socket only just fits at OUT4); adjacent lugs in a row 1.5 mm apart (use heat-shrink or insulated lugs).
+- OUT1-4: superseded 2026-11-13 by the copper offset risers + G10 carrier (section 5b); the 1.5 mm lug-to-lug spacing of the first wire-way build is gone.
 - BATT / GND collars: boss top z 39.23, 9.2 above the terrace, so their M6 lugs lie flat and the wires leave horizontally clear of the lid; open tool access from above; route those wires west, north or south (the main body starts about 40 mm east).
 
 - USB-C bulkhead, F1 Sunon fans and the TE panel nut are modelled from vendor drawings (no maker STEP reachable); check against real parts.
