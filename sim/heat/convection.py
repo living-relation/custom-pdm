@@ -95,7 +95,46 @@ def fan_point(t_air):
     return q, A
 
 
+# v2b-F2: one Noctua NF-A6x15 PWM blowing UP into a pocket, air turns and leaves through swept radial channels.
+# Fan curve = Noctua spec sheet table (28.09.2018, 3500 rpm): (m3/h, mmH2O).
+NOCTUA = [(23.40, 0.00), (16.90, 0.75), (11.60, 1.03), (5.70, 1.80), (0.00, 2.43)]
+F2_N = 48                       # 24 long + 24 splitter fins (enclosure/v2b build_v2b.py)
+F2_T = 2.5e-3                   # radial fin thickness
+F2_RMID = 0.060                 # ASSUMED representative radius for the channel gap
+F2_L = 0.060                    # ASSUMED mean radial channel length (pocket edge -> fin-field edge)
+F2_K = 2.5                      # ASSUMED losses: turn from the fan into the plenum (1.0) + entry/exit (1.5)
+
+
+def _noctua_dp(q_m3s):
+    qh = q_m3s * 3600.0
+    for (q1, p1), (q2, p2) in zip(NOCTUA[:-1], NOCTUA[1:]):
+        if q2 <= qh <= q1: return (p1 + (p2 - p1) * (q1 - qh) / (q1 - q2)) * 9.80665
+    return 0.0 if qh > NOCTUA[0][0] else NOCTUA[-1][1] * 9.80665
+
+
+def forced_f2(t_sink, t_amb, a_field, a_edge, p_total):
+    """v2b-F2 estimate: fan curve (spec table) against laminar friction in radial channels at r_mid (f Re = 96,
+    Dh = 2S) + F2_K; same Stephan correlation as case 2; BYPASS share passes the channels (open fin tips)."""
+    p = air(t_amb + 5); mu = p["nu"] * p["rho"]
+    S = 2 * math.pi * F2_RMID / F2_N - F2_T; A = F2_N * S * H_F; Dh = 2 * S
+    lo, hi = 0.0, NOCTUA[0][0] / 3600.0
+    for _ in range(80):
+        q = (lo + hi) / 2; V = q / A
+        dp = 48 * mu * V * F2_L / Dh ** 2 + F2_K * p["rho"] * V ** 2 / 2   # f Re = 96: dp = (96/Re)(L/Dh) rho V^2/2
+        if dp > _noctua_dp(q): hi = q
+        else: lo = q
+    q0 = lo; q = q0 * BYPASS; V = q / A; Re = V * Dh / p["nu"]
+    xs = F2_L / (Dh * Re * p["pr"])
+    nu = 7.55 + 0.024 * xs ** -1.14 / (1 + 0.0358 * p["pr"] ** 0.17 * xs ** -0.64)
+    h = nu * p["k"] / Dh
+    dT_air = p_total / (p["rho"] * q * p["cp"])
+    pe = air((t_sink + t_amb) / 2)
+    return dict(h_field=h, h_edge=h_vertical(pe, t_sink - t_amb, ENV_H), t_air=(t_amb + dT_air / 2, 0.0),
+                q_fan_op_m3s=q0, q_channels_m3s=q, V=V, Re=Re, xstar=xs, Nu=nu, t_exhaust=t_amb + dT_air, S_mm=S * 1000)
+
+
 def forced(t_sink, t_amb, a_field, a_edge, p_total):
+    if G.HEAT_GEOM == "v2b-F2": return forced_f2(t_sink, t_amb, a_field, a_edge, p_total)
     """Case 2: laminar simultaneously developing flow between parallel isothermal plates, mean Nu,
     Stephan correlation (Shah & London 1978): Nu_m = 7.55 + 0.024 x*^-1.14 / (1 + 0.0358 Pr^0.17 x*^-0.64)."""
     q0, A = fan_point(t_amb + 5)
