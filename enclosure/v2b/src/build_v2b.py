@@ -206,16 +206,16 @@ else:
         if len(p) > 2: fins.append(fin_from(p)); fin_len += sum(math.dist(a, b) for a, b in zip(p[:-1], p[1:]))
     fan_info["fin_len_total_mm"] = round(fin_len, 1); fan_info["fin_t"] = ft; fan_info["N"] = N
     finf = Compound(fins)
-    pocket = dblock(FCX - 31.5, FCX + 31.5, FCY - 31.5, FCY + 31.5, zf0 - 1, zf0 + 17.0, r=4.0)   # 15 fan + 2 recess
-    fan_info.update(kind="1 x Noctua NF-A6x15 PWM", c=(FCX, FCY), z_bottom=zf0 + 2.0, z_top=zf0 + 17.0)
+    pocket = dblock(FCX - 31.5, FCX + 31.5, FCY - 31.5, FCY + 31.5, zf0 - 1, zf0 + 18.0, r=4.0)   # NF-A6x15 model is 16 tall (frame Y -0.5..15.5) + 2 recess
+    fan_info.update(kind="1 x Noctua NF-A6x15 PWM", c=(FCX, FCY), z_bottom=zf0 + 2.0, z_top=zf0 + 18.0)
 finf = finf.cut(*foot_keepout) if foot_keepout else finf
 sink = sink.fuse(finf, feet)
 if VAR == "F2":
     sink = sink.cut(pocket)
     for dx in (-25, 25):
         for dy in (-25, 25):                                          # 4 posts from the plate to the fan top face, M3 tapped (Noctua 50 mm hole pitch)
-            sink = sink.fuse(cyl(8.0, (FCX + dx, FCY + dy, zf0 + 17.0), -pt - zf0 - 17.0))
-            sink = sink.cut(cyl(2.5, (FCX + dx, FCY + dy, zf0 + 16.9), 8.0))
+            sink = sink.fuse(cyl(8.0, (FCX + dx, FCY + dy, zf0 + 18.0), -pt - zf0 - 18.0))
+            sink = sink.cut(cyl(2.5, (FCX + dx, FCY + dy, zf0 + 17.9), 8.0))
 for (X, Y, sx, sy) in FEET:
     sink = sink.cut(cyl(6.6, (X, Y, zfoot - 1), -zfoot + 2))           # M6 clearance, bolt-through mounting
 LID_SCREWS = []
