@@ -378,8 +378,8 @@ addp("copper-boss-M6-BATT-GND", Compound(bosses6), (0.85, 0.5, 0.25), f"custom C
 # so lug-screw torque goes into the carrier and the heat-sink posts, not into the soldered REDCUBE terminals.
 Z_CB = Z_TOP + 8.0                                   # carrier bottom = top of the M3 x 8 standoffs (below the copper bars, ZB0)
 Z_L, Z_U = P["out_seat_lo"], P["out_seat_hi"]
-SEAT = {"OUT2": (28.9, -45.7, Z_L), "OUT4": (28.9, -20.84, Z_L), "OUT1": (43.5, -43.2, Z_U), "OUT3": (43.5, -23.34, Z_U)}   # e1a (Dan 2026-11-13): upper tier +4 mm, seats/angles/lanes moved for >= 4 mm lug-to-lug and lug-to-screw-head; mirrored about y -33.27; seats >= 8 mm from the T centres
-LUGANG = {"OUT2": 176.0, "OUT4": 184.0, "OUT1": 166.0, "OUT3": 194.0}   # e1a
+SEAT = {"OUT2": (28.9, -44.9, Z_L), "OUT4": (28.9, -21.64, Z_L), "OUT1": (43.5, -43.2, Z_U), "OUT3": (43.5, -23.34, Z_U)}   # e1a (Dan 2026-11-13): upper tier +4 mm, seats/angles/lanes moved for >= 4 mm lug-to-lug and lug-to-screw-head; mirrored about y -33.27; seats >= 8 mm from the T centres
+LUGANG = {"OUT2": 172.0, "OUT4": 188.0, "OUT1": 166.0, "OUT3": 194.0}   # e1a
 LANE = {"OUT2": -43.3, "OUT1": -37.8, "OUT3": -28.7, "OUT4": -23.2}   # e1a; insulated wire may touch plastic (Dan 2026-11-13)
 RR = P["riser_r"]
 def obround(p, q, r, z0, z1):
@@ -398,10 +398,10 @@ for k, (sx, sy, sz) in SEAT.items():
     scr.append(("SSH-M4-0.7 x 6", shcs("M4", 6.0, (tx, ty, TTOP + P["riser_foot"]))))                        # foot screw: 2.0 into the 2.5 REDCUBE thread, max 1.2 N*m
     scr.append(("SSH-M4-0.7 x 8", shcs("M4", 8.0, (sx, sy, sz + P["out_lug_t"]))))                            # lug screw into the copper seat (7 mm engagement)
 addp("copper-risers-OUT1-4", Compound(risers), (0.85, 0.5, 0.25), "custom C110 copper offset risers (foot arm R4 x 4 + seat column dia 8, 3-axis from 20 mm square bar): M4 foot to REDCUBE T1-T4, lug seat M4 x 10 tapped (Dan d1a)")
-CX0, CXM, CX1, CY0, CY1 = 20.0, 36.5, 58.0, -54.2, -11.8   # e1a: carrier +2.2 each long side for >= 3 mm G10 beside the outer lug pockets
+CX0, CXM, CX1, CY0, CY1 = 20.0, 36.5, 58.0, -53.4, -13.14   # e1a: carrier widened to just clear the BATT / GND bars (y -53.5 / -12.5); lower seats moved in 0.8 for >= 3 mm G10 beside the outer lug pockets
 ZCL, ZCU = Z_L + P["pocket_d"], Z_U + P["pocket_d"]
 car = dblock(CX0, CXM + 1.0, CY0, CY1, Z_CB, ZCL, r=3)
-car = car.fuse(dblock(CXM, CX1, CY0 + 2, CY1 - 2, Z_CB, ZCU, r=3))
+car = car.fuse(dblock(CXM, CX1, CY0 + 1.5, CY1 - 1.5, Z_CB, ZCU, r=3))
 ANCH = [W("B", 26.67, -21.59), W("B", 26.67, 21.59)]                 # board B H2, H4 (H1 / H3 sit inside the BATT / GND collars)
 for (X, Y) in ANCH:
     yA, yB = (CY1 - 8, Y + 6) if Y > CY1 - 3 else (Y - 6, CY0 + 8)
@@ -519,6 +519,7 @@ wy0, wy1 = P["wireway_y0"], P["wireway_y1"]; wff = Z_L - 0.5                    
 ww_liner = box(LX0 + 0.5, CX0 - 0.6, wy0 - w, wy1 + w, wff - w, P["terrace_top"] - 0.5)
 lid = lid.fuse(ww_liner.cut(box(LX0 - 5, CX0 + 2, wy0, wy1, wff, 200)))
 lid = lid.cut(box(LX0 - 5, CX0 + 2.0, wy0, wy1, wff, P["terrace_top"] + 20))
+for k, (X, Y) in FEED.items(): lid = lid.cut(cyl(16.0, (X, Y, 10), 40))          # re-clear the M6 bosses through the well liner (e1a)
 # panel cut-outs per TE spec 0425-021-0000 (shell 24): D-hole A 43.08, B 41.45 (flat 19.91 below centre, matching the thread flat in the TE models)
 DFLAT = {}
 for k, X in CONN.items():
