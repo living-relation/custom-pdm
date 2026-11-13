@@ -73,16 +73,6 @@ automations:
     enabled: true
     run_cmd: python.exe tools/pcb_info.py <board.kicad_pcb> [ref ...]   # KiCad 9 python
     owner: claude
-  - id: enclosure-layout
-    script: tools/gen_enclosure_layout.py
-    trigger: manual
-    reads: ["hardware/*/*.kicad_pcb"]   # read-only; KiCad python
-    writes: [docs/diagrams/enclosure-layout.svg]   # illustration only, not a source of truth
-    committed: yes
-    auto_commit: false
-    enabled: true
-    run_cmd: python.exe tools/gen_enclosure_layout.py   # KiCad python
-    owner: claude
   - id: parts-audit-csv
     script: tools/gen_parts_audit_csv.py
     trigger: manual

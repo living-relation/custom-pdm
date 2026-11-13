@@ -20,12 +20,13 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-13)
-1. Firmware thermal protection plus temperature-triggered fan control with a software-set limit (e3c): plan first, then build. Heat results: `docs/heat-analysis.md`.
-2. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
-3. B2 wake firmware (see "Wake lines").
-4. PC-side single-PDM layer research and choices for Dan (D5a, z1a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`).
-5. Enclosure open items listed in `docs/enclosure-v2b.md` (USB-C bulkhead part number and cut-out, seals, wire lengths, manufacturing drawings, CNC check).
-6. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
+1. Firmware thermal protection (r5a, plan `docs/firmware-thermal-plan.md`): settable warn / critical limits, self-recovering critical, die temp on CAN, default load-shed config, sim + Renode tests; limits set after bench measurements (r6c). Fans always on while awake (r3c), no fan-fail detection (r4c); fan supply source still to decide.
+2. MCU change to STM32F446RET7 on boards A and B (r2a; fallback r2b): footprint-equal swap, check assembler stock, firmware build unchanged.
+3. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
+4. B2 wake firmware (see "Wake lines").
+5. PC-side single-PDM layer research and choices for Dan (D5a, z1a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`).
+6. Enclosure open items listed in `docs/enclosure-v2b.md` (USB-C bulkhead part number and cut-out, seals, wire lengths, manufacturing drawings, CNC check).
+7. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
 - None open (2026-11-13).
