@@ -8,6 +8,8 @@ Machine-readable copy of the board tables, one row per part group with LCSC stoc
 Marks: **TBD** = could not be confirmed from a primary source. **Proposal** = a part number I suggest, not one the design names.
 
 How the lists were made: `kicad-cli sch export python-bom` (KiCad 10.0.7, read-only) on the three schematics, grouped by value + footprint + fields.
+**Update 2026-11-13:** board A J3 (DT15-12PA) and board B J6 (Micro-Fit 2x2) are no longer fitted: both are pads-only footprints in the same holes and the wires are soldered in (PR #41; `docs/box-connectors.md`). Rows below that list the DT15-12PA, its DT06-12SA plug, the J6 Micro-Fit or its 4-way mate are history from 2026-11-11 and are not orderable parts now. The input boards' Micro-Fit J2 and the JST GH links are unchanged.
+
 Board count for one PDM: **2 x board A, 1 x board B, 3 x input board** (input boards #1, #2, #3 in `docs/box-connectors.md`, X2 table; three input boards drawn in `docs/enclosure-layout.md` section 1).
 
 ## 1. Summary
@@ -107,10 +109,10 @@ Checked against TE product pages (contacts, plugs, shells), JST's GH data sheet 
 | X2 harness side, size 20 **pin**, solid, nickel, 20 AWG, 7.5 A | TE 0460-202-20141 | 33 | Mouser 318,975 at 0.43 | TE page lists one wire size only: 20 AWG. |
 | Sealing plug, size 20 (red) | TE 0413-204-2005 | 9 per X2 half (18 for both) | Mouser 256,825 at 0.18 | For X2 spares 39-47. |
 | Sealing plug, size 12 and 16 | TE 114017-ZZ | X2: 5 per half; X1: 1 per half (12 for both halves of both) | Mouser 0, due 2026-12-10, 0.29 | For X2 cavities 1, 4, 5, 6, 34 and X1 cavity F. The TE page for 114017 did not load; fit is from Mouser's description ("SZ12 & 16"): confirm (TBD). |
-| Plug for board A header J3 | TE DT06-12SA + wedge W12S | 2 + 2 | Mouser DT06-12SA 34,408 at 4.52; kit DT06-12SA-KIT 282 at 9.37 (wedge included per its description) | Dan's two on-hand DT06-12SA are marked claimed by the ST185 loom. Contacts: 24 size 16 sockets from the on-hand stock. |
+| Plug for board A header J3 (**not needed since PR #41: wire pads**) | TE DT06-12SA + wedge W12S | 2 + 2 | Mouser DT06-12SA 34,408 at 4.52; kit DT06-12SA-KIT 282 at 9.37 (wedge included per its description) | Dan's two on-hand DT06-12SA are marked claimed by the ST185 loom. Contacts: 24 size 16 sockets from the on-hand stock. |
 | Cable between main board and input board | JST GHR-12V-S housing x 2 per cable, SSHL-002T-P0.2 contact x 24 per cable (or ready-crimped GH leads) | 3 cables | not checked: TBD | JST GH: 1 A, AWG 26 to 30. |
 | Mate for input board J2 | Molex 43025-1200 (Micro-Fit receptacle, 12-way) | 3 | Mouser 73,033 at 0.81 | Crimp terminal number: TBD (Molex page lists none). Proposal to verify: Micro-Fit 43030 series for 20 to 24 AWG. |
-| Mate for board B J6 | Molex 43025-0400 (Micro-Fit receptacle, 4-way). Proposal: not verified | 1 | TBD | Same terminal as above. |
+| Mate for board B J6 (**not needed since PR #41: wire pads**) | Molex 43025-0400 (Micro-Fit receptacle, 4-way). Proposal: not verified | 1 | TBD | Same terminal as above. |
 | Screws and ring lugs for T1-T8 (M4) and the M6 feed terminals | generic | 8 x M4, 6 x M6 | - | Torque: 1.2 Nm (M4, 74650074R), 3.9 Nm (M6, 7461084), Wuerth data sheets. Wire size for 31 A: TBD. |
 
 Studs (6: BATT 150 A, GND, OUT1-4 at 31 A each):
@@ -177,11 +179,11 @@ Per PDM = 2 x A + 1 x B.
 | Ferrite bead 0805 | Murata BLM21PG221SN1D | 1 | 1 | 3 | C85840: 27,660 | |
 | RedCubeTerminal (M6 feed) | Wuerth 7461084 (from the footprint name) | 2 | 2 | 6 | C6828431: **gone** | P6. Mouser 4,253 at 4.14 |
 | 74650074R (M4 output terminal) | Wuerth 74650074R | 0 | 8 | 8 | no field | P5, P13. Mouser 4,794 at 4.09, 47-week lead time beyond stock |
-| Conn_01x12 (J3) | TE DT15-12PA | 1 | 0 | 2 | C5341788: 236, 11.13 | Mouser 5,321 at 10.29 |
+| Conn_01x12 (J3) (**wire pads since PR #41, not fitted**) | TE DT15-12PA | 1 | 0 | 2 | C5341788: 236, 11.13 | Mouser 5,321 at 10.29 |
 | USB-C | GCT USB4085-GF-A | 1 | 1 | 3 | C7095263: **0** | P14. Mouser 105,196 at 0.91 |
 | J6 on A (to input board) | none. Footprint says JST SM12B-GHS-TB (side entry) | 1 | 0 | 2 | no field | P13. JST data sheet confirms this is the 12-way side-entry header |
 | J7 on B (to input board) | none. Footprint says JST BM12B-GHS-TBT (top entry) | 0 | 1 | 1 | no field | P13 |
-| J6 on B (CAN + IN1-2) | none. Footprint says Molex 43045-0412 (Micro-Fit 2x2, vertical) | 0 | 1 | 1 | no field | P13. Molex page: vertical, 8.5 A max |
+| J6 on B (CAN + IN1-2) (**wire pads since PR #41, not fitted**) | none. Footprint says Molex 43045-0412 (Micro-Fit 2x2, vertical) | 0 | 1 | 1 | no field | P13. Molex page: vertical, 8.5 A max |
 | BOOT switch | Nidec CJS-1200TB1 | 1 | 1 | 3 | C2921631: **0** | P14 |
 | 47 uF 2220 | PSA FS55X476K250LRG (25 V X7R) | 2 | 2 | 6 | C22388555: 5,000, 0.75 | on +5 V. P12 |
 | 22 uF 0805 | Samsung CL21A226MAQNNNE (25 V) | 1 | 1 | 3 | C45783 | on +5VP |
@@ -257,7 +259,7 @@ Missing from v4 completely: 6 x LM324, 3 x crystal, 3 x USB-C socket, 3 x BOOT s
 | Sense resistor 1.2 kohm | Sense voltage = load / kILIS x 1200 (worked from the rows above) | 1.65 V at 7.5 A, 0.90 V at 15 A, 1.10 V at 31 A | inside the 3.3 V ADC range |
 | Wuerth 74650074R | 50 A at 20 C, no derating data; -55 to +150 C; M4, 1.2 Nm; board 1.6 to 2.0 mm (board B is 1.77 mm) | 31 A / 15 A | 62 % / 30 % of the 20 C figure; at 60 C **TBD** (P5) |
 | Wuerth 7461084 | 160 A at 20 C; press-fit; M6, 3.9 Nm; board 1.6 to 3.2 mm | up to 150 A (B), 60 A (A) | 94 % / 38 % of the 20 C figure (P6) |
-| TE DT15-12PA (J3) | 13 A per contact, -55 to +125 C, through-hole solder (TE product page) | 7.5 A | 58 %. 8 outputs = 60 A through one header; TE gives no total limit (TBD) |
+| TE DT15-12PA (J3; not fitted since PR #41) | 13 A per contact, -55 to +125 C, through-hole solder (TE product page) | 7.5 A | 58 %. 8 outputs = 60 A through one header; TE gives no total limit (TBD) |
 | TE HD34-24-21SN (X1) | 21 positions, size 12 and 16, socket housing, aluminium, -55 to +125 C (TE page). Per-contact 13 A / 25 A as in `docs/box-connectors.md` | 7.5 A / 15 A | 58 % / 60 % |
 | TE HDP24-24-47SE-L017 (X2) | 47 positions, size 16 and 20, socket housing, IP67, -55 to +125 C (TE page) | signals | - |
 | TE size 20 contacts | 7.5 A, 20 AWG, nickel, solid (TE pages 0460-202-20141, 0462-201-20141) | signals | - |
