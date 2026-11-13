@@ -63,7 +63,8 @@ Notes:
 
 F1 (final build): no unintended overlaps. Every remaining overlap is by design: screws and studs in their threads (copper bosses, M6 / M4 terminals on the boards, M3 into the sink and standoffs), the mating plugs seated in X1 / X2, wire ribbons soldered on the board pads, and USB cable ends entering the bulkhead, the hub and the three board USB-C receptacles (cable plugs are not modelled).
 Fixed in this build: F1 fan against a foot web (fans moved to mid +/-16 mm), USB-C cable through board A2 and through the terrace (bulkhead raised to z 30, cable lane at z 30 under the main lid and z 22 under the low terrace), USB cables against the B J6 ribbon (board lane at z 7.8), A2 ribbon against X2's rear body (routed 1 mm clear), B J6 ribbon against X2.
-F2: same parts above the base; result in section 7 if different (FIX_F2).
+F2 (final build): same result, no unintended overlaps. Fixed: the Noctua fan sat 1 mm into its four mounting posts (the public model is 16 mm tall, not 15); pocket and posts now sized to the model.
+Both Fusion designs (`custom-pdm-enclosure-v2b-F1`, `-F2`) hold these final builds.
 
 ## 6. Parts (purchased parts from real models; see `enclosure/v2b/vendor/README.md` for sources and licences)
 
@@ -103,4 +104,5 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 - Wire ribbons and USB cable routes are ASSUMED forms (flat taped ribbons, 4 mm cables); real harness bend radii to check at build.
 - Panel-nut thickness ASSUMED 6 mm.
 - CNC check of the base and the copper bosses (cnc-part-check) still to run on the final pick.
-- Renders: `docs/diagrams/enclosure-v2b-*.png`.
+- Renders: `docs/diagrams/enclosure-v2b-*.png` (F1 full set incl. sections through the BATT stud, the OUT bay and the board / sink stack; F2 iso, iso NW, lid off, underside, stack section). F2 renders are from the build before the 1 mm fan-post fix (not visible at render scale).
+- A1a (raised collars) recorded here: the M6 boss is 15 mm tall, 6 mm of the board stud thread below and 8 mm of the M6 x 10 lug screw above, with a 1 mm gap between.
