@@ -1,0 +1,136 @@
+"""Board power-change schematic edits for board A and board B (text edits, like the other sch_*.py scripts).
+
+usage (from the board folder, after tools/sch_board_fix.py):  python sch_board_power.py A|B
+
+Decisions: DECISIONS.md 2026-11-13 r2a and 2026-11-14 (s4a, s5a, s6a). Part fields only: no symbol, pin, net or
+footprint change.
+  * r2a  U4 MCU -> STM32F446RET7 (-40 to 105 C grade, same LQFP-64 die and pinout; ST DS10693 Rev 11, section 8
+         "Ordering information": 6 = -40 to 85 C, 7 = -40 to 105 C).
+  * s4a  U2 3.3 V regulator -> TI TLV1117LV33DCYR (SOT-223 DCY: pin 1 GND, pin 2 OUT, pin 3 IN, tab OUT = the
+         existing symbol / footprint pins; TI SBVS160C Table 5-1). s5a: genuine TI part, bought through the
+         assembler's Digi-Key / Mouser sourcing (LCSC C15578 had no stock on 2026-11-14).
+  * s6a  power LED off: the LED and its 120 ohm resistor (A: D3 + R3, B: D5 + R3; both behind solder jumper JP1)
+         are do-not-fit and left out of the BOM and the position files. Footprints and copper stay.
+The PCB side (values, fields, DNP / BOM / position attributes) is tools/pcb_board_power.py.
+Safe to re-run: a symbol already carrying the new data is left alone.
+"""
+import glob
+import re
+import sys
+
+BOARD = sys.argv[1].upper()
+# part data: (value, LCSC, Digi-Key, Manufacturer, MPN, Datasheet)
+MCU = ("STM32F446RET7", "C1343794", "497-16775-ND", "STMicroelectronics", "STM32F446RET7",
+       "https://www.st.com/resource/en/datasheet/stm32f446re.pdf")
+LDO = ("TLV1117LV33DCYR", "C15578", "296-28778-1-ND", "Texas Instruments", "TLV1117LV33DCYR",
+       "https://www.ti.com/lit/ds/symlink/tlv1117lv.pdf")
+# ref -> (sheet, expected LCSC before the change, new part or None)
+PARTS = {"U4": ("MCU.kicad_sch", "C69336", MCU), "U2": ("Power.kicad_sch", "C35879", LDO)}
+LED = {"A": "D3", "B": "D5"}[BOARD]
+DNP = {LED: ("Power.kicad_sch", "C2899888"), "R3": ("Power.kicad_sch", "C229076")}   # green LED, 120 ohm
+
+
+def rd(p):
+    with open(p, encoding="utf-8", newline="") as f:
+        return f.read()
+
+
+def wr(p, t):
+    with open(p, "w", encoding="utf-8", newline="") as f:
+        f.write(t)
+
+
+def block_end(t, start):
+    depth, i, in_str = 0, start, False
+    while i < len(t):
+        c = t[i]
+        if in_str:
+            if c == "\\":
+                i += 2
+                continue
+            if c == '"':
+                in_str = False
+        elif c == '"':
+            in_str = True
+        elif c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 0:
+                return i + 1
+        i += 1
+    raise ValueError("unbalanced")
+
+
+def symbol_by_ref(t, ref):
+    """The one top-level symbol of this sheet whose instances use `ref` (a sheet used once: one instance)."""
+    found = []
+    for m in re.finditer(r"\n\t\(symbol[\s(]", t):
+        s = m.start() + 2
+        e = block_end(t, s)
+        b = t[s:e]
+        refs = set(re.findall(r'\(reference "([^"]+)"\)', b))
+        if ref in refs:
+            if refs != {ref}:
+                raise SystemExit(f"{ref}: symbol has more than one instance reference {sorted(refs)}: not handled")
+            found.append((s, e))
+    if len(found) != 1:
+        raise SystemExit(f"{ref}: {len(found)} symbols found")
+    return found[0]
+
+
+def get_prop(b, name):
+    m = re.search(r'\n\t\t\(property "%s" "([^"]*)"' % re.escape(name), b)
+    return m.group(1) if m else None
+
+
+def set_prop(b, name, value):
+    """Set a symbol property; add it (hidden, at the symbol origin) when missing."""
+    pat = re.compile(r'(\n\t\t\(property "%s" ")[^"]*(")' % re.escape(name))
+    if pat.search(b):
+        return pat.sub(lambda m: m.group(1) + value.replace('"', '\\"') + m.group(2), b, count=1)
+    x, y = re.search(r"\(at ([\d.\-]+) ([\d.\-]+)", b).groups()
+    prop = (f'\n\t\t(property "{name}" "{value}"\n\t\t\t(at {x} {y} 0)\n\t\t\t(hide yes)\n\t\t\t(show_name no)\n'
+            f'\t\t\t(do_not_autoplace no)\n\t\t\t(effects\n\t\t\t\t(font\n\t\t\t\t\t(size 1.27 1.27)\n\t\t\t\t)\n\t\t\t)\n\t\t)')
+    k = b.index("\n\t\t(pin ") if "\n\t\t(pin " in b else b.index("\n\t\t(instances")
+    return b[:k] + prop + b[k:]
+
+
+def set_flag(b, name, value):
+    b, n = re.subn(r"\n\t\t\(%s (yes|no)\)" % name, f"\n\t\t({name} {value})", b, count=1)
+    if n != 1:
+        raise SystemExit(f"no ({name} ...) line")
+    return b
+
+
+def edit(fname, ref, fn):
+    t = rd(fname)
+    s, e = symbol_by_ref(t, ref)
+    new = fn(t[s:e])
+    if new != t[s:e]:
+        wr(fname, t[:s] + new + t[e:])
+        return True
+    return False
+
+
+if not glob.glob("*.kicad_sch"):
+    raise SystemExit("run from the board folder")
+for ref, (sheet, old_lcsc, part) in PARTS.items():
+    def change(b, ref=ref, old_lcsc=old_lcsc, part=part):
+        if get_prop(b, "LCSC") == part[1]:
+            return b
+        if get_prop(b, "LCSC") != old_lcsc:
+            raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {old_lcsc} (or {part[1]})")
+        for name, v in zip(("Value", "LCSC", "Digi-Key_PN", "Manufacturer", "MPN", "Datasheet"), part):
+            b = set_prop(b, name, v)
+        return b
+    print(f"{ref}: {part[4]}", "set" if edit(sheet, ref, change) else "already set")
+
+for ref, (sheet, lcsc) in DNP.items():
+    def dnp(b, ref=ref, lcsc=lcsc):
+        if get_prop(b, "LCSC") != lcsc:
+            raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {lcsc}")
+        return set_flag(set_flag(set_flag(b, "dnp", "yes"), "in_bom", "no"), "in_pos_files", "no")
+    print(f"{ref}: do not fit, out of BOM and position files", "(set)" if edit(sheet, ref, dnp) else "(already)")
+
+print("board power schematic edits OK")
