@@ -1,10 +1,10 @@
 """S1-S5: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
 firmware logic, what outputs do when a CAN link is lost (three policies), thermal protection + fans (S4), and
 MCP9808 read failures + wake-up from sleep (S5).
-IDs used here are examples only: boards 0x500 / 0x520 / 0x540, ECU command frame 0x4F0."""
+IDs used here: the factory base IDs, boards 0x500 / 0x540 / 0x580 (pdmsim.py BOARD_*), ECU command frame 0x4F0."""
 import sys, json, struct, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
-BASE = {'A1': 0x500, 'A2': 0x520, 'B': 0x540}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000   # Dan D3a: 1 s default (also the firmware default), adjustable per channel
+BASE = {'A1': ps.BOARD_A['base'][1], 'A2': ps.BOARD_A['base'][2], 'B': ps.BOARD_B['base'][1]}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000   # Dan D3a: 1 s default (also the firmware default), adjustable per channel
 res = []; info = {}
 def check(name, ok, detail=''):
     res.append((name, bool(ok), str(detail))); print(('PASS ' if ok else 'FAIL ') + name + (' : ' + str(detail) if detail != '' else ''))
@@ -15,13 +15,13 @@ print('--- S1 commissioning')
 bus = ps.Bus(); tool = ps.Tool(bus)
 fresh = {'A1': ps.Board(ps.BOARD_A, 'A1', SO, unit=1), 'A2': ps.Board(ps.BOARD_A, 'A2', SO, unit=2), 'B': ps.Board(ps.BOARD_B, 'B', SO)}
 bus.add(tool, *fresh.values()); bus.run_for(1500)
-check('three fresh boards come up at 1 Mbit/s and each answers alone on its own built-in ID', all(b.bitrate() == 1000000 for b in fresh.values()) and all(tool.version(BASE[k]) == (0, 5, 9) for k in fresh), [hex(v) for v in BASE.values()])
+check('three fresh boards come up at 1 Mbit/s and each answers alone on its own built-in ID', all(b.bitrate() == 1000000 for b in fresh.values()) and all(tool.version(BASE[k]) == ps.FW_VERSION for k in fresh), [hex(v) for v in BASE.values()])
 frams = {k: b.fram() for k, b in fresh.items()}
 # option b stays available: move a board to another ID / bit rate over CAN, save, restart
 b1 = ps.Bus(); t1 = ps.Tool(b1); x = ps.Board(ps.BOARD_A, 'A1', SO, unit=1); b1.add(t1, x); b1.run_for(1200)
 ok = t1.write(0x500, 0x0000, 0, 0x6A0, reply_base=0x6A0) is not None and t1.write(0x6A0, 0x0000, 1, 1) is not None and t1.burn(0x6A0)
 b1 = ps.Bus(); t1 = ps.Tool(b1, 500000); y = ps.Board(ps.BOARD_A, 'A1', SO, unit=1, fram=x.fram()); b1.add(t1, y); b1.run_for(1200)
-check('manual setup still works: ID and bit rate changed over CAN, saved, kept after a restart', ok and y.bitrate() == 500000 and t1.version(0x6A0) == (0, 5, 9), y.bitrate())
+check('manual setup still works: ID and bit rate changed over CAN, saved, kept after a restart', ok and y.bitrate() == 500000 and t1.version(0x6A0) == ps.FW_VERSION, y.bitrate())
 
 # ------------------------------------------------------------------ the system: 3 boards, ECU, tool, 1 Mbit/s
 bus = ps.Bus(); tool = ps.Tool(bus); ecu = ps.PyNode('ecu')
@@ -35,7 +35,13 @@ def ecu_tx(t):
 ecu.every(20000, ecu_tx, start=5000)
 bus.run_for(1500)
 check('after a power cycle: all three still run at 1 Mbit/s on their own IDs', all(b.bitrate() == 1000000 for b in boards.values()) and all(s_.last > 0 for s_ in stat.values()), [b.bitrate() for b in boards.values()])
-check('each board answers alone on its own ID', all(tool.version(BASE[k]) == (0, 5, 9) for k in boards))
+check('each board answers alone on its own ID', all(tool.version(BASE[k]) == ps.FW_VERSION for k in boards))
+# s15a port: dingoFW development sends base + 2 + n for n = 0..37 (40 IDs with base + 0 / + 1), so 0x20 spacing overlapped
+bus.log = []; bus.run_for(1000); ids = {k: sorted({f.id for f in bus.log if f.src == k and not f.ide}) for k in boards}; bus.log = None
+blocks = {k: range(BASE[k], BASE[k] + 2 + ps.NUM_TX_MSGS) for k in boards}
+check(f'CAN IDs: every frame a board sends lies in its own block base .. base + {1 + ps.NUM_TX_MSGS:#x} (status msg {ps.STATUS_MSG} = base + {2 + ps.STATUS_MSG:#x} the highest), and the three blocks do not overlap',
+      all(ids[k] and set(ids[k]) <= set(blocks[k]) and ids[k][-1] == BASE[k] + 2 + ps.STATUS_MSG for k in boards)
+      and all(not (set(blocks[a]) & set(blocks[b])) for a in boards for b in boards if a < b), {k: (hex(v[0]), hex(v[-1]), len(v)) if v else None for k, v in ids.items()})
 
 # ------------------------------------------------------------------ S2 the single-PDM layer
 print('--- S2 single-PDM layer')
@@ -58,7 +64,7 @@ def set_output(g, policy, source=('ecu', None)):
     k, o = OUT[g]; b = boards[k]; slot = o                                  # CAN input slot = local output number
     if source[0] == 'ecu': can_input(k, slot, ECU_ID, g - 1, timeout=policy != 'hold')
     else:
-        sk, si = INP[source[1]]; can_input(k, slot, BASE[sk] + 2 + 27, si, timeout=policy != 'hold')   # other board's input bit (msg 27)
+        sk, si = INP[source[1]]; can_input(k, slot, BASE[sk] + 2 + ps.STATUS_MSG, si, timeout=policy != 'hold')   # other board's input bit (status msg)
     var = b.var_canin(slot)
     if policy == 'on':                                                        # output = command OR NOT link-alive
         v = virt_used[k]; virt_used[k] += 1
@@ -259,7 +265,7 @@ check('remote reading lost while cool: fan stays off (no vote either way); A2\'s
 f5['A1'].set_temp(47.5, 63.0); f5['A2'].set_temp(52.0, 41.0); b5.run_for(800)
 tv = {k: (st5[k].board_temp_x10(), st5[k].die_temp_x10()) for k in ('A1', 'A2')}
 want = {'A1': (475, ps.die_temp_can(63.0)), 'A2': (520, ps.die_temp_can(41.0))}
-check('temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg 27) x10 track their own set values on each board',
+check(f'temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg {ps.STATUS_MSG}) x10 track their own set values on each board',
       all(tv[k][0] == want[k][0] and abs(tv[k][1] - want[k][1]) <= 4 for k in tv), f'got {tv}, want {want}')
 info['die_temp_x10'] = tv
 # Dan s10b: outputs exempt from the critical shutdown (param 0x7F00 sub 3, bit i = output i); default = the fan output

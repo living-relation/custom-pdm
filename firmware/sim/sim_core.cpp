@@ -70,6 +70,70 @@ systime_t chVTGetSystemTimeX()
     if (cur && ++cur->spins > 2000000) { fatalFlag = 1; park(); }
     return (systime_t)(nowUs / TICK_US);
 }
+systimestamp_t chVTGetTimeStamp()
+{
+    sysTimeCalls++;
+    if (cur && ++cur->spins > 2000000) { fatalFlag = 1; park(); } // as chVTGetSystemTimeX (SYS_TIME uses this one)
+    return (systimestamp_t)(nowUs / TICK_US);
+}
+rtcnt_t chSysGetRealtimeCounterX() { return (rtcnt_t)(nowUs * (STM32_HCLK / 1000000U)); }
+
+//================================================================== mutex, objects FIFO (blocking, like ChibiOS)
+static void blockUntil(uint64_t wake) { cur->wake = wake; cur->spins = 0; yieldToSched(); }
+static void wakeThread(thread_t *t) { if (t && t->wake > nowUs) t->wake = nowUs; }
+uint64_t simDeadline(sysinterval_t timeout) { return timeout == TIME_INFINITE ? UINT64_MAX : nowUs + (uint64_t)timeout * TICK_US; }
+bool simWaitUntil(uint64_t deadline, thread_t **waiter)
+{
+    if (!cur || nowUs >= deadline) return false;
+    *waiter = cur; blockUntil(deadline); if (*waiter == cur) *waiter = nullptr;
+    return true;
+}
+void simWake(thread_t **waiter) { if (*waiter) { wakeThread(*waiter); *waiter = nullptr; } }
+void chMtxLock(mutex_t *m)
+{
+    while (m->owner && m->owner != cur)
+    {
+        if (m->nWaiters < 8) m->waiters[m->nWaiters++] = cur;
+        blockUntil(UINT64_MAX);
+    }
+    m->owner = cur;
+}
+void chMtxUnlock(mutex_t *m)
+{
+    m->owner = nullptr;
+    for (int i = 0; i < m->nWaiters; i++) wakeThread(m->waiters[i]);
+    m->nWaiters = 0;
+}
+void chFifoObjectInit(objects_fifo_t *f, size_t objsize, size_t n, void *objbuf, msg_t *)
+{
+    f->objsize = objsize; f->n = n; f->objbuf = (uint8_t *)objbuf; f->free.clear(); f->full.clear(); f->waiter = nullptr;
+    for (size_t i = 0; i < n; i++) f->free.push_back(f->objbuf + i * objsize);
+}
+void *chFifoTakeObjectTimeout(objects_fifo_t *f, sysinterval_t)
+{
+    // only used with TIME_IMMEDIATE (comms/can.cpp -> RouteParamFrame)
+    if (f->free.empty()) return nullptr;
+    void *o = f->free.front(); f->free.pop_front(); return o;
+}
+void chFifoSendObject(objects_fifo_t *f, void *obj) { f->full.push_back(obj); wakeThread(f->waiter); }
+msg_t chFifoReceiveObjectTimeout(objects_fifo_t *f, void **obj, sysinterval_t timeout)
+{
+    uint64_t deadline = timeout == TIME_INFINITE ? UINT64_MAX : nowUs + (uint64_t)timeout * TICK_US;
+    while (f->full.empty())
+    {
+        if (timeout == TIME_IMMEDIATE || nowUs >= deadline) return MSG_TIMEOUT;
+        f->waiter = cur; blockUntil(deadline); f->waiter = nullptr;
+    }
+    *obj = f->full.front(); f->full.pop_front(); return MSG_OK;
+}
+void chFifoReturnObject(objects_fifo_t *f, void *obj) { f->free.push_back(obj); }
+
+//================================================================== NVIC / EXTI
+uint32_t simExtiPending = 0;
+static uint32_t nvicClears = 0;
+void NVIC_ClearPendingIRQ(IRQn_Type) { nvicClears++; }
+static int restartFlag = 0;
+void NVIC_SystemReset() { restartFlag = 1; park(); } // real MCU resets here
 
 //================================================================== GPIO
 struct Pin { uint8_t mode; uint8_t pupd; uint8_t odr; uint8_t ext; uint8_t af; uint8_t event; };
@@ -111,7 +175,15 @@ static int level(ioline_t l, bool count)
     return 0; // floating input, nothing driving it: undefined on real hardware
 }
 bool palReadLine(ioline_t l) { return level(l, true); }
-void palSetLineMode(ioline_t l, uint32_t mode) { Pin &p = pin(l); p.mode = 0; p.pupd = mode == PAL_MODE_INPUT_PULLUP ? 1 : mode == PAL_MODE_INPUT_PULLDOWN ? 2 : 0; }
+void palSetLineMode(ioline_t l, uint32_t mode)
+{
+    Pin &p = pin(l);
+    if (mode == PAL_MODE_OUTPUT_PUSHPULL) { p.mode = 1; p.pupd = 0; return; } // sleep entry: CAN TX as GPIO, recessive
+    p.mode = 0; p.pupd = mode == PAL_MODE_INPUT_PULLUP ? 1 : mode == PAL_MODE_INPUT_PULLDOWN ? 2 : 0;
+}
+// Line callbacks (digital input PWM meter): called on every edge of an armed line, as the EXTI interrupt would
+static palcallback_t lineCb[8][16]; static void *lineCbArg[8][16];
+void palSetLineCallbackI(ioline_t l, palcallback_t cb, void *arg) { lineCb[(l >> 4) & 7][l & 15] = cb; lineCbArg[(l >> 4) & 7][l & 15] = arg; }
 // EXTI: one line number serves one port only. A later enable of the same pad number re-points the line
 // (ChibiOS GPIOv2 hal_pal_lld.c, asserts off in this firmware), so the earlier pin stops being a wake source.
 static int extiPort[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
@@ -123,21 +195,56 @@ void palEnableLineEvent(ioline_t l, uint32_t mode)
     extiPort[pad] = port; Pin &p = pin(l); p.event = 1; p.mode = 0;
     p.pupd = (mode & PAL_STM32_PUPDR_PULLUP) ? 1 : (mode & PAL_STM32_PUPDR_PULLDOWN) ? 2 : 0;
 }
+void simEnableLineEventKeepPull(ioline_t l)
+{
+    int port = (l >> 4) & 7, pad = l & 15;
+    if (extiPort[pad] >= 0 && extiPort[pad] != port) { extiClashes++; pins()[extiPort[pad] * 16 + pad].event = 0; }
+    extiPort[pad] = port; pin(l).event = 1;
+}
+void palDisableLineEvent(ioline_t l)
+{
+    int port = (l >> 4) & 7, pad = l & 15;
+    pin(l).event = 0; lineCb[port][pad] = nullptr;
+    if (extiPort[pad] == port) extiPort[pad] = -1;
+}
 
 //================================================================== CAN
-CANDriver CAND1;
+static CAN_TypeDef simCanRegs;
+CANDriver CAND1 = {CAN_STOP, &simCanRegs};
 static bool canStarted = false; static uint32_t canBtr = 0;
 static std::deque<CANRxFrame> rxFifo; static std::deque<CANTxFrame> txMbx;
 static uint32_t rxOverruns = 0, txTimeouts = 0, rxFiltered = 0;
-static std::vector<uint32_t> filterIds; static bool filterActive = false;
-msg_t canStart(CANDriver *, const CANConfig *cfg) { canStarted = true; canBtr = cfg->btr; return MSG_OK; }
-void canStop(CANDriver *) { canStarted = false; txMbx.clear(); rxFifo.clear(); }
-void canSTM32SetFilters(CANDriver *, uint32_t, uint32_t num, const CANFilter *cfp)
+msg_t canStart(CANDriver *c, const CANConfig *cfg)
 {
-    // num == 0: ChibiOS installs one accept-all filter. Otherwise 32-bit identifier-list filters.
-    filterIds.clear(); filterActive = num > 0;
-    for (uint32_t i = 0; i < num; i++) { filterIds.push_back(cfp[i].register1); filterIds.push_back(cfp[i].register2); }
+    // ChibiOS can_lld_start leaves the filters it set at init: one 32-bit mask bank that accepts everything
+    if (simCanRegs.FA1R == 0) { simCanRegs.FS1R = 1; simCanRegs.FA1R = 1; simCanRegs.sFilterRegister[0] = {0, 0}; }
+    canStarted = true; canBtr = cfg->btr; c->state = CAN_READY; return MSG_OK;
 }
+void canStop(CANDriver *c) { canStarted = false; c->state = CAN_STOP; txMbx.clear(); rxFifo.clear(); }
+// Acceptance as bxCAN does it from the filter registers dingoFW writes (comms/can.cpp WriteFilters, RM0390 32.7.4):
+// active banks (FA1R), list mode (FM1R bit set) = FR1 or FR2 equal, mask mode = bits set in FR2 must match FR1.
+// All filters here are 32-bit scale (FS1R), as dingoFW sets them.
+static bool canFilterAccepts(uint32_t reg)
+{
+    const CAN_TypeDef &r = simCanRegs;
+    for (int b = 0; b < 28; b++)
+    {
+        if (!(r.FA1R & (1U << b))) continue;
+        const CAN_FilterRegister_TypeDef &f = r.sFilterRegister[b];
+        if (r.FM1R & (1U << b)) { if (reg == f.FR1 || reg == f.FR2) return true; }
+        else if (((reg ^ f.FR1) & f.FR2) == 0) return true;
+    }
+    return false;
+}
+// true when the registers accept only listed IDs (not the single accept-all mask bank)
+static bool canFilterListOnly()
+{
+    const CAN_TypeDef &r = simCanRegs;
+    for (int b = 0; b < 28; b++)
+        if ((r.FA1R & (1U << b)) && !(r.FM1R & (1U << b)) && r.sFilterRegister[b].FR2 == 0) return false;
+    return r.FA1R != 0;
+}
+void canSTM32SetFilters(CANDriver *, uint32_t, uint32_t, const CANFilter *) {} // not used by dingoFW development on bxCAN
 msg_t canTransmitTimeout(CANDriver *, int, const CANTxFrame *f, sysinterval_t timeout)
 {
     uint64_t deadline = nowUs + (uint64_t)timeout * TICK_US;
@@ -148,9 +255,13 @@ msg_t canTransmitTimeout(CANDriver *, int, const CANTxFrame *f, sysinterval_t ti
     }
     txMbx.push_back(*f); return MSG_OK;
 }
-msg_t canReceiveTimeout(CANDriver *, int, CANRxFrame *f, sysinterval_t)
+static thread_t *canRxWaiter = nullptr;
+msg_t canReceiveTimeout(CANDriver *, int, CANRxFrame *f, sysinterval_t timeout)
 {
-    if (rxFifo.empty()) return MSG_TIMEOUT;
+    // blocks like the ChibiOS driver: dingoFW development's CAN Rx thread waits here (100 ms time-out)
+    uint64_t deadline = simDeadline(timeout);
+    while (rxFifo.empty())
+        if (timeout == TIME_IMMEDIATE || !canStarted || !simWaitUntil(deadline, &canRxWaiter)) return MSG_TIMEOUT;
     *f = rxFifo.front(); rxFifo.pop_front(); return MSG_OK;
 }
 
@@ -336,15 +447,13 @@ API uint32_t sim_can_bitrate()
 API int sim_can_rx(uint32_t id, int ide, int dlc, const uint8_t *data)
 {
     if (!canStarted || asleepFlag) return 0;
-    if (filterActive)
     {
-        uint32_t reg = ide ? ((id << 3) | 0x04) : (id << 21); bool ok = false;
-        for (auto f : filterIds) if (f == reg) ok = true;
-        if (!ok) { rxFiltered++; return 1; } // acknowledged on the bus, not stored
+        uint32_t reg = ide ? ((id << 3) | 0x04) : (id << 21);
+        if (!canFilterAccepts(reg)) { rxFiltered++; return 1; } // acknowledged on the bus, not stored
     }
     if (rxFifo.size() >= 3) { rxOverruns++; return 1; } // bxCAN receive FIFO holds 3 frames
     CANRxFrame f; memset(&f, 0, sizeof(f)); f.IDE = ide; f.DLC = dlc; if (ide) f.EID = id; else f.SID = id;
-    memcpy(f.data8, data, 8); rxFifo.push_back(f); return 1;
+    memcpy(f.data8, data, 8); rxFifo.push_back(f); simWake(&canRxWaiter); return 1;
 }
 API int sim_can_tx_peek(uint32_t *id, int *ide, int *dlc, uint8_t *data)
 {
@@ -353,7 +462,12 @@ API int sim_can_tx_peek(uint32_t *id, int *ide, int *dlc, uint8_t *data)
 }
 API void sim_can_tx_pop() { if (!txMbx.empty()) txMbx.pop_front(); }
 // pins
-API void sim_set_ext(int port, int pad, int state) { pins()[port * 16 + pad].ext = state; }
+API void sim_set_ext(int port, int pad, int state)
+{
+    ioline_t l = PAL_LINE(port, pad); int before = level(l, false);
+    pins()[port * 16 + pad].ext = state;
+    if (pins()[port * 16 + pad].event && lineCb[port][pad] && level(l, false) != before) lineCb[port][pad](lineCbArg[port][pad]);
+}
 API int sim_get_level(int port, int pad) { return level(PAL_LINE(port, pad), false); }
 API int sim_pin_info(int port, int pad) { Pin &p = pins()[port * 16 + pad]; return p.mode | (p.pupd << 2) | (p.odr << 4) | (p.af << 8) | (p.event << 12); }
 API void sim_set_pin_volts(int port, int pad, float v) { pinVolts[port][pad] = v; }
@@ -366,12 +480,12 @@ API int sim_plant_add(int in, int den, int dsel, int dselLevel, int is, float ki
 }
 API void sim_plant_set(int idx, float loadOhms, int fault) { plant[idx].loadOhms = loadOhms; plant[idx].fault = fault; }
 // state for checks
-API int sim_flags() { return fatalFlag | (asleepFlag << 1) | (bootloaderFlag << 2); }
+API int sim_flags() { return fatalFlag | (asleepFlag << 1) | (bootloaderFlag << 2) | (restartFlag << 3); }
 API void sim_counters(uint32_t *out)
 {
     out[0] = badWrites; out[1] = lastBadWrite; out[2] = floatReads; out[3] = lastFloatRead; out[4] = rxOverruns;
     out[5] = txTimeouts; out[6] = rxFiltered; out[7] = extiClashes; out[8] = framWrites; out[9] = sizeof(DeviceConfig);
-    out[10] = NUM_OUTPUTS; out[11] = NUM_DIG_INPUTS; out[12] = NUM_ANALOG_INPUTS; out[13] = VAR_MAP_SIZE; out[14] = filterActive;
+    out[10] = NUM_OUTPUTS; out[11] = NUM_DIG_INPUTS; out[12] = NUM_ANALOG_INPUTS; out[13] = VAR_MAP_SIZE; out[14] = canFilterListOnly();
     out[15] = (uint32_t)txMbx.size();
 }
 API void sim_fram(uint8_t *buf, int load, uint32_t size) { framEnsure(); framSize = size; if (load) memcpy(framMem, buf, size); else memcpy(buf, framMem, size); }

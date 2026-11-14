@@ -23,7 +23,7 @@ BOARD_A = dict(
              ('PA7', 'PA6', 'PA5', 0, 'PA2', 'BTS7008-2EPA'), ('PA4', 'PA6', 'PA5', 1, 'PA2', 'BTS7008-2EPA')],
     # digital inputs in firmware order. kind: 'direct' = board connector, 'ib' = input board channel n
     inputs=[('PA10', 'direct'), ('PC9', 'direct'), ('PC10', 'ib1'), ('PC11', 'ib2'), ('PB4', 'ib3'), ('PC13', 'ib4'), ('PB3', 'ib5')],
-    analog='PC2', batt='PA3', limit=7.5, base={1: 0x500, 2: 0x520})
+    analog='PC2', batt='PA3', limit=7.5, base={1: 0x500, 2: 0x540})
 BOARD_B = dict(
     fw='custompdm_b',
     outputs=[('PB14', 'PB13', None, 0, 'PC3', 'BTS70012-1ESP'), ('PC7', 'PC6', None, 0, 'PC2', 'BTS70012-1ESP'),
@@ -32,7 +32,13 @@ BOARD_B = dict(
              ('PA15', 'PB15', None, 0, 'PA7', 'BTS7004-1EPP'), ('PC8', 'PB15', None, 0, 'PC4', 'BTS7004-1EPP')],
     inputs=[('PA10', 'direct'), ('PC9', 'direct'), ('PC14', 'ib1'), ('PC15', 'ib2'), ('PC13', 'ib3'), ('PD2', 'ib4'),
             ('PB4', 'ib5'), ('PB5', 'ib6'), ('PC10', 'ib7'), ('PC11', 'ib8')],
-    analog='PB1', batt='PA3', limit=None, base={1: 0x540})
+    analog='PB1', batt='PA3', limit=None, base={1: 0x580})
+# Factory base IDs 0x40 apart: dingoFW development uses base + 0 / + 1 (PC tool) and base + 2 + n for cyclic msgs
+# 0..NUM_TX_MSGS-1 = 40 IDs with our 38 msgs (tools_custom/port_boards.py BASE_*). Device types: port_boards.py TYPE_*.
+STATUS_MSG = 37                                  # custom-pdm status frame (port_boards.py STATUS_MSG), after upstream's 0-36
+NUM_TX_MSGS = STATUS_MSG + 1
+DEVICE_TYPE = {'custompdm_a': 14, 'custompdm_b': 15}
+FW_VERSION = (0, 6, 2)                           # core/device_config.h MAJOR / MINOR / BUILD (dingoFW development 14084e9)
 
 class Frame:
     __slots__ = ('id', 'ide', 'dlc', 'data', 'src', 't')
@@ -212,9 +218,9 @@ class Status:
     def __init__(s, base): s.base = base; s.m = {}; s.last = -1
     def feed(s, f):
         n = f.id - s.base - 2
-        if 0 <= n < 28 and not f.ide: s.m[n] = f.data; s.last = f.t
-    def di(s): return struct.unpack('<H', s.m[27][0:2])[0] if 27 in s.m else None
-    def an_mv(s): return struct.unpack('<H', s.m[27][2:4])[0] if 27 in s.m else None
+        if 0 <= n < NUM_TX_MSGS and not f.ide: s.m[n] = f.data; s.last = f.t
+    def di(s): return struct.unpack('<H', s.m[STATUS_MSG][0:2])[0] if STATUS_MSG in s.m else None
+    def an_mv(s): return struct.unpack('<H', s.m[STATUS_MSG][2:4])[0] if STATUS_MSG in s.m else None
     def batt(s): return struct.unpack('<H', s.m[0][4:6])[0] / 10 if 0 in s.m else None
     def total(s): return struct.unpack('<H', s.m[0][2:4])[0] if 0 in s.m else None
     def dev_state(s): return s.m[0][1] & 15 if 0 in s.m else None
@@ -222,7 +228,7 @@ class Status:
     def current(s, i): return struct.unpack('<H', s.m[1 + i // 4][2 * (i % 4):2 * (i % 4) + 2])[0] if (1 + i // 4) in s.m else None
     def out_state(s, i): return (s.m[3][i // 2] >> (4 * (i % 2))) & 15 if 3 in s.m else None
     def board_temp_x10(s): return struct.unpack('<H', s.m[0][6:8])[0] if 0 in s.m else None          # MCP9808, msg 0
-    def die_temp_x10(s): return struct.unpack('<h', s.m[27][6:8])[0] if 27 in s.m else None         # STM32 die, msg 27
+    def die_temp_x10(s): return struct.unpack('<h', s.m[STATUS_MSG][6:8])[0] if STATUS_MSG in s.m else None   # STM32 die, status msg
     def thermal_flags(s): return s.m[3][7] if 3 in s.m else None     # msg 3 byte 7: bit 0 over warn, 1 critical soon, 2 critical
 STATE = ['Off', 'On', 'Overcurrent', 'Fault']
 

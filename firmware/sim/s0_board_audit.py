@@ -21,9 +21,11 @@ def audit(model, label):
     check(f'{label} counts: outputs/inputs/analog', (c['n_out'], c['n_di'], c['n_an']) == (n, len(model['inputs']), 1), (c['n_out'], c['n_di'], c['n_an']))
     check(f'{label} config fits 64 Kbit FRAM (8192 bytes) with CRC', c['config_bytes'] + 4 <= 8192, f"{c['config_bytes']} + 4 bytes")
     check(f'{label} factory default CAN: 1 Mbit/s, base ID {BASE:#x}', b.bitrate() == 1000000 and st.last > 0, b.bitrate())
+    want_type = ps.DEVICE_TYPE[model['fw']]
+    check(f'{label} reports its own device type {want_type} in msg 0 byte 1 bits 4-7 (stock 0 / 1; dingoConfig route A)', st.pdm_type() == want_type, st.pdm_type())
     check(f'{label} battery reading', abs((st.batt() or 0) - 13.8) < 0.15, st.batt())
     b.set_temp(44.0, 58.5); bus.run_for(400)      # unequal: a board / die mix-up is 14.5 C off
-    check(f'{label} temperatures: board 44.0 C in msg 0, STM32 die 58.5 C in msg 27 (x10)', st.board_temp_x10() == 440 and abs((st.die_temp_x10() or 0) - ps.die_temp_can(58.5)) <= 4,
+    check(f'{label} temperatures: board 44.0 C in msg 0, STM32 die 58.5 C in msg {ps.STATUS_MSG} (x10)', st.board_temp_x10() == 440 and abs((st.die_temp_x10() or 0) - ps.die_temp_can(58.5)) <= 4,
           f'board {st.board_temp_x10()}, die {st.die_temp_x10()} (want {ps.die_temp_can(58.5)})')
     # Dan s11c: steady thermal flags in every cyclic msg 3, byte 7 (bit 0 over warn, 1 critical soon, 2 critical)
     fl = []
@@ -66,7 +68,8 @@ def audit(model, label):
     b.set_load(o, b.vbat / (lim * 1.3)); tool.write(BASE, 0x1000 + o, 1, 1)
     seq = []; t_end = bus.now + 6_000_000
     while bus.now < t_end:
-        bus.run_for(5); s_ = b.L.sim_out_state(o)
+        # 1 ms samples: dingoFW development goes Overcurrent -> Fault in the next 2 ms device cycle on the last allowed trip
+        bus.run_for(1); s_ = b.L.sim_out_state(o)
         if not seq or seq[-1] != s_: seq.append(s_)
     check(f'{label} overcurrent, factory default (retry mode): 3 trips then Fault', seq.count(2) == 3 and seq[-1] == 3 and b.level(IN) == 0, [ps.STATE[x] for x in seq])
     # --- every digital input, one at a time
@@ -76,7 +79,7 @@ def audit(model, label):
         b.set_input(i, '12v'); bus.run_for(250)
         if st.di() != (1 << i): ok_in = False; det.append(f'in{i+1} -> bits {st.di():#x}')
         b.set_input(i, 'gnd'); bus.run_for(250)
-    check(f'{label} each digital input sets its own bit (msg 27)', ok_in, det if not ok_in else '')
+    check(f'{label} each digital input sets its own bit (msg {ps.STATUS_MSG})', ok_in, det if not ok_in else '')
     b.set_analog(2.5); tool.write(BASE, 0x2200, 0, 1); bus.run_for(300)
     check(f'{label} analog input: 2.5 V at the wire reads 2500 mV', abs((st.an_mv() or 0) - 2500) < 15, st.an_mv())
     b.set_analog(5.0); bus.run_for(300)
@@ -92,7 +95,7 @@ def audit(model, label):
     dens = sorted({o[1] for o in model['outputs']}); dsels = sorted({o[2] for o in model['outputs'] if o[2]}); ins = [o[0] for o in model['outputs']]
     lv = lambda ps_: {p: b.level(p) for p in ps_}
     pre = (lv(dens), [b.level(p) for p in ins], lv(ps.LEDS), b.mcp_info())
-    tool.sleep(BASE); bus.run_for(100)
+    tool.sleep(BASE); bus.run_for(300)   # dingoFW development: 100 ms CAN quiet + 20 ms transceiver settle before STOP
     post = (lv(dens + dsels + ins), all(b.pin_info(p)['mode'] == 'output' for p in dens + dsels + ins), lv(ps.LEDS), b.mcp_info())
     check(f'{label} sleep request: IN / DEN{" / DSEL" if dsels else ""} of every channel driven low (were: DEN high, {n - 2} IN high), LEDs off (error LED was on)',
           b.flags()['asleep'] and all(v == 1 for v in pre[0].values()) and pre[1] == [1] * (n - 2) + [0, 0] and pre[2]['PC0'] == 1
