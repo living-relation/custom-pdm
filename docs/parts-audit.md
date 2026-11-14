@@ -360,6 +360,8 @@ Checks vs `main` efa632d (KiCad 10 kicad-cli, read-only): board A ERC 625 (35 er
 
 Sources for this section: TI TLV1117LV SBVS160C (https://www.ti.com/lit/ds/symlink/tlv1117lv.pdf); ST DS10693 Rev 11 (https://www.st.com/resource/en/datasheet/stm32f446re.pdf); Traco TSR 1 (https://tracopower.com/tsr1-datasheet); USB 3.1 ECN "VBUS Max Limit" (https://doc.xdevs.com/doc/Standards/USB%203.1/usb_31_030215/ECNs/USB%203.1%20ECN%20VBUS%20Max%20Limit.pdf); Digi-Key https://www.digikey.com/en/products/detail/texas-instruments/TLV1117LV33DCYR/2666508 and https://www.digikey.ca/en/products/detail/stmicroelectronics/STM32F446RET7/6207480; Mouser search pages for both parts; LCSC through `tools/gen_parts_audit_csv.py`.
 
+- 2026-11-14 (Dan s9a): STM32F446RET7 stays the design part; STM32F446RET6 (same die, LQFP-64, pin-for-pin) is an approved alternate if RET7 cannot be sourced at build time. Firmware thermal limits are set for the fitted part.
+
 ## 8. Sources
 
 Data sheets (maker):
