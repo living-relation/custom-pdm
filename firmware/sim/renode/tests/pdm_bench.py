@@ -446,3 +446,27 @@ class pdm_bench:
         s._check(before == [1, 2, 4] and crit == ([], 2), f'A1 on {before}; at 80 C {crit}')
         s._check(held == ([], 2, 800) and msg[:3] == ('E', 14, 4), f'2 s of NAKs while it cools to 40 C: outputs / state / msg 0 temp {held}; last message {msg} (E, TempSensor = 14, 4 in a row, I2C flags)')
         s._check(back == ([1, 2, 4], 0) and t <= 600, f'reads back: {back} after {t} ms')
+
+    # ------------------------------------------------------------------ wake-up set (Dan B2): param 0x7F00 sub 5
+    # Only the config side runs here: Renode does not emulate STOP mode, so which pins wake the MCU is checked in
+    # the host sim (s0 / s1 S6, EXTI model), not in Renode.
+    def wake_mask_defaults_to_none_and_a_valid_mask_is_taken(s):
+        WI, WS = s.ps.TEMP_INDEX, s.ps.WAKE_SUB
+        dflt = {k: s._read1(BASE[k], WI, WS) for k in BASE}
+        rep = {k: s._write1(BASE[k], WI, WS, m) for k, m in (('A1', 0x073), ('B', 0x1FE))}
+        back = {k: s._read1(BASE[k], WI, WS) for k in ('A1', 'B')}
+        s._check(dflt == {'A1': 0, 'A2': 0, 'B': 0}, f'factory default wake mask on every board (0 = no input wakes it): {dflt}')
+        s._check(rep['A1'] is not None and struct.unpack('<I', rep['A1'][4:8])[0] == 0x073 and rep['B'] is not None and struct.unpack('<I', rep['B'][4:8])[0] == 0x1FE
+                 and back == {'A1': 0x073, 'B': 0x1FE}, f'Write replies {rep}, read back {back}')
+
+    def wake_mask_on_a_shared_or_usb_line_is_refused_with_a_warning(s):
+        WI, WS = s.ps.TEMP_INDEX, s.ps.WAKE_SUB; got = {}
+        for k, m in (('A1', 0x005), ('A1', 0x008), ('B', 0x101), ('B', 0x200)):
+            n0 = s._ecun(f'Count {BASE[k]:#x}'); s._ecu('ClearStats')
+            s._ecu(f'QueueRequest {BASE[k] + 1:#x} "{(bytes([s.ps.CMD["Write"], WI & 255, WI >> 8, WS]) + struct.pack("<I", m)).hex()}" {BASE[k]:#x}')
+            failed = s._flush(1000); n1 = s._ecun(f'Count {BASE[k]:#x}'); w = s._info(k); wd = bytes.fromhex(s._ecu(f'Last {BASE[k]:#x}'))
+            got[(k, m)] = (failed, n1 - n0, w[:2], struct.unpack('<HHH', wd[2:8]), s._read1(BASE[k], WI, WS))
+        want = {('A1', 0x005): (1, 3, ('R', s.ps.SRC_CONFIG), (0x005, 0x005, 0x073), 0x073), ('A1', 0x008): (1, 3, ('R', s.ps.SRC_CONFIG), (0x008, 0x008, 0x073), 0x073),
+                ('B', 0x101): (1, 3, ('R', s.ps.SRC_CONFIG), (0x101, 0x101, 0x1FE), 0x1FE), ('B', 0x200): (1, 3, ('R', s.ps.SRC_CONFIG), (0x200, 0x200, 0x1FE), 0x1FE)}
+        restore = all(s._write1(BASE[k], WI, WS, 0) is not None for k in ('A1', 'B'))
+        s._check(got == want and restore, f'(board, mask): (failed = no Write reply after 3 tries, frames on the reply ID = one warning per try, (type, src), (refused, bad inputs, kept), read back): {got}; reset to 0: {restore}')
