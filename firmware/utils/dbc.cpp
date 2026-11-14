@@ -77,6 +77,9 @@ int32_t Dbc::DecodeBE(const uint8_t *pData, uint8_t nStartBit,
 
     for (int i = 0; i < nBitLength; i++)
     {
+        if (byteIndex >= 8)
+            break;
+
         // Extract bit
         if ((pData[byteIndex] >> bitIndex) & 1)
             value |= (1ULL << (nBitLength - 1 - i));
@@ -141,6 +144,9 @@ void Dbc::EncodeBE(uint8_t *pData, int32_t nRawValue,
 
     for (int i = 0; i < nBitLength; i++)
     {
+        if (byteIndex >= 8)
+            break;
+
         if ((value >> (nBitLength - 1 - i)) & 1)
             pData[byteIndex] |=  (1 << bitIndex);
         else
@@ -173,7 +179,9 @@ float Dbc::DecodeFloat(const uint8_t *pData, uint8_t nStartBit, uint8_t nBitLeng
                        float fScale, float fOffset, ByteOrder eByteOrder, bool bSigned)
 {
     int32_t rawValue = DecodeInt(pData, nStartBit, nBitLength, eByteOrder, bSigned);
-    return ApplyScaling(rawValue, fScale, fOffset);
+    // Unsigned 32-bit values >= 2^31 come back negative as int32, reinterpret as uint32
+    float fRaw = bSigned ? (float)rawValue : (float)(uint32_t)rawValue;
+    return (fRaw * fScale) + fOffset;
 }
 
 // Float decode/encode with float scaling (value = raw * scale + offset)

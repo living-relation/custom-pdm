@@ -52,8 +52,10 @@ enum class MsgCmd : uint8_t
     WriteAllVal = 21,
     WriteAllComplete = 22,
     WriteAllModified = 23,
+    WriteAllMissing = 24,     // one frame per missing (index, subindex) after a failed WriteAllComplete
     WriteAllParamNotFound = 25,
     WriteAllOutOfRange = 26,
+    WriteAllMissingDone = 27, // terminates the WriteAllMissing list; count field, or 0xFFFF sentinel
 
     BurnSettings = 30,
     Version = 31,
@@ -61,6 +63,7 @@ enum class MsgCmd : uint8_t
     Bootloader = 33,
     CheckCrc = 34,
     CheckCrcRsp = 35,
+    Restart = 36,
 
     Invalid = 0xFF
 };
@@ -81,7 +84,7 @@ enum class MsgSrc : uint8_t
     Overcurrent,
     Voltage,
     CANBus,
-    USB,
+    UsbDevice,
     Overtemp,
     Config,
     FRAM,
@@ -153,6 +156,37 @@ enum class InputPull : uint8_t
     None,
     Up,
     Down
+};
+
+enum class RotaryMode : uint8_t
+{
+    Uniform,   // fOffset + n * fStep
+    Calibrated // a measured centre voltage per position
+};
+
+//=============================================================================
+// Timer
+//=============================================================================
+enum class TimerMode : uint8_t
+{
+    OnDelay,     // Output turns on after the input has been on for the set time
+    OffDelay,    // Output follows the input on, stays on for the set time after it goes off
+    PulseRetrig, // Every rising edge starts a pulse of the set length, retriggering it
+    PulseOneShot // A rising edge starts a pulse, further edges are ignored until it ends
+};
+
+//=============================================================================
+// Math block: (A op B) * factor + offset
+//=============================================================================
+enum class MathOp : uint8_t
+{
+    Add,
+    Sub,
+    Mul,
+    Div,     // A / B, 0 when B is 0
+    Min,
+    Max,
+    Average
 };
 
 //=============================================================================
@@ -249,7 +283,7 @@ enum class KeypadModel : uint8_t
     Blink12Key = 6,
     Blink15Key = 7,
     Blink15Key2Dial = 8,
-    Grayhill1Key = 10,
+    Blink1Key = 10,
     Grayhill6Key = 20,
     Grayhill8Key = 21,
     Grayhill12Key = 22,

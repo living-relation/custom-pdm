@@ -258,7 +258,7 @@ bool MCP9808::Write16(uint8_t reg, uint16_t val)
 
     if (status != MSG_OK)
     {
-        lastErrors = i2cGetErrors(&I2CD1);
+        lastErrors = i2cGetErrors(m_driver);
         return false;
         /* TODO use i2c error*/
     }
@@ -289,7 +289,7 @@ bool MCP9808::Read16(uint8_t reg, uint16_t *val)
 
     if (status != MSG_OK)
     {
-        lastErrors = i2cGetErrors(&I2CD1);
+        lastErrors = i2cGetErrors(m_driver);
         return false;
         /* TODO use i2c error*/
     }
@@ -322,7 +322,7 @@ bool MCP9808::Write8(uint8_t reg, uint8_t val)
 
     if (status != MSG_OK)
     {
-        lastErrors = i2cGetErrors(&I2CD1);
+        lastErrors = i2cGetErrors(m_driver);
         return false;
         /* TODO use i2c error*/
     }
@@ -353,7 +353,7 @@ bool MCP9808::Read8(uint8_t reg, uint8_t *val)
 
     if (status != MSG_OK)
     {
-        lastErrors = i2cGetErrors(&I2CD1);
+        lastErrors = i2cGetErrors(m_driver);
         return false;
         /* TODO use i2c error*/
     }

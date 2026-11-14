@@ -1,4 +1,5 @@
 #include "infomsg.h"
+#include "can_frame.h"
 #include "device.h"
 #include "config.h"
 #include "device_config.h"
@@ -34,7 +35,6 @@ static InfoMsg OutputFaultMsg[NUM_OUTPUTS];
 #endif
 
 extern DeviceConfig stConfig;
-extern DeviceState eState;
 
 #if HAS_BATT_VOLT_SENSE
 extern float fBattVolt;
@@ -89,8 +89,7 @@ void SendInfoMsg(MsgType type, MsgSrc src, uint16_t nId, uint16_t nData0, uint16
     tx.data16[2] = nData1;
     tx.data16[3] = nData2;
 
-    tx.SID = nId + CONFIG_TX_OFFSET;
-    tx.IDE = CAN_IDE_STD;
+    CanSetId(tx, nId + CONFIG_TX_OFFSET);
     PostTxFrame(&tx);
 }
 

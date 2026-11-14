@@ -20,7 +20,7 @@ static uint32_t nUsbDisconnectedTime;
 
 // External variables from pdm.cpp that we need access to
 extern DeviceConfig stConfig;
-extern bool bSleepRequest;
+bool bSleepRequest;
 extern Profet pf[NUM_OUTPUTS];
 
 bool CheckEnterSleep()
@@ -48,15 +48,10 @@ bool CheckEnterSleep()
 
     bLastUsbConnected = GetUsbConnected();
 
-    // Had issue with SYS_TIME being < GetLastCanRxTime when msgs come in quickly
-    // Check that SYS_TIME is greater than or equal to GetLastCanRxTime
-    uint32_t sys = SYS_TIME;
-    uint32_t canLast = GetLastCanRxTime();
-    uint32_t nCanRxIdleTime;
-    if (sys >= canLast)
-        nCanRxIdleTime = sys - canLast;
-    else
-        nCanRxIdleTime = 0;
+    // CAN Rx thread can stamp a time slightly after SYS_TIME was read here,
+    // so treat a negative (signed) difference as 0. Wrap-safe.
+    int32_t nCanRxDiff = static_cast<int32_t>(SYS_TIME - GetLastCanRxTime());
+    uint32_t nCanRxIdleTime = (nCanRxDiff > 0) ? nCanRxDiff : 0;
 
     // No outputs on, no CAN msgs received and no USB connected
     // Go to sleep after timeout
@@ -68,12 +63,7 @@ bool CheckEnterSleep()
                   ((SYS_TIME - nAllOutputsOffTime) > SLEEP_TIMEOUT) &&
                   (nCanRxIdleTime > SLEEP_TIMEOUT);
 
-    if (nCanRxIdleTime > SLEEP_TIMEOUT)
-    {
-        nCanRxIdleTime = SYS_TIME - GetLastCanRxTime();
-    }
-
-    return bEnterSleep || bSleepRequest;
+    return bEnterSleep || bSleepRequest || *pVarMap[stConfig.stDevice.nForceSleepInput];
 }
 
 void EnableLineEventWithPull(ioline_t line, InputPull pull) 
@@ -113,33 +103,85 @@ static void EnterLowPower()
 
 void EnterSleep()
 {
-    #if SLEEP_LOW_POWER
-    EnterLowPower();
+    // Clear CAN sleep request so we don't immediately re-enter sleep after waking up
+    bSleepRequest = false;
+
+    // Forced sleep can arrive with outputs on - shut them off, no current protection while stopped
+    #if NUM_OUTPUTS > 0
+    for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        pf[i].ForceOff();
     #endif
+
+    #if SLEEP_LOW_POWER
+    EnterLowPower(); // custom-pdm: after ForceOff (IN low): DEN / DSEL low, MCP9808 shutdown
+    #endif
+
+    // Stop transmitting before the transceiver goes to standby. A frame still
+    // going out while another device on the bus falls asleep wakes it up again.
+    // Frames already in the CAN mailboxes finish during the wait below.
+    SetCanTxQuiet(true);
+    chThdSleepMilliseconds(100);
+
+    // Stop the CAN controller before its pins change. Left running, it sees the
+    // RX pin taken away from it and answers with an error frame, and the error
+    // flag the other nodes send back arrives just after the transceiver went to
+    // standby - which wakes this device straight back up whenever anything else
+    // is on the bus.
+    StopCan();
+    palSetLineMode(LINE_CAN_TX, PAL_MODE_OUTPUT_PUSHPULL);
+    palSetLine(LINE_CAN_TX); // Recessive
+
+    palSetLine(LINE_CAN_STANDBY); // CAN disabled
+
+    // Let the transceiver settle in standby before any wake source is armed
+    chThdSleepMilliseconds(20);
+
+    // A PWM input's edge event would wake it, and the wake event below needs the same EXTI line
+    for(uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+        digIn[i].StopPwm();
 
     // Set wakeup sources
 
     // Digital inputs change detection, with configured pullup or pulldown
-    // custom-pdm: an EXTI line serves one port only, so a board may leave inputs out of the wake-up set
+    // Can be disabled in config
+    // custom-pdm: an EXTI line serves one port only, so a board may also leave single inputs out of the wake-up set
     // (bit i = digital input i may wake the device). Default: all inputs, as stock.
 #ifndef WAKE_DIG_INPUT_MASK
 #define WAKE_DIG_INPUT_MASK 0xFFFFFFFFU
 #endif
-    for(uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+    if(!stConfig.stDevice.bDisableDigInWake)
     {
-        if (WAKE_DIG_INPUT_MASK & (1U << i))
-            EnableLineEventWithPull(digIn[i].GetLine(), stConfig.stDigInput[i].ePull);
+        for(uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+        {
+            if (WAKE_DIG_INPUT_MASK & (1U << i))
+                EnableLineEventWithPull(digIn[i].GetLine(), stConfig.stDigInput[i].ePull);
+        }
     }
 
-    // CAN receive detection
-    palSetLineMode(LINE_CAN_RX, PAL_MODE_INPUT);
-    palEnableLineEvent(LINE_CAN_RX, PAL_EVENT_MODE_BOTH_EDGES | PAL_STM32_PUPDR_FLOATING);
+    // CAN receive detection - can be disabled in config
+    if(!stConfig.stDevice.bDisableCanWake)
+    {
+        palSetLineMode(LINE_CAN_RX, PAL_MODE_INPUT);
+        palEnableLineEvent(LINE_CAN_RX, PAL_EVENT_MODE_BOTH_EDGES | PAL_STM32_PUPDR_FLOATING);
+    }
 
-    // USB detection
+    // USB detection - always active
     palSetLineMode(LINE_USB_DP, PAL_MODE_INPUT);
     palEnableLineEvent(LINE_USB_DP, PAL_EVENT_MODE_BOTH_EDGES | PAL_STM32_PUPDR_FLOATING);
     palSetLineMode(LINE_USB_DM, PAL_MODE_INPUT);
     palEnableLineEvent(LINE_USB_DM, PAL_EVENT_MODE_BOTH_EDGES | PAL_STM32_PUPDR_FLOATING);
+
+    // Arming a line can latch an edge from the pin changing mode. Clear those so
+    // only a real wake source ends the stop. One arriving from here on is still
+    // pending at the WFI and wakes the MCU as it should.
+    EXTI_PENDING = 0x0000FFFF;
+    NVIC_ClearPendingIRQ(EXTI0_IRQn);
+    NVIC_ClearPendingIRQ(EXTI1_IRQn);
+    NVIC_ClearPendingIRQ(EXTI2_IRQn);
+    NVIC_ClearPendingIRQ(EXTI3_IRQn);
+    NVIC_ClearPendingIRQ(EXTI4_IRQn);
+    NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
+    NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
 
     EnterStopMode();
 }

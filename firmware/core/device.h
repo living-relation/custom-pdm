@@ -11,6 +11,12 @@ class Flasher;
 class Counter;
 class Condition;
 
+#if NUM_TIMERS > 0
+class Timer;
+#endif
+#if NUM_MATH > 0
+class MathBlock;
+#endif
 #if NUM_DIG_INPUTS > 0
 class Digital_Input;
 #endif
@@ -40,6 +46,12 @@ extern VirtualInput virtIn[NUM_VIRT_INPUTS];
 extern Flasher flasher[NUM_FLASHERS];
 extern Counter counter[NUM_COUNTERS];
 extern Condition condition[NUM_CONDITIONS];
+#if NUM_TIMERS > 0
+extern Timer timer[NUM_TIMERS];
+#endif
+#if NUM_MATH > 0
+extern MathBlock mathBlock[NUM_MATH];
+#endif
 
 #if NUM_DIG_INPUTS > 0
 extern Digital_Input digIn[NUM_DIG_INPUTS];
@@ -66,9 +78,10 @@ extern Analog_Input analogIn[NUM_ANALOG_INPUTS];
 extern DeviceConfig stConfig;
 extern DeviceConfig stConfigTemp; // Used for staging new config before applying
 extern float *pVarMap[VAR_MAP_SIZE];
-extern DeviceState eState;
-extern bool bDeviceOverTemp;
-extern bool bDeviceCriticalTemp;
+
+extern volatile DeviceState eState;
+extern volatile bool bDeviceOverTemp;
+extern volatile bool bDeviceCriticalTemp;
 
 #if HAS_EXT_TEMP_SENSOR
 extern float fTempSensor;
@@ -81,9 +94,6 @@ uint8_t GetThermalFlags();      // bit 0 over warn, bit 1 critical soon, bit 2 c
 #endif
 #if HAS_BATT_VOLT_SENSE
 extern float fBattVolt;
-#endif
-#if CAN_SLEEP
-extern bool bSleepRequest;
 #endif
 
 #if HAS_USB

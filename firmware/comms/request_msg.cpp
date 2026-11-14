@@ -1,4 +1,5 @@
 #include "request_msg.h"
+#include "can_frame.h"
 #include "device.h"
 #include "can.h"
 #include "config.h"
@@ -15,7 +16,7 @@ extern bool bSleepRequest;
 void CheckRequestMsgs(CANRxFrame *frame)
 {
     //Check for settings request message, (Base ID - 1)
-    if(frame->SID != stConfig.stDevice.nBaseId + CONFIG_RX_OFFSET)
+    if(CanId(*frame) != (uint32_t)(stConfig.stDevice.nBaseId + CONFIG_RX_OFFSET))
         return;
 
     #if CAN_SLEEP
@@ -26,9 +27,8 @@ void CheckRequestMsgs(CANRxFrame *frame)
         (frame->data8[3] == 'I') && (frame->data8[4] == 'T'))
     {
         CANTxFrame txMsg;
-        txMsg.SID = stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET;
-        txMsg.IDE = CAN_IDE_STD;
-        txMsg.DLC = 2;
+        CanSetId(txMsg, stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET);
+        txMsg.DLC = 8;
         txMsg.data8[0] = static_cast<uint8_t>(MsgCmd::Sleep);
         txMsg.data8[1] = 'Q';
         txMsg.data8[2] = 'U';
@@ -52,8 +52,7 @@ void CheckRequestMsgs(CANRxFrame *frame)
         (frame->data8[3] == 8))
     {
         CANTxFrame txMsg;
-        txMsg.SID = stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET;
-        txMsg.IDE = CAN_IDE_STD;
+        CanSetId(txMsg, stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET);
         txMsg.DLC = 8;
         txMsg.data8[0] = static_cast<uint8_t>(MsgCmd::BurnSettings);
         txMsg.data8[1] = 1;
@@ -77,13 +76,39 @@ void CheckRequestMsgs(CANRxFrame *frame)
     }
     #endif
 
+    // Check for restart request - applies settings that need a reset (e.g. CAN bitrate)
+    // Unburned settings are lost, host should burn first
+    if ((frame->DLC == 8) &&
+        (frame->data8[0] == static_cast<uint8_t>(MsgCmd::Restart)) &&
+        (frame->data8[1] == 'R') && (frame->data8[2] == 'E') &&
+        (frame->data8[3] == 'S') && (frame->data8[4] == 'E') && (frame->data8[5] == 'T'))
+    {
+        CANTxFrame txMsg;
+        CanSetId(txMsg, stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET);
+        txMsg.DLC = 8;
+        txMsg.data8[0] = static_cast<uint8_t>(MsgCmd::Restart);
+        txMsg.data8[1] = 'R';
+        txMsg.data8[2] = 'E';
+        txMsg.data8[3] = 'S';
+        txMsg.data8[4] = 'E';
+        txMsg.data8[5] = 'T';
+        txMsg.data8[6] = 1; // Acknowledge restart request
+        txMsg.data8[7] = 0;
+
+        PostTxFrame(&txMsg);
+
+        // Let the ack go out before resetting, same margin as sleep
+        chThdSleepMilliseconds(100);
+
+        NVIC_SystemReset();
+    }
+
     // Check for version request
     if ((frame->DLC == 8) &&
         (frame->data8[0] == static_cast<uint8_t>(MsgCmd::Version)))
     {
         CANTxFrame txMsg;
-        txMsg.SID = stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET;
-        txMsg.IDE = CAN_IDE_STD;
+        CanSetId(txMsg, stConfig.stDevice.nBaseId + CONFIG_TX_OFFSET);
         txMsg.DLC = 8;
         txMsg.data8[0] = static_cast<uint8_t>(MsgCmd::Version);
         txMsg.data8[1] = 0;

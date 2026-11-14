@@ -34,6 +34,9 @@ struct Config_Output{
 // ADC conversion = 20us
 // Rise time = 20us
 // 140us + 20us + 20us = 180us
+// DSEL changeover takes max ~60us
+#define DSEL_SETTLE_US 60
+
 #define PWM_READ_DELAY_SINGLE_CH 180
 // Min duty cycle @ 100Hz = 180us / 10ms  = 1.8%
 // Min duty cycle @ 200Hz = 180us / 5ms   = 3.6%
@@ -65,16 +68,22 @@ public:
         switch (model)
         {
         case ProfetModel::BTS7002_1EPP:
+        #ifdef BTS7002_1EPP_KILIS
             fKILIS = BTS7002_1EPP_KILIS;
+        #endif
             nPwmReadDelay = PWM_READ_DELAY_SINGLE_CH;
             break;
         case ProfetModel::BTS7008_2EPA_CH1:
         case ProfetModel::BTS7008_2EPA_CH2:
+        #ifdef BTS7008_2EPA_KILIS
             fKILIS = BTS7008_2EPA_KILIS;
+        #endif
             nPwmReadDelay = PWM_READ_DELAY_DOUBLE_CH;
             break;
         case ProfetModel::BTS70012_1ESP:
+        #ifdef BTS70012_1ESP_KILIS
             fKILIS = BTS70012_1ESP_KILIS;
+        #endif
             nPwmReadDelay = PWM_READ_DELAY_SINGLE_CH;
             break;
 #ifdef BTS7004_1EPP_KILIS
@@ -105,7 +114,26 @@ public:
     void Sleep();
 #endif
 
-    float GetCurrent() { return fCurrent; }
+    // Dual-channel devices share one IS pin, DSEL picks which channel it reports.
+    // Outputs are updated in two passes so DSEL only settles twice per cycle:
+    // pass 0 = single-channel and CH1, pass 1 = CH2
+    uint8_t GetDselPass() const { return (m_model == ProfetModel::BTS7008_2EPA_CH2) ? 1 : 0; }
+    bool IsDualChannel() const
+    {
+        return (m_model == ProfetModel::BTS7008_2EPA_CH1) || (m_model == ProfetModel::BTS7008_2EPA_CH2);
+    }
+    void SelectDsel();
+
+    // Immediately de-energize the output, used before entering a fatal error
+    void ForceOff()
+    {
+        pwm.Off();
+        palClearLine(m_in);
+        eState = ProfetState::Off;
+        fOutput = 0;
+    }
+
+    float GetCurrent() { return *const_cast<volatile float*>(&fCurrent); }
     ProfetState GetState() { return eState; }
     uint16_t GetOcCount() { return nOcCount; }
     uint8_t GetDutyCycle()
@@ -142,7 +170,10 @@ private:
 
     float *pInput;
 
-    ProfetState eState;
+    // eState/nOcCount are written by DeviceThread's Update() and read by
+    // CanCyclicTxThread via GetState()/GetOcCount() - volatile so the reader
+    // thread can't have the value cached/hoisted by the compiler.
+    volatile ProfetState eState;
     ProfetState eReqState;
     ProfetState eLastState;
 
@@ -153,14 +184,13 @@ private:
     bool bInRushActive;
     uint32_t nInRushOnTime;
 
-    uint16_t nOcCount;       // Number of overcurrents
+    volatile uint16_t nOcCount;       // Number of overcurrents
     uint32_t nOcTriggerTime; // Time of overcurrent
 
     Pwm pwm;
     uint16_t nPwmReadDelay = 0;
 
     void FollowerUpdate();
-    void HandleDsel();
     void MeasureCurrent();
     void CalculateCurrent();
 };

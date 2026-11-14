@@ -4,7 +4,7 @@
 #if NUM_OUTPUTS > 0
 void Pwm::Update()
 {
-    bChannelEnabled = (bool)(m_pwm->enabled & (1 << 0));
+    bChannelEnabled = (bool)(m_pwm->enabled & (1 << static_cast<uint8_t>(m_pwmCh)));
 
     if (!pConfig->bEnabled || !bChannelEnabled) {
         bLastChannelEnabled = bChannelEnabled;
@@ -39,32 +39,51 @@ void Pwm::Update()
 
 uint8_t Pwm::GetTargetDutyCycle() {
     if (pConfig->bVariableDutyCycle && pConfig->nDutyCycleInputDenom > 0) {
-        uint8_t dc = (uint8_t)((*pInput) / pConfig->nDutyCycleInputDenom);
-        if (dc < pConfig->nMinDutyCycle)
-            dc = pConfig->nMinDutyCycle;
-        return dc;
+        // Clamp duty cycle to 100% and minimum duty cycle
+        float fDc = (*pInput) / pConfig->nDutyCycleInputDenom;
+        if (fDc > 100.0f)
+            fDc = 100.0f;
+        if (!(fDc >= pConfig->nMinDutyCycle))
+            fDc = pConfig->nMinDutyCycle;
+        return (uint8_t)fDc;
     }
     return pConfig->nFixedDutyCycle;
 }
 
 void Pwm::InitSoftStart() {
+    nSoftStartTime = SYS_TIME;
+
+    // No ramp time configured - go straight to target instead of dividing by zero
+    if (pConfig->nSoftStartRampTime == 0) {
+        nDutyCycle = GetTargetDutyCycle();
+        bSoftStartComplete = true;
+        return;
+    }
+
     fSoftStartStep = GetTargetDutyCycle() / (float)pConfig->nSoftStartRampTime;
     bSoftStartComplete = false;
-    nSoftStartTime = SYS_TIME;
 }
 
 void Pwm::UpdateSoftStart() {
     uint8_t targetDuty = GetTargetDutyCycle();
-    nDutyCycle = (uint8_t)((fSoftStartStep * (SYS_TIME - nSoftStartTime)) + pConfig->nMinDutyCycle);
-    
-    if (nDutyCycle >= targetDuty) {
+    // Compare in float - the ramp can overshoot 255 in one step on short ramps
+    float fDuty = (fSoftStartStep * (SYS_TIME - nSoftStartTime)) + pConfig->nMinDutyCycle;
+
+    if (fDuty >= targetDuty) {
         nDutyCycle = targetDuty;
         bSoftStartComplete = true;
+    }
+    else {
+        nDutyCycle = (uint8_t)fDuty;
     }
 }
 
 void Pwm::UpdateFrequency()
 {
+    // Outputs can share a timer, so only the Ch1 output sets its frequency
+    if (m_pwmCh != PwmChannel::Ch1 || m_pwm->state != PWM_READY)
+        return;
+
     // Frequency within range and
     // (Frequency setting has changed or
     // PWM driver frequency != Frequency setting)
@@ -91,7 +110,8 @@ void Pwm::EnsureStarted()
 
 void Pwm::OverrideFrequency(uint16_t nFreq)
 {
-    if (nFreq > 0 && nFreq <= 400 &&
+    if (m_pwmCh == PwmChannel::Ch1 && m_pwm->state == PWM_READY &&
+        nFreq > 0 && nFreq <= 400 &&
         m_pwm->period != (m_pwmCfg->frequency / nFreq))
     {
         pwmChangePeriod(m_pwm, m_pwmCfg->frequency / nFreq);
@@ -111,7 +131,9 @@ void Pwm::On()
 
 void Pwm::Off()
 {
-    pwmDisablePeriodicNotification(m_pwm);
     pwmDisableChannel(m_pwm, static_cast<uint8_t>(m_pwmCh));
+    // Period callback is shared by every channel on the timer
+    if (m_pwm->enabled == 0)
+        pwmDisablePeriodicNotification(m_pwm);
 }
 #endif

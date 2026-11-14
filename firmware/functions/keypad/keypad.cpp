@@ -1,8 +1,9 @@
 #include "keypad.h"
+#include "can_frame.h"
 #include "blink_keypad.h"
 #include "grayhill_keypad.h"
 
-static THD_WORKING_AREA(waKeypadThread, 256);
+static THD_WORKING_AREA(waKeypadThread, 512);
 
 static void KeypadThread(void *arg)
 {
@@ -16,7 +17,7 @@ static void KeypadThread(void *arg)
         if (!keypads[k].IsEnabled())
             continue;
         CANTxFrame msg = keypads[k].GetStartMsg();
-        PostTxFrame(&msg);
+        PostTxFrame(&msg, KeypadBus(*keypads[k].pConfig));
         chThdSleepMilliseconds(KEYPAD_TX_MSG_SPLIT);
     }
 
@@ -29,8 +30,8 @@ static void KeypadThread(void *arg)
 
             if (!keypads[k].bStartMsgSent) {
                 CANTxFrame startMsg = keypads[k].GetStartMsg();
-                if (startMsg.SID != 0) 
-                    PostTxFrame(&startMsg);   
+                if (CanId(startMsg) != 0) 
+                    PostTxFrame(&startMsg, KeypadBus(*keypads[k].pConfig));
                 keypads[k].bStartMsgSent = true;
                 chThdSleepMilliseconds(KEYPAD_TX_MSG_SPLIT);
             }
@@ -38,8 +39,8 @@ static void KeypadThread(void *arg)
             for (uint8_t i = 0; i < keypads[k].GetNumTxMsgs(); i++)
             {
                 CANTxFrame msg = keypads[k].GetTxMsg(i);
-                if (msg.SID != 0)
-                    PostTxFrame(&msg);
+                if (CanId(msg) != 0)
+                    PostTxFrame(&msg, KeypadBus(*keypads[k].pConfig));
                 chThdSleepMilliseconds(KEYPAD_TX_MSG_SPLIT);
             }
         }
@@ -59,7 +60,7 @@ void Keypad::SetConfig(Config_Keypad* config)
     pConfig = config;
     pDimmingInput = pVarMap[config->nDimmingVar];
 
-    if (config->eModel <= KeypadModel::Blink15Key2Dial) {
+    if (config->eModel < KeypadModel::Grayhill6Key) {
         fnCheckMsg = CheckMsgBlinkMarine;
         fnGetTxMsg = GetTxMsgBlinkMarine;
         fnGetStartMsg = GetStartMsgBlinkMarine;
@@ -96,17 +97,17 @@ void Keypad::CheckTimeout()
     {
         // Timeout - reset values
         for (uint8_t i = 0; i < KEYPAD_MAX_BUTTONS; i++)
-        {
             fButtonVal[i] = 0;
+        for (uint8_t i = 0; i < KEYPAD_MAX_DIALS; i++)
             fDialVal[i] = 0;
+        for (uint8_t i = 0; i < KEYPAD_MAX_ANALOG_INPUTS; i++)
             fAnalogVal[i] = 0;
-        }
     }
 }
 
-bool Keypad::CheckMsg(CANRxFrame frame)
+bool Keypad::CheckMsg(CANRxFrame frame, uint8_t nBus)
 {
-    if (!pConfig->bEnabled || !fnCheckMsg)
+    if (!pConfig->bEnabled || !fnCheckMsg || KeypadBus(*pConfig) != nBus)
         return false;
     return fnCheckMsg(this, frame);
 }
