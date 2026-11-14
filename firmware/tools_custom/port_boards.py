@@ -4,6 +4,21 @@ Source of pin truth: custom-pdm docs/firmware-pin-map.md (2026-11-10)."""
 import re, shutil, sys, pathlib
 FW = pathlib.Path(sys.argv[1]); B = FW/'boards'
 
+# Factory CAN base IDs (Dan D4a 2026-11-10: user-editable, param 0x0000 sub 0). dingoFW development uses base + 0
+# (to PC tool), base + 1 (from PC tool) and base + 2 + n for cyclic msgs n = 0..NUM_TX_MSGS-1: 40 IDs per board with
+# our 38 msgs, so boards sit 0x40 apart (0x20 overlapped; s15a port, 2026-11-14).
+BASE_A1, BASE_A2, BASE_B = 0x500, 0x540, 0x580
+CYCLIC_TX_OFFSET = 2          # core/device_config.h
+# Device type in msg 0 byte 1 bits 4-7 (4 bits, 0-15). Upstream uses 0-4 (dingoPDM, Max, PT-DPDM, CANBoard, v8)
+# and counts up; ours sit at the top of the range (dingoConfig looks types up by value, not position).
+TYPE_A, TYPE_B = 14, 15
+STATUS_MSG = 37               # custom-pdm status frame: first free cyclic msg after upstream's 0-36
+NUM_TX = STATUS_MSG + 1
+
+def rep(s, old, new, n=1):
+    assert s.count(old) == n, (old, s.count(old))
+    return s.replace(old, new)
+
 def clone(src, dst):
     d = B/dst
     if d.exists(): shutil.rmtree(d)
@@ -97,7 +112,7 @@ THERMAL = '''// Board temperature limits are config params (0x7F00 sub 0-2, core
 #define FAN_COND0 (SHED_COND0 - 2)
 #define FAN_VIRT0 (SHED_VIRT0 - 3)
 #define FAN_CANIN0 24                          // slots 25-28 (1-based); the S2 "one PDM" recipe uses 1-8 and 32
-#define FAN_REMOTE_MSG0(r) ((r) ? 0x542 : 0x502)   // B / A1 factory base ID (0x540 / 0x500) + 2 = cyclic msg 0
+#define FAN_REMOTE_MSG0(r) ((r) ? @FAN_MSG0_B@ : @FAN_MSG0_A1@)   // B / A1 factory base ID (@BASE_B@ / @BASE_A1@) + 2 = cyclic msg 0 (made by port_boards.py)
 #define IS_FAN_COND(i) (HAS_FAN && ((int)(i) == FAN_COND0 || (int)(i) == FAN_COND0 + 1))
 #define IS_FAN_VIRT(i) (HAS_FAN && (int)(i) >= FAN_VIRT0 && (int)(i) < FAN_VIRT0 + 3)
 #define FAN_VJ(i) ((int)(i) - FAN_VIRT0)
@@ -128,7 +143,12 @@ THERMAL = '''// Board temperature limits are config params (0x7F00 sub 0-2, core
 #define DEFAULT_CANIN_SIGNED(i) (IS_FAN_CANIN(i) ? 1 : 0)
 #define DEFAULT_CANIN_OPERATOR(i) static_cast<uint32_t>(!IS_FAN_CANIN(i) ? Operator::Equal : FAN_CANIN_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
 #define DEFAULT_CANIN_OPERAND(i) (!IS_FAN_CANIN(i) ? F(0.0f) : F(FAN_CANIN_HOT(i) ? FAN_ON_C : FAN_OFF_C))'''
-def thermal(note, fan): return THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
+def thermal(note, fan):
+    t = THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
+    for k, v in {'@FAN_MSG0_B@': BASE_B + CYCLIC_TX_OFFSET, '@FAN_MSG0_A1@': BASE_A1 + CYCLIC_TX_OFFSET,
+                 '@BASE_B@': BASE_B, '@BASE_A1@': BASE_A1}.items():
+        t = t.replace(k, f'0x{v:03X}')
+    return t
 FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is wired inside the box to both fans; its X1 cavity T is spare.\n'
                 '// A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)\n'
                 '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)')
@@ -156,9 +176,10 @@ t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex 
 
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n// Wake-up: DI3 (PC10) and DI4 (PC11) share EXTI 10 / 11 with DI1 (PA10) and USB D- (PA11), which keep them\n#define WAKE_DIG_INPUT_MASK 0x73U')
-p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % ('(PDM_UNIT == 2 ? 0x520 : 0x500)') + '\n' + FAN_A)
+p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % (f'(PDM_UNIT == 2 ? 0x{BASE_A2:03X} : 0x{BASE_A1:03X})') + '\n' + FAN_A)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
-p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
+p = rep(p, '#define NUM_TX_MSGS 37', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: + msg {STATUS_MSG}')
+p = rep(p, '#define DEVICE_TYPE 0', f'#define DEVICE_TYPE {TYPE_A} // custom-pdm board A (stock dingoPDM = 0)')
 p = p.replace('    IS1 = 0,\n    IS2,\n', '    IS1_2 = 0,\n    AnIn1, // PC2, ADC1_IN12 (old IS2 slot)\n')
 p = p.replace('uint16_t GetAdcRaw(AnalogChannel channel);', 'uint16_t GetAdcRaw(AnalogChannel channel);\nfloat GetAdcVolts(AnalogChannel channel);')
 (d/'port.h').write_text(p)
@@ -194,7 +215,7 @@ def msg(d):
     m = (d/'msg.cpp').read_text()
     old = '    stMsg.frame.data8[0] = (GetDigInputVal(1) << 1) + GetDigInputVal(0);'
     assert old in m
-    m = m.replace(old, '    // Byte 0: digital inputs 1-8 (stock layout for 1-2). Inputs 9+ are in msg 27.\n'
+    m = m.replace(old, f'    // Byte 0: digital inputs 1-8 (stock layout for 1-2). Inputs 9+ are in msg {STATUS_MSG}.\n'
         '    uint8_t nDi = 0;\n    for (uint8_t i = 0; (i < NUM_DIG_INPUTS) && (i < 8); i++)\n        nDi |= (GetDigInputVal(i) ? 1 : 0) << i;\n    stMsg.frame.data8[0] = nDi;')
     # Msg 3 byte 7 (stock: always 0, no DBC signal): board temperature flags, in every 100 ms frame (Dan s11c)
     old3 = '                           (GetFlasherVal(1) << 1) + GetFlasherVal(0);\n    stMsg.frame.data8[7] = 0;'
@@ -203,13 +224,13 @@ def msg(d):
         '    stMsg.frame.data8[7] = GetThermalFlags(); // custom-pdm: bit 0 over warn, bit 1 critical soon, bit 2 critical')
     m += '''
 
-CANTxMsg TxMsg27()
+CANTxMsg TxMsg@N@()
 {
     CANTxMsg stMsg;
     //=======================================================
-    // Build Msg 27 (custom-pdm: all digital inputs, analog input, STM32 die temperature)
+    // Build Msg @N@ (custom-pdm: all digital inputs, analog input, STM32 die temperature)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 27;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + @N@);
     stMsg.frame.DLC = 8; // Bytes to send
     uint16_t nDi = 0;
     for (uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
@@ -223,10 +244,12 @@ CANTxMsg TxMsg27()
 
     return stMsg;
 }
-'''
+'''.replace('@N@', str(STATUS_MSG))
     (d/'msg.cpp').write_text(m)
+    last = STATUS_MSG - 1
     mh = (d/'msg.h').read_text()
-    mh = mh.replace('CANTxMsg TxMsg26();', 'CANTxMsg TxMsg26();\nCANTxMsg TxMsg27();').replace('    TxMsg26};', '    TxMsg26,\n    TxMsg27};')
+    mh = rep(mh, f'CANTxMsg TxMsg{last}();', f'CANTxMsg TxMsg{last}();\nCANTxMsg TxMsg{STATUS_MSG}();')
+    mh = rep(mh, f'    TxMsg{last}}};', f'    TxMsg{last},\n    TxMsg{STATUS_MSG}}};')
     (d/'msg.h').write_text(mh)
 msg(d)
 hh = (d/'hw_devices.h').read_text()
@@ -259,9 +282,11 @@ t = set_pin(t, 'B', 2, 'INPUT', 'PULLDOWN')
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2\n#define WAKE_DIG_INPUT_MASK 0x0FFU')
-p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % '0x540' + '\n' + FAN_B)
+p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % f'0x{BASE_B:03X}' + '\n' + FAN_B)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
-p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
+# Max sends msgs 0-34; board B uses the v7 msg layout (0-36, copied below) plus our status msg
+p = rep(p, '#define NUM_TX_MSGS 35', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: v7 msgs 0-36 + msg {STATUS_MSG}')
+p = rep(p, '#define DEVICE_TYPE 1', f'#define DEVICE_TYPE {TYPE_B} // custom-pdm board B (stock dingoPDM-Max = 1)')
 p = p.replace('#define ADC1_NUM_CHANNELS 7', '#define ADC1_NUM_CHANNELS 12')
 p = p.replace('#define BTS70012_1ESP_KILIS 35000', '#define BTS70012_1ESP_KILIS 35000\n#define BTS7004_1EPP_KILIS 20000 // Infineon BTS7004-1EPP datasheet, typ. at IL(NOM)')
 p = p.replace('    IS3,\n    IS4,\n', '    IS3,\n    IS4,\n    IS5,\n    IS6,\n    IS7,\n    IS8,\n')
