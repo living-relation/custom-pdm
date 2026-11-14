@@ -9815,7 +9815,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "STM32F446RETx"
+		(property "Value" "STM32F446RET7"
 			(at 113.9541 125.4293 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9860,7 +9860,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-15376-ND"
+		(property "Digi-Key_PN" "497-16775-ND"
 			(at 109.22 78.105 0)
 			(hide yes)
 			(show_name no)
@@ -9871,7 +9871,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C69336"
+		(property "LCSC" "C1343794"
+			(at 109.22 78.105 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 109.22 78.105 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "STM32F446RET7"
 			(at 109.22 78.105 0)
 			(hide yes)
 			(show_name no)
