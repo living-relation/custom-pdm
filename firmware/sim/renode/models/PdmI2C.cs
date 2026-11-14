@@ -11,6 +11,7 @@
 //   receive: one byte per 9 bit times into DR with a DMA request, until the RX DMA stream count reaches zero
 //            (stands in for the DMA end-of-transfer signal that goes with LAST);
 //   STOP / repeated START hand the collected bytes to the target.
+// A target that refuses its address (PDM_MCP9808.Nak) gets AF, as when nobody answers.
 // Not modelled: slave mode, 10-bit addressing, SMBus, PEC, clock stretching, bus errors, arbitration, CCR timing.
 //
 using System;
@@ -147,7 +148,7 @@ namespace Antmicro.Renode.Peripherals.I2C
             {
             case St.Address:
                 sb = false;
-                if(!TryGetByAddress(value >> 1, out child))
+                if(!TryGetByAddress(value >> 1, out child) || (child is PDM_MCP9808 && ((PDM_MCP9808)child).Nak))
                 {
                     child = null; af = true; AckFailures++;
                     this.Log(LogLevel.Warning, "No I2C target at 0x{0:X}: acknowledge failure", value >> 1);
@@ -268,21 +269,41 @@ namespace Antmicro.Renode.Peripherals.I2C
         private bool inTransaction;
     }
 
-    // Microchip MCP9808 stand-in: register pointer, 16-bit registers 1..7 (MSB first), 8-bit resolution register 8.
-    // Manufacturer ID 0x0054, device ID / revision 0x0400. Limit registers keep bits 12..2. The ambient register
-    // carries the three alert flags (bit 15 Ta >= Tcrit, bit 14 Ta > Tupper, bit 13 Ta < Tlower).
-    // Not modelled: lock bits (stored only), hysteresis, shutdown, alert pin, conversion time.
+    // Microchip MCP9808 stand-in (DS25095A): register pointer, 16-bit registers 1..7 (MSB first), 8-bit resolution
+    // register 8. Manufacturer ID 0x0054, device ID / revision 0x0400. Limit registers keep bits 12..2. The ambient
+    // register carries the three alert flags (bit 15 Ta >= Tcrit, bit 14 Ta > Tupper, bit 13 Ta < Tlower).
+    // CONFIG (Register 5-2): lock bits 7 / 6 stay set until PowerOnReset; while either is set THYST, Alert Cnt.,
+    // Alert Pol. and Alert Mod. keep their value and SHDN cannot be set (it can be cleared); window lock also keeps
+    // Alert Sel.; Tcrit lock blocks writes to Tcrit, window lock to Tupper / Tlower. Bits 4 / 5 are not stored.
+    // Shutdown (SHDN): no conversions, the ambient register keeps the last value. After power-on (TA = 0, Table 5-3)
+    // and after SHDN is cleared the ambient register keeps its old value for ConversionMs (tCONV 30 ms typ at 0.5 C).
+    // Reset() is an MCU reset: the sensor has no reset pin, so registers, locks and shutdown survive it.
+    // Nak = true: the sensor does not acknowledge its address (the controller model reports AF).
+    // Not modelled: hysteresis, the alert pin itself (AlertEnabled shows Alert Cnt.), resolution-dependent timing.
     public class PDM_MCP9808 : II2CPeripheral
     {
-        public PDM_MCP9808(double temperature = 30.0) { Temperature = temperature; Reset(); }
-
-        public void Reset()
+        public PDM_MCP9808(IMachine machine, double temperature = 30.0)
         {
-            pointer = 0; readIndex = 0;
-            config = 0; upper = 0; lower = 0; crit = 0; resolution = 3;
+            this.machine = machine; Temperature = temperature; ConversionMs = 30.0; PowerOnReset();
+        }
+
+        public void Reset() { pointer = 0; readIndex = 0; }
+
+        public void PowerOnReset()
+        {
+            Reset(); config = 0; upper = 0; lower = 0; crit = 0; resolution = 3;
+            held = 0.0; convStartMs = NowMs(); ShutdownWrites = 0; RejectedShutdowns = 0;
         }
 
         public double Temperature { get; set; }
+        public double ConversionMs { get; set; }
+        public bool Nak { get; set; }
+        public bool Shutdown { get { return (config & SHDN) != 0; } }
+        public bool AlertEnabled { get { return (config & ALERTCNT) != 0; } }
+        public bool Locked { get { return (config & (CRITLOCK | WINLOCK)) != 0; } }
+        public uint Config { get { return config; } }
+        public ulong ShutdownWrites { get; private set; }     // writes that put the sensor into shutdown
+        public ulong RejectedShutdowns { get; private set; }  // SHDN = 1 written while a lock bit was set
 
         public void Write(byte[] data)
         {
@@ -294,10 +315,10 @@ namespace Antmicro.Renode.Peripherals.I2C
                 var v = (ushort)((data[1] << 8) | data[2]);
                 switch(pointer)
                 {
-                case 1: config = (ushort)(v & 0x07FF); break;
-                case 2: upper = (ushort)(v & 0x1FFC); break;
-                case 3: lower = (ushort)(v & 0x1FFC); break;
-                case 4: crit = (ushort)(v & 0x1FFC); break;
+                case 1: WriteConfig(v); break;
+                case 2: if((config & WINLOCK) == 0) upper = (ushort)(v & 0x1FFC); break;
+                case 3: if((config & WINLOCK) == 0) lower = (ushort)(v & 0x1FFC); break;
+                case 4: if((config & CRITLOCK) == 0) crit = (ushort)(v & 0x1FFC); break;
                 default: break;
                 }
             }
@@ -317,6 +338,31 @@ namespace Antmicro.Renode.Peripherals.I2C
 
         public void FinishTransmission() { readIndex = 0; }
 
+        private void WriteConfig(ushort v)
+        {
+            var n = (ushort)(v & 0x07CF);
+            if(Locked)
+            {
+                const ushort keep = THYST | ALERTCNT | ALERTPOL | ALERTMOD;
+                n = (ushort)((n & ~keep) | (config & keep));
+                if((n & SHDN) != 0 && (config & SHDN) == 0) { n = (ushort)(n & ~SHDN); RejectedShutdowns++; }
+            }
+            if((config & WINLOCK) != 0) n = (ushort)((n & ~ALERTSEL) | (config & ALERTSEL));
+            n = (ushort)(n | (config & (CRITLOCK | WINLOCK)));
+            var was = (config & SHDN) != 0; var now = (n & SHDN) != 0;
+            if(!was && now) { held = Ambient(); ShutdownWrites++; }
+            if(was && !now) convStartMs = NowMs();
+            config = n;
+        }
+
+        private double Ambient()
+        {
+            if(Shutdown || NowMs() - convStartMs < ConversionMs) return held;
+            return Temperature;
+        }
+
+        private double NowMs() { return machine.LocalTimeSource.ElapsedVirtualTime.TotalMilliseconds; }
+
         private ushort Reg(int p)
         {
             switch(p)
@@ -326,11 +372,13 @@ namespace Antmicro.Renode.Peripherals.I2C
             case 3: return lower;
             case 4: return crit;
             case 5:
-                var raw = (int)Math.Round(Temperature * 16.0);
+                var t = Ambient();
+                if(!Shutdown) held = t;
+                var raw = (int)Math.Round(t * 16.0);
                 var v = (ushort)(raw & 0x1FFF);
-                if(Temperature >= Limit(crit)) v |= 0x8000;
-                if(Temperature > Limit(upper)) v |= 0x4000;
-                if(Temperature < Limit(lower)) v |= 0x2000;
+                if(t >= Limit(crit)) v |= 0x8000;
+                if(t > Limit(upper)) v |= 0x4000;
+                if(t < Limit(lower)) v |= 0x2000;
                 return v;
             case 6: return 0x0054;
             case 7: return 0x0400;
@@ -345,8 +393,12 @@ namespace Antmicro.Renode.Peripherals.I2C
             return t;
         }
 
+        private readonly IMachine machine;
         private int pointer, readIndex;
         private ushort config, upper, lower, crit;
         private byte resolution;
+        private double held, convStartMs;
+        private const ushort THYST = 0x0600, SHDN = 0x0100, CRITLOCK = 0x0080, WINLOCK = 0x0040;
+        private const ushort ALERTCNT = 0x0008, ALERTSEL = 0x0004, ALERTPOL = 0x0002, ALERTMOD = 0x0001;
     }
 }

@@ -14,6 +14,18 @@ Update 2026-11-14 (branch `feat/fw-thermal`, thermal protection + fans, `docs/fi
 | 20 | Above warn (56 C) | A1 outputs 1, 2, 4 stay on; state 0 -> 2 -> 0; last message E / State_Overtemp / 560 |
 | 21 | At critical (80 C) | A1 all off after 20 ms (sensor read phase), state 2, message E / Overtemp / 800 / 800, other boards untouched; still off at 79.5 / 80 / 77 / 74.0 C; back on 160 ms after 73.5 C; no fatal error |
 
+Update 2026-11-14 (branch `feat/fw-sleep`, sleep fix + MCP9808 reads + critical-exempt fan): **25 of 25 pass**. Test 5 now also reads device param 8 (critical-exempt mask: A1 0, A2 2, B 0). New tests (run after test 22):
+
+| # | Test | Evidence from the run |
+|---|---|---|
+| 23 (new) | Sleep request on A1 (alone on the bus) | before: DEN high on all 4 pairs, output 3 on, status LED on, sensor converting with alert on; after: every IN / DEN / DSEL low, both LEDs off, sensor in shutdown with alert off (1 shutdown write, 0 rejected), status frames stop |
+| 24 (new) | Wake-up (MCU reset, no sensor power-on reset) | DEN high at the first status frame; sensor back to continuous, alert on, not locked; msg 0 shows only 0 (no reading yet) then 41.5 C, never the 33.0 C held from before sleep |
+| 25 (new) | MCP9808 NAKs | A1 at 80 C: all off; 2 s of NAKs while it cools to 40 C: still all off, state 2, msg 0 keeps 80.0 C, message E / TempSensor (14) / 4 / I2C flags; reads back: outputs on and state Run |
+
+Model changes (`models/PdmI2C.cs`): the MCP9808 stand-in now follows DS25095A Register 5-2 for the lock bits (sticky until `PowerOnReset`; SHDN cannot be set while locked; locked fields and limit registers keep their value), shutdown (ambient register frozen), tCONV 30 ms after start or after SHDN clears (ambient register holds the old value meanwhile; 0 C after power-on), `Nak` (no address acknowledge, the controller reports AF). `machine Reset` is now an MCU reset only for the sensor; the bench's power cycle calls `PowerOnReset` first.
+
+STOP mode is not emulated: in Renode SysTick keeps running and ends the WFI at once (seen in a debug run: the board reset and restarted 620 ms after the sleep request). Test 23 therefore halts the CPU at `EnterStopMode()` (address from `arm-none-eabi-nm`, a file-local LTO symbol), and test 24 does the MCU reset the firmware does after STOP. EXTI wake-up from STOP stays untested here.
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed
@@ -65,13 +77,13 @@ Time steps: pin states are sampled every 20 ms (10 ms in test 7), so times are r
   so test 18 proves the stored timing, not that the bus works at that rate. No receive-overrun or
   transmit-time-out counters (the host simulation has them).
 - USB: no model. The firmware sees "not connected". Config over USB is not tested.
-- Sleep and wake-up (EXTI, STOP mode), brown-out, boot pins, watchdog: not tested.
+- STOP mode and EXTI wake-up, brown-out, boot pins, watchdog: not tested (the sleep steps before STOP and the restart after it are, tests 23-24).
 - PWM outputs and soft start: not tested (all outputs are plain on/off, as in `s1_system.py`).
 - Analog: ideal ADC, no noise or settling; sense clamp 3.3 V assumed (as in the host simulation); die temperature
   channel returns a fixed plausible value; analog input and digital-input pull settings not tested.
 - Interrupt and thread timing follow Renode's instruction counting, not the real MCU's cycle timing.
-- MCP9808 stand-in: flags and ID values written from the data sheet register description, not re-checked against
-  the PDF during this job (TBD); lock bits and hysteresis not modelled.
+- MCP9808 stand-in: lock, shutdown and tCONV behaviour checked against DS25095A (Register 5-2, section 5.2.1,
+  Tables 1-1 / 5-3) on 2026-11-14; hysteresis and the alert pin itself not modelled.
 - FRAM: plain array, no write-protect pin, no device-ID read (the firmware skips it).
 - No planted-error run was made on this bench (the host simulation has one). The pin tables are shared with it.
 - The CAN-filter option, the total of bus load and the latency numbers of `s1_system.py` are not repeated.

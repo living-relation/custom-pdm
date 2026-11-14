@@ -1,5 +1,6 @@
-"""S1-S4: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
-firmware logic, what outputs do when a CAN link is lost (three policies), and thermal protection + fans (S4).
+"""S1-S5: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
+firmware logic, what outputs do when a CAN link is lost (three policies), thermal protection + fans (S4), and
+MCP9808 read failures + wake-up from sleep (S5).
 IDs used here are examples only: boards 0x500 / 0x520 / 0x540, ECU command frame 0x4F0."""
 import sys, json, struct, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
@@ -231,6 +232,14 @@ want = {'A1': (475, ps.die_temp_can(63.0)), 'A2': (520, ps.die_temp_can(41.0))}
 check('temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg 27) x10 track their own set values on each board',
       all(tv[k][0] == want[k][0] and abs(tv[k][1] - want[k][1]) <= 4 for k in tv), f'got {tv}, want {want}')
 info['die_temp_x10'] = tv
+# Dan s10b: outputs exempt from the critical shutdown (device param 8, bit i = output i); default = the fan output
+ex = {k: t5.read(BASE[k], 0x0000, 8) for k in f5}
+check('critical-exempt outputs (device param 8): factory default = the fan output only (A2 bit 1 = 2), none on A1 and B', ex == {'A1': 0, 'A2': 2, 'B': 0}, ex)
+a2 = f5['A2']; t5.write(BASE['A2'], 0x1000, 0, 1); t5.write(BASE['A2'], 0x1000, 1, 1)    # A2 OUT1 on (always true), not exempt
+a2.set_load(0, a2.vbat / 3.0); a2.set_load(fo, a2.vbat / 0.12); a2.set_temp(40.0); b5.run_for(400); pre = pins_high(a2)
+a2.set_temp(80.0); b5.run_for(400); hot = (pins_high(a2), st5['A2'].dev_state()); a2.set_temp(70.0); b5.run_for(400); back = pins_high(a2)
+check('A2 at critical (80 C): the exempt fan output OUT2 stays on, the non-exempt OUT1 goes off (state OverTemp); OUT1 back at 70 C',
+      pre == [0, 1] and hot == ([1], 2) and back == [0, 1], (pre, hot, back))
 
 # configured board A1 (single-PDM config from S2), ECU commanding A1 outputs 1, 2, 4
 b6 = ps.Bus(); t6 = ps.Tool(b6); e6 = ps.PyNode('ecu'); a1 = ps.Board(ps.BOARD_A, 'A1', SO, fram=frams2['A1'])
@@ -293,6 +302,46 @@ seq = [(c, temp_step(c)) for c in (60.0, 69.5, 70.0, 74.5, 75.0, 79.0, 72.0, 70.
 want = [CMD_ON, CMD_ON, [1, 3], [1, 3], [3], [3], [3], [3], [1, 3], [1, 3], [1, 3], CMD_ON]
 check('load-shed example enabled: low priority (out 1) off at 70 C, high priority (out 2) off at 75 C, out 4 never; each returns at its own lower limit (70 / 65 C)',
       [p for c, p in seq] == want, seq)
+
+# ------------------------------------------------------------------ S5 MCP9808 reads and wake-up (sleep fix, Dan s7a)
+print('--- S5 warn before critical, sensor reads, wake-up')
+# Dan: over-temperature should be avoidable from CAN warnings first. Rising ramp on A1: warn 55, critical 80.
+infos.clear()
+for c in [50.0 + 0.5 * k for k in range(61)]: a1.set_temp(c); b6.run_for(300)
+w_ = [x for x in infos if x[1] == 3]; c_ = [x for x in infos if x[1] == 9]
+check('rising ramp 50 -> 80 C (0.5 C every 300 ms): the warn message (State_Overtemp, 55.5 C) comes once, about 14 s before the critical message (Overtemp, 80.0 C)',
+      len(w_) == 1 and w_[0][2] == 555 and len(c_) == 1 and c_[0][2] == 800 and c_[0][0] - w_[0][0] >= 10_000_000, (w_, c_))
+a1.set_temp(40.0); b6.run_for(600)
+# A failed I2C read is "no reading": it must never trip or clear critical. Board A1 from S4 (ECU commands outputs 1, 2, 4).
+TS = 14                                           # MsgSrc::TempSensor
+def ts_msgs(): return [x for x in infos if x[1] == TS]
+infos.clear(); seen0 = (temp_step(40.0), st6.dev_state())
+a1.mcp_fail(-1); a1.set_temp(90.0); b6.run_for(2000)          # the sensor would say 90 C if it could be read
+hold_w = (pins_high(a1), st6.dev_state(), st6.board_temp_x10()); m_w = ts_msgs()
+a1.mcp_fail(0); trip = (temp_step(90.0), st6.dev_state())
+check('reads fail while cool (40 C) and the board heats to 90 C: no trip for 2 s (outputs on, state Run, msg 0 keeps 40.0 C); the first good read trips critical',
+      seen0 == (CMD_ON, 0) and hold_w == (CMD_ON, 0, 400) and trip == ([], 2), (seen0, hold_w, trip))
+check('8 failed reads in a row: exactly one CAN error message, src TempSensor (14), count 4', len(m_w) == 1 and m_w[0][2] == 4, m_w)
+infos.clear(); a1.mcp_fail(-1); a1.set_temp(40.0); b6.run_for(2000)    # in critical now; it cools while reads fail
+hold_c = (pins_high(a1), st6.dev_state(), st6.board_temp_x10()); n_fail = a1.mcp_info()['fw_fails']
+a1.mcp_fail(0); b6.run_for(400); rec = (pins_high(a1), st6.dev_state(), st6.board_temp_x10(), a1.mcp_info()['fw_fails'])
+check('in critical (90 C), reads fail while it cools to 40 C: critical held for 2 s (all off, msg 0 keeps 90.0 C); good reads clear it (outputs back, Run, 40.0 C, count 0)',
+      hold_c == ([], 2, 900) and n_fail >= 7 and rec == (CMD_ON, 0, 400, 0), (hold_c, n_fail, rec))
+infos.clear(); a1.mcp_fail(3); b6.run_for(1500); m3 = ts_msgs(); a1.mcp_fail(4); b6.run_for(1500); m4 = ts_msgs()
+check('fault message threshold: 3 failed reads then good ones = no message; later 4 in a row = one message again (count 4)', m3 == [] and len(m4) == 1 and m4[0][2] == 4, (m3, m4))
+# Wake-up = MCU reset without a power-on reset: the MCP9808 is still in shutdown and holds 85 C from before sleep
+# until its first conversion; the board is at 41 C now. Board A1 with the S2 config, no ECU on the bus.
+b7 = ps.Bus(); t7 = ps.Tool(b7); w7 = ps.Board(ps.BOARD_A, 'A1', SO, fram=frams2['A1']); w7.mcp_carry(85.0); w7.set_temp(41.0)
+temps7 = []; errs7 = []
+b7.watch.append(lambda f: temps7.append(struct.unpack('<H', f.data[6:8])[0]) if f.id == BASE['A1'] + 2 else None)
+b7.watch.append(lambda f: errs7.append(f.data[1]) if f.id == BASE['A1'] and f.data[0] == ord('E') else None)
+b7.add(t7, w7); b7.run_for(20)
+den7 = {o[1]: w7.level(o[1]) for o in w7.model['outputs']}; mi0 = w7.mcp_info()          # before main() runs (500 ms)
+b7.run_for(1500); mi1 = w7.mcp_info()
+check('wake-up: DEN high on every channel before the firmware starts (Profet constructor), sensor back to continuous with alert on',
+      all(v == 1 for v in den7.values()) and (mi0['shutdown'], mi0['alert_on']) == (1, 0) and (mi1['shutdown'], mi1['alert_on']) == (0, 1), (den7, mi0, mi1))
+check('wake-up: the stale 85 C is never used (msg 0 only 0 = no reading yet, then 41.0 C; no over-temp or critical message)',
+      temps7 and set(temps7) <= {0, 410} and temps7[-1] == 410 and not (set(errs7) & {3, 9}), (sorted(set(temps7)), errs7))
 bad = [r for r in res if not r[1]]
-print(f'\nS1-S4: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
+print(f'\nS1-S5: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
 json.dump(dict(checks=res, info=info, matrix=matrix), open('/tmp/s1_results.json', 'w'), indent=1)

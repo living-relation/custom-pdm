@@ -201,6 +201,21 @@ void Profet::FollowerUpdate()
     fFault = 0;
 }
 
+#if SLEEP_LOW_POWER
+void Profet::Sleep()
+{
+    // Infineon PROFET+2 12V data sheets: with IN low and DEN high the part draws IGND(STBY) / IGND(OFF_D)
+    // 1.2 mA typ, 1.8 mA max (BTS7008-2EPA Table 10 P_6.5.1.5, BTS70012-1ESP P_6.5.25.5, BTS7004-1EPP P_6.5.21.5);
+    // with IN and DEN low (BTS7008-2EPA: DSEL low too, section 6.1.3) it is in sleep / OFF mode, under 2.2 uA.
+    // No current is read after this: the MCU stops and resets on wake-up (constructor sets DEN high again).
+    pwm.Off();
+    palClearLine(m_in);
+    palClearLine(m_den);
+    if (m_model == ProfetModel::BTS7008_2EPA_CH1 || m_model == ProfetModel::BTS7008_2EPA_CH2)
+        palClearLine(m_dsel);
+}
+#endif
+
 void Profet::HandleDsel()
 {
     // Select the appropriate IS channel on dual-channel devices

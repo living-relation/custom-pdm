@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include "port.h"
+#include "custom_options.h"
 #include "enums.h"
 #include "pwm.h"
 
@@ -99,6 +100,10 @@ public:
     }
 
     void Update(bool bOutEnabled);
+#if SLEEP_LOW_POWER
+    // custom-pdm: IN, DEN (and DSEL on dual parts) low just before STOP mode, so the PROFET goes to sleep / OFF mode
+    void Sleep();
+#endif
 
     float GetCurrent() { return fCurrent; }
     ProfetState GetState() { return eState; }

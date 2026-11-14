@@ -58,6 +58,10 @@
 #ifndef DEFAULT_TEMP_CRIT_HYST
 #define DEFAULT_TEMP_CRIT_HYST 6
 #endif
+// Outputs exempt from the critical shutdown, bit i = output i (Dan s10b). Boards set it in port.h; else none.
+#ifndef DEFAULT_CRIT_EXEMPT_MASK
+#define DEFAULT_CRIT_EXEMPT_MASK 0
+#endif
 #endif
 
 // Parameter definitions for compile-time registration
@@ -78,7 +82,8 @@
 #define DEVICE_THERMAL_PARAMS() \
     {0x0000, 5, &stConfig.stDevice.nTempWarn,          &stConfigTemp.stDevice.nTempWarn,         ParamType::UInt8,  DEFAULT_TEMP_WARN, 0, 125}, \
     {0x0000, 6, &stConfig.stDevice.nTempCrit,          &stConfigTemp.stDevice.nTempCrit,         ParamType::UInt8,  DEFAULT_TEMP_CRIT, 0, 125}, \
-    {0x0000, 7, &stConfig.stDevice.nTempCritHyst,      &stConfigTemp.stDevice.nTempCritHyst,     ParamType::UInt8,  DEFAULT_TEMP_CRIT_HYST, 1, 30}
+    {0x0000, 7, &stConfig.stDevice.nTempCritHyst,      &stConfigTemp.stDevice.nTempCritHyst,     ParamType::UInt8,  DEFAULT_TEMP_CRIT_HYST, 1, 30}, \
+    {0x0000, 8, &stConfig.stDevice.nCritExemptMask,    &stConfigTemp.stDevice.nCritExemptMask,   ParamType::UInt16, DEFAULT_CRIT_EXEMPT_MASK, 0, (1U << NUM_OUTPUTS) - 1}
 #endif
 
 //=============================================================================

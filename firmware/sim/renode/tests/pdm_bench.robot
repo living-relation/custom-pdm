@@ -28,7 +28,7 @@ Fresh Boards Wrote Their Default Config To The FRAM
 After A Power Cycle All Three Still Run At 1 Mbit/s On Their Own IDs With The Saved Config
     Power Cycle Keeps Ids And Config
 
-Factory Defaults: Fan Output A2 OUT2 Always On, Temperature Limits 55 / 80 / 6 C On Every Board
+Factory Defaults: Fan Output A2 OUT2 Always On, Temperature Limits 55 / 80 / 6 C, Only The Fan Exempt From Critical
     Factory Defaults Fan Output And Temperature Limits
 
 Config As One 24-Output PDM Is Written Over CAN And Saved To FRAM
@@ -81,3 +81,12 @@ At Critical: All Outputs Off, No Chatter, Back By Themselves Below Critical Minu
 
 Manual Setup: ID And Bit Rate Changed Over CAN, Saved, Kept After A Restart
     Manual Id And Bit Rate Change Survives A Restart
+
+Sleep: Every PROFET IN / DEN / DSEL Line Low, LEDs Off, MCP9808 Alert Off And In Shutdown
+    Sleep Drives Every Profet Line Low And Shuts The Sensor Down
+
+Wake-up: DEN High Again, MCP9808 Back To Continuous, No Stale Pre-sleep Reading Used
+    Wake Up Restores Den And The Sensor Without A Stale Reading
+
+MCP9808 Read Failures: Critical Held, Fault Message After 4 In A Row, Recovers When Reads Return
+    Sensor Read Failures Keep Critical And Send A Fault Message

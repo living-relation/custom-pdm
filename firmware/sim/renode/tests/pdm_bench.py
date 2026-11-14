@@ -107,7 +107,8 @@ class pdm_bench:
             s._x('sysbus.gpioPortA OnGPIO 9 false', MACH[k])
             for i in range(len(s.model[k]['inputs'])): s._input(k, i, False)
     def _power_cycle(s, *ks):
-        for k in ks: s._x('machine Reset', MACH[k])
+        # supply off and on: the MCP9808 sees a power-on reset too (a plain machine Reset is an MCU reset only)
+        for k in ks: s._x('sysbus.i2c1.tempSensor PowerOnReset', MACH[k]); s._x('machine Reset', MACH[k])
         s._settle_inputs(ks)
     def _fram_written(s, k): return s._n('sysbus.i2c1.fram BytesWritten', MACH[k])
 
@@ -143,9 +144,9 @@ class pdm_bench:
         seen = []
         for _ in range(10): s._run(200); seen.append(s._pins_on())
         st = s._status('A2', (3,)).out_state(s.OUT[10][1])
-        lim = {k: tuple(s._read1(BASE[k], 0x0000, sub) for sub in (5, 6, 7)) for k in BASE}
+        lim = {k: tuple(s._read1(BASE[k], 0x0000, sub) for sub in (5, 6, 7, 8)) for k in BASE}   # 8: critical-exempt outputs (s10b)
         s._check(s.OUT[10] == s.ps.FAN and all(p == [10] for p in seen) and st == 1, f'output pins high every 200 ms for 2 s: {seen}; A2 OUT2 status {st}')
-        s._check(all(v == (55, 80, 6) for v in lim.values()), f'warn / critical / recovery from the boards: {lim}')
+        s._check(lim == {'A1': (55, 80, 6, 0), 'A2': (55, 80, 6, 2), 'B': (55, 80, 6, 0)}, f'warn / critical / recovery / critical-exempt mask from the boards: {lim}')
 
     # ------------------------------------------------------------------ S2 the single-PDM layer (recipe from s1_system.py)
     def _can_input(s, k, slot, can_id, bit, timeout):
@@ -344,3 +345,69 @@ class pdm_bench:
         s._power_cycle('A1'); s._run(1200); br2 = s._bitrate('A1'); ver2 = s._version(0x500)
         s._check(ok1 and ok2 and ok3 and br == 500000 and ver == (0, 5, 9), f'writes {ok1} {ok2}, saved {ok3}, after restart {br} bit/s, version on 0x6A0 {ver}')
         s._check(r1 and r2 and r3 and br2 == 1000000 and ver2 == (0, 5, 9), f'restore: {r1} {r2} {r3}, {br2} bit/s, {ver2}')
+
+    # ------------------------------------------------------------------ sleep (Dan s7a) and MCP9808 read failures
+    def _pins(s, k, names): return {p: int(s._pin(k, p)) for p in names}
+    def _mcp(s, k, prop): return s._x(f'sysbus.i2c1.tempSensor {prop}', MACH[k])
+    def _symbol(s, elf, name):
+        """Address of a (possibly file-local, LTO) function in a bench ELF, from arm-none-eabi-nm (Renode's symbol
+        lookup does not find local symbols)."""
+        import re, subprocess
+        path = re.search(r'LoadELF @(\S*' + re.escape(elf) + ')', open(s.resc).read()).group(1)
+        for ln in subprocess.run(['arm-none-eabi-nm', '-C', path], capture_output=True, text=True).stdout.splitlines():
+            f = ln.split(' ', 2)
+            if len(f) == 3 and f[2] == name and f[0]: return int(f[0], 16)
+        raise AssertionError(f'{name} not in {path}')
+    def _a1_lines(s):
+        m = s.model['A1']['outputs']
+        return sorted({o[1] for o in m}), sorted({o[2] for o in m}), [o[0] for o in m]
+
+    def sleep_drives_every_profet_line_low_and_shuts_the_sensor_down(s):
+        den, dsel, ins = s._a1_lines()
+        # Renode does not model STOP mode: SysTick keeps running and ends the WFI at once (seen: the board reset and
+        # restarted about 620 ms after the request). So the bench halts the CPU where the firmware enters STOP
+        # (EnterStopMode, after every sleep step); the pins and the sensor then hold what they hold in STOP mode.
+        s._ecu_off(); s._plug('A2', False); s._plug('B', False); s._temp('A1', 33.0); s._run(TIMEOUT_MS + 300)   # policy 'on' output 3 comes on
+        s._x(f'sysbus.cpu AddHook {s._symbol("custompdm_a_unit1.elf", "EnterStopMode()"):#x} "self.IsHalted = True"', 'a1')
+        before = (s._pins('A1', den), s._a1_on(), s._pins('A1', s.ps.LEDS), s._mcp('A1', 'Shutdown'), s._mcp('A1', 'AlertEnabled'))
+        s._ecu(f'Send {BASE["A1"] + 1:#x} "{(bytes([s.ps.CMD["Sleep"]]) + b"QUIT" + bytes(3)).hex()}"'); s._run(200)
+        age0 = s._age_ms('A1'); s._run(500); age1 = s._age_ms('A1'); halted = s._x('sysbus.cpu IsHalted', 'a1')
+        after = (s._pins('A1', den + dsel + ins), s._pins('A1', s.ps.LEDS), s._mcp('A1', 'Shutdown'), s._mcp('A1', 'AlertEnabled'),
+                 int(s._mcp('A1', 'ShutdownWrites'), 0), int(s._mcp('A1', 'RejectedShutdowns'), 0))
+        s.slept = age1 - age0 >= 450 and halted == 'True'
+        s._check(all(v == 1 for v in before[0].values()) and before[1] == [3] and before[2] == {'PC0': 0, 'PC1': 1} and before[3:] == ('False', 'True'),
+                 f'before the request: DEN {before[0]}, A1 outputs on {before[1]}, LEDs {before[2]}, sensor shutdown / alert {before[3:]}')
+        s._check(s.slept and all(v == 0 for v in after[0].values()) and after[1] == {'PC0': 0, 'PC1': 0} and after[2:] == ('True', 'False', 1, 0),
+                 f'asleep (CPU stopped at EnterStopMode {halted}, status frames {age0:.0f} -> {age1:.0f} ms old): IN / DEN / DSEL {after[0]}, LEDs {after[1]}, sensor shutdown / alert / shutdown writes / rejected {after[2:]}')
+
+    def wake_up_restores_den_and_the_sensor_without_a_stale_reading(s):
+        den, dsel, ins = s._a1_lines()
+        s._temp('A1', 41.5)                              # warmer now; the sensor still holds 33.0 C from before sleep
+        # wake-up: the firmware resets the MCU after STOP (NVIC_SystemReset). EXTI wake from STOP is not emulated, so
+        # the bench does that MCU reset itself; the MCP9808 gets no power-on reset (models/PdmI2C.cs)
+        s._x('machine Reset', 'a1'); s._x('sysbus.cpu IsHalted false', 'a1'); s._settle_inputs(['A1'])
+        temps = []; t = 0; den_first = None
+        while t < 1500:
+            s._run(20); t += 20
+            if s._age_ms('A1') < 30:
+                if den_first is None: den_first = s._pins('A1', den)
+                temps.append(struct.unpack('<H', bytes.fromhex(s._ecu(f'Last {BASE["A1"] + 2:#x}'))[6:8])[0])
+        mcp = (s._mcp('A1', 'Shutdown'), s._mcp('A1', 'AlertEnabled'), s._mcp('A1', 'Locked'), int(s._mcp('A1', 'ShutdownWrites'), 0))
+        s._plug('A2', True); s._plug('B', True); s._ecu_on(); s._set_cmd([]); s._temp('A1', 30.0); s._run(600)
+        fatal = s._fatal('A1')
+        s._check(den_first is not None and all(v == 1 for v in den_first.values()), f'status frames again: {den_first is not None}; DEN at the first one {den_first}')
+        s._check(mcp == ('False', 'True', 'False', 1) and not fatal, f'sensor shutdown / alert / locked / shutdown writes {mcp} (no power-on reset in between); fatal {fatal}')
+        s._check(temps and set(temps) <= {0, 415} and 415 in temps, f'board temperature x10 in msg 0 after the wake-up (0 = no reading yet; 330 would be the stale pre-sleep value): {temps}')
+
+    def sensor_read_failures_keep_critical_and_send_a_fault_message(s):
+        s._set_cmd([1, 2, 4]); s._run(400); before = s._a1_on()
+        s._temp('A1', 80.0); s._run(600); crit = (s._a1_on(), s._status('A1', (0,)).dev_state())
+        s._mcp('A1', 'Nak true'); s._temp('A1', 40.0); s._run(2000)          # the sensor would read 40 C if it answered
+        st = s._status('A1', (0,)); held = (s._a1_on(), st.dev_state(), st.board_temp_x10()); msg = s._info('A1')
+        s._mcp('A1', 'Nak false'); t = 0
+        while s._a1_on() != before and t < 1000: s._run(STEP); t += STEP
+        on_back = s._a1_on(); s._run(200)       # status frame 0 (100 ms period) carries the new state
+        back = (on_back, s._status('A1', (0,)).dev_state()); s._set_cmd([]); s._temp('A1', 30.0); s._run(400)
+        s._check(before == [1, 2, 4] and crit == ([], 2), f'A1 on {before}; at 80 C {crit}')
+        s._check(held == ([], 2, 800) and msg[:3] == ('E', 14, 4), f'2 s of NAKs while it cools to 40 C: outputs / state / msg 0 temp {held}; last message {msg} (E, TempSensor = 14, 4 in a row, I2C flags)')
+        s._check(back == ([1, 2, 4], 0) and t <= 600, f'reads back: {back} after {t} ms')

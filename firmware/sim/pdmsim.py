@@ -12,6 +12,7 @@ def line(name):
 
 # ---- drivers (Infineon data sheets: typ. kILIS) ----
 KILIS = {'BTS7008-2EPA': 5950, 'BTS70012-1ESP': 35000, 'BTS7004-1EPP': 20000}
+LEDS = ('PC0', 'PC1')     # error (red), status (green), both boards, active high via 120 R (docs/firmware-pin-map.md)
 RSENSE = 1200.0
 # out: (IN, DEN, DSEL or None, DSEL level for this channel, IS pin, driver)
 BOARD_A = dict(
@@ -74,6 +75,12 @@ class Board:
         """board_c: MCP9808 reading. die_c: STM32 die (internal sensor), unchanged if None."""
         s.board_c = board_c; s.die_c = s.die_c if die_c is None else die_c; s.L.sim_set_env(s.vbat, s.board_c, s.die_c)
     def set_load(s, out, ohms, fault=0): s.L.sim_plant_set(out, ohms or 0.0, fault)
+    # --- MCP9808 (sim_core.cpp model)
+    def mcp_fail(s, n): s.L.sim_mcp_fail(n)                 # next n reads fail on I2C, -1 = all until mcp_fail(0)
+    def mcp_carry(s, held): s.L.sim_mcp_carry(ctypes.c_float(held))   # chip left in shutdown by the last sleep, holding 'held'
+    def mcp_info(s):
+        c = (ctypes.c_uint32 * 6)(); s.L.sim_mcp_info(c)
+        return dict(zip(['shutdown', 'alert_on', 'shutdown_calls', 'reads', 'failed', 'fw_fails'], c))
     def set_input(s, i, wire, dip=None):
         """wire: 'open' | 'gnd' | '12v'. dip (input board only): 'up' | 'down' | 'off'."""
         mcu, kind = s.model['inputs'][i]
@@ -192,6 +199,10 @@ class Tool(PyNode):
     def burn(s, base):
         s.rxlog.clear(); s.send(base + 1, bytes([CMD['BurnSettings'], 1, 3, 8, 0, 0, 0, 0]))
         f = s._wait(base, CMD['BurnSettings']); return bool(f and f.data[4])
+    def sleep(s, base):
+        """Sleep request (comms/request_msg.cpp: cmd 32 + 'QUIT' on base + 1). The board posts an acknowledge but
+        stops in the same device-thread cycle, so the acknowledge may never leave it: do not wait for it."""
+        s.rxlog.clear(); s.send(base + 1, bytes([CMD['Sleep']]) + b'QUIT' + bytes(3)); s.bus.run_for(50)
     def version(s, base):
         s.rxlog.clear(); s.send(base + 1, bytes([CMD['Version'], 0, 0, 0, 0, 0, 0, 0])); f = s._wait(base, CMD['Version'])
         return None if f is None else (f.data[4], f.data[5], (f.data[6] << 8) | f.data[7])
