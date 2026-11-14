@@ -95,7 +95,11 @@ def audit(model, label):
     dens = sorted({o[1] for o in model['outputs']}); dsels = sorted({o[2] for o in model['outputs'] if o[2]}); ins = [o[0] for o in model['outputs']]
     lv = lambda ps_: {p: b.level(p) for p in ps_}
     pre = (lv(dens), [b.level(p) for p in ins], lv(ps.LEDS), b.mcp_info())
+    wmask = tool.read(BASE, ps.TEMP_INDEX, ps.WAKE_SUB)
     tool.sleep(BASE); bus.run_for(300)   # dingoFW development: 100 ms CAN quiet + 20 ms transceiver settle before STOP
+    # Dan B2: factory default = no input wakes it (every input enabled above), CAN and USB do
+    check(f'{label} wake-up set, factory default: wake mask (0x7F00 sub {ps.WAKE_SUB}) = 0, sleep arms CAN RX (PB8) and USB D- / D+ (PA11 / PA12) only, no input pin',
+          wmask == 0 and ps.exti_lines(b) == {8: 'PB8', 11: 'PA11', 12: 'PA12'}, (wmask, ps.exti_lines(b)))
     post = (lv(dens + dsels + ins), all(b.pin_info(p)['mode'] == 'output' for p in dens + dsels + ins), lv(ps.LEDS), b.mcp_info())
     check(f'{label} sleep request: IN / DEN{" / DSEL" if dsels else ""} of every channel driven low (were: DEN high, {n - 2} IN high), LEDs off (error LED was on)',
           b.flags()['asleep'] and all(v == 1 for v in pre[0].values()) and pre[1] == [1] * (n - 2) + [0, 0] and pre[2]['PC0'] == 1

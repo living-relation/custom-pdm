@@ -20,8 +20,10 @@
 #define NUM_OUTPUTS 8
 #define NUM_DIG_OUTPUTS 0
 #define NUM_DIG_INPUTS 10
-// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2
-#define WAKE_DIG_INPUT_MASK 0x0FFU
+// Wake-up (Dan B2): no input wakes by default (CAN and USB do); per-input "may wake" mask = param 0x7F00 sub 5.
+// One wake source per EXTI line, so the firmware refuses a mask with both inputs of a pair or the USB one: DI1 (PA10) / DI9 (PC10) share EXTI 10, DI10 (PC11) shares EXTI 11 with USB D- (PA11).
+#define WAKE_INPUT_PARAM 1
+#define DEFAULT_WAKE_INPUT_MASK 0
 #define NUM_ANALOG_INPUTS 1
 #define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V
 #define NUM_VIRT_INPUTS 16

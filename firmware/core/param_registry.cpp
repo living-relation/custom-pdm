@@ -3,6 +3,9 @@
 #include "crc.h"
 #include <cstring>
 #include <bit>
+#if WAKE_INPUT_PARAM
+#include "sleep.h" // custom-pdm: CheckWakeInputMask
+#endif
 
 //=============================================================================
 // Parameter Table - Lives in flash (.rodata)
@@ -13,6 +16,9 @@ const ParamInfo stParams[] = {
     DEVICE_CONFIG_PARAMS(),
     #if THERMAL_LIMIT_PARAMS
     DEVICE_THERMAL_PARAMS(),
+    #endif
+    #if WAKE_INPUT_PARAM
+    DEVICE_WAKE_PARAMS(),
     #endif
 
     // Outputs (0x1000+)
@@ -192,6 +198,14 @@ bool WriteParam(const ParamInfo* param, uint32_t value, bool temp)
             if (value < param->nMinVal || value > param->nMaxVal) return false;
             break;
     }
+
+    #if WAKE_INPUT_PARAM
+    // custom-pdm (Dan B2): a wake-input mask with two inputs on one EXTI line, or an input on the USB / CAN wake
+    // line, is refused like an out-of-range value (single Write: no reply; WriteAllVal: WriteAllOutOfRange), and
+    // CheckWakeInputMask sends a warning on CAN. The stored mask is left as it was.
+    if ((param->pVal == &stConfig.stDevice.nWakeInputMask) && !CheckWakeInputMask(value))
+        return false;
+    #endif
 
     void* targetPtr = temp ? param->pTempVal : param->pVal;
 

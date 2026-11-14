@@ -38,6 +38,15 @@ One-line mutations, each a full bench run on a mutated `git archive` copy, all R
 
 Update 2026-11-14 (branch `feat/fw-dingofw-dev` @ aca0c62, firmware on dingoFW `development` @ 14084e9, s15a): **28 of 28 pass** (439 s suite). No model change was needed: the FRAM model takes upstream's 32-byte chunked writes (each its own transaction with its own address), the sleep path (CAN stopped, TX pin as GPIO, pending EXTI / NVIC cleared) runs up to the `EnterStopMode()` hook, and the param thread answers within the bench's reply time-out. Test edits: IDs, status msg and version from `pdmsim.py` (0x500 / 0x540 / 0x580, msg 37, 0.6.2). Evidence that changed: default config 4812 bytes (A) / 4840 (B) written at first start; 322 writes in 0.12 s with 0 retries (each run used to need one resend); cross-board rule on after 40 ms; link-loss changes at 1020 ms; outputs back 620 ms after a restart; overcurrent pulses at 20 / 2020 / 4020 ms, 1000-1020 ms long. RAM: .bss 59.9 kB (A) / 60.2 kB (B) of 128 kB, heap 68.6-69.0 kB left; flash .text 107 kB. Linker RWX warning only.
 
+Update 2026-11-14 (branch `feat/fw-wake` @ 54ea06a, wake-up set as a config setting, Dan B2): **30 of 30 pass** (449 s suite). New tests at the end (config side only: STOP mode is not emulated, so which pins actually wake the MCU is checked in the host sim, `s0` / `s1` S6, against its EXTI model; EXTI wake-up from STOP stays untested here):
+
+| # | Test | Evidence from the run |
+|---|---|---|
+| 29 (new) | Wake-up set: default and a valid mask over CAN | param 0x7F00 sub 5 = 0 on A1, A2, B; Write 0x073 (A1) / 0x1FE (B) answered with the same value, read back 0x073 / 0x1FE |
+| 30 (new) | Wake-up set: refused masks | A1 0x005 (IN_1 + IN_3, line 10), A1 0x008 (IN_4 = USB D- line), B 0x101 (IN_1 + B_IN9), B 0x200 (B_IN10): no Write reply after 3 tries, one warning per try on the base ID (R, src Config 10, refused mask, bad inputs, kept mask), read back = the mask from test 29; reset to 0 afterwards |
+
+One-line mutations, each a full bench run on a mutated `git archive` copy, both RED with only the targeted test failing: R1 board A factory wake mask 0x73 (test 29 fails: A1 / A2 read 115); R2 the WriteParam check removed (test 30 fails: every mask is answered and taken, no warning). Stock dingopdm_v7 .bin byte-identical to a fresh build of pristine `14084e9` (md5 fbe414ba); bench `fw` rebuilt with `--build` afterwards.
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed

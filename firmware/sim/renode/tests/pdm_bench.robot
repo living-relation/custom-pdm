@@ -99,3 +99,9 @@ Wake-up: DEN High Again, MCP9808 Back To Continuous, No Stale Pre-sleep Reading 
 
 MCP9808 Read Failures: Critical Held, Fault Message After 4 In A Row, Recovers When Reads Return
     Sensor Read Failures Keep Critical And Send A Fault Message
+
+Wake-up Set: Default No Input On Every Board, A Valid Mask Written Over CAN Is Taken (EXTI Wake Itself Not Emulated)
+    Wake Mask Defaults To None And A Valid Mask Is Taken
+
+Wake-up Set: A Mask With Both Inputs Of A Shared Line Or The USB D- Line Is Refused, Warning Sent, Mask Kept
+    Wake Mask On A Shared Or Usb Line Is Refused With A Warning
