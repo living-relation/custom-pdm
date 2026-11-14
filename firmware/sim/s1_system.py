@@ -262,7 +262,7 @@ want = {'A1': (475, ps.die_temp_can(63.0)), 'A2': (520, ps.die_temp_can(41.0))}
 check('temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg 27) x10 track their own set values on each board',
       all(tv[k][0] == want[k][0] and abs(tv[k][1] - want[k][1]) <= 4 for k in tv), f'got {tv}, want {want}')
 info['die_temp_x10'] = tv
-# Dan s10b: outputs exempt from the critical shutdown (device param 8, bit i = output i); default = the fan output
+# Dan s10b: outputs exempt from the critical shutdown (param 0x7F00 sub 3, bit i = output i); default = the fan output
 ex = {k: t5.read(BASE[k], ps.TEMP_INDEX, ps.TEMP_EXEMPT_SUB) for k in f5}
 check('critical-exempt outputs (param 0x7F00 sub 3): factory default = the fan output only (A2 bit 1 = 2), none on A1 and B', ex == {'A1': 0, 'A2': 2, 'B': 0}, ex)
 a2 = f5['A2']; t5.write(BASE['A2'], 0x1000, 0, 1); t5.write(BASE['A2'], 0x1000, 1, 1)    # A2 OUT1 on (always true), not exempt

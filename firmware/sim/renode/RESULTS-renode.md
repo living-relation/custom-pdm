@@ -34,6 +34,8 @@ Update 2026-11-14 (branch `feat/fw-fan-warn` @ 503f201, thermal flags + critical
 | 7 (new) | Fan when only a remote board is hot (A2 at 30 C) | A1 47 -> on, 41 -> on, 39 -> off; B 46 -> on, 30 -> off (temperatures reach A2 in A1 / B msg 0 over the CAN hub) |
 | 23 (new, after the critical test) | Thermal flags + critical-soon message on A1 | msg 3 byte 7 sampled every 100 ms for 1 s at 30 / 56 / 76 / 81 / 30 C = 0 / 1 / 3 / 5 / 0 in every sample, 9-11 msg 3 frames per second; last message on A1's base ID after 76 C = R / Overtemp (9) / 760 / 800 |
 
+One-line mutations, each a full bench run on a mutated `git archive` copy, all RED: R1 msg 3 byte 7 = 0 (test 23 fails: flags 0 in every sample); R2 critical-soon message on any over-temperature (tests 21, 22, 23 fail: an R message replaces the expected last message); R3 fan source A2 only (test 7 fails: fan never on); R4 fan latch without its self-hold (tests 6 and 7 fail: fan off at 42 / 41 C). After a mutation run the bench `fw` folder holds mutated binaries: run with `--build`.
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed
