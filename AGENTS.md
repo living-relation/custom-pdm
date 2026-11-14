@@ -16,6 +16,8 @@ Rules:
 - Defaults (Dan, 2026-11-11): if a question only amounts to "keep going or not" and the step is a normal part of the process that breaks nothing, take the common-sense answer, log it in `DECISIONS.md` as a default, and move on. Ask Dan only about real problems or real design choices. Do not invent problems.
 - At a finishing point, do not stop and wait: update STATE/DECISIONS/plans and working memory, then continue with the next task. Stop only for something Dan must answer or do (Dan, 2026-11-09).
 
+- UI check (Dan, 2026-11-14): every firmware feature or setting we add must be checked against the dingo UI (dingoConfig, repo corygrant/dingoElec): say whether it is shown / editable there, or list the UI change it needs.
+
 Firmware checks (run before any commit that touches `firmware/`):
 - WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one. Never build from `/mnt/c` (CRLF checkout): the script builds from `git archive` of a named branch (`main`).
 - Linux / WSL: `firmware/sim/build.sh custompdm_a <out> 1`, same for `custompdm_a <out> 2` and `custompdm_b <out> 1`, then `python3 firmware/sim/s0_board_audit.py <out>` (expect 42 of 42) and `python3 firmware/sim/s1_system.py <out>` (expect 46 of 46).
