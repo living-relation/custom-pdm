@@ -28,8 +28,14 @@ Fresh Boards Wrote Their Default Config To The FRAM
 After A Power Cycle All Three Still Run At 1 Mbit/s On Their Own IDs With The Saved Config
     Power Cycle Keeps Ids And Config
 
-Factory Defaults: Fan Output A2 OUT2 Always On, Temperature Limits 55 / 80 / 6 C, Only The Fan Exempt From Critical
+Factory Defaults: Fan Output A2 OUT2 Off At 30 C, Temperature Limits 55 / 80 / 6 C, Only The Fan Exempt From Critical, Critical-soon Margin 5 C
     Factory Defaults Fan Output And Temperature Limits
+
+Fan On A2 Follows A 30 -> 46 -> 42 -> 39 C Ramp On Its Own Sensor: Off, On, On, Off
+    Fan Follows A2 Temperature Ramp
+
+Fan Turns On When Only A Remote Board (A1 Or B) Is Hot, Over CAN, And Off Once It Cools To 40 C
+    Fan Turns On When Only A Remote Board Is Hot
 
 Config As One 24-Output PDM Is Written Over CAN And Saved To FRAM
     Configure As One Pdm And Save
@@ -78,6 +84,9 @@ Above Warn: Over-temperature State And Error Message, Outputs Unchanged
 
 At Critical: All Outputs Off, No Chatter, Back By Themselves Below Critical Minus Hysteresis
     At Critical All Off Then Recovers Below Critical Minus Hysteresis
+
+Thermal Flags (Warn, Critical Soon, Critical) In Every 100 ms Status Frame, Critical-soon Message Once
+    Thermal Flags In Every Status Frame And Critical Soon Message
 
 Manual Setup: ID And Bit Rate Changed Over CAN, Saved, Kept After A Restart
     Manual Id And Bit Rate Change Survives A Restart

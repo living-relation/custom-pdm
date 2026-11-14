@@ -217,26 +217,56 @@ b5 = ps.Bus(); t5 = ps.Tool(b5)
 f5 = {'A1': ps.Board(ps.BOARD_A, 'A1', SO, unit=1), 'A2': ps.Board(ps.BOARD_A, 'A2', SO, unit=2), 'B': ps.Board(ps.BOARD_B, 'B', SO)}
 st5 = {k: ps.Status(BASE[k]) for k in f5}
 for s_ in st5.values(): b5.watch.append(s_.feed)
-b5.add(t5, *f5.values()); b5.run_for(1500)
-lim = {k: {n: t5.read(BASE[k], 0x0000, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
-check('thermal: factory default limits on every board are warn 55, critical 80, recovery 6 deg C (device params 5-7)', all(v == ps.TEMP_DEFAULT for v in lim.values()), lim)
-fk, fo = ps.FAN
+fk, fo = ps.FAN; a2f = f5['A2']; FAN_IN = a2f.model['outputs'][fo][0]
+b5.add(t5, *f5.values()); fan_boot = []
+for _ in range(300): b5.run_for(5); fan_boot.append(a2f.level(FAN_IN))          # every 5 ms from power-up, all boards at 30 C
+lim = {k: {n: t5.read(BASE[k], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
+check('thermal: factory defaults on every board (param block 0x7F00): warn 55, critical 80, recovery 6, critical-soon margin 5 deg C', all(v == ps.TEMP_DEFAULT for v in lim.values()), lim)
 def pins_high(b): return [i for i, o in enumerate(b.model['outputs']) if b.level(o[0])]
 fan_seen = []; t_ = b5.now
-while b5.now < t_ + 10_000_000: b5.run_for(500); fan_seen.append(tuple(pins_high(f5[k]) for k in ('A1', 'A2', 'B')))
-check('fans: with no config and no ECU, only board A2 OUT2 is on, and it stays on (10 s awake); A1 and B have no output on',
-      all(p == ((), (fo,), ()) for p in [tuple(tuple(x) for x in s_) for s_ in fan_seen]) and st5['A2'].out_state(fo) == 1, fan_seen[-1])
+while b5.now < t_ + 10_000_000: b5.run_for(500); fan_seen.append(tuple(tuple(pins_high(f5[k])) for k in ('A1', 'A2', 'B')))
+check('fans: power-up at room temperature (30 C on all three boards): A2 OUT2 never on (every 5 ms for 1.5 s from power-up, then every 0.5 s for 10 s), status Off; no other output on',
+      sum(fan_boot) == 0 and all(p == ((), (), ()) for p in fan_seen) and st5['A2'].out_state(fo) == 0, (sum(fan_boot), fan_seen[-1], st5['A2'].out_state(fo)))
+# Fans follow the hottest board (Dan s12a on 45 / off 40 C, s13a A2 + A1 + B); default config only, no ECU
+fan_edges = [0]
+def fan_at(a1=None, a2=None, b=None, ms=700):
+    for k, c in (('A1', a1), ('A2', a2), ('B', b)):
+        if c is not None: f5[k].set_temp(c)
+    last = a2f.level(FAN_IN)
+    for _ in range(ms // 10):
+        b5.run_for(10); v = a2f.level(FAN_IN); fan_edges[0] += v != last; last = v
+    return last
+seq = [(c, fan_at(a2=c)) for c in (44.5, 45.0, 42.0, 40.5, 40.0, 44.0, 46.0, 39.0)]
+check('fan on A2\'s own sensor: off at 44.5, on at 45.0, stays on at 42.0 / 40.5, off at 40.0, stays off at 44.0, on at 46.0, off at 39.0',
+      [v for c, v in seq] == [0, 1, 1, 1, 0, 0, 1, 0], seq)
+fan_edges[0] = 0; off_band = [fan_at(a2=c, ms=400) for c in [44.5, 40.5] * 6]
+fan_at(a2=45.5); fan_edges[0] = 0; on_band = [fan_at(a2=c, ms=400) for c in [40.5, 44.5] * 6]; chatter = fan_edges[0]
+fan_at(a2=30.0)
+check('fan: no chatter between the limits (44.5 / 40.5 C x6 from off stays off, from on stays on; no edge at all, 10 ms samples)',
+      off_band == [0] * 12 and on_band == [1] * 12 and chatter == 0, (off_band, on_band, chatter))
+seq = [('A1 46', fan_at(a1=46.0)), ('A1 41', fan_at(a1=41.0)), ('A1 40', fan_at(a1=40.0)), ('B 45.5', fan_at(b=45.5)), ('B 39.5', fan_at(b=39.5)),
+       ('A1 47', fan_at(a1=47.0)), ('B 42', fan_at(b=42.0)), ('A1 35', fan_at(a1=35.0)), ('B 38', fan_at(b=38.0))]
+check('fan follows the hottest board over CAN (A2 at 30 C): on when only A1 (46 C) or only B (45.5 C) is hot; off only once every board is <= 40 C (B at 42 keeps it on after A1 cools)',
+      [v for n, v in seq] == [1, 1, 0, 1, 0, 1, 1, 1, 0], seq)
+# a remote board's temperature stops arriving (CAN loss): its CAN inputs time out (1 s) to 0 = neither hot nor cool
+bb = f5['B']; fan_at(b=47.0); pre = a2f.level(FAN_IN); bb.connected = False; bb.set_temp(30.0)
+lost_on = fan_at(ms=2500); bb.connected = True; back = fan_at(ms=800)
+check('remote reading lost while it was hot (B 47 C, then B off the bus and cooling): fan stays on for 2.5 s (a missing reading is not "cool"); off once B is back at 30 C',
+      (pre, lost_on, back) == (1, 1, 0), (pre, lost_on, back))
+bb.connected = False; quiet = fan_at(ms=1500); local = fan_at(a2=46.0); held = fan_at(a2=35.0, ms=1500); bb.connected = True; back = fan_at(ms=800)
+check('remote reading lost while cool: fan stays off (no vote either way); A2\'s own 46 C still turns it on; with B missing it stays on at A2 35 C; off once B is back (30 C)',
+      (quiet, local, held, back) == (0, 1, 1, 0), (quiet, local, held, back))
 f5['A1'].set_temp(47.5, 63.0); f5['A2'].set_temp(52.0, 41.0); b5.run_for(800)
 tv = {k: (st5[k].board_temp_x10(), st5[k].die_temp_x10()) for k in ('A1', 'A2')}
 want = {'A1': (475, ps.die_temp_can(63.0)), 'A2': (520, ps.die_temp_can(41.0))}
 check('temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg 27) x10 track their own set values on each board',
       all(tv[k][0] == want[k][0] and abs(tv[k][1] - want[k][1]) <= 4 for k in tv), f'got {tv}, want {want}')
 info['die_temp_x10'] = tv
-# Dan s10b: outputs exempt from the critical shutdown (device param 8, bit i = output i); default = the fan output
-ex = {k: t5.read(BASE[k], 0x0000, 8) for k in f5}
-check('critical-exempt outputs (device param 8): factory default = the fan output only (A2 bit 1 = 2), none on A1 and B', ex == {'A1': 0, 'A2': 2, 'B': 0}, ex)
+# Dan s10b: outputs exempt from the critical shutdown (param 0x7F00 sub 3, bit i = output i); default = the fan output
+ex = {k: t5.read(BASE[k], ps.TEMP_INDEX, ps.TEMP_EXEMPT_SUB) for k in f5}
+check('critical-exempt outputs (param 0x7F00 sub 3): factory default = the fan output only (A2 bit 1 = 2), none on A1 and B', ex == {'A1': 0, 'A2': 2, 'B': 0}, ex)
 a2 = f5['A2']; t5.write(BASE['A2'], 0x1000, 0, 1); t5.write(BASE['A2'], 0x1000, 1, 1)    # A2 OUT1 on (always true), not exempt
-a2.set_load(0, a2.vbat / 3.0); a2.set_load(fo, a2.vbat / 0.12); a2.set_temp(40.0); b5.run_for(400); pre = pins_high(a2)
+a2.set_load(0, a2.vbat / 3.0); a2.set_load(fo, a2.vbat / 0.12); a2.set_temp(50.0); b5.run_for(700); pre = pins_high(a2)   # 50 C: fan on (>= 45)
 a2.set_temp(80.0); b5.run_for(400); hot = (pins_high(a2), st5['A2'].dev_state()); a2.set_temp(70.0); b5.run_for(400); back = pins_high(a2)
 check('A2 at critical (80 C): the exempt fan output OUT2 stays on, the non-exempt OUT1 goes off (state OverTemp); OUT1 back at 70 C',
       pre == [0, 1] and hot == ([1], 2) and back == [0, 1], (pre, hot, back))
@@ -283,12 +313,12 @@ check('critical recovers by itself at 73.5 C (no power cycle), then no chatter a
       t_on is not None and t_on <= 260 and edges == 0 and last == CMD_ON and not a1.flags()['fatal'], (t_on, edges, last))
 info['crit_recover_ms'] = t_on
 # limits changed over CAN act at once (no restart)
-ok_w = all(t6.write(BASE['A1'], 0x0000, ps.TEMP_PARAM[n], v) is not None for n, v in (('warn', 50), ('crit', 70), ('hyst', 4)))
-rd = {n: t6.read(BASE['A1'], 0x0000, sub) for n, sub in ps.TEMP_PARAM.items()}
+ok_w = all(t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM[n], v) is not None for n, v in (('warn', 50), ('crit', 70), ('hyst', 4)))
+rd = {n: t6.read(BASE['A1'], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.items()}
 seq = [(c, temp_step(c), st6.dev_state()) for c in (45.0, 51.0, 69.5, 70.0, 66.5, 65.5)]
 check('limits set over CAN (warn 50, critical 70, recovery 4) act at once: 51 C OverTemp, 70 C all off, 66.5 C still off, 65.5 C back on',
-      ok_w and rd == {'warn': 50, 'crit': 70, 'hyst': 4} and [(p, s) for c, p, s in seq] == [(CMD_ON, 0), (CMD_ON, 2), (CMD_ON, 2), ([], 2), ([], 2), (CMD_ON, 2)], (rd, seq))
-for n in ('warn', 'crit', 'hyst'): t6.write(BASE['A1'], 0x0000, ps.TEMP_PARAM[n], ps.TEMP_DEFAULT[n])
+      ok_w and rd == {'warn': 50, 'crit': 70, 'hyst': 4, 'soon': 5} and [(p, s) for c, p, s in seq] == [(CMD_ON, 0), (CMD_ON, 2), (CMD_ON, 2), ([], 2), ([], 2), (CMD_ON, 2)], (rd, seq))
+for n in ('warn', 'crit', 'hyst'): t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM[n], ps.TEMP_DEFAULT[n])
 temp_step(40.0)
 # the prefilled load-shed example, enabled as documented (docs/firmware-thermal-plan.md section 7):
 # output 1 sheds at level 0 (70 C, back at 65 C), output 2 at level 1 (75 C, back at 70 C), output 4 is never shed
@@ -312,6 +342,32 @@ w_ = [x for x in infos if x[1] == 3]; c_ = [x for x in infos if x[1] == 9]
 check('rising ramp 50 -> 80 C (0.5 C every 300 ms): the warn message (State_Overtemp, 55.5 C) comes once, about 14 s before the critical message (Overtemp, 80.0 C)',
       len(w_) == 1 and w_[0][2] == 555 and len(c_) == 1 and c_[0][2] == 800 and c_[0][0] - w_[0][0] >= 10_000_000, (w_, c_))
 a1.set_temp(40.0); b6.run_for(600)
+# Dan s11c: steady thermal flags in every cyclic msg 3 (byte 7) + a one-shot critical-soon event (A1, limits 55 / 80 / 6, margin 5)
+fl3 = []; ev = []
+b6.watch.append(lambda f: fl3.append((f.t, f.data[7])) if f.id == BASE['A1'] + 2 + 3 else None)
+b6.watch.append(lambda f: ev.append((f.data[0], f.data[1]) + struct.unpack('<HHH', f.data[2:8])) if f.id == BASE['A1'] and f.data[0] in (ord('R'), ord('E')) else None)
+W_, S_, C_ = ps.FLAG_WARN, ps.FLAG_SOON, ps.FLAG_CRIT
+FSEQ = [(50.0, 0), (55.0, 0), (55.5, W_), (54.0, W_), (53.0, 0), (60.0, W_), (74.5, W_), (75.0, W_ | S_), (74.0, W_ | S_), (73.0, W_),
+        (76.0, W_ | S_), (80.0, W_ | C_), (77.0, W_ | C_), (73.5, W_), (40.0, 0)]
+bad = []; t_s = b6.now
+for c, want in FSEQ:
+    a1.set_temp(c); t0_ = b6.now; b6.run_for(700)
+    got = [x for t, x in fl3 if t >= t0_ + 400_000]
+    if len(got) < 2 or any(x != want for x in got): bad.append((c, want, got))
+gaps = [b_ - a_ for (a_, _), (b_, _) in zip(fl3, fl3[1:]) if a_ >= t_s]
+check('thermal flags, msg 3 byte 7 (bit 0 warn > 55 / clears < 53.5; bit 1 critical soon >= 75 / clears < 73.5 or at critical; bit 2 critical >= 80 / clears < 74): right in every frame of a 15-step ramp',
+      not bad, bad)
+check('msg 3 (with the flags) goes out every 100 ms through the whole ramp: no frame missing', gaps and max(gaps) <= 120_000, max(gaps) if gaps else None)
+soon_ev = [e for e in ev if e[0] == ord('R') and e[1] == 9]
+check('critical-soon event (type Warning R, src Overtemp 9; temp x10, critical x10, margin): once per entry - 75.0 C, then 76.0 C after it cleared at 73.0 C',
+      [e[2:] for e in soon_ev] == [(750, 800, 5), (760, 800, 5)], soon_ev)
+ok_m = t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM['soon'], 8) is not None
+m8 = []
+for c in (71.5, 72.0, 40.0): a1.set_temp(c); b6.run_for(700); m8.append(fl3[-1][1])
+ok_0 = t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM['soon'], 0) is not None; a1.set_temp(79.5); b6.run_for(700); m0 = fl3[-1][1]
+t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM['soon'], 5); a1.set_temp(40.0); b6.run_for(700)
+check('critical-soon margin set over CAN (0x7F00 sub 4) acts at once: margin 8 -> flag at 72.0 C, not 71.5 C; margin 0 -> no flag even at 79.5 C',
+      ok_m and ok_0 and m8 == [W_, W_ | S_, 0] and m0 == W_, (ok_m, ok_0, m8, m0))
 # A failed I2C read is "no reading": it must never trip or clear critical. Board A1 from S4 (ECU commands outputs 1, 2, 4).
 TS = 14                                           # MsgSrc::TempSensor
 def ts_msgs(): return [x for x in infos if x[1] == TS]

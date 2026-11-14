@@ -73,12 +73,15 @@ void States();
 
 #if HAS_EXT_TEMP_SENSOR && THERMAL_LIMIT_PARAMS
 // custom-pdm: warn / critical decided here from the reading and the config limits, so a limit changed over
-// CAN acts at once. The MCP9808 limit registers are written once at boot and locked (they only drive the
-// alert LED); the flag rules follow the MCP9808 data sheet: over warn when T > limit, critical when
-// T >= limit, each clears only below limit - hysteresis.
+// CAN acts at once. The MCP9808 limit registers are written at every start and only drive the alert LED
+// (not locked since the sleep fix, see MCP9808::Init); the flag rules follow the MCP9808 data sheet: over warn
+// when T > limit, critical when T >= limit, each clears only below limit - hysteresis.
+// Critical soon (Dan s11c): T >= critical - margin and not critical; clears below critical - margin - 1.5 C (the warn
+// hysteresis) or when critical is reached. The three flags go out in every cyclic msg 3 (byte 7, GetThermalFlags).
+static bool bWarn = false;
+static bool bCritSoon = false;
 static void UpdateBoardTempLimits(float fTemp)
 {
-    static bool bWarn = false;
     const float fWarn = stConfig.stDevice.nTempWarn;
     const float fCrit = stConfig.stDevice.nTempCrit;
     const float fCritHyst = stConfig.stDevice.nTempCritHyst;
@@ -92,6 +95,14 @@ static void UpdateBoardTempLimits(float fTemp)
         bDeviceCriticalTemp = true;
     else if (fTemp < fCrit - fCritHyst)
         bDeviceCriticalTemp = false;
+
+    const float fSoon = fCrit - stConfig.stDevice.nTempCritSoonMargin;
+    if (bDeviceCriticalTemp || stConfig.stDevice.nTempCritSoonMargin == 0)
+        bCritSoon = false;
+    else if (fTemp >= fSoon)
+        bCritSoon = true;
+    else if (fTemp < fSoon - BOARD_TEMP_WARN_HYST)
+        bCritSoon = false;
 
     bDeviceOverTemp = bWarn || bDeviceCriticalTemp;
 }
@@ -129,6 +140,8 @@ static void UpdateBoardTemp()
 
 uint16_t GetTempSensorFails() { return (uint16_t)nTempSensorFails; }
 uint16_t GetTempSensorErrors() { return (uint16_t)tempSensor.GetErrors(); }
+bool GetCritSoonTemp() { return bCritSoon; }
+uint8_t GetThermalFlags() { return (bWarn ? 1U : 0U) | (bCritSoon ? 2U : 0U) | (bDeviceCriticalTemp ? 4U : 0U); }
 #endif
 
 struct DeviceThread : chibios_rt::BaseStaticThread<DEVICE_THREAD_STACK>
@@ -242,7 +255,7 @@ void InitDevice()
 void States()
 {
     // custom-pdm (THERMAL_LIMIT_PARAMS): critical temperature is not fatal; CyclicUpdate holds every output
-    // (except the critical-exempt ones, device param 8) off while bDeviceCriticalTemp is set and they follow their inputs again once it clears.
+    // (except the critical-exempt ones, param 0x7F00 sub 3) off while bDeviceCriticalTemp is set and they follow their inputs again once it clears.
     #if HAS_EXT_TEMP_SENSOR && !THERMAL_LIMIT_PARAMS
     if (bDeviceCriticalTemp)
     {

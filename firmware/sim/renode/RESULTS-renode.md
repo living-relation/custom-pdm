@@ -26,6 +26,16 @@ Model changes (`models/PdmI2C.cs`): the MCP9808 stand-in now follows DS25095A Re
 
 STOP mode is not emulated: in Renode SysTick keeps running and ends the WFI at once (seen in a debug run: the board reset and restarted 620 ms after the sleep request). Test 23 therefore halts the CPU at `EnterStopMode()` (address from `arm-none-eabi-nm`, a file-local LTO symbol), and test 24 does the MCU reset the firmware does after STOP. EXTI wake-up from STOP stays untested here.
 
+Update 2026-11-14 (branch `feat/fw-fan-warn` @ 503f201, thermal flags + critical soon + temperature-switched fans + params at 0x7F00): **28 of 28 pass** (about 470 s). Test 5 now expects the fan OFF at 30 C (no output high at any 200 ms sample for 2 s, A2 OUT2 status Off) and reads warn / critical / recovery / exempt mask / critical-soon margin from block 0x7F00 sub 0-4: A1 and B (55, 80, 6, 0, 5), A2 (55, 80, 6, 2, 5). New tests:
+
+| # | Test | Condition checked |
+|---|---|---|
+| 6 (new) | Fan on A2's own sensor, 30 -> 46 -> 42 -> 39 C (800 ms per step) | global output 10 off, on, on, off |
+| 7 (new) | Fan when only a remote board is hot (A2 at 30 C) | A1 47 -> on, 41 -> on, 39 -> off; B 46 -> on, 30 -> off (temperatures reach A2 in A1 / B msg 0 over the CAN hub) |
+| 23 (new, after the critical test) | Thermal flags + critical-soon message on A1 | msg 3 byte 7 sampled every 100 ms for 1 s at 30 / 56 / 76 / 81 / 30 C = 0 / 1 / 3 / 5 / 0 in every sample, 9-11 msg 3 frames per second; last message on A1's base ID after 76 C = R / Overtemp (9) / 760 / 800 |
+
+One-line mutations, each a full bench run on a mutated `git archive` copy, all RED: R1 msg 3 byte 7 = 0 (test 23 fails: flags 0 in every sample); R2 critical-soon message on any over-temperature (tests 21, 22, 23 fail: an R message replaces the expected last message); R3 fan source A2 only (test 7 fails: fan never on); R4 fan latch without its self-hold (tests 6 and 7 fail: fan off at 42 / 41 C). After a mutation run the bench `fw` folder holds mutated binaries: run with `--build`.
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed

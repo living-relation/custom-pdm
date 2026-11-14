@@ -25,6 +25,11 @@ def audit(model, label):
     b.set_temp(44.0, 58.5); bus.run_for(400)      # unequal: a board / die mix-up is 14.5 C off
     check(f'{label} temperatures: board 44.0 C in msg 0, STM32 die 58.5 C in msg 27 (x10)', st.board_temp_x10() == 440 and abs((st.die_temp_x10() or 0) - ps.die_temp_can(58.5)) <= 4,
           f'board {st.board_temp_x10()}, die {st.die_temp_x10()} (want {ps.die_temp_can(58.5)})')
+    # Dan s11c: steady thermal flags in every cyclic msg 3, byte 7 (bit 0 over warn, 1 critical soon, 2 critical)
+    fl = []
+    for c in (56.0, 77.0, 81.0, 30.0): b.set_temp(c); bus.run_for(600); fl.append(st.thermal_flags())
+    check(f'{label} thermal flags (msg 3 byte 7): 56 C warn (1), 77 C warn + critical soon (3), 81 C warn + critical (5), 30 C none (0)',
+          fl == [ps.FLAG_WARN, ps.FLAG_WARN | ps.FLAG_SOON, ps.FLAG_WARN | ps.FLAG_CRIT, 0], fl)
     b.set_temp(30.0, 30.0)
     # --- every output: switch it alone with a known load, compare with the hardware model
     for i in range(n):

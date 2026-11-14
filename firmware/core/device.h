@@ -75,6 +75,8 @@ extern float fTempSensor;
 #if THERMAL_LIMIT_PARAMS
 uint16_t GetTempSensorFails();  // MCP9808 reads failed in a row (0 after a good read)
 uint16_t GetTempSensorErrors(); // ChibiOS I2C error flags of the last failed transfer
+bool GetCritSoonTemp();         // within the critical-soon margin below critical, not yet critical (Dan s11c)
+uint8_t GetThermalFlags();      // bit 0 over warn, bit 1 critical soon, bit 2 critical (cyclic msg 3 byte 7)
 #endif
 #endif
 #if HAS_BATT_VOLT_SENSE

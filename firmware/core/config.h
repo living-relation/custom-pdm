@@ -36,7 +36,7 @@
 #include "custom_options.h"
 
 #if THERMAL_LIMIT_PARAMS
-#define CONFIG_VERSION 0x0107 //custom-pdm: stock 0x0006 + board temperature limits + critical-exempt outputs in Config_Device
+#define CONFIG_VERSION 0x0108 //custom-pdm: stock 0x0006 + board temperature limits + critical-exempt outputs + critical-soon margin in Config_Device
 #else
 #define CONFIG_VERSION 0x0006 //Increment when config structure changes
 #endif
@@ -56,6 +56,7 @@ struct Config_Device{
   uint8_t nTempCrit;      //deg C: at or above it, all outputs off
   uint8_t nTempCritHyst;  //deg C: outputs come back below nTempCrit - nTempCritHyst
   uint16_t nCritExemptMask; //bit i = output i keeps following its input during critical (Dan s10b: the fan output)
+  uint8_t nTempCritSoonMargin; //deg C: "critical soon" from nTempCrit - margin up to critical (0 = off; Dan s11c)
   #endif
 };
 
