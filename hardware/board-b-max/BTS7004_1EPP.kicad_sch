@@ -3822,6 +3822,17 @@
 				)
 			)
 		)
+		(property "Digi-Key_PN" "BTS70041EPPXUMA1CT-ND"
+			(at 121.92 82.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "b430c2a1-a1a8-4839-b421-23a50689c053")
 		)

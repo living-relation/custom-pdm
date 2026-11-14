@@ -278,7 +278,7 @@ Missing from v4 completely: 6 x LM324, 3 x crystal, 3 x USB-C socket, 3 x BOOT s
 
 ## 7. Could not be confirmed (TBD list)
 
-- Digi-Key: no page could be read by my tools, so none of the Digi-Key numbers in the schematics was resolved to a maker part. Digi-Key stock for BTS70012 is from Octopart.
+- Digi-Key: no page could be read by my tools, so none of the Digi-Key numbers in the schematics was resolved to a maker part (2026-11-14: the PR #23 / #24 parts and BTS7004-1EPP were looked up, see `tools/sch_digikey.py`; the older inherited numbers are still unchecked). Digi-Key stock for BTS70012 is from Octopart.
 - The three 5 V converters' ratings from their makers' data sheets (CUI site refused the download).
 - TVS SMCJ20CA breakdown and clamp values from a maker data sheet (only the LCSC listing and the schematic note), and whether a 32 to 33 V clamp is acceptable for switches with a 28 V maximum (Infineon load-dump rating not read).
 - Derating of both Wuerth terminals above 20 C.
@@ -304,7 +304,7 @@ What changed on the boards (choices from `DECISIONS.md` 2026-11-11). Scripts: `t
 | P4 / C2b | U5 = MB85RC64TA, order code MB85RC64TAPNF-G-AWERE2 (LCSC C43379785) | All three PNF (SOP-8) drawings: body 3.90 x 4.90 mm, pitch 1.27 mm (JNE drawing: lead span 6.00 mm) = the board's SOIC-8 3.9 x 4.9 mm footprint (RAMXEED DS501-00044-5v0-E). |
 | P9 | +12V caps: C3 (10 uF) -> Murata GRM21BR6YA106KE43L, 35 V X5R (LCSC C162422); 47 nF (A: C10, C22, C30, C35; B: C23, C27, C31, C35, C51-C54) -> KEMET C0805C473K5RAC7800, 50 V X7R (LCSC C3879816) | Ratings from the LCSC listings. X5R loses capacitance under 12-14 V DC bias (amount TBD, Murata curve not read). |
 | B4-b(b) | Board B: 10k (LCSC C17414) from PB2 (BOOT1) to GND | Firmware unchanged (`LINE_UNUSED` = PB2, input with pull-down). |
-| C6c | `Manufacturer` + `MPN` fields on every part above and on the safety parts: TVS D2, all switches, 1.2k sense resistors | MPNs are what the LCSC column resolves to (the assembler's column). Digi-Key numbers of changed parts: TBD (Digi-Key pages not readable). Sense resistors are still the 5 % part (P10 open). Not yet done: every other part. |
+| C6c | `Manufacturer` + `MPN` fields on every part above and on the safety parts: TVS D2, all switches, 1.2k sense resistors | MPNs are what the LCSC column resolves to (the assembler's column). Digi-Key numbers of changed parts: filled 2026-11-14 by `tools/sch_digikey.py` (numbers, product pages and the two left TBD there). Sense resistors are still the 5 % part (P10 open). Not yet done: every other part. |
 
 **P11 (diode drop on the +5V feed), numbers.** +5V = TSR output minus the Schottky D18 (A) / D4 (B), PMEG10010ELR.
 - TSR 1-2450 output: 5 V, set accuracy +-2 % max = 4.90 to 5.10 V (Traco TSR 1 data sheet).
