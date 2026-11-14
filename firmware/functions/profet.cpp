@@ -263,6 +263,11 @@ void Profet::MeasureCurrent()
     CalculateCurrent();
 }
 
+#ifndef BTS7004_1EPP_KILIS
+// custom-pdm: see the Profet constructor (profet.h): no BTS7004_1EPP case on boards without it
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
 void Profet::CalculateCurrent()
 {
     // Current = (rawVal * (VDDA / 4095)) / 1.2k) * kILIS
@@ -284,12 +289,18 @@ void Profet::CalculateCurrent()
         if (fCurrent <= 1.0f)
             fCurrent = 0;
         break;
+#ifdef BTS7004_1EPP_KILIS
     case ProfetModel::BTS7004_1EPP:
-        // custom-pdm: same floor as BTS7002-1EPP (similar kILIS). Not measured.
+        // custom-pdm: same floor as BTS7002-1EPP (similar kILIS). Not measured. Only on boards that fit it
+        // (custompdm_b), so stock builds keep the stock switch.
         if (fCurrent <= 0.5f)
             fCurrent = 0;
         break;
+#endif
     }
 }
+#ifndef BTS7004_1EPP_KILIS
+#pragma GCC diagnostic pop
+#endif
 
 #endif

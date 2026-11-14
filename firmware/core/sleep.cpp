@@ -145,15 +145,14 @@ void EnterSleep()
     // Digital inputs change detection, with configured pullup or pulldown
     // Can be disabled in config
     // custom-pdm: an EXTI line serves one port only, so a board may also leave single inputs out of the wake-up set
-    // (bit i = digital input i may wake the device). Default: all inputs, as stock.
-#ifndef WAKE_DIG_INPUT_MASK
-#define WAKE_DIG_INPUT_MASK 0xFFFFFFFFU
-#endif
+    // (bit i = digital input i may wake the device). Not set: all inputs, stock code.
     if(!stConfig.stDevice.bDisableDigInWake)
     {
         for(uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
         {
+            #ifdef WAKE_DIG_INPUT_MASK
             if (WAKE_DIG_INPUT_MASK & (1U << i))
+            #endif
                 EnableLineEventWithPull(digIn[i].GetLine(), stConfig.stDigInput[i].ePull);
         }
     }

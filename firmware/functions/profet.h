@@ -56,6 +56,10 @@ struct Config_Output{
 class Profet
 {
 public:
+#ifndef BTS7004_1EPP_KILIS
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
     Profet( int num, ProfetModel model, ioline_t inLine, ioline_t den, ioline_t dsel, AnalogChannel ain, 
             PWMDriver *pwmDriver, const PWMConfig *pwmCfg, PwmChannel pwmCh)
         :   m_num(num), m_model(model), m_in(inLine), m_den(den), m_dsel(dsel), m_ain(ain), 
@@ -91,12 +95,14 @@ public:
             fKILIS = BTS7004_1EPP_KILIS;
             nPwmReadDelay = PWM_READ_DELAY_SINGLE_CH;
             break;
-#else
-        case ProfetModel::BTS7004_1EPP:
-            break;
 #endif
         }
     }
+#ifndef BTS7004_1EPP_KILIS
+    // custom-pdm: no case for BTS7004_1EPP on boards without it (an empty case changes the stock code), so the
+    // -Wswitch warning is silenced for these two switches only (see profet.cpp CalculateCurrent)
+#pragma GCC diagnostic pop
+#endif
 
     static const uint16_t nBaseIndex = 0x1000;
 
