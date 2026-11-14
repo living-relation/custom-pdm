@@ -223,12 +223,18 @@ class Status:
     def out_state(s, i): return (s.m[3][i // 2] >> (4 * (i % 2))) & 15 if 3 in s.m else None
     def board_temp_x10(s): return struct.unpack('<H', s.m[0][6:8])[0] if 0 in s.m else None          # MCP9808, msg 0
     def die_temp_x10(s): return struct.unpack('<h', s.m[27][6:8])[0] if 27 in s.m else None         # STM32 die, msg 27
+    def thermal_flags(s): return s.m[3][7] if 3 in s.m else None     # msg 3 byte 7: bit 0 over warn, 1 critical soon, 2 critical
 STATE = ['Off', 'On', 'Overcurrent', 'Fault']
 
 # ---------------- thermal (Dan r5a / r3c / r7a, docs/firmware-thermal-plan.md) ----------------
-TEMP_PARAM = {'warn': 5, 'crit': 6, 'hyst': 7}        # device params 0x0000 sub-index
-TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6}    # expected factory defaults (core/param_defs.h)
-FAN = ('A2', 1)                                      # always-on fan output: board A unit 2, OUT2 (firmware index 1)
+TEMP_INDEX = 0x7F00                                  # custom-pdm thermal parameter block (core/param_defs.h THERMAL_PARAM_BASE)
+TEMP_PARAM = {'warn': 0, 'crit': 1, 'hyst': 2, 'soon': 4}   # sub-index; 3 = critical-exempt output mask
+TEMP_EXEMPT_SUB = 3
+TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6, 'soon': 5}   # expected factory defaults (core/param_defs.h)
+FLAG_WARN, FLAG_SOON, FLAG_CRIT = 1, 2, 4            # msg 3 byte 7
+FAN = ('A2', 1)                                      # fan output: board A unit 2, OUT2 (firmware index 1)
+FAN_ON_C, FAN_OFF_C = 45.0, 40.0                     # Dan s12a; source = hottest of A2 / A1 / B (s13a)
+FAN_SLOTS = dict(cond0=26, virt0=11, canin0=24)      # port_boards.py FAN_COND0 / FAN_VIRT0 / FAN_CANIN0 (0-based)
 SHED = dict(cond0=28, virt0=14, on=(70.0, 75.0), off=(65.0, 70.0))   # prefilled, disabled load-shed example (port.h)
 def die_temp_can(c, vdda=3.3, cal30=943, cal110=1199):
     """Die temperature x10 the firmware should send for a die at c deg C: the sensor model (0.76 V at 25 C,
