@@ -62,6 +62,48 @@
 #ifndef DEFAULT_CRIT_EXEMPT_MASK
 #define DEFAULT_CRIT_EXEMPT_MASK 0
 #endif
+// "Critical soon" margin (Dan s11c): flag + one-shot warning from critical - margin up to critical. 5 deg C =
+// 10 x the 0.5 deg C resolution and +-0.5 deg C maximum sensor error, so noise alone cannot raise it, and less than
+// the 6 deg C recovery hysteresis, so it is not raised again the moment critical clears. Range 0-30 (0 = off;
+// 30 = the largest recovery hysteresis allowed, 0x7F00 sub 2).
+#ifndef DEFAULT_TEMP_CRIT_SOON_MARGIN
+#define DEFAULT_TEMP_CRIT_SOON_MARGIN 5
+#endif
+#endif
+
+// custom-pdm: more per-instance factory defaults a board may set in port.h (fallbacks = stock defaults)
+#ifndef DEFAULT_VIRT_ENABLED
+#define DEFAULT_VIRT_ENABLED(i) 0
+#endif
+#ifndef DEFAULT_COND_ENABLED
+#define DEFAULT_COND_ENABLED(i) 0
+#endif
+#ifndef DEFAULT_CANIN_ENABLED
+#define DEFAULT_CANIN_ENABLED(i) 0
+#endif
+#ifndef DEFAULT_CANIN_TIMEOUT_ENABLED
+#define DEFAULT_CANIN_TIMEOUT_ENABLED(i) 0
+#endif
+#ifndef DEFAULT_CANIN_ID
+#define DEFAULT_CANIN_ID(i) 0
+#endif
+#ifndef DEFAULT_CANIN_START_BIT
+#define DEFAULT_CANIN_START_BIT(i) 0
+#endif
+#ifndef DEFAULT_CANIN_BIT_LENGTH
+#define DEFAULT_CANIN_BIT_LENGTH(i) 8
+#endif
+#ifndef DEFAULT_CANIN_FACTOR
+#define DEFAULT_CANIN_FACTOR(i) F(1.0f)
+#endif
+#ifndef DEFAULT_CANIN_SIGNED
+#define DEFAULT_CANIN_SIGNED(i) 0
+#endif
+#ifndef DEFAULT_CANIN_OPERATOR
+#define DEFAULT_CANIN_OPERATOR(i) static_cast<uint32_t>(Operator::Equal)
+#endif
+#ifndef DEFAULT_CANIN_OPERAND
+#define DEFAULT_CANIN_OPERAND(i) F(0.0f)
 #endif
 
 // Parameter definitions for compile-time registration
@@ -77,13 +119,19 @@
     {0x0000, 3, &stConfig.stDevice.bCanFilterEnabled,  &stConfigTemp.stDevice.bCanFilterEnabled, ParamType::Bool,   0, 0, 1}, \
     {0x0000, 4, &stConfig.stDevice.bConnectUsbToCan,   &stConfigTemp.stDevice.bConnectUsbToCan,  ParamType::Bool,   1, 0, 1}
 
-// custom-pdm: board temperature limits (deg C, whole degrees: the MCP9808 limit registers take them exactly)
+//=============================================================================
+// custom-pdm: board temperature parameters - Base 0x7F00 (single instance)
+// Own block, not device 0x0000: upstream dingoFW (development) / dingoConfig 0.5.0 use device sub 4-9 for
+// other settings. Temperatures in deg C, whole degrees (the MCP9808 limit registers take them exactly).
+//=============================================================================
+#define THERMAL_PARAM_BASE 0x7F00
 #if THERMAL_LIMIT_PARAMS
 #define DEVICE_THERMAL_PARAMS() \
-    {0x0000, 5, &stConfig.stDevice.nTempWarn,          &stConfigTemp.stDevice.nTempWarn,         ParamType::UInt8,  DEFAULT_TEMP_WARN, 0, 125}, \
-    {0x0000, 6, &stConfig.stDevice.nTempCrit,          &stConfigTemp.stDevice.nTempCrit,         ParamType::UInt8,  DEFAULT_TEMP_CRIT, 0, 125}, \
-    {0x0000, 7, &stConfig.stDevice.nTempCritHyst,      &stConfigTemp.stDevice.nTempCritHyst,     ParamType::UInt8,  DEFAULT_TEMP_CRIT_HYST, 1, 30}, \
-    {0x0000, 8, &stConfig.stDevice.nCritExemptMask,    &stConfigTemp.stDevice.nCritExemptMask,   ParamType::UInt16, DEFAULT_CRIT_EXEMPT_MASK, 0, (1U << NUM_OUTPUTS) - 1}
+    {THERMAL_PARAM_BASE, 0, &stConfig.stDevice.nTempWarn,          &stConfigTemp.stDevice.nTempWarn,           ParamType::UInt8,  DEFAULT_TEMP_WARN, 0, 125}, \
+    {THERMAL_PARAM_BASE, 1, &stConfig.stDevice.nTempCrit,          &stConfigTemp.stDevice.nTempCrit,           ParamType::UInt8,  DEFAULT_TEMP_CRIT, 0, 125}, \
+    {THERMAL_PARAM_BASE, 2, &stConfig.stDevice.nTempCritHyst,      &stConfigTemp.stDevice.nTempCritHyst,       ParamType::UInt8,  DEFAULT_TEMP_CRIT_HYST, 1, 30}, \
+    {THERMAL_PARAM_BASE, 3, &stConfig.stDevice.nCritExemptMask,    &stConfigTemp.stDevice.nCritExemptMask,     ParamType::UInt16, DEFAULT_CRIT_EXEMPT_MASK, 0, (1U << NUM_OUTPUTS) - 1}, \
+    {THERMAL_PARAM_BASE, 4, &stConfig.stDevice.nTempCritSoonMargin, &stConfigTemp.stDevice.nTempCritSoonMargin, ParamType::UInt8,  DEFAULT_TEMP_CRIT_SOON_MARGIN, 0, 30}
 #endif
 
 //=============================================================================
@@ -127,26 +175,26 @@
 // CAN Input Parameters - Base 0x1300
 //=============================================================================
 #define CAN_INPUT_PARAMS(i) \
-    {0x1300 + (i), 0,  &stConfig.stCanInput[i].bEnabled,        &stConfigTemp.stCanInput[i].bEnabled,        ParamType::Bool,   0, 0, 1}, \
-    {0x1300 + (i), 1,  &stConfig.stCanInput[i].bTimeoutEnabled, &stConfigTemp.stCanInput[i].bTimeoutEnabled, ParamType::Bool,   0, 0, 1}, \
+    {0x1300 + (i), 0,  &stConfig.stCanInput[i].bEnabled,        &stConfigTemp.stCanInput[i].bEnabled,        ParamType::Bool,   DEFAULT_CANIN_ENABLED(i), 0, 1}, \
+    {0x1300 + (i), 1,  &stConfig.stCanInput[i].bTimeoutEnabled, &stConfigTemp.stCanInput[i].bTimeoutEnabled, ParamType::Bool,   DEFAULT_CANIN_TIMEOUT_ENABLED(i), 0, 1}, \
     {0x1300 + (i), 2,  &stConfig.stCanInput[i].nTimeout,        &stConfigTemp.stCanInput[i].nTimeout,        ParamType::UInt16, 1000, 0, 60000}, \
     {0x1300 + (i), 3,  &stConfig.stCanInput[i].nIDE,            &stConfigTemp.stCanInput[i].nIDE,            ParamType::UInt8,  0, 0, 1}, \
-    {0x1300 + (i), 4,  &stConfig.stCanInput[i].nID,             &stConfigTemp.stCanInput[i].nID,             ParamType::UInt32, 0, 0, 536870911}, \
-    {0x1300 + (i), 5,  &stConfig.stCanInput[i].nStartBit,       &stConfigTemp.stCanInput[i].nStartBit,       ParamType::UInt8,  0, 0, 63}, \
-    {0x1300 + (i), 6,  &stConfig.stCanInput[i].nBitLength,      &stConfigTemp.stCanInput[i].nBitLength,      ParamType::UInt8,  8, 1, 32}, \
-    {0x1300 + (i), 7,  &stConfig.stCanInput[i].fFactor,         &stConfigTemp.stCanInput[i].fFactor,         ParamType::Float,  F(1.0f), F(-1e9f), F(1e9f)}, \
+    {0x1300 + (i), 4,  &stConfig.stCanInput[i].nID,             &stConfigTemp.stCanInput[i].nID,             ParamType::UInt32, DEFAULT_CANIN_ID(i), 0, 536870911}, \
+    {0x1300 + (i), 5,  &stConfig.stCanInput[i].nStartBit,       &stConfigTemp.stCanInput[i].nStartBit,       ParamType::UInt8,  DEFAULT_CANIN_START_BIT(i), 0, 63}, \
+    {0x1300 + (i), 6,  &stConfig.stCanInput[i].nBitLength,      &stConfigTemp.stCanInput[i].nBitLength,      ParamType::UInt8,  DEFAULT_CANIN_BIT_LENGTH(i), 1, 32}, \
+    {0x1300 + (i), 7,  &stConfig.stCanInput[i].fFactor,         &stConfigTemp.stCanInput[i].fFactor,         ParamType::Float,  DEFAULT_CANIN_FACTOR(i), F(-1e9f), F(1e9f)}, \
     {0x1300 + (i), 8,  &stConfig.stCanInput[i].fOffset,         &stConfigTemp.stCanInput[i].fOffset,         ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}, \
     {0x1300 + (i), 9,  &stConfig.stCanInput[i].eByteOrder,      &stConfigTemp.stCanInput[i].eByteOrder,      ParamType::Enum,   static_cast<uint32_t>(ByteOrder::LittleEndian), 0, 1}, \
-    {0x1300 + (i), 10, &stConfig.stCanInput[i].bSigned,         &stConfigTemp.stCanInput[i].bSigned,         ParamType::Bool,   0, 0, 1}, \
-    {0x1300 + (i), 11, &stConfig.stCanInput[i].eOperator,       &stConfigTemp.stCanInput[i].eOperator,       ParamType::Enum,   static_cast<uint32_t>(Operator::Equal), 0, 7}, \
-    {0x1300 + (i), 12, &stConfig.stCanInput[i].fOperand,        &stConfigTemp.stCanInput[i].fOperand,        ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}, \
+    {0x1300 + (i), 10, &stConfig.stCanInput[i].bSigned,         &stConfigTemp.stCanInput[i].bSigned,         ParamType::Bool,   DEFAULT_CANIN_SIGNED(i), 0, 1}, \
+    {0x1300 + (i), 11, &stConfig.stCanInput[i].eOperator,       &stConfigTemp.stCanInput[i].eOperator,       ParamType::Enum,   DEFAULT_CANIN_OPERATOR(i), 0, 7}, \
+    {0x1300 + (i), 12, &stConfig.stCanInput[i].fOperand,        &stConfigTemp.stCanInput[i].fOperand,        ParamType::Float,  DEFAULT_CANIN_OPERAND(i), F(-1e9f), F(1e9f)}, \
     {0x1300 + (i), 13, &stConfig.stCanInput[i].eMode,           &stConfigTemp.stCanInput[i].eMode,           ParamType::Enum,   static_cast<uint32_t>(InputMode::Momentary), 0, 1}
     
 //=============================================================================
 // Virtual Input Parameters - Base 0x1400
 //=============================================================================
 #define VIRTUAL_INPUT_PARAMS(i) \
-    {0x1400 + (i), 0,  &stConfig.stVirtualInput[i].bEnabled, &stConfigTemp.stVirtualInput[i].bEnabled, ParamType::Bool,   0, 0, 1}, \
+    {0x1400 + (i), 0,  &stConfig.stVirtualInput[i].bEnabled, &stConfigTemp.stVirtualInput[i].bEnabled, ParamType::Bool,   DEFAULT_VIRT_ENABLED(i), 0, 1}, \
     {0x1400 + (i), 1,  &stConfig.stVirtualInput[i].bNot0,    &stConfigTemp.stVirtualInput[i].bNot0,    ParamType::Bool,   DEFAULT_VIRT_NOT(i, 0), 0, 1}, \
     {0x1400 + (i), 2,  &stConfig.stVirtualInput[i].nVar0,    &stConfigTemp.stVirtualInput[i].nVar0,    ParamType::UInt16, DEFAULT_VIRT_VAR(i, 0), 0, VAR_MAP_SIZE - 1}, \
     {0x1400 + (i), 3,  &stConfig.stVirtualInput[i].eCond0,   &stConfigTemp.stVirtualInput[i].eCond0,   ParamType::Enum,   DEFAULT_VIRT_COND(i, 0), 0, 2}, \
@@ -161,7 +209,7 @@
 // Condition Parameters - Base 0x1500
 //=============================================================================
 #define CONDITION_PARAMS(i) \
-    {0x1500 + (i), 0, &stConfig.stCondition[i].bEnabled,  &stConfigTemp.stCondition[i].bEnabled,  ParamType::Bool,   0, 0, 1}, \
+    {0x1500 + (i), 0, &stConfig.stCondition[i].bEnabled,  &stConfigTemp.stCondition[i].bEnabled,  ParamType::Bool,   DEFAULT_COND_ENABLED(i), 0, 1}, \
     {0x1500 + (i), 1, &stConfig.stCondition[i].nInput,    &stConfigTemp.stCondition[i].nInput,    ParamType::UInt16, DEFAULT_COND_INPUT(i), 0, VAR_MAP_SIZE - 1}, \
     {0x1500 + (i), 2, &stConfig.stCondition[i].eOperator, &stConfigTemp.stCondition[i].eOperator, ParamType::Enum,   DEFAULT_COND_OPERATOR(i), 0, 7}, \
     {0x1500 + (i), 3, &stConfig.stCondition[i].fArg,      &stConfigTemp.stCondition[i].fArg,      ParamType::Float,  DEFAULT_COND_ARG(i), F(-1e9f), F(1e9f)}

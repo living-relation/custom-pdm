@@ -80,7 +80,7 @@ CANTxMsg TxMsg3()
     stMsg.frame.data8[5] = (static_cast<uint8_t>(GetWiperState()) << 4) + static_cast<uint8_t>(GetWiperSpeed());
     stMsg.frame.data8[6] = (GetFlasherVal(3) << 3) + (GetFlasherVal(2) << 2) +
                            (GetFlasherVal(1) << 1) + GetFlasherVal(0);
-    stMsg.frame.data8[7] = 0;
+    stMsg.frame.data8[7] = GetThermalFlags(); // custom-pdm: bit 0 over warn, bit 1 critical soon, bit 2 critical
 
     stMsg.bSend = true; // Always send
 

@@ -69,7 +69,7 @@
 #define DEFAULT_BASE_ID (PDM_UNIT == 2 ? 0x520 : 0x500)
 #define DEFAULT_CAN_BITRATE CanBitrate::Bitrate_1000K
 #define DEFAULT_RESET_MODE ProfetResetMode::Count // 3 tries (nResetLimit), 1 s apart, then Fault
-// Board temperature limits are config params (device 0x0000 sub 5-7) and critical recovers by itself
+// Board temperature limits are config params (0x7F00 sub 0-2, core/param_defs.h) and critical recovers by itself
 // (core/device.cpp). Defaults in core/param_defs.h: stock 55 / 80 deg C, recovery 6 deg C below critical.
 #define THERMAL_LIMIT_PARAMS 1
 // MCP9808 reading (core/device.cpp UpdateBoardTemp): a failed I2C read is "no reading" (last valid temperature and
@@ -81,14 +81,20 @@
 // (status / error LEDs: already off, stock States()). So the MCP9808 limits are not locked: SHDN cannot be set
 // while a lock bit is set (DS25095A Register 5-2).
 #define SLEEP_LOW_POWER 1
-// Fans (r3c, r7a): board A unit 2 (A2) OUT2 (index 1) is always on and wired inside the box to both fans; its X1 cavity T is spare.
+// Fans (r7a): board A unit 2 (A2) OUT2 (index 1) is wired inside the box to both fans; its X1 cavity T is spare.
 // A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)
 // and the east-most driver (U8). Other units: -1 = no fan output
 #define FAN_OUTPUT (PDM_UNIT == 2 ? 1 : -1)
-// Dan s10b: the fan output keeps running through a critical shutdown (device param 0x0000 sub 8, bit i = output i)
+// Fan switching (Dan 2026-11-14, replaces r3c "always on"): OFF at power-up, ON when the hottest board reaches FAN_ON_C,
+// OFF again when every board is at or below FAN_OFF_C (set / reset latch, docs/firmware-thermal-plan.md section 3a).
+// Factory defaults (Dan 2026-11-14: s12a on 45 / off 40 C, s13a hottest of the three boards) - change them here:
+#define FAN_ON_C 45.0f        // s12a
+#define FAN_OFF_C 40.0f       // s12a
+#define FAN_REMOTE_TEMPS 1    // s13a: 1 = hottest of A2's own MCP9808 and A1 / B board temperature (their msg 0 over CAN); 0 = A2 only (s13b)
+// Dan s10b: the fan output keeps running through a critical shutdown (param 0x7F00 sub 3, bit i = output i)
 #define DEFAULT_CRIT_EXEMPT_MASK (FAN_OUTPUT >= 0 ? (1U << (FAN_OUTPUT & 15)) : 0U)
 #define DEFAULT_OUT_ENABLED(i) ((int)(i) == FAN_OUTPUT ? 1 : 0)
-#define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? 1 : 0) // var 1 = always true: on whenever the board is awake
+#define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? VAR_VIRT(FAN_VIRT0 + 2) : 0) // the fan latch virtual input
 #define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(1.0f) : F(20.0f)) // two Sunon MF30101V1 = 0.13 A max
 #define DEFAULT_OUT_INRUSH_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(2.0f) : F(50.0f))
 // Load-shed example (r5a), NOT active: conditions 29-32 and virtual inputs 15-16 (1-based) come prefilled but
@@ -97,6 +103,7 @@
 #define VAR_BOARD_TEMP 3
 #define VAR_VIRT(i) (VAR_MAP_SYS_VARS + NUM_DIG_INPUTS + NUM_DIG_OUTPUTS + NUM_ANALOG_INPUTS * 4 + NUM_CAN_INPUTS * 2 + (i))
 #define VAR_COND(i) (VAR_VIRT(NUM_VIRT_INPUTS) + NUM_OUTPUTS * 4 + NUM_FLASHERS + (i))
+#define VAR_CANIN(i) (VAR_MAP_SYS_VARS + NUM_DIG_INPUTS + NUM_DIG_OUTPUTS + NUM_ANALOG_INPUTS * 4 + 2 * (i)) // fOutput (fVal = + 1)
 #define SHED_COND0 (NUM_CONDITIONS - 4)       // level l: hot = SHED_COND0 + 2 l, cool = SHED_COND0 + 2 l + 1
 #define SHED_VIRT0 (NUM_VIRT_INPUTS - 2)      // level l: latch = SHED_VIRT0 + l
 #define SHED_ON_C(l) ((l) ? 75.0f : 70.0f)    // example values; real ones after the bench measurements (r6c)
@@ -104,13 +111,49 @@
 #define IS_SHED_COND(i) ((int)(i) >= SHED_COND0)
 #define SHED_COND_HOT(i) (((int)(i) - SHED_COND0) % 2 == 0)
 #define SHED_COND_LEVEL(i) (((int)(i) - SHED_COND0) / 2)
-#define DEFAULT_COND_INPUT(i) (IS_SHED_COND(i) ? VAR_BOARD_TEMP : 0)
-#define DEFAULT_COND_OPERATOR(i) static_cast<uint32_t>(!IS_SHED_COND(i) ? Operator::Equal : SHED_COND_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
-#define DEFAULT_COND_ARG(i) (!IS_SHED_COND(i) ? F(0.0f) : F(SHED_COND_HOT(i) ? SHED_ON_C(SHED_COND_LEVEL(i)) : SHED_OFF_C(SHED_COND_LEVEL(i))))
 #define IS_SHED_VIRT(i) ((int)(i) >= SHED_VIRT0)
-#define DEFAULT_VIRT_VAR(i, n) (!IS_SHED_VIRT(i) ? 0 : (n) == 0 ? VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0)) : (n) == 1 ? VAR_VIRT(i) : VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0) + 1))
-#define DEFAULT_VIRT_COND(i, n) static_cast<uint32_t>(IS_SHED_VIRT(i) && (n) == 0 ? BoolOperator::Or : BoolOperator::And)
-#define DEFAULT_VIRT_NOT(i, n) (IS_SHED_VIRT(i) && (n) == 2 ? 1 : 0)
+// Fan latch (board with FAN_OUTPUT only), enabled by default. Numbers count from 0 (firmware / parameter index).
+//   conditions FAN_COND0 = A2 temp >= FAN_ON_C, FAN_COND0 + 1 = A2 temp <= FAN_OFF_C
+//   CAN inputs FAN_CANIN0 + 0 / 1 = A1 hot / cool, + 2 / 3 = B hot / cool: msg 0 bytes 6-7 (board temp x10, signed),
+//     >= FAN_ON_C / <= FAN_OFF_C, 1 s time-out. On a time-out (or before the first frame) both read 0: that board can
+//     neither turn the fans on nor let them turn off, so a lost reading is never "cool"; A2's own sensor always counts.
+//   virtual inputs FAN_VIRT0 = any hot (OR), + 1 = all cool (AND), + 2 = fan latch = (any hot OR itself) AND NOT all cool
+#define HAS_FAN (FAN_OUTPUT >= 0)
+#define FAN_REMOTE (HAS_FAN && FAN_REMOTE_TEMPS)
+#define FAN_COND0 (SHED_COND0 - 2)
+#define FAN_VIRT0 (SHED_VIRT0 - 3)
+#define FAN_CANIN0 24                          // slots 25-28 (1-based); the S2 "one PDM" recipe uses 1-8 and 32
+#define FAN_REMOTE_MSG0(r) ((r) ? 0x542 : 0x502)   // B / A1 factory base ID (0x540 / 0x500) + 2 = cyclic msg 0
+#define IS_FAN_COND(i) (HAS_FAN && ((int)(i) == FAN_COND0 || (int)(i) == FAN_COND0 + 1))
+#define IS_FAN_VIRT(i) (HAS_FAN && (int)(i) >= FAN_VIRT0 && (int)(i) < FAN_VIRT0 + 3)
+#define FAN_VJ(i) ((int)(i) - FAN_VIRT0)
+#define IS_FAN_CANIN(i) (FAN_REMOTE && (int)(i) >= FAN_CANIN0 && (int)(i) < FAN_CANIN0 + 4)
+#define FAN_CANIN_HOT(i) (((int)(i) - FAN_CANIN0) % 2 == 0)
+#define DEFAULT_COND_ENABLED(i) (IS_FAN_COND(i) ? 1 : 0)
+#define DEFAULT_COND_INPUT(i) ((IS_SHED_COND(i) || IS_FAN_COND(i)) ? VAR_BOARD_TEMP : 0)
+#define DEFAULT_COND_OPERATOR(i) static_cast<uint32_t>(IS_FAN_COND(i) ? ((int)(i) == FAN_COND0 ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual) : \
+    !IS_SHED_COND(i) ? Operator::Equal : SHED_COND_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
+#define DEFAULT_COND_ARG(i) (IS_FAN_COND(i) ? F((int)(i) == FAN_COND0 ? FAN_ON_C : FAN_OFF_C) : \
+    !IS_SHED_COND(i) ? F(0.0f) : F(SHED_COND_HOT(i) ? SHED_ON_C(SHED_COND_LEVEL(i)) : SHED_OFF_C(SHED_COND_LEVEL(i))))
+#define DEFAULT_VIRT_ENABLED(i) (IS_FAN_VIRT(i) ? 1 : 0)
+#define DEFAULT_FAN_VIRT_VAR(j, n) ( \
+    (j) == 0 ? ((n) == 0 ? VAR_COND(FAN_COND0) : !FAN_REMOTE ? 0 : VAR_CANIN(FAN_CANIN0 + 2 * ((n) - 1))) : \
+    (j) == 1 ? ((n) == 0 ? VAR_COND(FAN_COND0 + 1) : !FAN_REMOTE ? ((n) == 1 ? 1 : 0) : VAR_CANIN(FAN_CANIN0 + 1 + 2 * ((n) - 1))) : \
+               ((n) == 0 ? VAR_VIRT(FAN_VIRT0) : (n) == 1 ? VAR_VIRT(FAN_VIRT0 + 2) : VAR_VIRT(FAN_VIRT0 + 1)))
+#define DEFAULT_VIRT_VAR(i, n) (IS_FAN_VIRT(i) ? DEFAULT_FAN_VIRT_VAR(FAN_VJ(i), n) : \
+    !IS_SHED_VIRT(i) ? 0 : (n) == 0 ? VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0)) : (n) == 1 ? VAR_VIRT(i) : VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0) + 1))
+#define DEFAULT_VIRT_COND(i, n) static_cast<uint32_t>(IS_FAN_VIRT(i) ? (FAN_VJ(i) == 0 || (FAN_VJ(i) == 2 && (n) == 0) ? BoolOperator::Or : BoolOperator::And) : \
+    IS_SHED_VIRT(i) && (n) == 0 ? BoolOperator::Or : BoolOperator::And)
+#define DEFAULT_VIRT_NOT(i, n) ((IS_SHED_VIRT(i) || (IS_FAN_VIRT(i) && FAN_VJ(i) == 2)) && (n) == 2 ? 1 : 0)
+#define DEFAULT_CANIN_ENABLED(i) (IS_FAN_CANIN(i) ? 1 : 0)
+#define DEFAULT_CANIN_TIMEOUT_ENABLED(i) (IS_FAN_CANIN(i) ? 1 : 0)
+#define DEFAULT_CANIN_ID(i) (IS_FAN_CANIN(i) ? FAN_REMOTE_MSG0(((int)(i) - FAN_CANIN0) / 2) : 0)
+#define DEFAULT_CANIN_START_BIT(i) (IS_FAN_CANIN(i) ? 48 : 0)
+#define DEFAULT_CANIN_BIT_LENGTH(i) (IS_FAN_CANIN(i) ? 16 : 8)
+#define DEFAULT_CANIN_FACTOR(i) (IS_FAN_CANIN(i) ? F(0.1f) : F(1.0f))
+#define DEFAULT_CANIN_SIGNED(i) (IS_FAN_CANIN(i) ? 1 : 0)
+#define DEFAULT_CANIN_OPERATOR(i) static_cast<uint32_t>(!IS_FAN_CANIN(i) ? Operator::Equal : FAN_CANIN_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
+#define DEFAULT_CANIN_OPERAND(i) (!IS_FAN_CANIN(i) ? F(0.0f) : F(FAN_CANIN_HOT(i) ? FAN_ON_C : FAN_OFF_C))
 
 #define ADC1_NUM_CHANNELS 8
 #define ADC1_BUF_DEPTH 1

@@ -13,6 +13,9 @@ static InfoMsg StateOvertempMsg(MsgType::Error, MsgSrc::State_Overtemp);
 #if THERMAL_LIMIT_PARAMS
 // custom-pdm: critical shutdown started (all outputs off until it cools); data: temp x10, critical limit x10
 static InfoMsg CritTempMsg(MsgType::Error, MsgSrc::Overtemp);
+// custom-pdm (Dan s11c): critical soon (within the margin below critical, not yet critical), once on entry;
+// type Warning with the same src Overtemp as the critical error. data: temp x10, critical limit x10, margin deg C
+static InfoMsg CritSoonMsg(MsgType::Warning, MsgSrc::Overtemp);
 // custom-pdm: MCP9808 gave no reading TEMP_SENSOR_FAIL_LIMIT times in a row (sent again after a recovery);
 // data: failed reads in a row, ChibiOS I2C error flags
 static InfoMsg TempSensorFaultMsg(MsgType::Error, MsgSrc::TempSensor);
@@ -51,6 +54,7 @@ void CheckInfoMsgs()
     StateOvertempMsg.Check(eState == DeviceState::OverTemp, stConfig.stDevice.nBaseId, GetBoardTemp() * 10, 0, 0);
     #if THERMAL_LIMIT_PARAMS
     CritTempMsg.Check(bDeviceCriticalTemp, stConfig.stDevice.nBaseId, GetBoardTemp() * 10, stConfig.stDevice.nTempCrit * 10, 0);
+    CritSoonMsg.Check(GetCritSoonTemp(), stConfig.stDevice.nBaseId, GetBoardTemp() * 10, stConfig.stDevice.nTempCrit * 10, stConfig.stDevice.nTempCritSoonMargin);
     TempSensorFaultMsg.Check(GetTempSensorFails() >= TEMP_SENSOR_FAIL_LIMIT, stConfig.stDevice.nBaseId, GetTempSensorFails(), GetTempSensorErrors(), 0);
     #endif
     #endif
