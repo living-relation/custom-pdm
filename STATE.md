@@ -5,7 +5,7 @@
 > - Keep each session's open questions in its own section. Do not edit or answer another session's section; leave a note in your own.
 > - Do not copy or repeat anything from this file in any other file (docs, results, memory, handoffs). Point to it instead: `STATE.md`, section name.
 
-Updated 2026-11-13. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules, git workflow and required checks: `AGENTS.md`.
+Updated 2026-11-14. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules, git workflow and required checks: `AGENTS.md`.
 
 **Last cleanup:** 2026-11-13 (f2a docs and state cleanup PR, from main 83508cf; before: 2026-11-11 @ 8a0e5ad, PR #16)
 **Kept branches:** none
@@ -15,13 +15,13 @@ Updated 2026-11-13. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules,
 Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests (done 2026-11-11); (3) enclosure with heat sink (handbuilt-cad tools + Fusion; v2b done 2026-11-13).
 
 ## Where work is
-- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Only other branch / worktree: `docs/f2a-cleanup` (`.claude\worktrees\docs-cleanup`, this cleanup), removed after merge.
+- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Working branches (2026-11-14, orchestrator session 4): `feat/fw-thermal` (`.claude\worktrees\fw-thermal`, Next 1), `docs/s4-s8-answers` (this PR), next: board power change (Next 2). Each is removed after merge.
 - Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (inside the repo root, git-ignored; rule in `AGENTS.md`) and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges.
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
-## Next (in this order unless Dan says otherwise; updated 2026-11-13)
+## Next (in this order unless Dan says otherwise; updated 2026-11-14)
 1. Firmware thermal protection (r5a, plan `docs/firmware-thermal-plan.md`): settable warn / critical limits, self-recovering critical, die temp on CAN, default load-shed config, sim + Renode tests; limits set after bench measurements (r6c). Fans always on while awake (r3c) from one always-on PDM output wired inside the box (r7a; its X1 cavity becomes a spare), no fan-fail detection (r4c).
-2. Board A/B power change (one PR, after Dan answers s4-s8 in `.claude/handoff/HANDOFF-2026-11-13.md`): MCU STM32F446RET7 (r2a; LCSC C1343794 out of stock 2026-11-13, fallback r2b), low-Iq 3.3 V regulator for U2 (study recommends TI TLV1117LV33DCYR, SOT-223 drop-in), power LED off; scope and sources in `docs/sleep-power-study.md` (DELETE that report in the same PR once s4-s8 are logged in DECISIONS.md - Dan 2026-11-13). Firmware sleep fix (PROFET DEN low, MCP9808 shutdown, status LEDs off in sleep; 1.2 mA per PROFET today) per s7.
+2. Board A/B power change (one PR; s4-s8 answered 2026-11-14, `DECISIONS.md`): MCU STM32F446RET7 and genuine TI TLV1117LV33DCYR for U2, both bought by the assembler (LCSC out of stock 2026-11-14; JLCPCB Global Sourcing or PCBWay turnkey from Digi-Key / Mouser; fallback r2b), power LED + resistor do-not-fit; scope and sources in `docs/sleep-power-study.md` (DELETE it in the same PR). Also fix `docs/parts-audit.md` P3 / P11 CAN chip name (PCA82C250 -> MCP2562FD). Then firmware sleep fix as its own PR after Next 1 (s7a: PROFET DEN low, MCP9808 shutdown, status LEDs off in sleep).
 3. Digi-Key numbers for the parts changed in PR #23 / #24 (TBD in the schematic fields; `docs/parts-audit.csv` shows which).
 4. B2 wake firmware (see "Wake lines").
 5. PC-side single-PDM layer research and choices for Dan (D5a, z1a; nothing exists yet, the only code is the test stand-in in `firmware/sim/s1_system.py`: `set_output`, `can_input`, `Status`).
@@ -29,7 +29,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 7. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- None open (2026-11-13).
+- s9 (2026-11-14, confirm): s5 / s8 were answered "supply based on JLCPCB / PCBWay". Both can buy from Digi-Key / Mouser for the assembly (JLCPCB Global Sourcing, 9-15 days; PCBWay standard turnkey), so the board PR uses genuine TI TLV1117LV33DCYR and STM32F446RET7 with RET6 (r2b) as fallback at quote time. Options: a) yes, go ahead (recommended); b) only parts in the assembler's own in-stock library (JSMSEMI clone regulator, RET6 MCU).
 - Answered: enclosure A-H (e1-e7 and the v2 / v2b follow-ups, `DECISIONS.md` 2026-11-12/13); R1-R4, B1-B4, C1-C7, L1 and the board / wiring questions of 2026-11-12 (`DECISIONS.md`).
 
 ## Wake lines (input for the B2 firmware work)
