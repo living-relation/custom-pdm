@@ -4,7 +4,7 @@ Status: first version, 2026-11-10 (job B, branch `feat/fw-pin-map`). No firmware
 
 **Sources**
 - Schematics at main `62d38fc`, board B re-checked after B1 at `0ba8c5d` (PR #12), netlists exported read-only with `kicad-cli sch export netlist` and read with `tools/netlist_pins.py` (commands at the end). The schematic is the truth, not the PCB.
-- Stock firmware: dingoFW `d594cd7` (2026-10-22, MIT), boards `dingopdm_v7` (stock for board A) and `dingopdmmax_v1` (stock for board B): `board.h`, `port.h`, `port.cpp`, `port_pwm.h`, `hw_devices.cpp`, `cfg/mcuconf.h`.
+- Stock firmware: dingoFW `d594cd7` (2026-10-22, MIT), boards `dingopdm_v7` (stock for board A) and `dingopdmmax_v1` (stock for board B): `board.h`, `port.h`, `port.cpp`, `port_pwm.h`, `hw_devices.cpp`, `cfg/mcuconf.h`. Re-checked 2026-11-14 for the move to dingoFW `development` @ `14084e9` (the base now): `board.h`, `port_pwm.h`, `hw_devices.cpp` and `cfg/mcuconf.h` of both boards are unchanged, `port.h` / `port.cpp` changed only outside the pin tables, so no pin in this map moved. New upstream: digital-input PWM measurement arms the input's EXTI line, so the shared-line pairs in the wake-up section also limit which inputs can measure PWM at the same time.
 - Chip: STM32F446RE, LQFP64, datasheet DS10693 Rev 11: Table 10 (pin definitions, pp. 46-56) and Table 11 (alternate functions, pp. 58-61). Cross-check of AF numbers: ST open pin data (`STM32_open_pin_data`, `STM32F446R(C-E)Tx` + `GPIO-STM32F446_gpio_v1_0_Modes.xml`). Page numbers are the footer markers of the extracted PDF text: spot-check before quoting.
 - Words: "stock" = unmodified dingoFW for that board. "TBD" = not confirmed. PIN = LQFP64 pin number.
 

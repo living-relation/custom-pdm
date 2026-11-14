@@ -36,13 +36,15 @@ Update 2026-11-14 (branch `feat/fw-fan-warn` @ 503f201, thermal flags + critical
 
 One-line mutations, each a full bench run on a mutated `git archive` copy, all RED: R1 msg 3 byte 7 = 0 (test 23 fails: flags 0 in every sample); R2 critical-soon message on any over-temperature (tests 21, 22, 23 fail: an R message replaces the expected last message); R3 fan source A2 only (test 7 fails: fan never on); R4 fan latch without its self-hold (tests 6 and 7 fail: fan off at 42 / 41 C). After a mutation run the bench `fw` folder holds mutated binaries: run with `--build`.
 
+Update 2026-11-14 (branch `feat/fw-dingofw-dev` @ aca0c62, firmware on dingoFW `development` @ 14084e9, s15a): **28 of 28 pass** (439 s suite). No model change was needed: the FRAM model takes upstream's 32-byte chunked writes (each its own transaction with its own address), the sleep path (CAN stopped, TX pin as GPIO, pending EXTI / NVIC cleared) runs up to the `EnterStopMode()` hook, and the param thread answers within the bench's reply time-out. Test edits: IDs, status msg and version from `pdmsim.py` (0x500 / 0x540 / 0x580, msg 37, 0.6.2). Evidence that changed: default config 4812 bytes (A) / 4840 (B) written at first start; 322 writes in 0.12 s with 0 retries (each run used to need one resend); cross-board rule on after 40 ms; link-loss changes at 1020 ms; outputs back 620 ms after a restart; overcurrent pulses at 20 / 2020 / 4020 ms, 1000-1020 ms long. RAM: .bss 59.9 kB (A) / 60.2 kB (B) of 128 kB, heap 68.6-69.0 kB left; flash .text 107 kB. Linker RWX warning only.
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed
 
 | # | Test | Evidence from the run |
 |---|---|---|
-| 1 | Three fresh boards at 1 Mbit/s, each answers on its own ID | bit timing written by the firmware = 1 000 000 on all three; version 0.5.9 from 0x500, 0x520, 0x540 |
+| 1 | Three fresh boards at 1 Mbit/s, each answers on its own ID | bit timing written by the firmware = 1 000 000 on all three; version 0.5.9 from 0x500, 0x520, 0x540 (since the `development` port: 0.6.2 from 0x500, 0x540, 0x580) |
 | 2 | No fatal error, battery voltage reported | status LED on, error LED off; 13.8 V in all three status frames |
 | 3 | Default config written to FRAM at first start | 4368 bytes (A boards), 4392 bytes (B) over the emulated I2C bus |
 | 4 | Power cycle keeps IDs and config | same IDs and bit rate; no new FRAM bytes written, so the stored config and CRC were read back as valid |
