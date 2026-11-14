@@ -167,7 +167,7 @@ Per PDM = 2 x A + 1 x B.
 | MB85RC256V | not resolved | 1 | 1 | 3 | C47538: **gone** | P4, C2 |
 | MCP9808 | Microchip MCP9808T-E/MS | 1 | 1 | 3 | C129490: 516, 2.12 | Mouser 21,642 at 1.40 |
 | MCP2562FD-E/SN (was PCA82C250 until 2026-11-11) | Microchip MCP2562FD-E/SN | 1 | 1 | 3 | C124016 (was PCA82C250T/YM,118, C7439) | P3, C3, section 9 |
-| LM324 (TSSOP-14) | TI LM324PWR | 2 | 2 | 6 | C7942: 112,900, 0.15 | sense buffers |
+| LM2902PWR (TSSOP-14; was LM324 until 2026-11-14) | TI LM2902PWR | 2 | 2 | 6 | see CSV; was LM324PWR C7942: 112,900, 0.15 | sense buffers; swap: section 11 |
 | TLV1117LV33DCYR (was LD1117S33CTR until 2026-11-14) | TI TLV1117LV33DCYR | 1 | 1 | 3 | C15578: **0** (2026-11-14); was LD1117 C35879: 17,135, 0.16 | P11, section 10 |
 | VXO7805-500-M (U1) | CUI VXO7805-500-M-TR | 1 | 1 | 3 | C5137464: **0** | P1, C1 |
 | OKI-78SR-5/1.5-W36H-C | Murata, same | 1 | 1 | 3 | C266374: **0** | P1, C1: alternative to U1 |
@@ -368,7 +368,7 @@ Basis: board-top background 100 C at worst load, hot spots 119-121 C at the swit
 
 | Part (refs, qty per PDM) | Rated | Margin at 100 C | Candidate replacement |
 |---|---|---|---|
-| LM324PWR (A U7 / U12, B U7 / U22; 6) | TA 0 to 70 C (TI SLOS066AE 6.3) | -30 K | LM2902PWR, -40 to 125 C, same TSSOP-14 pinout (same TI document); LCSC C46864, DK 296-6600-1-ND; drop-in |
+| LM324PWR (A U7 / U12, B U7 / U22; 6) | TA 0 to 70 C (TI SLOS066AE 6.3) | -30 K | LM2902PWR, -40 to 125 C, same TSSOP-14 pinout (same TI document); LCSC C46864, DK 296-6600-1-ND; drop-in. **Fitted 2026-11-14 (t1a, branch `feat/lm2902`)**, part fields only via `tools/sch_board_power.py` / `tools/pcb_board_power.py`. SLOS066AE (rev AE, Sept 2025, https://www.ti.com/lit/ds/symlink/lm2902.pdf): pinout Figure 5-1 / Table 5-1 is one table for LM324 and LM2902 (PW pkg); LM2902PWR = plain LM2902 (package addendum), 6.3: VCC 3 to 26 V, TA -40 to 125 C; rail here is +3V3 (pin 4; pin 11 GND, netlist); 6.7 vs 6.8: VICR (0 to VCC - 1.5 V at 25 C, VCC - 2 V full range), VOH (VCC - 1.5 V at 25 C), VOL, ICC 0.7 / 1.2 mA all equal, so the sense-buffer swing (3.3 V clamp assumption, `firmware/sim/RESULTS.md`) is unchanged; LCSC and Digi-Key pages both show TI LM2902PWR, TSSOP-14 (DK -40 to 125 C). ERC / DRC / parity / netlist equal to `main` 12c7fef on both boards |
 | Omron A6S-8104 DIP (input SW1 / SW2; 6) | -20 to +70 C (Omron A102-E1-02) | -30 K | no 105 C DIP switch found: solder jumpers / 0R (footprint change), or C&K SD08H0SBR (-40 to 85 C, DK CKN6128CT-ND, footprint change, still 15 K short) |
 | Traco TSR 1-2450 (A U15, B U13; 3) | -40 to +85 C (Traco TSR 1, 2026-07-02) | -15 K (real air is lid air, TBD) | TI LMZM23601V5 (TJ -40 to 125 C, SMD, footprint change; LCSC C2868357, DK TBD) or RECOM RPX-1.0 (TJ -40 to 125 C, needs 4 resistors); every SIP-3 7805-type found stops at 85-90 C |
 | Abracon ABM3-8.000MHZ-D2Y-T (Y1; 3) | -40 to +85 C (code D) | -15 K | ECS-80-18-30Q-CES-TR, 2-pad 5 x 3.2, 18 pF, -40 to 125 C, AEC-Q200, DK 50-ECS-80-18-30Q-CES-TRCT-ND; drop-in |

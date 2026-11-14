@@ -52,7 +52,7 @@ Status: first version, 2026-11-10 (job B, branch `feat/fw-pin-map`). No firmware
 
 ## 3. Board A (`hardware/board-a`, MCU U4)
 
-Eight outputs, 7.5 A each: four BTS7008-2EPA duals. Pairs: OUT1+2 on U8 (NEW: was two singles), OUT3+4 on U11, OUT5+6 on U10, OUT7+8 on U13. Each pair has one DEN, one DSEL, one IS. The IS signal goes through an LM324 buffer to the MCU.
+Eight outputs, 7.5 A each: four BTS7008-2EPA duals. Pairs: OUT1+2 on U8 (NEW: was two singles), OUT3+4 on U11, OUT5+6 on U10, OUT7+8 on U13. Each pair has one DEN, one DSEL, one IS. The IS signal goes through an LM2902 buffer (LM324 until 2026-11-14) to the MCU.
 
 **Outputs** (all pins verified in the netlist; "stock v7" column = `LINE_` in dingoFW `board.h`)
 
@@ -100,7 +100,7 @@ Dual pairs rely on the stock rule: DSEL low = channel 0, high = channel 1, wait 
 
 ## 4. Board B (`hardware/board-b-max`, MCU U4)
 
-Outputs 1-4: four BTS70012-1ESP singles (stock Max, 31 A). Outputs 5-8: four BTS7004-1EPP singles (NEW, 15 A). No dual devices, so no DSEL. The IS signals go through LM324 buffers: U7 for 1-4, a second LM324 (U22, NEW) for 5-8.
+Outputs 1-4: four BTS70012-1ESP singles (stock Max, 31 A). Outputs 5-8: four BTS7004-1EPP singles (NEW, 15 A). No dual devices, so no DSEL. The IS signals go through LM2902 buffers (LM324 until 2026-11-14): U7 for 1-4, a second one (U22, NEW) for 5-8.
 
 **Outputs** (the pins for outputs 1-4 are identical to the stock Max netlist: compared pin by pin)
 
@@ -196,7 +196,7 @@ No clash: PC9 (9), PB8 (8, CAN RX), PA12 (12), PD2 (2, board B), PB3, PB4, PB5, 
 
 **Board B** (base: `dingopdmmax_v1`, which has 4 outputs)
 - `NUM_OUTPUTS` 4 -> 8; PWM configs for TIM10-13 and callbacks `pwmOut5..8` are copied from v7 `port_pwm.h`; timers already enabled in `mcuconf.h`.
-- New `ProfetModel` for BTS7004-1EPP with its own kILIS constant: TBD (value from the Infineon datasheet, not read). The 1.2k sense resistor (R72-R75) is on the board; check the IS voltage range against the 3.3 V LM324 supply: TBD.
+- New `ProfetModel` for BTS7004-1EPP with its own kILIS constant: TBD (value from the Infineon datasheet, not read). The 1.2k sense resistor (R72-R75) is on the board; check the IS voltage range against the 3.3 V op-amp (LM2902) supply: TBD.
 - DEN is shared per pair (PB12 for 5+6, PB15 for 7+8) but there is no DSEL: pass `LINE_UNUSED` for DSEL as stock Max does for singles. Stock `HandleDsel` only touches DSEL for the BTS7008 models, so it is never written for singles.
 - Stock `LINE_UNUSED` is **PA15**, which is now `PF_IN7`. Not written today, but it is a trap: redefine it to the free pin. That is PB2 since the B1 move (was PC13): set as input with pull-down, never as output (Q4).
 - `AnalogChannel`: IS1..IS4 as stock Max, add IS5..IS8 and one analog-input slot (PB1); `ADC1_NUM_CHANNELS` 7 -> 12 (IS x 8, battery, analog input, temperature, VrefInt).
