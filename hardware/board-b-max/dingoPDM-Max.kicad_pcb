@@ -813,7 +813,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "865-MB85RC64TAPNF-G-AWERE2TR-ND"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8878,7 +8878,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "MCP2562FD-E/SN-ND"
 			(at 19.2136 -17.4052 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -9636,7 +9636,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "490-10514-1-ND"
 			(at -49.9872 68.072 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15228,7 +15228,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "BTS70021EPPXUMA1CT-ND"
+		(property "Digi-Key_PN" "BTS70041EPPXUMA1CT-ND"
 			(at 1.778 23.622 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -17915,7 +17915,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "BTS70021EPPXUMA1CT-ND"
+		(property "Digi-Key_PN" "BTS70041EPPXUMA1CT-ND"
 			(at 1.778 23.622 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -24895,7 +24895,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "BTS70021EPPXUMA1CT-ND"
+		(property "Digi-Key_PN" "BTS70041EPPXUMA1CT-ND"
 			(at 1.778 23.622 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -30313,7 +30313,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "BTS70021EPPXUMA1CT-ND"
+		(property "Digi-Key_PN" "BTS70041EPPXUMA1CT-ND"
 			(at 1.778 23.622 270)
 			(layer "F.Fab")
 			(hide yes)

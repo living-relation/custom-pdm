@@ -4300,7 +4300,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "490-10514-1-ND"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)

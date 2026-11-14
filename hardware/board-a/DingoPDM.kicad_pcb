@@ -762,7 +762,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "865-MB85RC64TAPNF-G-AWERE2TR-ND"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10120,7 +10120,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "MCP2562FD-E/SN-ND"
 			(at 9.4884 -27.116 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10878,7 +10878,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "490-10514-1-ND"
 			(at -49.784 68.072 0)
 			(layer "F.Fab")
 			(hide yes)

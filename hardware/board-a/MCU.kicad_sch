@@ -8227,7 +8227,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "MCP2562FD-E/SN-ND"
 			(at 98.425 170.18 0)
 			(hide yes)
 			(show_name no)
