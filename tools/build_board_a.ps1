@@ -7,7 +7,7 @@
 # The input expansion (J6, 5 new inputs, test points removed) is part of the design; -NoInputs builds without it.
 # Last stage (board fix, 2026-11-11): tools/sch_board_fix.py A + tools/pcb_fix_board_a.py.
 # Then (a1a, 2026-11-12): tools/wirepads.py - J3 DT15 header -> wire pads in the same 12 holes.
-# Then (r2a / s4a / s6a, 2026-11-14): tools/sch_board_power.py A + tools/pcb_board_power.py - part fields only.
+# Then (r2a / s4a / s6a / t1a, 2026-11-14): tools/sch_board_power.py A + tools/pcb_board_power.py - part fields only.
 # Then (2026-11-14): tools/sch_digikey.py A + tools/pcb_digikey.py - Digi-Key fields only.
 param([string]$Out = "$env:LOCALAPPDATA\Workstation\claude-fusion\kicad9", [switch]$NoInputs)
 $repo = Split-Path $PSScriptRoot -Parent
@@ -35,7 +35,7 @@ try {
     if ($LASTEXITCODE) { throw 'wirepads.py lib failed' }
     & $py9 "$repo\tools\wirepads.py" sch-a Connectors.kicad_sch
     if ($LASTEXITCODE) { throw 'wirepads.py sch-a failed' }
-    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP
+    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a LM2902PWR op-amps
     if ($LASTEXITCODE) { throw 'sch_board_power.py failed' }
     & $py9 "$repo\tools\sch_digikey.py" A                       # 2026-11-14: Digi-Key numbers for TBD fields
     if ($LASTEXITCODE) { throw 'sch_digikey.py failed' }
