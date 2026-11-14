@@ -7750,7 +7750,7 @@
 				)
 			)
 		)
-		(property "Value" "STM32F446RETx"
+		(property "Value" "STM32F446RET7"
 			(at 0 7.4 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -7786,7 +7786,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-15376-ND"
+		(property "Digi-Key_PN" "497-16775-ND"
 			(at 50.0646 35.3086 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7798,7 +7798,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C69336"
+		(property "LCSC" "C1343794"
 			(at 50.0646 35.3086 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7806,6 +7806,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "186e0fbf-b199-4a1c-ab9e-e666338a68a4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "STM32F446RET7"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6e18072f-4b97-4864-a9b1-2381f091da13")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -12190,7 +12214,7 @@
 		(path "/00000000-0000-0000-0000-00005f5cf2eb/00000000-0000-0000-0000-000060344177")
 		(sheetname "/Power/")
 		(sheetfile "Power.kicad_sch")
-		(attr smd)
+		(attr smd exclude_from_pos_files exclude_from_bom dnp)
 		(fp_line
 			(start -1.685 0.96)
 			(end 1 0.96)
@@ -23921,7 +23945,7 @@
 				)
 			)
 		)
-		(property "Value" "LD1117S33CTR"
+		(property "Value" "TLV1117LV33DCYR"
 			(at 0.15 5.65 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23933,7 +23957,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv1117lv.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23957,7 +23981,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-1241-1-ND"
+		(property "Digi-Key_PN" "296-28778-1-ND"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23969,7 +23993,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C35879"
+		(property "LCSC" "C15578"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23977,6 +24001,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "24d266ec-050e-44d1-b597-e51df049e5f6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "TLV1117LV33DCYR"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "892b0847-2518-42c2-a970-540efda9888e")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -25953,7 +26001,7 @@
 		(path "/00000000-0000-0000-0000-00005f5cf2eb/00000000-0000-0000-0000-00006034945c")
 		(sheetname "/Power/")
 		(sheetfile "Power.kicad_sch")
-		(attr smd)
+		(attr smd exclude_from_pos_files exclude_from_bom dnp)
 		(fp_line
 			(start -0.227064 0.735)
 			(end 0.227064 0.735)
