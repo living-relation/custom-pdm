@@ -2033,7 +2033,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 246.38 36.2023 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2055,7 +2055,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 249.555 29.845 0)
 			(hide yes)
 			(show_name no)
@@ -2077,7 +2077,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 248.285 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2088,7 +2088,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
+			(at 248.285 34.925 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 248.285 34.925 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
 			(at 248.285 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2453,7 +2475,7 @@
 				)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 109.855 115.1161 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2474,7 +2496,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 111.125 116.205 0)
 			(hide yes)
 			(show_name no)
@@ -2496,7 +2518,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 109.855 121.285 0)
 			(hide yes)
 			(show_name no)
@@ -2507,7 +2529,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
+			(at 109.855 121.285 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 109.855 121.285 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
 			(at 109.855 121.285 0)
 			(hide yes)
 			(show_name no)
@@ -2947,7 +2991,7 @@
 				)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 109.22 78.9211 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2968,7 +3012,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 110.49 80.01 0)
 			(hide yes)
 			(show_name no)
@@ -2990,7 +3034,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 109.22 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -3001,7 +3045,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
 			(at 109.22 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -3162,7 +3228,7 @@
 				)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 108.585 41.4561 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3183,7 +3249,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 109.855 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -3205,7 +3271,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 108.585 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -3216,7 +3282,29 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
+			(at 108.585 47.625 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 108.585 47.625 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
 			(at 108.585 47.625 0)
 			(hide yes)
 			(show_name no)

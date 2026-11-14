@@ -4028,7 +4028,7 @@
 				)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 0 3.45 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4040,7 +4040,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -4064,7 +4064,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 59.69 99.06 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4076,7 +4076,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
 			(at 59.69 99.06 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4084,6 +4084,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f8544fab-50de-4ad3-b2ab-4fd82bf24552")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e0cc3ce7-15a1-4e1c-a544-54e5fd7af6c6")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -33650,7 +33674,7 @@
 				)
 			)
 		)
-		(property "Value" "LM324"
+		(property "Value" "LM2902PWR"
 			(at 0 3.45 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -33662,7 +33686,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -33686,7 +33710,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "497-7330-1-ND"
+		(property "Digi-Key_PN" "296-6600-1-ND"
 			(at 53.223 110.654 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -33698,7 +33722,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C7942"
+		(property "LCSC" "C46864"
 			(at 53.223 110.654 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -33706,6 +33730,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "675b8b0a-35d5-445c-8a77-67845d7638ca")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LM2902PWR"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "37e39893-ae2d-4898-b425-6ff562f02399")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)

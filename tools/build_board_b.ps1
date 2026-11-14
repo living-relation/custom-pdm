@@ -42,7 +42,7 @@ try {
         if ($LASTEXITCODE) { throw "sch_board_b.py failed" }
         python (Join-Path $Repo "tools\sch_board_fix.py") B         # board fix 2026-11-11 (DECISIONS.md)
         if ($LASTEXITCODE) { throw "sch_board_fix.py failed" }
-        python (Join-Path $Repo "tools\sch_board_power.py") B       # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP
+        python (Join-Path $Repo "tools\sch_board_power.py") B       # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a LM2902PWR op-amps
         if ($LASTEXITCODE) { throw "sch_board_power.py failed" }
         python (Join-Path $Repo "tools\sch_digikey.py") B           # 2026-11-14: Digi-Key numbers for TBD fields
         if ($LASTEXITCODE) { throw "sch_digikey.py failed" }
@@ -63,7 +63,7 @@ try {
     $tidy = Join-Path $Repo "tools\tidy_board_b.py"
     if ((Test-Path $tidy) -and -not $NoRoute) { Run-Py9 $tidy $Pcb "$Out\board-b.net" (Join-Path $Repo "reference\dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb") }
     Run-Py9 (Join-Path $Repo "tools\wirepads.py") pcb $Pcb J6         # a2b: Micro-Fit J6 -> wire pads, same 4 holes
-    Run-Py9 (Join-Path $Repo "tools\pcb_board_power.py") $Pcb "$Out\board-b.net" B   # r2a / s4a / s6a: part fields, LED DNP
+    Run-Py9 (Join-Path $Repo "tools\pcb_board_power.py") $Pcb "$Out\board-b.net" B   # r2a / s4a / s6a / t1a: part fields, LED DNP
     Run-Py9 (Join-Path $Repo "tools\pcb_digikey.py") $Pcb "$Out\board-b.net"   # 2026-11-14: Digi-Key fields
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null

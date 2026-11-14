@@ -11,6 +11,10 @@ footprint change.
          assembler's Digi-Key / Mouser sourcing (LCSC C15578 had no stock on 2026-11-14).
   * s6a  power LED off: the LED and its 120 ohm resistor (A: D3 + R3, B: D5 + R3; both behind solder jumper JP1)
          are do-not-fit and left out of the BOM and the position files. Footprints and copper stay.
+  * t1a  (2026-11-14) quad op-amp sense buffers LM324PWR -> TI LM2902PWR (A: U7, U12; B: U7, U22): same TSSOP-14
+         pinout (TI SLOS066AE Figure 5-1 / Table 5-1 covers both), TA -40 to 125 C (6.3). Every placed unit of each
+         symbol is changed, on the sheets the board's hierarchy uses (board B's MedCurrentDrivers.kicad_sch is not
+         in the hierarchy and is left alone).
 The PCB side (values, fields, DNP / BOM / position attributes) is tools/pcb_board_power.py.
 Safe to re-run: a symbol already carrying the new data is left alone.
 """
@@ -28,6 +32,14 @@ LDO = ("TLV1117LV33DCYR", "C15578", "296-28778-1-ND", "Texas Instruments", "TLV1
 PARTS = {"U4": ("MCU.kicad_sch", "C69336", MCU), "U2": ("Power.kicad_sch", "C35879", LDO)}
 LED = {"A": "D3", "B": "D5"}[BOARD]
 DNP = {LED: ("Power.kicad_sch", "C2899888"), "R3": ("Power.kicad_sch", "C229076")}   # green LED, 120 ohm
+# t1a: op-amp part, its old LCSC, the refs and the sheets that hold their units (all units of a ref get the new data)
+OPAMP = ("LM2902PWR", "C46864", "296-6600-1-ND", "Texas Instruments", "LM2902PWR",
+         "https://www.ti.com/lit/ds/symlink/lm2902.pdf")
+OPAMP_OLD_LCSC = "C7942"                                 # TI LM324PWR
+OPAMP_UNITS = {"A": {"U7": 4, "U12": 3}, "B": {"U7": 5, "U22": 5}}[BOARD]   # units placed today (A: U7 unit 1 and
+OPAMP_REFS = set(OPAMP_UNITS)                                                # U12 units 1 / 2 are not placed)
+OPAMP_SHEETS = {"A": ("HighCurrentDrivers.kicad_sch", "MedCurrentDrivers.kicad_sch"),
+                "B": ("HighCurrentDrivers.kicad_sch", "HighCurrentDrivers2.kicad_sch")}[BOARD]
 
 
 def rd(p):
@@ -132,5 +144,39 @@ for ref, (sheet, lcsc) in DNP.items():
             raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {lcsc}")
         return set_flag(set_flag(set_flag(b, "dnp", "yes"), "in_bom", "no"), "in_pos_files", "no")
     print(f"{ref}: do not fit, out of BOM and position files", "(set)" if edit(sheet, ref, dnp) else "(already)")
+
+units = {r: 0 for r in OPAMP_REFS}                       # t1a: every unit of every op-amp ref
+changed = 0
+for sheet in OPAMP_SHEETS:
+    t = rd(sheet)
+    out, pos = [], 0
+    for m in re.finditer(r"\n\t\(symbol[\s(]", t):
+        s = m.start() + 2
+        if s < pos:
+            continue
+        e = block_end(t, s)
+        b = t[s:e]
+        refs = set(re.findall(r'\(reference "([^"]+)"\)', b))
+        if not refs & OPAMP_REFS:
+            continue
+        if len(refs) != 1 or '(lib_id "Amplifier_Operational:LM324")' not in b:
+            raise SystemExit(f"{sheet}: op-amp symbol {sorted(refs)} not a single-instance LM324 symbol")
+        ref = refs.pop()
+        units[ref] += 1
+        if get_prop(b, "LCSC") != OPAMP[1]:
+            if get_prop(b, "LCSC") != OPAMP_OLD_LCSC:
+                raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {OPAMP_OLD_LCSC} (or {OPAMP[1]})")
+            for name, v in zip(("Value", "LCSC", "Digi-Key_PN", "Manufacturer", "MPN", "Datasheet"), OPAMP):
+                b = set_prop(b, name, v)
+            changed += 1
+        out.append(t[pos:s] + b)
+        pos = e
+    new = "".join(out) + t[pos:]
+    if new != t:
+        wr(sheet, new)
+for ref in sorted(units):
+    if units[ref] != OPAMP_UNITS[ref]:
+        raise SystemExit(f"{ref}: {units[ref]} op-amp units found, expected {OPAMP_UNITS[ref]}")
+print(f"op-amps {', '.join(sorted(OPAMP_REFS))}: {OPAMP[4]}, {changed} of {sum(units.values())} units set")
 
 print("board power schematic edits OK")
