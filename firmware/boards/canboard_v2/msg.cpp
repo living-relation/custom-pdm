@@ -1,4 +1,5 @@
 #include "msg.h"
+#include "can_frame.h"
 #include "config.h"
 #include "status.h"
 #include "device.h"
@@ -11,8 +12,7 @@ CANTxMsg TxMsg0()
     //=======================================================
     // Build Msg 0 (Analog inputs 1-4 millivolts)
     //=======================================================
-    stMsg.frame.IDE = CAN_IDE_STD;
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 0;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 0);
     stMsg.frame.DLC = 8;
     stMsg.frame.data16[0] = (uint16_t)(GetAnalogInputMv(0));
     stMsg.frame.data16[1] = (uint16_t)(GetAnalogInputMv(1));
@@ -30,8 +30,7 @@ CANTxMsg TxMsg1()
     //=======================================================
     // Build Msg 1 (Analog input 5 millivolts and temperature)
     //=======================================================
-    stMsg.frame.IDE = CAN_IDE_STD;
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 1;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 1);
     stMsg.frame.DLC = 8;
     stMsg.frame.data16[0] = (uint16_t)(GetAnalogInputMv(4));
     stMsg.frame.data16[1] = 0;
@@ -49,8 +48,7 @@ CANTxMsg TxMsg2()
     //=======================================================
     // Build Msg 2 (Rotary switches, dig inputs, analog input switches, low side output status, heartbeat)
     //=======================================================
-    stMsg.frame.IDE = CAN_IDE_STD;
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 2;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 2);
     stMsg.frame.DLC = 8;
     stMsg.frame.data8[0] = (GetRotarySwitchPos(1) << 4) + GetRotarySwitchPos(0);
     stMsg.frame.data8[1] = (GetRotarySwitchPos(3) << 4) + GetRotarySwitchPos(2);
@@ -77,7 +75,7 @@ CANTxMsg TxMsg3()
     //=======================================================
     // Build Msg 3 (CAN Inputs and Virtual Inputs)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 3;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 3);
     stMsg.frame.DLC = 8; // Bytes to send
     stMsg.frame.data32[0] = GetCanInOutputs();
     stMsg.frame.data32[1] = GetVirtIns();
@@ -93,7 +91,7 @@ CANTxMsg TxMsg4()
     //=======================================================
     // Build Msg 4 (Counters and Conditions)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 4;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 4);
     stMsg.frame.DLC = 8; // Bytes to send
     stMsg.frame.data8[0] = (uint8_t)GetCounterVal(0);
     stMsg.frame.data8[1] = (uint8_t)GetCounterVal(1);
@@ -112,10 +110,10 @@ CANTxMsg TxMsg5()
     //=======================================================
     // Build Msg 5 (CAN Input Values 1-2)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 5;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 5);
     stMsg.frame.DLC = 8; // Bytes to send
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(0), 0, 32, GetCanInFactor(0), GetCanInOffset(0), GetCanInByteOrder(0));
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(1), 32, 32, GetCanInFactor(1), GetCanInOffset(1), GetCanInByteOrder(1));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(0), 0, 32, GetCanInFactor(0), GetCanInOffset(0));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(1), 32, 32, GetCanInFactor(1), GetCanInOffset(1));
 
     stMsg.bSend = GetCanInEnable(0) || GetCanInEnable(1);
 
@@ -128,10 +126,10 @@ CANTxMsg TxMsg6()
     //=======================================================
     // Build Msg 6 (CAN Input Values 3-4)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 6;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 6);
     stMsg.frame.DLC = 8; // Bytes to send
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(2), 0, 32, GetCanInFactor(2), GetCanInOffset(2), GetCanInByteOrder(2));
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(3), 32, 32, GetCanInFactor(3), GetCanInOffset(3), GetCanInByteOrder(3));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(2), 0, 32, GetCanInFactor(2), GetCanInOffset(2));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(3), 32, 32, GetCanInFactor(3), GetCanInOffset(3));
 
     stMsg.bSend = GetCanInEnable(2) || GetCanInEnable(3);
 
@@ -144,10 +142,10 @@ CANTxMsg TxMsg7()
     //=======================================================
     // Build Msg 7 (CAN Input Values 5-6)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 7;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 7);
     stMsg.frame.DLC = 8; // Bytes to send
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(4), 0, 32, GetCanInFactor(4), GetCanInOffset(4), GetCanInByteOrder(4));
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(5), 32, 32, GetCanInFactor(5), GetCanInOffset(5), GetCanInByteOrder(5));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(4), 0, 32, GetCanInFactor(4), GetCanInOffset(4));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(5), 32, 32, GetCanInFactor(5), GetCanInOffset(5));
 
     stMsg.bSend = GetCanInEnable(4) || GetCanInEnable(5);
 
@@ -160,13 +158,84 @@ CANTxMsg TxMsg8()
     //=======================================================
     // Build Msg 8 (CAN Input Values 7-8)
     //=======================================================
-    stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 8;
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 8);
     stMsg.frame.DLC = 8; // Bytes to send
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(6), 0, 32, GetCanInFactor(6), GetCanInOffset(6), GetCanInByteOrder(6));
-    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(7), 32, 32, GetCanInFactor(7), GetCanInOffset(7), GetCanInByteOrder(7));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(6), 0, 32, GetCanInFactor(6), GetCanInOffset(6));
+    Dbc::EncodeFloat(stMsg.frame.data8, GetCanInVal(7), 32, 32, GetCanInFactor(7), GetCanInOffset(7));
 
     stMsg.bSend = GetCanInEnable(6) || GetCanInEnable(7);
 
     return stMsg;
 }
 
+CANTxMsg TxMsg9()
+{
+    CANTxMsg stMsg;
+    //=======================================================
+    // Build Msg 9 (Digital Input 1-2 PWM Duty 0.01%, Freq 0.1Hz)
+    //=======================================================
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 9);
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data16[0] = GetDigInPwmDuty(0);
+    stMsg.frame.data16[1] = GetDigInPwmFreq(0);
+    stMsg.frame.data16[2] = GetDigInPwmDuty(1);
+    stMsg.frame.data16[3] = GetDigInPwmFreq(1);
+
+    stMsg.bSend = GetDigInPwmEnable(0) || GetDigInPwmEnable(1);
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg10()
+{
+    CANTxMsg stMsg;
+    //=======================================================
+    // Build Msg 10 (Digital Input 3-4 PWM Duty 0.01%, Freq 0.1Hz)
+    //=======================================================
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 10);
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data16[0] = GetDigInPwmDuty(2);
+    stMsg.frame.data16[1] = GetDigInPwmFreq(2);
+    stMsg.frame.data16[2] = GetDigInPwmDuty(3);
+    stMsg.frame.data16[3] = GetDigInPwmFreq(3);
+
+    stMsg.bSend = GetDigInPwmEnable(2) || GetDigInPwmEnable(3);
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg11()
+{
+    CANTxMsg stMsg;
+    //=======================================================
+    // Build Msg 11 (Digital Input 5-6 PWM Duty 0.01%, Freq 0.1Hz)
+    //=======================================================
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 11);
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data16[0] = GetDigInPwmDuty(4);
+    stMsg.frame.data16[1] = GetDigInPwmFreq(4);
+    stMsg.frame.data16[2] = GetDigInPwmDuty(5);
+    stMsg.frame.data16[3] = GetDigInPwmFreq(5);
+
+    stMsg.bSend = GetDigInPwmEnable(4) || GetDigInPwmEnable(5);
+
+    return stMsg;
+}
+
+CANTxMsg TxMsg12()
+{
+    CANTxMsg stMsg;
+    //=======================================================
+    // Build Msg 12 (Digital Input 7-8 PWM Duty 0.01%, Freq 0.1Hz)
+    //=======================================================
+    CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 12);
+    stMsg.frame.DLC = 8;
+    stMsg.frame.data16[0] = GetDigInPwmDuty(6);
+    stMsg.frame.data16[1] = GetDigInPwmFreq(6);
+    stMsg.frame.data16[2] = GetDigInPwmDuty(7);
+    stMsg.frame.data16[3] = GetDigInPwmFreq(7);
+
+    stMsg.bSend = GetDigInPwmEnable(6) || GetDigInPwmEnable(7);
+
+    return stMsg;
+}

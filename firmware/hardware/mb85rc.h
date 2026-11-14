@@ -7,12 +7,13 @@
 #define MB85RC_I2CADDR_DEFAULT 0x50
 
 #define MB85RC_TIMEOUT 1000 //ms
+#define MB85RC_WRITE_CHUNK 32 //bytes per I2C write, buffer lives on the caller's stack
 
 #define MB85RC_SLAVE_ID 0xF8
 #define MB85RC_MANUF_ID 0x00A
 #define MB85RC_PROD_ID 0x510
 
-#if HAS_I2C
+#if HAS_EXT_MEMORY
 class MB85RC
 {
     public:

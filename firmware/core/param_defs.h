@@ -109,15 +109,22 @@
 // Parameter definitions for compile-time registration
 // Index = base + instance, SubIndex = parameter within instance
 
+// {Index, SubIndex, Value Pointer, Temporary Value Pointer, Parameter Type, Default Value, Minimum Value, Maximum Value}
+
 //=============================================================================
 // Device Config Parameters - Base 0x0000
 //=============================================================================
 #define DEVICE_CONFIG_PARAMS() \
-    {0x0000, 0, &stConfig.stDevice.nBaseId,            &stConfigTemp.stDevice.nBaseId,           ParamType::UInt16, DEFAULT_BASE_ID, 0, 0x7FF}, \
-    {0x0000, 1, &stConfig.stDevice.eCanSpeed,          &stConfigTemp.stDevice.eCanSpeed,         ParamType::Enum,   static_cast<uint32_t>(DEFAULT_CAN_BITRATE), 0, 4}, \
-    {0x0000, 2, &stConfig.stDevice.bSleepEnabled,      &stConfigTemp.stDevice.bSleepEnabled,     ParamType::Bool,   0, 0, 1}, \
-    {0x0000, 3, &stConfig.stDevice.bCanFilterEnabled,  &stConfigTemp.stDevice.bCanFilterEnabled, ParamType::Bool,   0, 0, 1}, \
-    {0x0000, 4, &stConfig.stDevice.bConnectUsbToCan,   &stConfigTemp.stDevice.bConnectUsbToCan,  ParamType::Bool,   1, 0, 1}
+    {0x0000, 0, &stConfig.stDevice.nBaseId,             &stConfigTemp.stDevice.nBaseId,           ParamType::UInt16, DEFAULT_BASE_ID, 0, 0x7FF}, \
+    {0x0000, 1, &stConfig.stDevice.eCanSpeed[0],        &stConfigTemp.stDevice.eCanSpeed[0],      ParamType::Enum,   static_cast<uint32_t>(DEFAULT_CAN_BITRATE), 0, 4}, \
+    {0x0000, 2, &stConfig.stDevice.bSleepEnabled,       &stConfigTemp.stDevice.bSleepEnabled,     ParamType::Bool,   0, 0, 1}, \
+    {0x0000, 3, &stConfig.stDevice.bCanFilterEnabled,   &stConfigTemp.stDevice.bCanFilterEnabled, ParamType::Bool,   0, 0, 1}, \
+    {0x0000, 4, &stConfig.stDevice.bDisableDigInWake,   &stConfigTemp.stDevice.bDisableDigInWake, ParamType::Bool,   0, 0, 1}, \
+    {0x0000, 5, &stConfig.stDevice.bDisableCanWake,     &stConfigTemp.stDevice.bDisableCanWake,   ParamType::Bool,   0, 0, 1}, \
+    {0x0000, 6, &stConfig.stDevice.bConnectUsbToCan,    &stConfigTemp.stDevice.bConnectUsbToCan,  ParamType::Bool,   1, 0, 1}, \
+    {0x0000, 7, &stConfig.stDevice.nMuteCanTxInput,     &stConfigTemp.stDevice.nMuteCanTxInput,   ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x0000, 8, &stConfig.stDevice.nForceSleepInput,    &stConfigTemp.stDevice.nForceSleepInput,  ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x0000, 9, &stConfig.stDevice.eCanSpeed[1],        &stConfigTemp.stDevice.eCanSpeed[1],      ParamType::Enum,   static_cast<uint32_t>(CanBitrate::Bitrate_500K), 0, 4}
 
 //=============================================================================
 // custom-pdm: board temperature parameters - Base 0x7F00 (single instance)
@@ -168,7 +175,9 @@
     {0x1200 + (i), 1, &stConfig.stDigInput[i].eMode,         &stConfigTemp.stDigInput[i].eMode,        ParamType::Enum,   static_cast<uint32_t>(InputMode::Momentary), 0, 1}, \
     {0x1200 + (i), 2, &stConfig.stDigInput[i].bInvert,       &stConfigTemp.stDigInput[i].bInvert,      ParamType::Bool,   0, 0, 1}, \
     {0x1200 + (i), 3, &stConfig.stDigInput[i].nDebounceTime, &stConfigTemp.stDigInput[i].nDebounceTime,ParamType::UInt16, 20, 0, 1000}, \
-    {0x1200 + (i), 4, &stConfig.stDigInput[i].ePull,         &stConfigTemp.stDigInput[i].ePull,        ParamType::Enum,   static_cast<uint32_t>(InputPull::None), 0, 2}
+    {0x1200 + (i), 4, &stConfig.stDigInput[i].ePull,         &stConfigTemp.stDigInput[i].ePull,        ParamType::Enum,   static_cast<uint32_t>(InputPull::None), 0, 2}, \
+    {0x1200 + (i), 5, &stConfig.stDigInput[i].bPwm,          &stConfigTemp.stDigInput[i].bPwm,         ParamType::Bool,   0, 0, 1}, \
+    {0x1200 + (i), 6, &stConfig.stDigInput[i].nPwmMinPulseUs, &stConfigTemp.stDigInput[i].nPwmMinPulseUs, ParamType::UInt16, 0, 0, 10000}
 #endif
 
 //=============================================================================
@@ -188,7 +197,8 @@
     {0x1300 + (i), 10, &stConfig.stCanInput[i].bSigned,         &stConfigTemp.stCanInput[i].bSigned,         ParamType::Bool,   DEFAULT_CANIN_SIGNED(i), 0, 1}, \
     {0x1300 + (i), 11, &stConfig.stCanInput[i].eOperator,       &stConfigTemp.stCanInput[i].eOperator,       ParamType::Enum,   DEFAULT_CANIN_OPERATOR(i), 0, 7}, \
     {0x1300 + (i), 12, &stConfig.stCanInput[i].fOperand,        &stConfigTemp.stCanInput[i].fOperand,        ParamType::Float,  DEFAULT_CANIN_OPERAND(i), F(-1e9f), F(1e9f)}, \
-    {0x1300 + (i), 13, &stConfig.stCanInput[i].eMode,           &stConfigTemp.stCanInput[i].eMode,           ParamType::Enum,   static_cast<uint32_t>(InputMode::Momentary), 0, 1}
+    {0x1300 + (i), 13, &stConfig.stCanInput[i].eMode,           &stConfigTemp.stCanInput[i].eMode,           ParamType::Enum,   static_cast<uint32_t>(InputMode::Momentary), 0, 1}, \
+    {0x1300 + (i), 14, &stConfig.stCanInput[i].nBus,            &stConfigTemp.stCanInput[i].nBus,            ParamType::UInt8,  0, 0, NUM_CAN_BUSES - 1}
     
 //=============================================================================
 // Virtual Input Parameters - Base 0x1400
@@ -293,6 +303,32 @@
 #endif
 
 //=============================================================================
+// Timer Parameters - Base 0x1A00
+//=============================================================================
+#if NUM_TIMERS > 0
+#define TIMER_PARAMS(i) \
+    {0x1A00 + (i), 0, &stConfig.stTimer[i].bEnabled,    &stConfigTemp.stTimer[i].bEnabled,    ParamType::Bool,   0, 0, 1}, \
+    {0x1A00 + (i), 1, &stConfig.stTimer[i].nInput,      &stConfigTemp.stTimer[i].nInput,      ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x1A00 + (i), 2, &stConfig.stTimer[i].nResetInput, &stConfigTemp.stTimer[i].nResetInput, ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x1A00 + (i), 3, &stConfig.stTimer[i].eMode,       &stConfigTemp.stTimer[i].eMode,       ParamType::Enum,   static_cast<uint32_t>(TimerMode::OnDelay), 0, 3}, \
+    {0x1A00 + (i), 4, &stConfig.stTimer[i].nTime,       &stConfigTemp.stTimer[i].nTime,       ParamType::UInt32, 1000, 0, 600000}
+#endif
+
+//=============================================================================
+// Math Parameters - Base 0x1C00
+//=============================================================================
+#if NUM_MATH > 0
+#define MATH_PARAMS(i) \
+    {0x1C00 + (i), 0, &stConfig.stMath[i].bEnabled, &stConfigTemp.stMath[i].bEnabled, ParamType::Bool,   0, 0, 1}, \
+    {0x1C00 + (i), 1, &stConfig.stMath[i].eOp,      &stConfigTemp.stMath[i].eOp,      ParamType::Enum,   static_cast<uint32_t>(MathOp::Add), 0, 6}, \
+    {0x1C00 + (i), 2, &stConfig.stMath[i].nInputA,  &stConfigTemp.stMath[i].nInputA,  ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x1C00 + (i), 3, &stConfig.stMath[i].nInputB,  &stConfigTemp.stMath[i].nInputB,  ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x1C00 + (i), 4, &stConfig.stMath[i].fConstB,  &stConfigTemp.stMath[i].fConstB,  ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}, \
+    {0x1C00 + (i), 5, &stConfig.stMath[i].fFactor,  &stConfigTemp.stMath[i].fFactor,  ParamType::Float,  F(1.0f), F(-1e9f), F(1e9f)}, \
+    {0x1C00 + (i), 6, &stConfig.stMath[i].fOffset,  &stConfigTemp.stMath[i].fOffset,  ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}
+#endif
+
+//=============================================================================
 // CAN Output Parameters - Base 0x2000
 //=============================================================================
 #define CAN_OUTPUT_PARAMS(i) \
@@ -306,7 +342,8 @@
     {0x2000 + (i), 7,  &stConfig.stCanOutput[i].fOffset,    &stConfigTemp.stCanOutput[i].fOffset,    ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}, \
     {0x2000 + (i), 8,  &stConfig.stCanOutput[i].eByteOrder, &stConfigTemp.stCanOutput[i].eByteOrder, ParamType::Enum,   static_cast<uint32_t>(ByteOrder::LittleEndian), 0, 1}, \
     {0x2000 + (i), 9,  &stConfig.stCanOutput[i].bSigned,    &stConfigTemp.stCanOutput[i].bSigned,    ParamType::Bool,   0, 0, 1}, \
-    {0x2000 + (i), 10, &stConfig.stCanOutput[i].nInterval,  &stConfigTemp.stCanOutput[i].nInterval,  ParamType::UInt16, 1000, 0, 60000}
+    {0x2000 + (i), 10, &stConfig.stCanOutput[i].nInterval,  &stConfigTemp.stCanOutput[i].nInterval,  ParamType::UInt16, 1000, 0, 60000}, \
+    {0x2000 + (i), 11, &stConfig.stCanOutput[i].nBus,       &stConfigTemp.stCanOutput[i].nBus,       ParamType::UInt8,  0, 0, NUM_CAN_BUSES - 1}
 
 //=============================================================================
 // Digital Output Parameters - Base 0x2100
@@ -322,16 +359,29 @@
 //=============================================================================
 #if NUM_ANALOG_INPUTS > 0
 #define ANALOG_INPUT_PARAMS(i) \
-    {0x2200 + (i), 0, &stConfig.stAnalogInput[i].bEnabled, &stConfigTemp.stAnalogInput[i].bEnabled, ParamType::Bool, 0, 0, 1}, \
-    {0x2200 + (i), 1, &stConfig.stAnalogInput[i].stSwitch.bEnabled, &stConfigTemp.stAnalogInput[i].stSwitch.bEnabled, ParamType::Bool, 0, 0, 1}, \
-    {0x2200 + (i), 2, &stConfig.stAnalogInput[i].stSwitch.eMode, &stConfigTemp.stAnalogInput[i].stSwitch.eMode, ParamType::Enum, static_cast<uint32_t>(InputMode::Momentary), 0, 1}, \
-    {0x2200 + (i), 3, &stConfig.stAnalogInput[i].stSwitch.bInvert, &stConfigTemp.stAnalogInput[i].stSwitch.bInvert, ParamType::Bool, 0, 0, 1}, \
-    {0x2200 + (i), 4, &stConfig.stAnalogInput[i].stSwitch.nThreshold, &stConfigTemp.stAnalogInput[i].stSwitch.nThreshold, ParamType::UInt16, 2000, 0, 5000}, \
-    {0x2200 + (i), 5, &stConfig.stAnalogInput[i].stRotary.bEnabled, &stConfigTemp.stAnalogInput[i].stRotary.bEnabled, ParamType::Bool, 0, 0, 1}, \
-    {0x2200 + (i), 6, &stConfig.stAnalogInput[i].stRotary.bInvert, &stConfigTemp.stAnalogInput[i].stRotary.bInvert, ParamType::Bool, 0, 0, 1}, \
-    {0x2200 + (i), 7, &stConfig.stAnalogInput[i].stRotary.fOffset, &stConfigTemp.stAnalogInput[i].stRotary.fOffset, ParamType::Float, F(0.0f), F(-1e9f), F(1e9f)}, \
-    {0x2200 + (i), 8, &stConfig.stAnalogInput[i].stRotary.fStep, &stConfigTemp.stAnalogInput[i].stRotary.fStep, ParamType::Float, F(100.0f), F(1e-6f), F(1e9f)}, \
-    {0x2200 + (i), 9, &stConfig.stAnalogInput[i].stRotary.fMaxPos, &stConfigTemp.stAnalogInput[i].stRotary.fMaxPos, ParamType::Float, F(10.0f), F(0.0f), F(1e9f)}
+    {0x2200 + (i), 0, &stConfig.stAnalogInput[i].bEnabled,              &stConfigTemp.stAnalogInput[i].bEnabled,            ParamType::Bool, 0, 0, 1}, \
+    {0x2200 + (i), 1, &stConfig.stAnalogInput[i].stSwitch.bEnabled,     &stConfigTemp.stAnalogInput[i].stSwitch.bEnabled,   ParamType::Bool, 0, 0, 1}, \
+    {0x2200 + (i), 2, &stConfig.stAnalogInput[i].stSwitch.eMode,        &stConfigTemp.stAnalogInput[i].stSwitch.eMode,      ParamType::Enum, static_cast<uint32_t>(InputMode::Momentary), 0, 1}, \
+    {0x2200 + (i), 3, &stConfig.stAnalogInput[i].stSwitch.bInvert,      &stConfigTemp.stAnalogInput[i].stSwitch.bInvert,    ParamType::Bool, 0, 0, 1}, \
+    {0x2200 + (i), 4, &stConfig.stAnalogInput[i].stSwitch.nThreshold,   &stConfigTemp.stAnalogInput[i].stSwitch.nThreshold, ParamType::UInt16, 2000, 0, 5000}, \
+    {0x2200 + (i), 5, &stConfig.stAnalogInput[i].stRotary.bEnabled,     &stConfigTemp.stAnalogInput[i].stRotary.bEnabled,   ParamType::Bool, 0, 0, 1}, \
+    {0x2200 + (i), 6, &stConfig.stAnalogInput[i].stRotary.bInvert,      &stConfigTemp.stAnalogInput[i].stRotary.bInvert,    ParamType::Bool, 0, 0, 1}, \
+    {0x2200 + (i), 7, &stConfig.stAnalogInput[i].stRotary.fOffset,      &stConfigTemp.stAnalogInput[i].stRotary.fOffset,    ParamType::Float, F(0.0f), F(-1e9f), F(1e9f)}, \
+    {0x2200 + (i), 8, &stConfig.stAnalogInput[i].stRotary.fStep,        &stConfigTemp.stAnalogInput[i].stRotary.fStep,      ParamType::Float, F(100.0f), F(1e-6f), F(1e9f)}, \
+    {0x2200 + (i), 9, &stConfig.stAnalogInput[i].stRotary.fMaxPos,      &stConfigTemp.stAnalogInput[i].stRotary.fMaxPos,    ParamType::Float, F(10.0f), F(0.0f), F(1e9f)}, \
+    {0x2200 + (i), 10, &stConfig.stAnalogInput[i].stRotary.eMode,       &stConfigTemp.stAnalogInput[i].stRotary.eMode,      ParamType::Enum, static_cast<uint32_t>(RotaryMode::Uniform), 0, 1}, \
+    {0x2200 + (i), 11, &stConfig.stAnalogInput[i].stRotary.nNumPos,     &stConfigTemp.stAnalogInput[i].stRotary.nNumPos,    ParamType::UInt8, 2, 2, ROTARY_MAX_POS}, \
+    {0x2200 + (i), 12, &stConfig.stAnalogInput[i].stRotary.nTolerance,  &stConfigTemp.stAnalogInput[i].stRotary.nTolerance, ParamType::UInt16, 200, 0, 5000}, \
+    {0x2200 + (i), 13, &stConfig.stAnalogInput[i].stRotary.nCenter[0],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[0], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 14, &stConfig.stAnalogInput[i].stRotary.nCenter[1],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[1], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 15, &stConfig.stAnalogInput[i].stRotary.nCenter[2],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[2], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 16, &stConfig.stAnalogInput[i].stRotary.nCenter[3],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[3], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 17, &stConfig.stAnalogInput[i].stRotary.nCenter[4],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[4], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 18, &stConfig.stAnalogInput[i].stRotary.nCenter[5],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[5], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 19, &stConfig.stAnalogInput[i].stRotary.nCenter[6],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[6], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 20, &stConfig.stAnalogInput[i].stRotary.nCenter[7],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[7], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 21, &stConfig.stAnalogInput[i].stRotary.nCenter[8],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[8], ParamType::UInt16, 0, 0, 5000}, \
+    {0x2200 + (i), 22, &stConfig.stAnalogInput[i].stRotary.nCenter[9],  &stConfigTemp.stAnalogInput[i].stRotary.nCenter[9], ParamType::UInt16, 0, 0, 5000}
 #endif
 
 //=============================================================================
@@ -343,13 +393,14 @@
     {0x3000 + (i), 1,  &stConfig.stKeypad[i].nNodeId,                 &stConfigTemp.stKeypad[i].nNodeId,                  ParamType::UInt8,  0, 0, 127}, \
     {0x3000 + (i), 2,  &stConfig.stKeypad[i].bTimeoutEnabled,         &stConfigTemp.stKeypad[i].bTimeoutEnabled,          ParamType::Bool,   0, 0, 1}, \
     {0x3000 + (i), 3,  &stConfig.stKeypad[i].nTimeout,                &stConfigTemp.stKeypad[i].nTimeout,                 ParamType::UInt16, 0, 0, 60000}, \
-    {0x3000 + (i), 4,  &stConfig.stKeypad[i].eModel,                  &stConfigTemp.stKeypad[i].eModel,                   ParamType::Enum,   static_cast<uint8_t>(KeypadModel::Blink12Key), 0, 13}, \
+    {0x3000 + (i), 4,  &stConfig.stKeypad[i].eModel,                  &stConfigTemp.stKeypad[i].eModel,                   ParamType::Enum,   static_cast<uint8_t>(KeypadModel::Blink12Key), 0, static_cast<uint8_t>(KeypadModel::Grayhill20Key)}, \
     {0x3000 + (i), 5,  &stConfig.stKeypad[i].nBacklightBrightness,    &stConfigTemp.stKeypad[i].nBacklightBrightness,     ParamType::UInt8,  63, 0, 63}, \
     {0x3000 + (i), 6,  &stConfig.stKeypad[i].nDimBacklightBrightness, &stConfigTemp.stKeypad[i].nDimBacklightBrightness,  ParamType::UInt8,  32, 0, 63}, \
     {0x3000 + (i), 7,  &stConfig.stKeypad[i].nBacklightColor,         &stConfigTemp.stKeypad[i].nBacklightColor,          ParamType::UInt8,  0, 0, 9}, \
     {0x3000 + (i), 8,  &stConfig.stKeypad[i].nDimmingVar,             &stConfigTemp.stKeypad[i].nDimmingVar,              ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
     {0x3000 + (i), 9,  &stConfig.stKeypad[i].nButtonBrightness,       &stConfigTemp.stKeypad[i].nButtonBrightness,        ParamType::UInt8,  63, 0, 63}, \
-    {0x3000 + (i), 10, &stConfig.stKeypad[i].nDimButtonBrightness,    &stConfigTemp.stKeypad[i].nDimButtonBrightness,     ParamType::UInt8,  32, 0, 63}
+    {0x3000 + (i), 10, &stConfig.stKeypad[i].nDimButtonBrightness,    &stConfigTemp.stKeypad[i].nDimButtonBrightness,     ParamType::UInt8,  32, 0, 63}, \
+    {0x3000 + (i), 11, &stConfig.stKeypad[i].nBus,                    &stConfigTemp.stKeypad[i].nBus,                     ParamType::UInt8,  0, 0, NUM_CAN_BUSES - 1}
 
 //=============================================================================
 // Keypad Button Parameters - Base 0x3100 + (keypad * 32) + button

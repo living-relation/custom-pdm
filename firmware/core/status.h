@@ -32,7 +32,6 @@ bool GetCanInOutput(uint8_t nInput);
 float GetCanInVal(uint8_t nInput);
 float GetCanInFactor(uint8_t nInput);
 float GetCanInOffset(uint8_t nInput);
-ByteOrder GetCanInByteOrder(uint8_t nInput);
 uint32_t GetCanInOutputs();
 
 bool GetVirtInVal(uint8_t nInput);
@@ -49,11 +48,22 @@ float GetCounterVal(uint8_t nCounter);
 
 uint32_t GetConditions();
 
+bool GetAnyTimerEnable();
+uint8_t GetTimerOutputs();
+uint8_t GetTimersRunning();
+uint16_t GetTimerElapsed(uint8_t nTimer);
+
+bool GetMathEnable(uint8_t nMath);
+float GetMathVal(uint8_t nMath);
+
 bool GetKeypadEnable(uint8_t nKeypad);
 uint32_t GetKeypadButtons(uint8_t nKeypad);
 float GetKeypadDialVal(uint8_t nKeypad, uint8_t nDial);
 
 bool GetDigInputVal(uint8_t nInput);
+bool GetDigInPwmEnable(uint8_t nInput);
+uint16_t GetDigInPwmDuty(uint8_t nInput);
+uint16_t GetDigInPwmFreq(uint8_t nInput);
 bool GetDigOutputState(uint8_t nOutput);
 uint16_t GetAnalogInputVal(uint8_t nInput);
 float GetAnalogInputMv(uint8_t nInput);

@@ -17,7 +17,7 @@ void Profet::Update(bool bOutEnabled)
         return;
     }
 
-    HandleDsel();
+    // DSEL for dual-channel devices is set by the caller, see SelectDsel()
 
     // Follower device — mirror primary
     if (pPrimary != nullptr)
@@ -48,7 +48,7 @@ void Profet::Update(bool bOutEnabled)
     if (pFollower != nullptr && pFollower->eState == ProfetState::Fault)
         eState = ProfetState::Fault;
 
-    bInRushActive = (pConfig->nInrushTime + nInRushOnTime) > SYS_TIME;
+    bInRushActive = (SYS_TIME - nInRushOnTime) < pConfig->nInrushTime;
 
     switch (eState)
     {
@@ -102,30 +102,24 @@ void Profet::Update(bool bOutEnabled)
 
         palClearLine(m_in);
 
-        // No reset, straight to fault
-        if (pConfig->eResetMode == ProfetResetMode::None)
+        // No reset, or overcurrent count exceeded - latch fault
+        // Checked first so nothing below can override it
+        if ((pConfig->eResetMode == ProfetResetMode::None) ||
+            (pConfig->eResetMode == ProfetResetMode::Count && nOcCount >= pConfig->nResetLimit))
         {
             eState = ProfetState::Fault;
         }
-
-        // Overcurrent count exceeded
-        if (nOcCount >= pConfig->nResetLimit && pConfig->eResetMode == ProfetResetMode::Count)
+        // Check for turn off
+        else if (eReqState == ProfetState::Off)
         {
-            eState = ProfetState::Fault;
+            eState = ProfetState::Off;
         }
-
         // Overcurrent reset time exceeded
         // ResetEndless or ResetCount
-        if ((pConfig->nResetTime + nOcTriggerTime) < SYS_TIME)
+        else if ((SYS_TIME - nOcTriggerTime) > pConfig->nResetTime)
         {
             nInRushOnTime = SYS_TIME;
             eState = ProfetState::On;
-        }
-
-        // Check for turn off
-        if (eReqState == ProfetState::Off)
-        {
-            eState = ProfetState::Off;
         }
         break;
 
@@ -207,29 +201,22 @@ void Profet::Sleep()
     // Infineon PROFET+2 12V data sheets: with IN low and DEN high the part draws IGND(STBY) / IGND(OFF_D)
     // 1.2 mA typ, 1.8 mA max (BTS7008-2EPA Table 10 P_6.5.1.5, BTS70012-1ESP P_6.5.25.5, BTS7004-1EPP P_6.5.21.5);
     // with IN and DEN low (BTS7008-2EPA: DSEL low too, section 6.1.3) it is in sleep / OFF mode, under 2.2 uA.
+    // IN is already low: EnterSleep calls the upstream ForceOff() (PWM off, IN low) first; this adds DEN / DSEL.
     // No current is read after this: the MCU stops and resets on wake-up (constructor sets DEN high again).
-    pwm.Off();
-    palClearLine(m_in);
     palClearLine(m_den);
     if (m_model == ProfetModel::BTS7008_2EPA_CH1 || m_model == ProfetModel::BTS7008_2EPA_CH2)
         palClearLine(m_dsel);
 }
 #endif
 
-void Profet::HandleDsel()
+void Profet::SelectDsel()
 {
-    // Select the appropriate IS channel on dual-channel devices
-    // DSEL changeover takes max ~60us
+    // Select the IS channel on dual-channel devices
+    // Caller waits DSEL_SETTLE_US before measuring, once for all outputs in the pass
     if (m_model == ProfetModel::BTS7008_2EPA_CH1)
-    {
         palClearLine(m_dsel);
-        chThdSleepMicroseconds(60);
-    }
     else if (m_model == ProfetModel::BTS7008_2EPA_CH2)
-    {
         palSetLine(m_dsel);
-        chThdSleepMicroseconds(60);
-    }
 }
 
 void Profet::MeasureCurrent()
@@ -276,6 +263,11 @@ void Profet::MeasureCurrent()
     CalculateCurrent();
 }
 
+#ifndef BTS7004_1EPP_KILIS
+// custom-pdm: see the Profet constructor (profet.h): no BTS7004_1EPP case on boards without it
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
 void Profet::CalculateCurrent()
 {
     // Current = (rawVal * (VDDA / 4095)) / 1.2k) * kILIS
@@ -297,12 +289,18 @@ void Profet::CalculateCurrent()
         if (fCurrent <= 1.0f)
             fCurrent = 0;
         break;
+#ifdef BTS7004_1EPP_KILIS
     case ProfetModel::BTS7004_1EPP:
-        // custom-pdm: same floor as BTS7002-1EPP (similar kILIS). Not measured.
+        // custom-pdm: same floor as BTS7002-1EPP (similar kILIS). Not measured. Only on boards that fit it
+        // (custompdm_b), so stock builds keep the stock switch.
         if (fCurrent <= 0.5f)
             fCurrent = 0;
         break;
+#endif
     }
 }
+#ifndef BTS7004_1EPP_KILIS
+#pragma GCC diagnostic pop
+#endif
 
 #endif

@@ -32,8 +32,51 @@ typedef uint32_t i2cflags_t;
 #define TIME_MS2I(ms) ((sysinterval_t)((ms) * (CH_CFG_ST_FREQUENCY / 1000)))
 #define TIME_I2MS(t) ((uint32_t)((t) / (CH_CFG_ST_FREQUENCY / 1000)))
 systime_t chVTGetSystemTimeX();
+// 64-bit time stamp in system ticks (dingoFW development SYS_TIME = stamp / (CH_CFG_ST_FREQUENCY / 1000))
+typedef uint64_t systimestamp_t;
+systimestamp_t chVTGetTimeStamp();
+#define chTimeDiffX(start, end) ((sysinterval_t)((systime_t)((end) - (start))))
 void chThdSleepMilliseconds(uint32_t ms);
 void chThdSleepMicroseconds(uint32_t us);
+// Core clock and its cycle counter (DWT CYCCNT), used by the digital input PWM meter
+#define STM32_HCLK 180000000U
+typedef uint32_t rtcnt_t;
+rtcnt_t chSysGetRealtimeCounterX();
+// Cooperative scheduler: nothing pre-empts a thread between two sleeps, so the kernel locks are no-ops
+#define chSysLock() do { } while (0)
+#define chSysUnlock() do { } while (0)
+#define chSysLockFromISR() do { } while (0)
+#define chSysUnlockFromISR() do { } while (0)
+
+//------------------------------------------------------------------ blocking waits (mailbox fetch, CAN receive, FIFO)
+// dingoFW development blocks its CAN threads on these with a time-out instead of polling, so they must block here too.
+struct thread_t;
+uint64_t simDeadline(sysinterval_t timeout);                 // absolute sim time (us); UINT64_MAX for TIME_INFINITE
+bool simWaitUntil(uint64_t deadline, thread_t **waiter);     // park the current thread in *waiter; false = time-out
+void simWake(thread_t **waiter);                             // wake the thread parked there (if any)
+
+//------------------------------------------------------------------ mutex (real blocking: a holder may sleep)
+struct mutex_t { thread_t *owner; thread_t *waiters[8]; int nWaiters; };
+#define MUTEX_DECL(name) mutex_t name = {}
+void chMtxLock(mutex_t *m);
+void chMtxUnlock(mutex_t *m);
+
+//------------------------------------------------------------------ objects FIFO (ChibiOS chFifo*, blocking receive)
+struct objects_fifo_t
+{
+    size_t objsize; size_t n; uint8_t *objbuf;
+    std::deque<void *> free; std::deque<void *> full; thread_t *waiter;
+};
+void chFifoObjectInit(objects_fifo_t *f, size_t objsize, size_t n, void *objbuf, msg_t *msgbuf);
+void *chFifoTakeObjectTimeout(objects_fifo_t *f, sysinterval_t timeout);
+void chFifoSendObject(objects_fifo_t *f, void *obj);
+msg_t chFifoReceiveObjectTimeout(objects_fifo_t *f, void **obj, sysinterval_t timeout);
+void chFifoReturnObject(objects_fifo_t *f, void *obj);
+
+//------------------------------------------------------------------ NVIC / EXTI (sleep entry, restart request)
+enum IRQn_Type { EXTI0_IRQn = 6, EXTI1_IRQn = 7, EXTI2_IRQn = 8, EXTI3_IRQn = 9, EXTI4_IRQn = 10, EXTI9_5_IRQn = 23, EXTI15_10_IRQn = 40 };
+void NVIC_ClearPendingIRQ(IRQn_Type irq);
+void NVIC_SystemReset();
 
 //------------------------------------------------------------------ threads
 #define NORMALPRIO 128
@@ -61,6 +104,8 @@ msg_t chThdWait(thread_t *t);
 #define PAL_MODE_INPUT 0x00U
 #define PAL_MODE_INPUT_PULLUP 0x20U
 #define PAL_MODE_INPUT_PULLDOWN 0x40U
+#define PAL_MODE_OUTPUT_PUSHPULL 0x01U
+typedef void (*palcallback_t)(void *arg);
 #define PAL_EVENT_MODE_BOTH_EDGES 3U
 #define PAL_STM32_PUPDR_FLOATING 0x00U
 #define PAL_STM32_PUPDR_PULLUP 0x20U
@@ -72,6 +117,11 @@ void palWriteLine(ioline_t l, int v);
 bool palReadLine(ioline_t l);
 void palSetLineMode(ioline_t l, uint32_t mode);
 void palEnableLineEvent(ioline_t l, uint32_t mode);
+void palDisableLineEvent(ioline_t l);
+void palSetLineCallbackI(ioline_t l, palcallback_t cb, void *arg);
+// I-class variant as used by the digital input PWM meter: arms the line, leaves mode and pull as they are
+void simEnableLineEventKeepPull(ioline_t l);
+#define palEnableLineEventI(l, mode) simEnableLineEventKeepPull(l)
 
 //------------------------------------------------------------------ CAN (bxCAN)
 #define CAN_IDE_STD 0
@@ -105,7 +155,14 @@ struct CANFilter
     uint32_t filter : 16; uint32_t mode : 1; uint32_t scale : 1; uint32_t assignment : 1;
     uint32_t register1; uint32_t register2;
 };
-struct CANDriver { int dummy; };
+// bxCAN filter registers (RM0390 32.9.4): dingoFW development writes them directly (comms/can.cpp WriteFilters);
+// the sim's receive side applies them (sim_core.cpp sim_can_rx)
+struct CAN_FilterRegister_TypeDef { uint32_t FR1; uint32_t FR2; };
+struct CAN_TypeDef { uint32_t FMR; uint32_t FM1R; uint32_t FS1R; uint32_t FFA1R; uint32_t FA1R; CAN_FilterRegister_TypeDef sFilterRegister[28]; };
+#define CAN_FMR_FINIT (1U << 0)
+#define STM32_HAS_CAN2 0
+enum { CAN_STOP = 1, CAN_READY = 3 };
+struct CANDriver { int state; CAN_TypeDef *can; };
 extern CANDriver CAND1;
 msg_t canStart(CANDriver *c, const CANConfig *cfg);
 void canStop(CANDriver *c);

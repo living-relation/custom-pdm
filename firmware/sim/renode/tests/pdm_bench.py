@@ -8,7 +8,7 @@ import os, sys, struct, types
 from robot.libraries.BuiltIn import BuiltIn
 from robot.api import logger
 
-BASE = {'A1': 0x500, 'A2': 0x520, 'B': 0x540}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000
+BASE = {}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000
 MACH = {'A1': 'a1', 'A2': 'a2', 'B': 'b'}
 PCLK1 = 36_000_000        # mcuconf.h: 8 MHz / 5 * 180 / 2 = 144 MHz, APB1 = / 4
 CAN_BTR = 0x4000641C
@@ -22,6 +22,7 @@ class pdm_bench:
     def __init__(self, simdir, resc):
         sys.path.insert(0, simdir)
         import pdmsim
+        BASE.update({'A1': pdmsim.BOARD_A['base'][1], 'A2': pdmsim.BOARD_A['base'][2], 'B': pdmsim.BOARD_B['base'][1]})   # factory base IDs
         s = self; s.ps = pdmsim; s.resc = resc; s.now = 0; s.writes = 0; s.matrix = {}; s.cmd = [0] * 24
         s.model = {'A1': pdmsim.BOARD_A, 'A2': pdmsim.BOARD_A, 'B': pdmsim.BOARD_B}
         # global numbering as in s1_system.py: 1-8 = A1, 9-16 = A2, 17-20 = B out 5-8, 21-24 = B out 1-4
@@ -75,7 +76,8 @@ class pdm_bench:
     def _bitrate(s, k):
         v = s._n('sysbus.canBtrSpy LastValue', MACH[k])        # last CAN_BTR value the firmware wrote
         return round(PCLK1 / (((v & 0x3FF) + 1) * (3 + ((v >> 16) & 15) + ((v >> 20) & 7))))
-    def _status(s, k, frames=(0, 1, 2, 3, 27)):
+    def _status(s, k, frames=None):
+        frames = frames or (0, 1, 2, 3, s.ps.STATUS_MSG)
         st = s.ps.Status(BASE[k])
         for n in frames:
             h = s._ecu(f'Last {BASE[k] + 2 + n:#x}')
@@ -120,7 +122,7 @@ class pdm_bench:
 
     def fresh_boards_answer_on_their_own_ids(s):
         br = {k: s._bitrate(k) for k in BASE}; ver = {k: s._version(BASE[k]) for k in BASE}
-        s._check(all(v == 1000000 for v in br.values()) and all(v == (0, 5, 9) for v in ver.values()), f'bit rates {br}, versions {ver}; USB VBUS pin read before the bench drove it low: {s.vbus_before}')
+        s._check(all(v == 1000000 for v in br.values()) and all(v == s.ps.FW_VERSION for v in ver.values()), f'bit rates {br}, versions {ver}; USB VBUS pin read before the bench drove it low: {s.vbus_before}')
 
     def no_board_is_in_fatal_error(s):
         f = {k: s._fatal(k) for k in BASE}; st = {k: s._status(k, (0,)) for k in BASE}
@@ -136,7 +138,7 @@ class pdm_bench:
         s._ecu('ClearSeen'); s._run(1500)
         br = {k: s._bitrate(k) for k in BASE}; ver = {k: s._version(BASE[k]) for k in BASE}; w = {k: s._fram_written(k) for k in BASE}
         seen = {k: s._ecun(f'Count {BASE[k] + 2:#x}') for k in BASE}
-        s._check(all(v == 1000000 for v in br.values()) and all(v == (0, 5, 9) for v in ver.values()) and all(v > 0 for v in seen.values())
+        s._check(all(v == 1000000 for v in br.values()) and all(v == s.ps.FW_VERSION for v in ver.values()) and all(v > 0 for v in seen.values())
                  and w == s.fram_w and not any(s._fatal(k) for k in BASE), f'bit rates {br}, versions {ver}, status frames {seen}, FRAM bytes written {w} (unchanged = config was read back valid)')
 
     def factory_defaults_fan_output_and_temperature_limits(s):
@@ -174,7 +176,7 @@ class pdm_bench:
         k, o = s.OUT[g]; slot = o
         if source[0] == 'ecu': s._can_input(k, slot, ECU_ID, g - 1, timeout=policy != 'hold')
         else:
-            sk, si = s.INP[source[1]]; s._can_input(k, slot, BASE[sk] + 2 + 27, si, timeout=policy != 'hold')
+            sk, si = s.INP[source[1]]; s._can_input(k, slot, BASE[sk] + 2 + s.ps.STATUS_MSG, si, timeout=policy != 'hold')
         var = s._var(k, 'canin', slot)
         if policy == 'on':
             v = s.virt_used[k]; s.virt_used[k] += 1
@@ -326,7 +328,7 @@ class pdm_bench:
 
     def board_and_die_temperatures_reach_can(s):
         s._temp('A1', 47.5, 63.0); s._temp('A2', 52.0, 41.0); s._run(800)
-        got = {k: (struct.unpack('<H', s._status(k, (0,)).m[0][6:8])[0], s._status(k, (27,)).die_temp_x10()) for k in ('A1', 'A2')}
+        got = {k: (struct.unpack('<H', s._status(k, (0,)).m[0][6:8])[0], s._status(k, (s.ps.STATUS_MSG,)).die_temp_x10()) for k in ('A1', 'A2')}
         want = {'A1': (475, s.ps.die_temp_can(63.0)), 'A2': (520, s.ps.die_temp_can(41.0))}
         s._temp('A1', 30, 30); s._temp('A2', 30, 30); s._run(400)
         s._check(all(got[k][0] == want[k][0] and abs(got[k][1] - want[k][1]) <= 4 for k in got), f'board / die x10: got {got}, want {want}')
@@ -376,8 +378,8 @@ class pdm_bench:
         # put it back so the bench ends in its normal state (the hub has no bit timing, so the board is still reachable)
         r1 = s._write1(0x6A0, 0x0000, 0, 0x500, reply_base=0x500) is not None; r2 = s._write1(0x500, 0x0000, 1, 0) is not None; r3 = s._burn(0x500)
         s._power_cycle('A1'); s._run(1200); br2 = s._bitrate('A1'); ver2 = s._version(0x500)
-        s._check(ok1 and ok2 and ok3 and br == 500000 and ver == (0, 5, 9), f'writes {ok1} {ok2}, saved {ok3}, after restart {br} bit/s, version on 0x6A0 {ver}')
-        s._check(r1 and r2 and r3 and br2 == 1000000 and ver2 == (0, 5, 9), f'restore: {r1} {r2} {r3}, {br2} bit/s, {ver2}')
+        s._check(ok1 and ok2 and ok3 and br == 500000 and ver == s.ps.FW_VERSION, f'writes {ok1} {ok2}, saved {ok3}, after restart {br} bit/s, version on 0x6A0 {ver}')
+        s._check(r1 and r2 and r3 and br2 == 1000000 and ver2 == s.ps.FW_VERSION, f'restore: {r1} {r2} {r3}, {br2} bit/s, {ver2}')
 
     # ------------------------------------------------------------------ sleep (Dan s7a) and MCP9808 read failures
     def _pins(s, k, names): return {p: int(s._pin(k, p)) for p in names}

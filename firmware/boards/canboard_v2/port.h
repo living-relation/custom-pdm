@@ -3,11 +3,19 @@
 #include "hal.h"
 #include "enums.h"
 
+#define DEVICE_TYPE 3
+
 #define PROCESS_STACK 0x0400
+
+// Cannot be used for DMA, but can be used for CPU access.
+// If future version has FRAM, this must be removed. 
+// 4KB CCM (ram4), CPU only (no DMA), zeroed at startup like .bss
+#define CCM_BSS __attribute__((section(".ram4_clear")))
 
 #define HAS_SE_LEDS FALSE
 #define HAS_USB FALSE
-#define HAS_I2C FALSE
+#define HAS_I2C1 FALSE
+#define HAS_I2C2 FALSE
 #define HAS_EXT_TEMP_SENSOR FALSE
 #define HAS_EXT_MEMORY FALSE
 #define HAS_BATT_VOLT_SENSE FALSE
@@ -20,11 +28,14 @@
 #define NUM_VIRT_INPUTS 8
 #define NUM_CAN_INPUTS 8
 #define NUM_CAN_OUTPUTS 8
+#define NUM_CAN_BUSES 1
 #define NUM_FLASHERS 4
 #define NUM_WIPER_INTER_DELAYS 0
 #define NUM_WIPER_SPEED_MAP 0
 #define NUM_COUNTERS 4
 #define NUM_CONDITIONS 8
+#define NUM_MATH 0
+#define NUM_TIMERS 0
 #define NUM_KEYPADS 0
 #define HAS_WIPERS FALSE
 #define HAS_STARTER_DISABLE FALSE
@@ -35,12 +46,17 @@
 
 #define HAS_NEOPIXELS FALSE
 
+//Always false
+//Always true
+//State
+//Temperature sensor
+//Battery voltage
 #define VAR_MAP_SYS_VARS 3
 #define VAR_MAP_WIPER_VARS 0
 
 #define VAR_MAP_SIZE ( \
     VAR_MAP_SYS_VARS + \
-    (NUM_DIG_INPUTS * 1) + \
+    (NUM_DIG_INPUTS * 3) + \
     (NUM_ANALOG_INPUTS * 4) + \
     (NUM_DIG_OUTPUTS * 1) + \
     (NUM_CAN_INPUTS * 2) + \
@@ -49,6 +65,8 @@
     (NUM_FLASHERS * 1) + \
     (NUM_CONDITIONS * 1) + \
     (NUM_COUNTERS * 1) + \
+    (NUM_TIMERS * 2) + \
+    (NUM_MATH * 1) + \
     VAR_MAP_WIPER_VARS + \
     (NUM_KEYPADS * (KEYPAD_MAX_BUTTONS + KEYPAD_MAX_DIALS + KEYPAD_MAX_ANALOG_INPUTS)) \
 )
@@ -57,22 +75,26 @@
 // Max program flash size goes to the end of sector 30 (0x0800F000) to leave config space at the end of flash
 // !!! Flash must be smaller thank 63488 bytes !!!
 #define CONFIG_SECTOR       31U
+#define CONFIG_NUM_SECTORS  1U
 #define CONFIG_FLASH_OFFSET (CONFIG_SECTOR * 2048U)
 #define CONFIG_FLASH        getBaseFlash(&EFLD1)
 
 #define MAILBOX_SIZE 16
 #define DEVICE_THREAD_STACK 512
+#define CAN_THREAD_STACK 256
 
-#define NUM_TX_MSGS 9
+#define NUM_TX_MSGS 13
 #define DEFAULT_BASE_ID 0x640
 
-#define ADC1_NUM_CHANNELS 5
+#define ADC1_NUM_CHANNELS 6
 #define ADC1_BUF_DEPTH 1
 
 #define ADC2_NUM_CHANNELS   1
 #define ADC2_BUF_DEPTH      1
 
-#define SYS_TIME TIME_I2MS(chVTGetSystemTimeX())
+// Milliseconds from the 64-bit timestamp, truncated to 32 bits so it wraps cleanly
+// every ~49.7 days. Always compare as (SYS_TIME - start), never as absolute times.
+#define SYS_TIME ((uint32_t)(chVTGetTimeStamp() / (CH_CFG_ST_FREQUENCY / 1000)))
 
 static const float ALWAYS_FALSE = 0.0f;
 static const float ALWAYS_TRUE = 1.0f;
@@ -84,7 +106,8 @@ enum class AnalogChannel
     AnIn3,
     AnIn4,
     AnIn5,
-    TempSensor
+    TempSensor,
+    VRefInt
 };
 
 const CANConfig &GetCanConfig(CanBitrate bitrate);
@@ -93,3 +116,4 @@ msg_t InitAdc();
 uint16_t GetAdcRaw(AnalogChannel channel);
 float GetAdcVolts(AnalogChannel channel);
 uint16_t GetTemperature();
+float GetVDDA();
