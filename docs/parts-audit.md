@@ -362,6 +362,29 @@ Sources for this section: TI TLV1117LV SBVS160C (https://www.ti.com/lit/ds/symli
 
 - 2026-11-14 (Dan s9a): STM32F446RET7 stays the design part; STM32F446RET6 (same die, LQFP-64, pin-for-pin) is an approved alternate if RET7 cannot be sourced at build time. Firmware thermal limits are set for the fitted part.
 
+## 11. Temperature-grade check (2026-11-14, research only)
+
+Basis: board-top background 100 C at worst load, hot spots 119-121 C at the switch chips (`docs/heat-analysis.md`, v2b model). No checked IC or diode sits within about 9 mm of a switch chip (closest: U3 CAN chip about 10 mm, zener clamps 9-10 mm). Input board is not in the heat model; 100 C assumed. Ratings from maker data sheets (links below); TBD = not confirmed.
+
+| Part (refs, qty per PDM) | Rated | Margin at 100 C | Candidate replacement |
+|---|---|---|---|
+| LM324PWR (A U7 / U12, B U7 / U22; 6) | TA 0 to 70 C (TI SLOS066AE 6.3) | -30 K | LM2902PWR, -40 to 125 C, same TSSOP-14 pinout (same TI document); LCSC C46864, DK 296-6600-1-ND; drop-in |
+| Omron A6S-8104 DIP (input SW1 / SW2; 6) | -20 to +70 C (Omron A102-E1-02) | -30 K | no 105 C DIP switch found: solder jumpers / 0R (footprint change), or C&K SD08H0SBR (-40 to 85 C, DK CKN6128CT-ND, footprint change, still 15 K short) |
+| Traco TSR 1-2450 (A U15, B U13; 3) | -40 to +85 C (Traco TSR 1, 2026-07-02) | -15 K (real air is lid air, TBD) | TI LMZM23601V5 (TJ -40 to 125 C, SMD, footprint change; LCSC C2868357, DK TBD) or RECOM RPX-1.0 (TJ -40 to 125 C, needs 4 resistors); every SIP-3 7805-type found stops at 85-90 C |
+| Abracon ABM3-8.000MHZ-D2Y-T (Y1; 3) | -40 to +85 C (code D) | -15 K | ECS-80-18-30Q-CES-TR, 2-pad 5 x 3.2, 18 pF, -40 to 125 C, AEC-Q200, DK 50-ECS-80-18-30Q-CES-TRCT-ND; drop-in |
+| X5R caps (A C3, C4, C6, C14, C38; B C3, C4, C6, C10, C15; 15) | 85 C (X5R) | -15 K | X7R: +12 V 10 uF CL31B106KBHNNNE (50 V, 1206, footprint change, LCSC C89632); +5VP 22 uF GRM21BZ71A226ME15L (0805, LCSC C907991); 3V3 10 uF TDK C2012X7R1A106K125AC (LCSC C2167452); 4.7 uF CL21B475KAFNNNE (LCSC C98195) |
+| OSRAM LS R976 / LG R971 LEDs (9) | -30 to +85 C (LG R971 current sheet TBD) | -15 K | best 0805 found: Lumex SML-LX0805SIC-HT, -40 to +100 C |
+| GCT USB4085-GF-A (A J5, B J2; 3) | -40 to +85 C | -15 K | service port; no 105 C part found |
+| CJS-1200TB BOOT switch (3) | -40 to 85 C | -15 K | bench use only; no replacement found |
+| STM32F446RET7 (U4; 3) | TA 105 C at max power, TJ max 125 C (DS10693 Rev 11 Table 16) | TA +5 K; TJ about 110-115 C (power TBD) | keep; RET6 TJ max is 105 C (same table), so it is NOT a safe alternate at this temperature |
+| MB85RC64TA FRAM (U5; 3) | -40 to +105 C (RAMXEED DS5v0) | +5 K | keep, or Infineon CY15B064J-SXE (-40 to 125 C, about +3.4 USD) |
+| JST GH, Molex Micro-Fit 43045 | -40 to +105 C incl. current rise | +5 K | keep |
+
+Pass: TLV1117LV (TJ 125 C), MCP2562FD-E (TA 125 C), MCP9808-E (125 C; accuracy +-1 C above 100 C), PMEG2010AEH / PMEG10010ELR / PDZ3.3B / SMCJ20CA / BYG23M (150-175 C), NUP2105L (125 C), BLM21PG ferrite (125 C), UNI-ROYAL / FOJAN resistors (155 C), X7R / C0G caps, REDCUBE terminals (150 C). TBD: BAT54S, YAGEO and Viking resistors, input-board passives (no part numbers yet).
+
+FRAM size: config is 4,368 bytes (53 % of 64 Kbit). The 256 Kbit MB85RC256V is rated only 85 C; a 125 C 256 Kbit part exists (CY15B256J-SXE, about +15 USD). Recommendation: stay at 64 Kbit.
+
+Sources: TI SLOS066AE (LM324 / LM2902); Omron https://media.onlinecomponents.com/productfiles/mf-om/en-a6ta6s.pdf ; Traco TSR 1 data sheet; TI SNVSAQ4C (LMZM23601); RECOM https://recom-power.com/pdf/Innoline/RPX-1.0.pdf ; Abracon ABM3; OSRAM https://ams-osram.com/de/products/leds/color-leds/osram-chip-led-0805-ls-r976 ; GCT https://gct.co/connector/USB4085 ; ST DS10693 Rev 11; RAMXEED https://mouser.com/datasheet/2/1113/MB85RC64TA_DS5v0_E-3538551.pdf ; Infineon 002-42371 (CY15B256J); TI SBVS160C; Microchip DS20005284A, DS20005095B; JST eGH.
 ## 8. Sources
 
 Data sheets (maker):
