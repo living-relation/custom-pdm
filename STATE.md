@@ -15,7 +15,7 @@ Updated 2026-11-14. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules,
 Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests (done 2026-11-11); (3) enclosure with heat sink (handbuilt-cad tools + Fusion; v2b done 2026-11-13).
 
 ## Where work is
-- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Working branches (2026-11-14, orchestrator session 4): `feat/fw-dingofw-dev` (PR #62, waiting for Dan's b1 on the base IDs before merge).
+- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Working branches (2026-11-14, orchestrator session 4): `feat/fw-dingofw-dev` (PR #62) removed after merge; next: LM2902 swap (Next 1).
 - Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (inside the repo root, git-ignored; rule in `AGENTS.md`) and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges.
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
