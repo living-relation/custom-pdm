@@ -140,13 +140,32 @@ class pdm_bench:
                  and w == s.fram_w and not any(s._fatal(k) for k in BASE), f'bit rates {br}, versions {ver}, status frames {seen}, FRAM bytes written {w} (unchanged = config was read back valid)')
 
     def factory_defaults_fan_output_and_temperature_limits(s):
-        # r3c / r7a: board A2 OUT2 (global output 10) is always on from power-up; r5a / r6c: limits 55 / 80 / 6 deg C
+        # fans: board A2 OUT2 (global output 10) is OFF at room temperature (temperature-switched since 2026-11-14);
+        # r5a / r6c: limits 55 / 80 / 6 deg C; s10b exempt mask; s11c critical-soon margin 5 (param block 0x7F00 sub 0-4)
         seen = []
         for _ in range(10): s._run(200); seen.append(s._pins_on())
         st = s._status('A2', (3,)).out_state(s.OUT[10][1])
-        lim = {k: tuple(s._read1(BASE[k], 0x0000, sub) for sub in (5, 6, 7, 8)) for k in BASE}   # 8: critical-exempt outputs (s10b)
-        s._check(s.OUT[10] == s.ps.FAN and all(p == [10] for p in seen) and st == 1, f'output pins high every 200 ms for 2 s: {seen}; A2 OUT2 status {st}')
-        s._check(lim == {'A1': (55, 80, 6, 0), 'A2': (55, 80, 6, 2), 'B': (55, 80, 6, 0)}, f'warn / critical / recovery / critical-exempt mask from the boards: {lim}')
+        lim = {k: tuple(s._read1(BASE[k], s.ps.TEMP_INDEX, sub) for sub in (0, 1, 2, 3, 4)) for k in BASE}
+        s._check(s.OUT[10] == s.ps.FAN and all(p == [] for p in seen) and st == 0, f'output pins high every 200 ms for 2 s at 30 C: {seen}; A2 OUT2 status {st}')
+        s._check(lim == {'A1': (55, 80, 6, 0, 5), 'A2': (55, 80, 6, 2, 5), 'B': (55, 80, 6, 0, 5)}, f'warn / critical / recovery / critical-exempt mask / critical-soon margin from the boards: {lim}')
+
+    def _fan_steps(s, steps, ms=800):
+        out = []
+        for k, c in steps:
+            s._temp(k, c); s._run(ms); out.append((k, c, 10 in s._pins_on()))
+        return out
+
+    def fan_follows_a2_temperature_ramp(s):
+        # Dan s12a: on at 45, off at 40 deg C; A2's own MCP9808; A1 / B stay at 30 C
+        got = s._fan_steps([('A2', 30.0), ('A2', 46.0), ('A2', 42.0), ('A2', 39.0)])
+        s._temp('A2', 30.0); s._run(400)
+        s._check([v for k, c, v in got] == [False, True, True, False], f'(board, C, fan on) {got}')
+
+    def fan_turns_on_when_only_a_remote_board_is_hot(s):
+        # Dan s13a: the hottest of the three boards; A1 / B board temperature reaches A2 in their msg 0 over CAN
+        got = s._fan_steps([('A1', 47.0), ('A1', 41.0), ('A1', 39.0), ('B', 46.0), ('B', 30.0)])
+        s._temp('A1', 30.0); s._run(400)
+        s._check([v for k, c, v in got] == [True, True, False, True, False], f'A2 at 30 C; (board, C, fan on) {got}')
 
     # ------------------------------------------------------------------ S2 the single-PDM layer (recipe from s1_system.py)
     def _can_input(s, k, slot, can_id, bit, timeout):
@@ -334,6 +353,20 @@ class pdm_bench:
                  f'A1 on {before}, all off after {t} ms: {off}; state {st}; last message {msg}; other boards {others} -> {others_hot}')
         s._check(all(p == [] for c, p in trace), f'still off near the limit and at 74.0 C (recovery below 74): {trace}')
         s._check(back == before and t2 <= 300 and not fatal, f'back on {back} {t2} ms after 73.5 C, fatal {fatal}')
+
+    def thermal_flags_in_every_status_frame_and_critical_soon_message(s):
+        # Dan s11c: msg 3 byte 7 = bit 0 over warn, 1 critical soon (>= 80 - 5), 2 critical; sampled every 100 ms for 1 s
+        mid = BASE['A1'] + 2 + 3; res = []; msg = None
+        for c, want in ((30.0, 0), (56.0, 1), (76.0, 3), (81.0, 5), (30.0, 0)):
+            s._temp('A1', c); s._run(700)
+            if c == 76.0: msg = s._info('A1')
+            n0 = s._ecun(f'Count {mid:#x}'); samples = []
+            for _ in range(10): s._run(100); samples.append(bytes.fromhex(s._ecu(f'Last {mid:#x}'))[7])
+            res.append((c, want, samples, s._ecun(f'Count {mid:#x}') - n0))
+        s._set_cmd([]); s._run(400)
+        bad = [r for r in res if any(x != r[1] for x in r[2]) or not 9 <= r[3] <= 11]
+        s._check(not bad, f'(C, want, flags every 100 ms, msg 3 frames in 1 s) wrong: {bad}; all {res}')
+        s._check(msg == ('R', 9, 760, 800), f'last message on A1 base ID after reaching 76 C: {msg} (want Warning R, src Overtemp 9, 760, limit 800)')
 
     # ------------------------------------------------------------------ manual ID / bit-rate change (s1 'option b')
     def manual_id_and_bit_rate_change_survives_a_restart(s):
