@@ -16,18 +16,19 @@ Hardware models are written from the pin map, not from the firmware port. Plante
 Analog settling and noise, interrupt timing, the LM324 output limit (sense clamp assumed 3.3 V), USB (bridge is from code reading only), boot pins (BOOT1), brown-out, real CAN error frames, DingoConfigurator. APB1 = 36 MHz is taken from the `port.cpp` comment.
 
 ## Results
-- `s0_board_audit.py`: 36 of 36. Reset states, every output alone (IN pin, current reading), overcurrent, every input bit, analog, battery, config size (4364 / 4388 bytes: fits a 64 Kbit FRAM).
-- `s1_system.py`: 26 of 26. Fresh boards on built-in IDs, manual ID change, 24 outputs + 24 inputs as one PDM using stock logic only (322 parameter writes, 0.7 s), cross-board rule, link-loss matrix, restarts.
+- `s0_board_audit.py`: 38 of 38. Reset states, every output alone (IN pin, current reading), overcurrent, every input bit, analog, battery, board and die temperature on CAN, config size (4368 / 4392 bytes since the thermal limits, 2026-11-14: fits a 64 Kbit FRAM).
+- `s1_system.py`: 37 of 37. Fresh boards on built-in IDs, manual ID change, 24 outputs + 24 inputs as one PDM using stock logic only (322 parameter writes, 0.7 s), cross-board rule, link-loss matrix, restarts. S4 thermal (2026-11-14, `docs/firmware-thermal-plan.md` section 7): factory limits 55 / 80 / 6 C, fan output A2 OUT2 on with no config, board and die temperature x10 on CAN, warn (state, message, outputs unchanged, 1.5 C hysteresis), critical all off within 254 ms and back 254 ms after 73.5 C with no chatter at 79.5 / 80 or 73.5 / 74.5 C, limits changed over CAN act at once, load-shed example off by default and working in priority order when enabled.
 - `s2_boot_blip.py`: a "default ON on link loss" output pulses ON at every power-up, for up to one ECU frame period, even when commanded OFF.
 
 ## Numbers
 ECU bit to output pin 4.7 ms. Cross-board input to output 71 ms measured (20 ms debounce + up to 100 ms status period). Link-loss reaction about 1.0 s with the 1 s default time-out (adjustable per channel, up to 60 s). Bus load 5.3 % at 1 Mbit/s. Output back on 506-516 ms after power-up.
 
 ## Choices made (Dan's answers: `DECISIONS.md`, "Firmware and coordination")
-- New status frame 27 (base + 29): 16 input bits, analog mV, analog raw. Byte 0 of frame 0 now carries inputs 1-8.
+- New status frame 27 (base + 29): 16 input bits, analog mV, analog raw, STM32 die temperature x10 signed (bytes 6-7, since 2026-11-14). Byte 0 of frame 0 now carries inputs 1-8.
 - Wake-up set (`WAKE_DIG_INPUT_MASK`): every input except the ones that share a wake line with input 1, USB or each other (A: PC10, PC11. B: PC10, PC11; PD2 is back in since input 5 left PB2). This follows the Session 2 research; the B2 answer (`DECISIONS.md`) is not built yet. `LINE_UNUSED` = PB2 on board B, input with pull-down (Q4 in `docs/firmware-pin-map.md`).
 - Factory defaults per build (Dan, C1a/C2a 2026-11-10): 1 Mbit/s; base ID 0x500 (A unit 1), 0x520 (A unit 2), 0x540 (B), example values; overcurrent reset mode Count (3 tries). Build with `make BOARD=custompdm_a UNIT=2`. All stay changeable over CAN/USB.
 - Analog reading scaled x1.5 to volts at the wire. BTS7004 noise floor 0.5 A (not measured).
+- Thermal factory defaults (2026-11-14, r5a / r7a): limits 55 / 80 / 6 C, A2 OUT2 always on for the fans (1 A limit), load-shed example disabled. The S2 "one PDM" recipe still writes all 24 outputs, so it overwrites the fan output's default; S4 checks the fan on fresh boards. Stock builds unchanged (dingopdm_v7 binary byte-identical to `main`).
 - Board B input 5 is on PC13 (B1: decided 2026-11-10, built 2026-11-11 in PR #12: board scripts, firmware and the simulation's board model changed together).
 
 ## Seen in stock firmware (not changed)

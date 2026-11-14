@@ -1,6 +1,6 @@
 # Firmware thermal protection + fan control: plan (2026-11-13)
 
-Status: research and plan only, no firmware changes. Decisions it serves: e3c (fans fitted, temperature-triggered, limit set in software), "heat targets are guides, firmware thermal protection to plan" (2026-11-12), z1a (three CAN nodes), b2a (F1, two 30 mm Sunon fans), b3a (gap pad k >= 3). Source of truth for state: `STATE.md`; decisions: `DECISIONS.md`.
+Status: option B implemented 2026-11-14 on custom boards only (r5a, r3c, r7a, r6c; section 7): settable limits, self-recovering critical, die temperature on CAN, always-on fan output, load-shed example shipped disabled. Sections 1-6 are the research as written on 2026-11-13. Decisions it serves: e3c (fans fitted, temperature-triggered, limit set in software), "heat targets are guides, firmware thermal protection to plan" (2026-11-12), z1a (three CAN nodes), b2a (F1, two 30 mm Sunon fans), b3a (gap pad k >= 3). Source of truth for state: `STATE.md`; decisions: `DECISIONS.md`.
 
 ## 1. What temperature information exists today
 
@@ -14,7 +14,7 @@ Status: research and plan only, no firmware changes. Decisions it serves: e3c (f
 
 **Key finding 1 (stock limits would shut the PDM down):** the v2b heat model (worst load 31.1 W, 60 C air, fans on, pad k 3; `docs/diagrams/heat-v2b-F1-board-top-fans.png`) puts the board-top background at about **91-100 C** where the MCP9808 sits. Stock CRIT 80 C would turn **every output off and latch** at sustained worst load, and WARN 55 C would be active almost always in 60 C air. The limits must move and become settable.
 
-**Key finding 2 (MCU temperature grade):** the same background (about 92-99 C) is above the STM32F446RE**T6** rating (-40 to 85 C ambient, `docs/parts-audit.md` P8). Decision C4a said to look at **RET7** (105 C grade) if board air exceeds about 75 C - that trigger is now met. Also check the other parts near it at about 100 C (FRAM, TSR 1-2450, MCP2562FD).
+**Key finding 2 (MCU temperature grade):** the same background (about 92-99 C) is above the STM32F446RE**T6** rating (-40 to 85 C ambient, `docs/parts-audit.md` P8). Decision C4a said to look at **RET7** (105 C grade) if board air exceeds about 75 C - that trigger was met; RET7 is fitted since PR #54 (r2a), RET6 possibly as an alternate (s9), so limits must suit the fitted chip. Also check the other parts near it at about 100 C (FRAM, TSR 1-2450, MCP2562FD).
 
 ## 2. Fans: how they are driven
 
@@ -48,10 +48,28 @@ Status: research and plan only, no firmware changes. Decisions it serves: e3c (f
 - Bench after hardware: thermocouples on the MCP9808 spot and one BTS70012 to calibrate the 20-25 K offset.
 
 ## 5. Recommended plan (needs Dan's answers)
-1. Swap MCU to STM32F446RET7 if r2 = a (parts audit + schematic field, no layout change: same package).
+1. MCU grade: done (r2a, PR #54: boards now STM32F446RET7, 105 C; RET6, 85 C, may become an approved alternate, Dan s9). The bench limits (r6c) must suit whichever chip is fitted.
 2. Fan power per r3; fan-fail detection per r4.
 3. Firmware option B: WARN / CRIT as params with new defaults, CRIT auto-recover, STM32 die temp on CAN; fan latch + shedding delivered as a **default config** (no code).
 4. Sim + Renode tests above, then bench calibration.
 
 ## 6. Open questions (answers go to DECISIONS.md)
 r2 MCU grade, r3 fan power, r4 fan-fail detection, r5 protection approach, r6 default limits (details in the PR description).
+
+## 7. What was built (2026-11-14)
+Only builds whose `port.h` sets `THERMAL_LIMIT_PARAMS` (custompdm_a / _b, from `firmware/tools_custom/port_boards.py`) change; stock boards build as before.
+
+| Item | How | Where |
+|---|---|---|
+| Limits as config | Device params `0x0000` sub 5 warn, 6 critical, 7 recovery hysteresis (deg C, whole degrees, 0-125 / 1-30). Factory defaults 55 / 80 / 6 (stock values until the bench, r6c). Config version 0x0106. | `core/config.h`, `core/param_defs.h` |
+| Decision | Every 250 ms from the MCP9808 reading: warn when T > warn, clears below warn - 1.5; critical when T >= critical, clears below critical - hysteresis (same rules as the chip's flags). A limit written over CAN acts at once. | `core/device.cpp` `UpdateBoardTempLimits` |
+| MCP9808 lock | The chip still gets the limits once at boot, after the config is read, then they are locked (Tcrit / window lock bits stay set until power-on reset, hysteresis bits cannot change while locked). So the chip only drives its alert LED (D5 board A, D10 board B; Tcrit only) with the boot-time critical limit; a critical limit changed over CAN moves the LED at the next power-up. Firmware decisions do not use the chip flags. | `hardware/mcp9808.cpp` (unchanged) |
+| Warn | Stock: state OverTemp (2), both LEDs blink, CAN error message (State_Overtemp, temp x10); outputs unchanged. | `core/device.cpp`, `comms/infomsg.cpp` |
+| Critical | Every output held off (no fatal error, no latch, state OverTemp); one CAN error message (src Overtemp = 9, temp x10, limit x10); outputs follow their inputs again below critical - hysteresis. | `core/device.cpp` `CyclicUpdate`, `comms/infomsg.cpp` |
+| Die temperature | STM32 internal sensor, deg C x10 signed, msg 27 (base + 29) bytes 6-7 (was 0). | `boards/custompdm_*/msg.cpp` |
+| Fans | Factory default: board A unit 2 OUT2 (index 1) enabled, input = always true, limits 1 A / 2 A inrush. Why OUT2 on A2: A2 is the board at the F1 fan bay end (east, `enclosure/v2b/src/build_v2b.py` X0 + bay at LX1); its J3 pad 7 (O2) is in the east-most pad column (x +11.11, tied with O5) and its driver U8 is the east-most PROFET (x 11.14 vs U10 8.96). X1 cavity T becomes spare (`docs/box-connectors.md`). | `port_boards.py` (`FAN_OUTPUT`) |
+| Load-shed example | Prefilled, disabled. Level 0: condition 29 (temp >= 70), 30 (temp <= 65), virtual input 15 = (29 OR 15) AND NOT 30. Level 1: conditions 31 (>= 75), 32 (<= 70), virtual input 16. Numbers count from 1; firmware / parameter index = number - 1 (conditions 0x1500 + 28..31, virtual inputs 0x1400 + 14..15). Example temperatures only. | `port_boards.py` (`SHED_*`) |
+
+How to turn shedding on (per board): enable the level's two conditions and its virtual input (sub 0 = 1). For each output to shed, take a free virtual input V: var 0 = the output's present input, operator 0 = AND, var 1 = the level's latch virtual input with NOT, var 2 = none; enable V and set the output's input to V. Lower-priority outputs go on level 0, higher on level 1. To shed on another board's temperature, add a CAN input on that board's msg 0 bytes 6-7 (x 0.1) and point the conditions at it. Tested in `firmware/sim/s1_system.py` S4.
+
+Not done here: fan output kept on during critical (all outputs go off, fans included, as decided); sleep current (DEN, MCP9808 shutdown, LEDs).

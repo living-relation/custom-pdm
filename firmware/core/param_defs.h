@@ -11,6 +11,55 @@
 #define DEFAULT_RESET_MODE ProfetResetMode::None
 #endif
 
+// custom-pdm: per-instance factory defaults a board may set in port.h (fallbacks = stock defaults)
+#ifndef DEFAULT_OUT_ENABLED
+#define DEFAULT_OUT_ENABLED(i) 0
+#endif
+#ifndef DEFAULT_OUT_INPUT
+#define DEFAULT_OUT_INPUT(i) 0
+#endif
+#ifndef DEFAULT_OUT_CURRENT_LIMIT
+#define DEFAULT_OUT_CURRENT_LIMIT(i) F(20.0f)
+#endif
+#ifndef DEFAULT_OUT_INRUSH_LIMIT
+#define DEFAULT_OUT_INRUSH_LIMIT(i) F(50.0f)
+#endif
+#ifndef DEFAULT_COND_INPUT
+#define DEFAULT_COND_INPUT(i) 0
+#endif
+#ifndef DEFAULT_COND_OPERATOR
+#define DEFAULT_COND_OPERATOR(i) static_cast<uint32_t>(Operator::Equal)
+#endif
+#ifndef DEFAULT_COND_ARG
+#define DEFAULT_COND_ARG(i) F(0.0f)
+#endif
+#ifndef DEFAULT_VIRT_NOT
+#define DEFAULT_VIRT_NOT(i, n) 0
+#endif
+#ifndef DEFAULT_VIRT_VAR
+#define DEFAULT_VIRT_VAR(i, n) 0
+#endif
+#ifndef DEFAULT_VIRT_COND
+#define DEFAULT_VIRT_COND(i, n) static_cast<uint32_t>(BoolOperator::And)
+#endif
+
+#if THERMAL_LIMIT_PARAMS
+#include "device_config.h"
+// Board temperature limits (MCP9808 reading). Stock values kept until the bench measurements (Dan r6c).
+#ifndef DEFAULT_TEMP_WARN
+#define DEFAULT_TEMP_WARN BOARD_TEMP_WARN
+#endif
+#ifndef DEFAULT_TEMP_CRIT
+#define DEFAULT_TEMP_CRIT BOARD_TEMP_CRIT
+#endif
+// Recovery hysteresis: 6 deg C = the largest MCP9808 hysteresis step (0 / 1.5 / 3 / 6, CONFIG bits 10-9),
+// 12 x the 0.5 deg C resolution the firmware sets and 12 x the +-0.5 deg C maximum sensor error, so noise
+// cannot toggle every output at the limit; 4 x the 1.5 deg C stock warn hysteresis.
+#ifndef DEFAULT_TEMP_CRIT_HYST
+#define DEFAULT_TEMP_CRIT_HYST 6
+#endif
+#endif
+
 // Parameter definitions for compile-time registration
 // Index = base + instance, SubIndex = parameter within instance
 
@@ -24,15 +73,23 @@
     {0x0000, 3, &stConfig.stDevice.bCanFilterEnabled,  &stConfigTemp.stDevice.bCanFilterEnabled, ParamType::Bool,   0, 0, 1}, \
     {0x0000, 4, &stConfig.stDevice.bConnectUsbToCan,   &stConfigTemp.stDevice.bConnectUsbToCan,  ParamType::Bool,   1, 0, 1}
 
+// custom-pdm: board temperature limits (deg C, whole degrees: the MCP9808 limit registers take them exactly)
+#if THERMAL_LIMIT_PARAMS
+#define DEVICE_THERMAL_PARAMS() \
+    {0x0000, 5, &stConfig.stDevice.nTempWarn,          &stConfigTemp.stDevice.nTempWarn,         ParamType::UInt8,  DEFAULT_TEMP_WARN, 0, 125}, \
+    {0x0000, 6, &stConfig.stDevice.nTempCrit,          &stConfigTemp.stDevice.nTempCrit,         ParamType::UInt8,  DEFAULT_TEMP_CRIT, 0, 125}, \
+    {0x0000, 7, &stConfig.stDevice.nTempCritHyst,      &stConfigTemp.stDevice.nTempCritHyst,     ParamType::UInt8,  DEFAULT_TEMP_CRIT_HYST, 1, 30}
+#endif
+
 //=============================================================================
 // Output Parameters - Base 0x1000
 //=============================================================================
 #if NUM_OUTPUTS > 0
 #define OUTPUT_PARAMS(i) \
-    {0x1000 + (i), 0,  &stConfig.stOutput[i].bEnabled,                   &stConfigTemp.stOutput[i].bEnabled,                   ParamType::Bool,   0, 0, 1}, \
-    {0x1000 + (i), 1,  &stConfig.stOutput[i].nInput,                     &stConfigTemp.stOutput[i].nInput,                     ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
-    {0x1000 + (i), 2,  &stConfig.stOutput[i].fCurrentLimit,              &stConfigTemp.stOutput[i].fCurrentLimit,              ParamType::Float,  F(20.0f), F(0.0f), F(100.0f)}, \
-    {0x1000 + (i), 3,  &stConfig.stOutput[i].fInrushLimit,               &stConfigTemp.stOutput[i].fInrushLimit,               ParamType::Float,  F(50.0f), F(0.0f), F(100.0f)}, \
+    {0x1000 + (i), 0,  &stConfig.stOutput[i].bEnabled,                   &stConfigTemp.stOutput[i].bEnabled,                   ParamType::Bool,   DEFAULT_OUT_ENABLED(i), 0, 1}, \
+    {0x1000 + (i), 1,  &stConfig.stOutput[i].nInput,                     &stConfigTemp.stOutput[i].nInput,                     ParamType::UInt16, DEFAULT_OUT_INPUT(i), 0, VAR_MAP_SIZE - 1}, \
+    {0x1000 + (i), 2,  &stConfig.stOutput[i].fCurrentLimit,              &stConfigTemp.stOutput[i].fCurrentLimit,              ParamType::Float,  DEFAULT_OUT_CURRENT_LIMIT(i), F(0.0f), F(100.0f)}, \
+    {0x1000 + (i), 3,  &stConfig.stOutput[i].fInrushLimit,               &stConfigTemp.stOutput[i].fInrushLimit,               ParamType::Float,  DEFAULT_OUT_INRUSH_LIMIT(i), F(0.0f), F(100.0f)}, \
     {0x1000 + (i), 4,  &stConfig.stOutput[i].nInrushTime,                &stConfigTemp.stOutput[i].nInrushTime,                ParamType::UInt16, 1000, 0, 10000}, \
     {0x1000 + (i), 5,  &stConfig.stOutput[i].eResetMode,                 &stConfigTemp.stOutput[i].eResetMode,                 ParamType::Enum,   static_cast<uint32_t>(DEFAULT_RESET_MODE), 0, 2}, \
     {0x1000 + (i), 6,  &stConfig.stOutput[i].nResetTime,                 &stConfigTemp.stOutput[i].nResetTime,                 ParamType::UInt16, 1000, 0, 60000}, \
@@ -85,14 +142,14 @@
 //=============================================================================
 #define VIRTUAL_INPUT_PARAMS(i) \
     {0x1400 + (i), 0,  &stConfig.stVirtualInput[i].bEnabled, &stConfigTemp.stVirtualInput[i].bEnabled, ParamType::Bool,   0, 0, 1}, \
-    {0x1400 + (i), 1,  &stConfig.stVirtualInput[i].bNot0,    &stConfigTemp.stVirtualInput[i].bNot0,    ParamType::Bool,   0, 0, 1}, \
-    {0x1400 + (i), 2,  &stConfig.stVirtualInput[i].nVar0,    &stConfigTemp.stVirtualInput[i].nVar0,    ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
-    {0x1400 + (i), 3,  &stConfig.stVirtualInput[i].eCond0,   &stConfigTemp.stVirtualInput[i].eCond0,   ParamType::Enum,   static_cast<uint32_t>(BoolOperator::And), 0, 2}, \
-    {0x1400 + (i), 4,  &stConfig.stVirtualInput[i].bNot1,    &stConfigTemp.stVirtualInput[i].bNot1,    ParamType::Bool,   0, 0, 1}, \
-    {0x1400 + (i), 5,  &stConfig.stVirtualInput[i].nVar1,    &stConfigTemp.stVirtualInput[i].nVar1,    ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
-    {0x1400 + (i), 6,  &stConfig.stVirtualInput[i].eCond1,   &stConfigTemp.stVirtualInput[i].eCond1,   ParamType::Enum,   static_cast<uint32_t>(BoolOperator::And), 0, 2}, \
-    {0x1400 + (i), 7,  &stConfig.stVirtualInput[i].bNot2,    &stConfigTemp.stVirtualInput[i].bNot2,    ParamType::Bool,   0, 0, 1}, \
-    {0x1400 + (i), 8,  &stConfig.stVirtualInput[i].nVar2,    &stConfigTemp.stVirtualInput[i].nVar2,    ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {0x1400 + (i), 1,  &stConfig.stVirtualInput[i].bNot0,    &stConfigTemp.stVirtualInput[i].bNot0,    ParamType::Bool,   DEFAULT_VIRT_NOT(i, 0), 0, 1}, \
+    {0x1400 + (i), 2,  &stConfig.stVirtualInput[i].nVar0,    &stConfigTemp.stVirtualInput[i].nVar0,    ParamType::UInt16, DEFAULT_VIRT_VAR(i, 0), 0, VAR_MAP_SIZE - 1}, \
+    {0x1400 + (i), 3,  &stConfig.stVirtualInput[i].eCond0,   &stConfigTemp.stVirtualInput[i].eCond0,   ParamType::Enum,   DEFAULT_VIRT_COND(i, 0), 0, 2}, \
+    {0x1400 + (i), 4,  &stConfig.stVirtualInput[i].bNot1,    &stConfigTemp.stVirtualInput[i].bNot1,    ParamType::Bool,   DEFAULT_VIRT_NOT(i, 1), 0, 1}, \
+    {0x1400 + (i), 5,  &stConfig.stVirtualInput[i].nVar1,    &stConfigTemp.stVirtualInput[i].nVar1,    ParamType::UInt16, DEFAULT_VIRT_VAR(i, 1), 0, VAR_MAP_SIZE - 1}, \
+    {0x1400 + (i), 6,  &stConfig.stVirtualInput[i].eCond1,   &stConfigTemp.stVirtualInput[i].eCond1,   ParamType::Enum,   DEFAULT_VIRT_COND(i, 1), 0, 2}, \
+    {0x1400 + (i), 7,  &stConfig.stVirtualInput[i].bNot2,    &stConfigTemp.stVirtualInput[i].bNot2,    ParamType::Bool,   DEFAULT_VIRT_NOT(i, 2), 0, 1}, \
+    {0x1400 + (i), 8,  &stConfig.stVirtualInput[i].nVar2,    &stConfigTemp.stVirtualInput[i].nVar2,    ParamType::UInt16, DEFAULT_VIRT_VAR(i, 2), 0, VAR_MAP_SIZE - 1}, \
     {0x1400 + (i), 9,  &stConfig.stVirtualInput[i].eMode,    &stConfigTemp.stVirtualInput[i].eMode,    ParamType::Enum,   static_cast<uint32_t>(InputMode::Momentary), 0, 1}
 
 //=============================================================================
@@ -100,9 +157,9 @@
 //=============================================================================
 #define CONDITION_PARAMS(i) \
     {0x1500 + (i), 0, &stConfig.stCondition[i].bEnabled,  &stConfigTemp.stCondition[i].bEnabled,  ParamType::Bool,   0, 0, 1}, \
-    {0x1500 + (i), 1, &stConfig.stCondition[i].nInput,    &stConfigTemp.stCondition[i].nInput,    ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
-    {0x1500 + (i), 2, &stConfig.stCondition[i].eOperator, &stConfigTemp.stCondition[i].eOperator, ParamType::Enum,   static_cast<uint32_t>(Operator::Equal), 0, 7}, \
-    {0x1500 + (i), 3, &stConfig.stCondition[i].fArg,      &stConfigTemp.stCondition[i].fArg,      ParamType::Float,  F(0.0f), F(-1e9f), F(1e9f)}
+    {0x1500 + (i), 1, &stConfig.stCondition[i].nInput,    &stConfigTemp.stCondition[i].nInput,    ParamType::UInt16, DEFAULT_COND_INPUT(i), 0, VAR_MAP_SIZE - 1}, \
+    {0x1500 + (i), 2, &stConfig.stCondition[i].eOperator, &stConfigTemp.stCondition[i].eOperator, ParamType::Enum,   DEFAULT_COND_OPERATOR(i), 0, 7}, \
+    {0x1500 + (i), 3, &stConfig.stCondition[i].fArg,      &stConfigTemp.stCondition[i].fArg,      ParamType::Float,  DEFAULT_COND_ARG(i), F(-1e9f), F(1e9f)}
 
 //=============================================================================
 // Counter Parameters - Base 0x1600

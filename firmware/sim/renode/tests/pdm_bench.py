@@ -58,6 +58,8 @@ class pdm_bench:
         return bytes.fromhex(s._ecu('LastReply'))
     def _write1(s, base, index, sub, val, reply_base=None):
         return s._ask(base, bytes([s.ps.CMD['Write'], index & 255, index >> 8, sub]) + struct.pack('<I', val & 0xFFFFFFFF), reply_base)
+    def _read1(s, base, index, sub):
+        d = s._ask(base, [s.ps.CMD['Read'], index & 255, index >> 8, sub, 0, 0, 0, 0]); return None if d is None else struct.unpack('<I', d[4:8])[0]
     def _version(s, base):
         d = s._ask(base, [s.ps.CMD['Version'], 0, 0, 0, 0, 0, 0, 0]); return None if d is None else (d[4], d[5], (d[6] << 8) | d[7])
     def _burn(s, base):
@@ -135,6 +137,15 @@ class pdm_bench:
         seen = {k: s._ecun(f'Count {BASE[k] + 2:#x}') for k in BASE}
         s._check(all(v == 1000000 for v in br.values()) and all(v == (0, 5, 9) for v in ver.values()) and all(v > 0 for v in seen.values())
                  and w == s.fram_w and not any(s._fatal(k) for k in BASE), f'bit rates {br}, versions {ver}, status frames {seen}, FRAM bytes written {w} (unchanged = config was read back valid)')
+
+    def factory_defaults_fan_output_and_temperature_limits(s):
+        # r3c / r7a: board A2 OUT2 (global output 10) is always on from power-up; r5a / r6c: limits 55 / 80 / 6 deg C
+        seen = []
+        for _ in range(10): s._run(200); seen.append(s._pins_on())
+        st = s._status('A2', (3,)).out_state(s.OUT[10][1])
+        lim = {k: tuple(s._read1(BASE[k], 0x0000, sub) for sub in (5, 6, 7)) for k in BASE}
+        s._check(s.OUT[10] == s.ps.FAN and all(p == [10] for p in seen) and st == 1, f'output pins high every 200 ms for 2 s: {seen}; A2 OUT2 status {st}')
+        s._check(all(v == (55, 80, 6) for v in lim.values()), f'warn / critical / recovery from the boards: {lim}')
 
     # ------------------------------------------------------------------ S2 the single-PDM layer (recipe from s1_system.py)
     def _can_input(s, k, slot, can_id, bit, timeout):
@@ -283,6 +294,45 @@ class pdm_bench:
         st = s._status(k, (0,)); t60 = struct.unpack('<H', st.m[0][6:8])[0]; hot_state = st.dev_state()
         s._x('sysbus.i2c1.tempSensor Temperature 30', MACH[k]); s._run(800); back = s._status(k, (0,)).dev_state()
         s._check(t30 == 300 and t60 == 600 and hot_state != run_state and back == run_state, f'temperature x10: {t30} then {t60}; device state {run_state} -> {hot_state} -> {back}')
+
+    # ------------------------------------------------------------------ thermal (r5a; limits = factory defaults 55 / 80 / 6 deg C)
+    def _temp(s, k, board_c=None, die_c=None):
+        if board_c is not None: s._x(f'sysbus.i2c1.tempSensor Temperature {board_c}', MACH[k])
+        if die_c is not None: s._x(f'sysbus.adc1 DieTemperature {die_c}', MACH[k])
+    def _a1_on(s): return [g for g in s._pins_on() if s.OUT[g][0] == 'A1']
+    def _info(s, k):            # last frame on the board's base ID: info / error messages (no tool request is running)
+        h = s._ecu(f'Last {BASE[k]:#x}'); d = bytes.fromhex(h) if h != 'none' else bytes(8)
+        return (chr(d[0]), d[1], struct.unpack('<H', d[2:4])[0], struct.unpack('<H', d[4:6])[0])
+
+    def board_and_die_temperatures_reach_can(s):
+        s._temp('A1', 47.5, 63.0); s._temp('A2', 52.0, 41.0); s._run(800)
+        got = {k: (struct.unpack('<H', s._status(k, (0,)).m[0][6:8])[0], s._status(k, (27,)).die_temp_x10()) for k in ('A1', 'A2')}
+        want = {'A1': (475, s.ps.die_temp_can(63.0)), 'A2': (520, s.ps.die_temp_can(41.0))}
+        s._temp('A1', 30, 30); s._temp('A2', 30, 30); s._run(400)
+        s._check(all(got[k][0] == want[k][0] and abs(got[k][1] - want[k][1]) <= 4 for k in got), f'board / die x10: got {got}, want {want}')
+
+    def above_warn_outputs_unchanged(s):
+        s._set_cmd([1, 2, 4]); s._run(400); before = s._a1_on(); st0 = s._status('A1', (0,)).dev_state()
+        s._temp('A1', 56.0); s._run(600); hot = s._a1_on(); st1 = s._status('A1', (0,)).dev_state(); msg = s._info('A1')
+        s._temp('A1', 40.0); s._run(600); back = s._status('A1', (0,)).dev_state()
+        s._check(before == [1, 2, 4] and hot == before and (st0, st1, back) == (0, 2, 0) and msg == ('E', 3, 560, 0), f'A1 outputs on {before} -> {hot}; state {st0} -> {st1} -> {back}; last message {msg}')
+
+    def at_critical_all_off_then_recovers_below_critical_minus_hysteresis(s):
+        s._set_cmd([1, 2, 4]); s._run(400); before = s._a1_on(); others = [g for g in s._pins_on() if s.OUT[g][0] != 'A1']
+        s._temp('A1', 80.0); t = 0
+        while s._a1_on() and t < 1000: s._run(STEP); t += STEP
+        s._run(200)                 # status frame 0 goes out every 100 ms: let it carry the new state
+        off = s._a1_on(); st = s._status('A1', (0,)).dev_state(); msg = s._info('A1'); others_hot = [g for g in s._pins_on() if s.OUT[g][0] != 'A1']
+        trace = []
+        for c in (79.5, 80.0, 79.5, 80.0, 77.0, 74.0): s._temp('A1', c); s._run(400); trace.append((c, s._a1_on()))
+        s._temp('A1', 73.5); t2 = 0
+        while s._a1_on() != before and t2 < 1000: s._run(STEP); t2 += STEP
+        back = s._a1_on(); fatal = s._fatal('A1')
+        s._temp('A1', 30.0); s._set_cmd([]); s._run(600)
+        s._check(before == [1, 2, 4] and off == [] and t <= 300 and st == 2 and msg == ('E', 9, 800, 800) and others_hot == others,
+                 f'A1 on {before}, all off after {t} ms: {off}; state {st}; last message {msg}; other boards {others} -> {others_hot}')
+        s._check(all(p == [] for c, p in trace), f'still off near the limit and at 74.0 C (recovery below 74): {trace}')
+        s._check(back == before and t2 <= 300 and not fatal, f'back on {back} {t2} ms after 73.5 C, fatal {fatal}')
 
     # ------------------------------------------------------------------ manual ID / bit-rate change (s1 'option b')
     def manual_id_and_bit_rate_change_survives_a_restart(s):

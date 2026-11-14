@@ -22,6 +22,10 @@ def audit(model, label):
     check(f'{label} config fits 64 Kbit FRAM (8192 bytes) with CRC', c['config_bytes'] + 4 <= 8192, f"{c['config_bytes']} + 4 bytes")
     check(f'{label} factory default CAN: 1 Mbit/s, base ID {BASE:#x}', b.bitrate() == 1000000 and st.last > 0, b.bitrate())
     check(f'{label} battery reading', abs((st.batt() or 0) - 13.8) < 0.15, st.batt())
+    b.set_temp(44.0, 58.5); bus.run_for(400)      # unequal: a board / die mix-up is 14.5 C off
+    check(f'{label} temperatures: board 44.0 C in msg 0, STM32 die 58.5 C in msg 27 (x10)', st.board_temp_x10() == 440 and abs((st.die_temp_x10() or 0) - ps.die_temp_can(58.5)) <= 4,
+          f'board {st.board_temp_x10()}, die {st.die_temp_x10()} (want {ps.die_temp_can(58.5)})')
+    b.set_temp(30.0, 30.0)
     # --- every output: switch it alone with a known load, compare with the hardware model
     for i in range(n):
         tool.write(BASE, 0x1000 + i, 0, 1)                         # enable
