@@ -141,6 +141,19 @@
     {THERMAL_PARAM_BASE, 4, &stConfig.stDevice.nTempCritSoonMargin, &stConfigTemp.stDevice.nTempCritSoonMargin, ParamType::UInt8,  DEFAULT_TEMP_CRIT_SOON_MARGIN, 0, 30}
 #endif
 
+// custom-pdm (Dan B2): wake-input mask, same custom block, sub 5. Bit i = digital input i may wake the device from
+// sleep; default none (CAN and USB wake only). Applies only while 0x0000 sub 4 (DisableDigInWake) is off; with it
+// on no input wakes, whatever the mask. Besides the range check, WriteParam refuses a mask that arms two inputs on
+// one EXTI line, or an input on the USB D- / D+ or CAN RX line (CheckWakeInputMask, core/sleep.cpp).
+#define WAKE_INPUT_SUB 5
+#if WAKE_INPUT_PARAM
+#ifndef DEFAULT_WAKE_INPUT_MASK
+#define DEFAULT_WAKE_INPUT_MASK 0
+#endif
+#define DEVICE_WAKE_PARAMS() \
+    {THERMAL_PARAM_BASE, WAKE_INPUT_SUB, &stConfig.stDevice.nWakeInputMask, &stConfigTemp.stDevice.nWakeInputMask, ParamType::UInt16, DEFAULT_WAKE_INPUT_MASK, 0, (1U << NUM_DIG_INPUTS) - 1}
+#endif
+
 //=============================================================================
 // Output Parameters - Base 0x1000
 //=============================================================================

@@ -9,6 +9,9 @@
 #if SLEEP_LOW_POWER
 #include "hw_devices.h"
 #endif
+#if WAKE_INPUT_PARAM
+#include "infomsg.h"
+#endif
 
 #if CAN_SLEEP
 // Static variables that were in pdm.cpp
@@ -85,6 +88,46 @@ void EnableLineEventWithPull(ioline_t line, InputPull pull)
     palEnableLineEvent(line, eventMode);
 }
 
+#if WAKE_INPUT_PARAM
+// custom-pdm (Dan B2). An EXTI line number serves one port only: arming a second pin with the same pin number
+// moves the line to it and the first pin stops waking (ChibiOS 879cf757 hal_pal_lld.c, asserts off). EnterSleep
+// arms the inputs first and CAN RX / USB D+ / D- after them, so an input on one of those line numbers would never
+// wake. Refused (bit i = input i): an input on the CAN RX, USB D+ or USB D- line number, and every input of a pair
+// that shares a line number. Custom boards: A IN_1 PA10 / IN_3 PC10, IN_4 PC11 = USB D- PA11; B IN_1 PA10 /
+// B_IN9 PC10, B_IN10 PC11 = USB D- PA11. The CAN RX line counts even while CAN wake is off (no custom input uses it).
+uint16_t WakeInputMaskBadBits(uint32_t mask)
+{
+    const uint32_t nOtherWake = (1U << PAL_PAD(LINE_CAN_RX)) | (1U << PAL_PAD(LINE_USB_DP)) | (1U << PAL_PAD(LINE_USB_DM));
+    uint16_t nBad = 0;
+    for (uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+    {
+        if (!(mask & (1U << i)))
+            continue;
+        uint32_t nPad = PAL_PAD(digIn[i].GetLine());
+        if (nOtherWake & (1U << nPad))
+            nBad |= (1U << i);
+        for (uint8_t j = 0; j < NUM_DIG_INPUTS; j++)
+        {
+            if ((j != i) && (mask & (1U << j)) && (PAL_PAD(digIn[j].GetLine()) == nPad))
+                nBad |= (1U << i);
+        }
+    }
+    return nBad;
+}
+
+// Warning on the config reply ID (base + CONFIG_TX_OFFSET, like every info message): type Warning 'R', src Config;
+// data 0 = refused mask, data 1 = its inputs that cannot wake (bit i = input i), data 2 = the mask still in use
+bool CheckWakeInputMask(uint32_t mask)
+{
+    uint16_t nBad = WakeInputMaskBadBits(mask);
+    if (nBad == 0)
+        return true;
+    SendInfoMsg(MsgType::Warning, MsgSrc::Config, stConfig.stDevice.nBaseId, static_cast<uint16_t>(mask), nBad,
+                stConfig.stDevice.nWakeInputMask);
+    return false;
+}
+#endif
+
 #if SLEEP_LOW_POWER
 // custom-pdm (Dan s7a): lowest standby draw. Every PROFET to sleep / OFF mode (IN, DEN, DSEL low), MCP9808 alert
 // output off and shutdown (0.1 uA typ instead of 200 uA, DS25095A Table 1-1). The status and error LEDs (PC1, PC0)
@@ -144,14 +187,15 @@ void EnterSleep()
 
     // Digital inputs change detection, with configured pullup or pulldown
     // Can be disabled in config
-    // custom-pdm: an EXTI line serves one port only, so a board may also leave single inputs out of the wake-up set
-    // (bit i = digital input i may wake the device). Not set: all inputs, stock code.
+    // custom-pdm (Dan B2): only the inputs in the wake-input mask (param 0x7F00 sub 5, default none) are armed, and
+    // only while DisableDigInWake is off. WriteParam keeps shared-line pairs and the USB / CAN lines out of the mask
+    // (CheckWakeInputMask above). Stock boards: every input, stock code.
     if(!stConfig.stDevice.bDisableDigInWake)
     {
         for(uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
         {
-            #ifdef WAKE_DIG_INPUT_MASK
-            if (WAKE_DIG_INPUT_MASK & (1U << i))
+            #if WAKE_INPUT_PARAM
+            if (stConfig.stDevice.nWakeInputMask & (1U << i))
             #endif
                 EnableLineEventWithPull(digIn[i].GetLine(), stConfig.stDigInput[i].ePull);
         }

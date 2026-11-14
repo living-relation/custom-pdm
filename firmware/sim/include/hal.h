@@ -101,6 +101,7 @@ msg_t chThdWait(thread_t *t);
 #define GPIOG 6U
 #define GPIOH 7U
 #define PAL_LINE(port, pad) ((ioline_t)(((port) << 4) | (pad)))
+#define PAL_PAD(line) ((uint32_t)(line) & 0x0FU)   // pin number = EXTI line number, as ChibiOS GPIOv2
 #define PAL_MODE_INPUT 0x00U
 #define PAL_MODE_INPUT_PULLUP 0x20U
 #define PAL_MODE_INPUT_PULLDOWN 0x40U

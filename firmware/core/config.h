@@ -34,14 +34,15 @@
 #include "analog_input.h"
 #endif  
 
-// custom-pdm: THERMAL_LIMIT_PARAMS / SLEEP_LOW_POWER (off unless a board's port.h sets them)
+// custom-pdm: THERMAL_LIMIT_PARAMS / SLEEP_LOW_POWER / WAKE_INPUT_PARAM (off unless a board's port.h sets them)
 #include "custom_options.h"
 
 #if THERMAL_LIMIT_PARAMS
-// custom-pdm: high byte 0x01 = custom-pdm layout, low byte = the upstream version it extends (development 0x000A).
-// Upstream counts up from 0x000A in the low byte, our older builds used 0x0106-0x0108, so no stored config of
-// another layout can match it and such a FRAM falls back to the defaults.
-#define CONFIG_VERSION 0x010A //custom-pdm: upstream 0x000A + board temperature limits, critical-exempt outputs, critical-soon margin in Config_Device
+// custom-pdm: high byte = custom-pdm layout revision (counts up when our fields change), low byte = the upstream
+// version it extends (development 0x000A). 0x010A: thermal fields; 0x020A: + wake-input mask (B2). Upstream counts
+// up from 0x000A in the low byte, our older builds used 0x0106-0x0108 and 0x010A, so no stored config of another
+// layout can match it and such a FRAM falls back to the defaults.
+#define CONFIG_VERSION 0x020A //custom-pdm: upstream 0x000A + board temperature limits, critical-exempt outputs, critical-soon margin, wake-input mask in Config_Device
 #else
 #define CONFIG_VERSION 0x000A //Increment when config structure changes
 #endif
@@ -66,6 +67,9 @@ struct Config_Device{
   uint8_t nTempCritHyst;  //deg C: outputs come back below nTempCrit - nTempCritHyst
   uint16_t nCritExemptMask; //bit i = output i keeps following its input during critical (Dan s10b: the fan output)
   uint8_t nTempCritSoonMargin; //deg C: "critical soon" from nTempCrit - margin up to critical (0 = off; Dan s11c)
+  #endif
+  #if WAKE_INPUT_PARAM
+  uint16_t nWakeInputMask; //bit i = digital input i may wake the device from sleep (Dan B2; default none, CAN and USB only)
   #endif
 };
 

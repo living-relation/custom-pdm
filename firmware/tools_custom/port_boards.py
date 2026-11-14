@@ -143,6 +143,13 @@ THERMAL = '''// Board temperature limits are config params (0x7F00 sub 0-2, core
 #define DEFAULT_CANIN_SIGNED(i) (IS_FAN_CANIN(i) ? 1 : 0)
 #define DEFAULT_CANIN_OPERATOR(i) static_cast<uint32_t>(!IS_FAN_CANIN(i) ? Operator::Equal : FAN_CANIN_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
 #define DEFAULT_CANIN_OPERAND(i) (!IS_FAN_CANIN(i) ? F(0.0f) : F(FAN_CANIN_HOT(i) ? FAN_ON_C : FAN_OFF_C))'''
+# Wake-up from sleep (Dan B2, 2026-11-10): CAN and USB only by default; each input can be made a wake source in the
+# config (param 0x7F00 sub 5, bit i = input i). The firmware refuses a mask with both inputs of a shared EXTI line or
+# an input on the USB / CAN line (core/sleep.cpp WakeInputMaskBadBits).
+WAKE = '''// Wake-up (Dan B2): no input wakes by default (CAN and USB do); per-input "may wake" mask = param 0x7F00 sub 5.
+// One wake source per EXTI line, so the firmware refuses a mask with both inputs of a pair or the USB one: %s.
+#define WAKE_INPUT_PARAM 1
+#define DEFAULT_WAKE_INPUT_MASK 0'''
 def thermal(note, fan):
     t = THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
     for k, v in {'@FAN_MSG0_B@': BASE_B + CYCLIC_TX_OFFSET, '@FAN_MSG0_A1@': BASE_A1 + CYCLIC_TX_OFFSET,
@@ -175,7 +182,7 @@ t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex 
 (d/'board.h').write_text(t)
 
 p = (d/'port.h').read_text()
-p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n// Wake-up: DI3 (PC10) and DI4 (PC11) share EXTI 10 / 11 with DI1 (PA10) and USB D- (PA11), which keep them\n#define WAKE_DIG_INPUT_MASK 0x73U')
+p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n' + WAKE % 'DI1 (PA10) / DI3 (PC10) share EXTI 10, DI4 (PC11) shares EXTI 11 with USB D- (PA11)')
 p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % (f'(PDM_UNIT == 2 ? 0x{BASE_A2:03X} : 0x{BASE_A1:03X})') + '\n' + FAN_A)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 p = rep(p, '#define NUM_TX_MSGS 37', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: + msg {STATUS_MSG}')
@@ -281,7 +288,7 @@ t = set_pin(t, 'B', 2, 'INPUT', 'PULLDOWN')
 
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
-p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2\n#define WAKE_DIG_INPUT_MASK 0x0FFU')
+p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n' + WAKE % 'DI1 (PA10) / DI9 (PC10) share EXTI 10, DI10 (PC11) shares EXTI 11 with USB D- (PA11)')
 p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % f'0x{BASE_B:03X}' + '\n' + FAN_B)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 # Max sends msgs 0-34; board B uses the v7 msg layout (0-36, copied below) plus our status msg
