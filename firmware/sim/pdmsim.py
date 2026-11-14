@@ -61,16 +61,18 @@ class Board:
             buf = ctypes.create_string_buffer(b'\xff' * fram_size, fram_size); L.sim_fram(buf, 1, fram_size)
         for o in model['outputs']:
             L.sim_plant_add(line(o[0]), line(o[1]), line(o[2]) if o[2] else -1, o[3], line(o[4]), KILIS[o[5]], RSENSE, 3.3)
-        s.vbat = vbat; s.t0 = 0
+        s.vbat = vbat; s.t0 = 0; s.board_c = 30.0; s.die_c = 30.0
         s.set_vbat(vbat)
         s.dip = {}; s.wire = {}
         for i in range(len(model['inputs'])): s.set_input(i, 'open', 'off')
         L.sim_boot()
     # --- environment
     def set_vbat(s, v):
-        s.vbat = v; s.L.sim_set_env(v, 30.0, 30.0)
+        s.vbat = v; s.L.sim_set_env(v, s.board_c, s.die_c)
         a, b = pin(s.model['batt']); s.L.sim_set_pin_volts(a, b, v * 4700.0 / (47000.0 + 4700.0))
-    def set_temp(s, board_c): s.L.sim_set_env(s.vbat, board_c, board_c)
+    def set_temp(s, board_c, die_c=None):
+        """board_c: MCP9808 reading. die_c: STM32 die (internal sensor), unchanged if None."""
+        s.board_c = board_c; s.die_c = s.die_c if die_c is None else die_c; s.L.sim_set_env(s.vbat, s.board_c, s.die_c)
     def set_load(s, out, ohms, fault=0): s.L.sim_plant_set(out, ohms or 0.0, fault)
     def set_input(s, i, wire, dip=None):
         """wire: 'open' | 'gnd' | '12v'. dip (input board only): 'up' | 'down' | 'off'."""
@@ -100,6 +102,8 @@ class Board:
     def var_an_mv(s, i=0): return 5 + len(s.model['inputs']) + 4 * i + 1
     def var_canin(s, i): return 5 + len(s.model['inputs']) + 4 + 2 * i          # fOutput
     def var_virt(s, i): return 5 + len(s.model['inputs']) + 4 + 64 + i
+    def var_out(s, i): return 5 + len(s.model['inputs']) + 4 + 64 + 16 + 4 * i                # fOutput
+    def var_cond(s, i): return 5 + len(s.model['inputs']) + 4 + 64 + 16 + 4 * len(s.model['outputs']) + 4 + i
     # --- bus node interface
     def now(s): return s.t0 + s.L.sim_now()
     def next_event(s): return s.t0 + s.L.sim_next_event() if s.powered else math.inf
@@ -206,4 +210,17 @@ class Status:
     def pdm_type(s): return s.m[0][1] >> 4 if 0 in s.m else None
     def current(s, i): return struct.unpack('<H', s.m[1 + i // 4][2 * (i % 4):2 * (i % 4) + 2])[0] if (1 + i // 4) in s.m else None
     def out_state(s, i): return (s.m[3][i // 2] >> (4 * (i % 2))) & 15 if 3 in s.m else None
+    def board_temp_x10(s): return struct.unpack('<H', s.m[0][6:8])[0] if 0 in s.m else None          # MCP9808, msg 0
+    def die_temp_x10(s): return struct.unpack('<h', s.m[27][6:8])[0] if 27 in s.m else None         # STM32 die, msg 27
 STATE = ['Off', 'On', 'Overcurrent', 'Fault']
+
+# ---------------- thermal (Dan r5a / r3c / r7a, docs/firmware-thermal-plan.md) ----------------
+TEMP_PARAM = {'warn': 5, 'crit': 6, 'hyst': 7}        # device params 0x0000 sub-index
+TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6}    # expected factory defaults (core/param_defs.h)
+FAN = ('A2', 1)                                      # always-on fan output: board A unit 2, OUT2 (firmware index 1)
+SHED = dict(cond0=28, virt0=14, on=(70.0, 75.0), off=(65.0, 70.0))   # prefilled, disabled load-shed example (port.h)
+def die_temp_can(c, vdda=3.3, cal30=943, cal110=1199):
+    """Die temperature x10 the firmware should send for a die at c deg C: the sensor model (0.76 V at 25 C,
+    2.5 mV/C, as in sim_core.cpp and PdmAdcCan.cs), one 12-bit ADC sample, then GetTemperature() in port.cpp."""
+    raw = int((0.76 + (c - 25.0) * 0.0025) / vdda * 4095.0 + 0.5)
+    return int((30.0 + (raw - cal30) / (cal110 - cal30) * 80.0) * 10.0)

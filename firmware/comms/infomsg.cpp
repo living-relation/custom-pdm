@@ -10,6 +10,10 @@ static InfoMsg StateSleepMsg(MsgType::Info, MsgSrc::State_Sleep);
 #endif
 #if HAS_EXT_TEMP_SENSOR
 static InfoMsg StateOvertempMsg(MsgType::Error, MsgSrc::State_Overtemp);
+#if THERMAL_LIMIT_PARAMS
+// custom-pdm: critical shutdown started (all outputs off until it cools); data: temp x10, critical limit x10
+static InfoMsg CritTempMsg(MsgType::Error, MsgSrc::Overtemp);
+#endif
 #endif
 static InfoMsg StateErrorMsg(MsgType::Error, MsgSrc::State_Error);
 
@@ -42,6 +46,9 @@ void CheckInfoMsgs()
     #endif
     #if HAS_EXT_TEMP_SENSOR
     StateOvertempMsg.Check(eState == DeviceState::OverTemp, stConfig.stDevice.nBaseId, GetBoardTemp() * 10, 0, 0);
+    #if THERMAL_LIMIT_PARAMS
+    CritTempMsg.Check(bDeviceCriticalTemp, stConfig.stDevice.nBaseId, GetBoardTemp() * 10, stConfig.stDevice.nTempCrit * 10, 0);
+    #endif
     #endif
     #if (NUM_OUTPUTS > 0 && HAS_EXT_TEMP_SENSOR)
     StateErrorMsg.Check(eState == DeviceState::Error, stConfig.stDevice.nBaseId, GetBoardTemp() * 10, GetTotalCurrent() * 10, 0);

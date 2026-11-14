@@ -20,7 +20,7 @@ T1-T4 straps (REDCUBE 74650074R body is 3.0 mm tall).
 
 | # | Box side (panel) | Harness side | Insert | Carries |
 |---|---|---|---|---|
-| X1 | HD34-24-21SN (aluminum, flange, sockets) | HD36-24-21PN (pins) | 24-21: 17 x size 16, 4 x size 12 | 16 x 7.5 A outputs (boards A1, A2) + 4 x 15 A outputs (board B OUT5-8) |
+| X1 | HD34-24-21SN (aluminum, flange, sockets) | HD36-24-21PN (pins) | 24-21: 17 x size 16, 4 x size 12 | 15 x 7.5 A outputs (boards A1, A2; A2 OUT2 feeds the fans inside) + 4 x 15 A outputs (board B OUT5-8) |
 | X2 | HDP24-24-47SE-L017 (sockets) | HDP26-24-47PE-L015 (pins) | 24-47: 42 x size 20, 5 x size 16 | inputs, analog, CAN, signal GND |
 | - | 6 studs | ring terminals | - | 150 A battery feed (+12 V); chassis ground; board B OUT1-4 (31 A each, one stud per output, rubber boots) |
 
@@ -31,7 +31,7 @@ Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17
 | Cavity | Signal | Board connector | Cavity | Signal | Board connector |
 |---|---|---|---|---|---|
 | H | A1_OUT1 | A1 J3 pad 8 (O1) | S | A2_OUT1 | A2 J3 pad 8 (O1) |
-| J | A1_OUT2 | A1 J3 pad 7 (O2) | T | A2_OUT2 | A2 J3 pad 7 (O2) |
+| J | A1_OUT2 | A1 J3 pad 7 (O2) | T | spare: A2_OUT2 drives the fans inside the box (r7a) | A2 J3 pad 7 (O2) wired to both fans, not to X1 |
 | K | A1_OUT3 | A1 J3 pad 10 (O3) | U | A2_OUT3 | A2 J3 pad 10 (O3) |
 | L | A1_OUT4 | A1 J3 pad 9 (O4) | V | A2_OUT4 | A2 J3 pad 9 (O4) |
 | M | A1_OUT5 | A1 J3 pad 6 (O5) | W | A2_OUT5 | A2 J3 pad 6 (O5) |
@@ -46,7 +46,7 @@ Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17
 | E | B_OUT7 (15 A) | B terminal T7 |
 | G | B_OUT8 (15 A) | B terminal T8 |
 
-B, D, E, G are the size 12 cavities (25 A). Spare: F (size 16). Plug every unused cavity with a sealing plug.
+B, D, E, G are the size 12 cavities (25 A). Spare: F and T (size 16; T since r7a, fan output choice in `docs/firmware-thermal-plan.md`). Plug every unused cavity with a sealing plug.
 
 ## X2 - inputs, analog, CAN (size 20, 20 AWG)
 

@@ -32,7 +32,17 @@
 #include "analog_input.h"
 #endif  
 
+// custom-pdm: a board sets THERMAL_LIMIT_PARAMS in port.h to get settable board-temperature limits
+// with a self-recovering critical shutdown (docs/firmware-thermal-plan.md). Stock boards keep stock behaviour.
+#ifndef THERMAL_LIMIT_PARAMS
+#define THERMAL_LIMIT_PARAMS 0
+#endif
+
+#if THERMAL_LIMIT_PARAMS
+#define CONFIG_VERSION 0x0106 //custom-pdm: stock 0x0006 + board temperature limits in Config_Device
+#else
 #define CONFIG_VERSION 0x0006 //Increment when config structure changes
+#endif
 
 struct Config_Device{
   uint16_t nConfigVersion;
@@ -43,6 +53,12 @@ struct Config_Device{
   //Not used by all devices
   bool bSleepEnabled;
   bool bConnectUsbToCan;
+
+  #if THERMAL_LIMIT_PARAMS
+  uint8_t nTempWarn;      //deg C: above it, state OverTemp (outputs unchanged)
+  uint8_t nTempCrit;      //deg C: at or above it, all outputs off
+  uint8_t nTempCritHyst;  //deg C: outputs come back below nTempCrit - nTempCritHyst
+  #endif
 };
 
 struct DeviceConfig{

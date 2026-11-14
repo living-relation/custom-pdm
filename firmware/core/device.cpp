@@ -71,6 +71,32 @@ void InitVarMap();
 void CyclicUpdate();
 void States();
 
+#if HAS_EXT_TEMP_SENSOR && THERMAL_LIMIT_PARAMS
+// custom-pdm: warn / critical decided here from the reading and the config limits, so a limit changed over
+// CAN acts at once. The MCP9808 limit registers are written once at boot and locked (they only drive the
+// alert LED); the flag rules follow the MCP9808 data sheet: over warn when T > limit, critical when
+// T >= limit, each clears only below limit - hysteresis.
+static void UpdateBoardTempLimits(float fTemp)
+{
+    static bool bWarn = false;
+    const float fWarn = stConfig.stDevice.nTempWarn;
+    const float fCrit = stConfig.stDevice.nTempCrit;
+    const float fCritHyst = stConfig.stDevice.nTempCritHyst;
+
+    if (fTemp > fWarn)
+        bWarn = true;
+    else if (fTemp < fWarn - BOARD_TEMP_WARN_HYST)
+        bWarn = false;
+
+    if (fTemp >= fCrit)
+        bDeviceCriticalTemp = true;
+    else if (fTemp < fCrit - fCritHyst)
+        bDeviceCriticalTemp = false;
+
+    bDeviceOverTemp = bWarn || bDeviceCriticalTemp;
+}
+#endif
+
 struct DeviceThread : chibios_rt::BaseStaticThread<DEVICE_THREAD_STACK>
 {
     void main()
@@ -104,8 +130,12 @@ struct SlowThread : chibios_rt::BaseStaticThread<256>
             // Temp sensor is I2C, takes a while to read
             // Don't want to slow down main thread
             fTempSensor = tempSensor.GetTemp();
+            #if THERMAL_LIMIT_PARAMS
+            UpdateBoardTempLimits(fTempSensor);
+            #else
             bDeviceOverTemp = tempSensor.OverTempLimit();
             bDeviceCriticalTemp = tempSensor.CritTempLimit();
+            #endif
 
             // palToggleLine(LINE_E2);
             chThdSleepMilliseconds(250);
@@ -145,7 +175,12 @@ void InitDevice()
     #endif
 
     #if HAS_EXT_TEMP_SENSOR
+    #if THERMAL_LIMIT_PARAMS
+    // After InitConfig: the chip gets the stored limits, then locks them until the next power-up
+    if (!tempSensor.Init(stConfig.stDevice.nTempWarn, stConfig.stDevice.nTempCrit))
+    #else
     if (!tempSensor.Init(BOARD_TEMP_WARN, BOARD_TEMP_CRIT))
+    #endif
         Error::SetFatalError(FatalErrorType::ErrTempSensor, MsgSrc::Init);
     #endif
 
@@ -168,7 +203,9 @@ void InitDevice()
 
 void States()
 {
-    #if HAS_EXT_TEMP_SENSOR
+    // custom-pdm (THERMAL_LIMIT_PARAMS): critical temperature is not fatal; CyclicUpdate holds every output
+    // off while bDeviceCriticalTemp is set and they follow their inputs again once it clears.
+    #if HAS_EXT_TEMP_SENSOR && !THERMAL_LIMIT_PARAMS
     if (bDeviceCriticalTemp)
     {
         #if NUM_OUTPUTS > 0
@@ -288,7 +325,11 @@ void CyclicUpdate()
 
     #if NUM_OUTPUTS > 0
     for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        #if HAS_EXT_TEMP_SENSOR && THERMAL_LIMIT_PARAMS
+        pf[i].Update(starter.fVal[i] && !bDeviceCriticalTemp);
+        #else
         pf[i].Update(starter.fVal[i]);
+        #endif
     #endif
 
     #if NUM_DIG_INPUTS > 0

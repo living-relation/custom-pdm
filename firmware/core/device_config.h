@@ -17,6 +17,7 @@
 
 #define BOARD_TEMP_WARN 55 //deg C
 #define BOARD_TEMP_CRIT 80 //deg C
+#define BOARD_TEMP_WARN_HYST 1.5f //deg C, same as the MCP9808 hysteresis set in MCP9808::LockLimits (custom-pdm)
 
 #define MAX_COUNTER_VAL 8
 

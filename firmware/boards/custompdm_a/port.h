@@ -69,6 +69,37 @@
 #define DEFAULT_BASE_ID (PDM_UNIT == 2 ? 0x520 : 0x500)
 #define DEFAULT_CAN_BITRATE CanBitrate::Bitrate_1000K
 #define DEFAULT_RESET_MODE ProfetResetMode::Count // 3 tries (nResetLimit), 1 s apart, then Fault
+// Board temperature limits are config params (device 0x0000 sub 5-7) and critical recovers by itself
+// (core/device.cpp). Defaults in core/param_defs.h: stock 55 / 80 deg C, recovery 6 deg C below critical.
+#define THERMAL_LIMIT_PARAMS 1
+// Fans (r3c, r7a): board A unit 2 (A2) OUT2 (index 1) is always on and wired inside the box to both fans; its X1 cavity T is spare.
+// A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)
+// and the east-most driver (U8). Other units: -1 = no fan output
+#define FAN_OUTPUT (PDM_UNIT == 2 ? 1 : -1)
+#define DEFAULT_OUT_ENABLED(i) ((int)(i) == FAN_OUTPUT ? 1 : 0)
+#define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? 1 : 0) // var 1 = always true: on whenever the board is awake
+#define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(1.0f) : F(20.0f)) // two Sunon MF30101V1 = 0.13 A max
+#define DEFAULT_OUT_INRUSH_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(2.0f) : F(50.0f))
+// Load-shed example (r5a), NOT active: conditions 29-32 and virtual inputs 15-16 (1-based) come prefilled but
+// disabled. Level l (0 sheds first): latch VI = (temp >= SHED_ON_C OR itself) AND NOT (temp <= SHED_OFF_C).
+// How to enable: docs/firmware-thermal-plan.md section 7. Var-map indices follow InitVarMap (core/device.cpp).
+#define VAR_BOARD_TEMP 3
+#define VAR_VIRT(i) (VAR_MAP_SYS_VARS + NUM_DIG_INPUTS + NUM_DIG_OUTPUTS + NUM_ANALOG_INPUTS * 4 + NUM_CAN_INPUTS * 2 + (i))
+#define VAR_COND(i) (VAR_VIRT(NUM_VIRT_INPUTS) + NUM_OUTPUTS * 4 + NUM_FLASHERS + (i))
+#define SHED_COND0 (NUM_CONDITIONS - 4)       // level l: hot = SHED_COND0 + 2 l, cool = SHED_COND0 + 2 l + 1
+#define SHED_VIRT0 (NUM_VIRT_INPUTS - 2)      // level l: latch = SHED_VIRT0 + l
+#define SHED_ON_C(l) ((l) ? 75.0f : 70.0f)    // example values; real ones after the bench measurements (r6c)
+#define SHED_OFF_C(l) ((l) ? 70.0f : 65.0f)
+#define IS_SHED_COND(i) ((int)(i) >= SHED_COND0)
+#define SHED_COND_HOT(i) (((int)(i) - SHED_COND0) % 2 == 0)
+#define SHED_COND_LEVEL(i) (((int)(i) - SHED_COND0) / 2)
+#define DEFAULT_COND_INPUT(i) (IS_SHED_COND(i) ? VAR_BOARD_TEMP : 0)
+#define DEFAULT_COND_OPERATOR(i) static_cast<uint32_t>(!IS_SHED_COND(i) ? Operator::Equal : SHED_COND_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
+#define DEFAULT_COND_ARG(i) (!IS_SHED_COND(i) ? F(0.0f) : F(SHED_COND_HOT(i) ? SHED_ON_C(SHED_COND_LEVEL(i)) : SHED_OFF_C(SHED_COND_LEVEL(i))))
+#define IS_SHED_VIRT(i) ((int)(i) >= SHED_VIRT0)
+#define DEFAULT_VIRT_VAR(i, n) (!IS_SHED_VIRT(i) ? 0 : (n) == 0 ? VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0)) : (n) == 1 ? VAR_VIRT(i) : VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0) + 1))
+#define DEFAULT_VIRT_COND(i, n) static_cast<uint32_t>(IS_SHED_VIRT(i) && (n) == 0 ? BoolOperator::Or : BoolOperator::And)
+#define DEFAULT_VIRT_NOT(i, n) (IS_SHED_VIRT(i) && (n) == 2 ? 1 : 0)
 
 #define ADC1_NUM_CHANNELS 8
 #define ADC1_BUF_DEPTH 1

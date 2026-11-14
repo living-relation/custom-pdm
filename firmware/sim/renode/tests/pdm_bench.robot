@@ -28,6 +28,9 @@ Fresh Boards Wrote Their Default Config To The FRAM
 After A Power Cycle All Three Still Run At 1 Mbit/s On Their Own IDs With The Saved Config
     Power Cycle Keeps Ids And Config
 
+Factory Defaults: Fan Output A2 OUT2 Always On, Temperature Limits 55 / 80 / 6 C On Every Board
+    Factory Defaults Fan Output And Temperature Limits
+
 Config As One 24-Output PDM Is Written Over CAN And Saved To FRAM
     Configure As One Pdm And Save
 
@@ -66,6 +69,15 @@ Overcurrent: Three Tries One Second Apart, Then Fault Until A Power Cycle
 
 Board Temperature From The I2C Sensor Reaches The Status Frame And The Over-temperature State
     Board Temperature Reaches The Status Frame
+
+Board And STM32 Die Temperatures Reach CAN x10, Each Tracking Its Own Set Value
+    Board And Die Temperatures Reach Can
+
+Above Warn: Over-temperature State And Error Message, Outputs Unchanged
+    Above Warn Outputs Unchanged
+
+At Critical: All Outputs Off, No Chatter, Back By Themselves Below Critical Minus Hysteresis
+    At Critical All Off Then Recovers Below Critical Minus Hysteresis
 
 Manual Setup: ID And Bit Rate Changed Over CAN, Saved, Kept After A Restart
     Manual Id And Bit Rate Change Survives A Restart

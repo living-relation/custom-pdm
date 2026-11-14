@@ -5,6 +5,17 @@ arm-none-eabi-gcc 14.2.1, WSL Ubuntu on DansPC. Run: see `README.md`. Nothing fl
 
 **18 of 18 tests pass** (one suite, 287 s wall).
 
+Update 2026-11-14 (branch `feat/fw-thermal`, thermal protection + fans, `docs/firmware-thermal-plan.md` section 7): **22 of 22 pass** (about 660 s of test time). Default config written at first start is now 4372 / 4396 bytes. New tests:
+
+| # | Test | Evidence from the run |
+|---|---|---|
+| 5 (new) | Factory defaults: fan output, temperature limits | only global output 10 (A2 OUT2) high at every 200 ms sample for 2 s, status On; warn / critical / recovery 55 / 80 / 6 read back from all three |
+| 19 | Board and die temperature on CAN | A1 board 47.5 / die 63.0 C -> 475 / 668; A2 52.0 / 41.0 C -> 520 / 456 (die value = sensor model + ADC + `GetTemperature()`) |
+| 20 | Above warn (56 C) | A1 outputs 1, 2, 4 stay on; state 0 -> 2 -> 0; last message E / State_Overtemp / 560 |
+| 21 | At critical (80 C) | A1 all off after 20 ms (sensor read phase), state 2, message E / Overtemp / 800 / 800, other boards untouched; still off at 79.5 / 80 / 77 / 74.0 C; back on 160 ms after 73.5 C; no fatal error |
+
+Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
+
 ## What each test showed
 
 | # | Test | Evidence from the run |

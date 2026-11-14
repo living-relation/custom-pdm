@@ -492,7 +492,7 @@ CANTxMsg TxMsg27()
 {
     CANTxMsg stMsg;
     //=======================================================
-    // Build Msg 27 (custom-pdm: all digital inputs, analog input)
+    // Build Msg 27 (custom-pdm: all digital inputs, analog input, STM32 die temperature)
     //=======================================================
     stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 27;
     stMsg.frame.DLC = 8; // Bytes to send
@@ -502,7 +502,7 @@ CANTxMsg TxMsg27()
     stMsg.frame.data16[0] = nDi;
     stMsg.frame.data16[1] = (uint16_t)analogIn[0].fValMillivolts;
     stMsg.frame.data16[2] = (uint16_t)analogIn[0].fVal;
-    stMsg.frame.data16[3] = 0;
+    stMsg.frame.data16[3] = (uint16_t)(int16_t)(GetTemperature() * 10.0f); // deg C x 10, signed (r5a)
 
     stMsg.bSend = true; // Always send
 

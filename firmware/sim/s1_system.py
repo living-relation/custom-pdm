@@ -1,7 +1,7 @@
-"""S1-S3: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
-firmware logic, and what outputs do when a CAN link is lost (three policies).
+"""S1-S4: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
+firmware logic, what outputs do when a CAN link is lost (three policies), and thermal protection + fans (S4).
 IDs used here are examples only: boards 0x500 / 0x520 / 0x540, ECU command frame 0x4F0."""
-import sys, json, pdmsim as ps
+import sys, json, struct, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
 BASE = {'A1': 0x500, 'A2': 0x520, 'B': 0x540}; ECU_ID = 0x4F0; ALIVE_SLOT = 31; TIMEOUT_MS = 1000   # Dan D3a: 1 s default (also the firmware default), adjustable per channel
 res = []; info = {}
@@ -208,6 +208,91 @@ t4.write(BASE['B'], 0x0000, 2, 1); t4.powered = False; b4.run_for(34000)
 names = 'ABCDEFGH'; ex = {p: names[z.L.sim_exti_port(p)] for p in range(16) if z.L.sim_exti_port(p) >= 0}
 info['sleep_entered'] = z.flags()['asleep']; info['sleep_wake_lines'] = {f'EXTI{p}': f'P{v}{p}' for p, v in ex.items()}; info['sleep_exti_clashes'] = z.counters()['exti_clashes']
 print(f"  sleep after 30 s idle: {info['sleep_entered']}, wake lines {info['sleep_wake_lines']}, clashes {info['sleep_exti_clashes']}")
+
+# ------------------------------------------------------------------ S4 thermal (r5a, r3c, r7a; docs/firmware-thermal-plan.md)
+print('--- S4 thermal')
+# fresh boards (factory defaults): limits, fan output, temperatures on CAN
+b5 = ps.Bus(); t5 = ps.Tool(b5)
+f5 = {'A1': ps.Board(ps.BOARD_A, 'A1', SO, unit=1), 'A2': ps.Board(ps.BOARD_A, 'A2', SO, unit=2), 'B': ps.Board(ps.BOARD_B, 'B', SO)}
+st5 = {k: ps.Status(BASE[k]) for k in f5}
+for s_ in st5.values(): b5.watch.append(s_.feed)
+b5.add(t5, *f5.values()); b5.run_for(1500)
+lim = {k: {n: t5.read(BASE[k], 0x0000, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
+check('thermal: factory default limits on every board are warn 55, critical 80, recovery 6 deg C (device params 5-7)', all(v == ps.TEMP_DEFAULT for v in lim.values()), lim)
+fk, fo = ps.FAN
+def pins_high(b): return [i for i, o in enumerate(b.model['outputs']) if b.level(o[0])]
+fan_seen = []; t_ = b5.now
+while b5.now < t_ + 10_000_000: b5.run_for(500); fan_seen.append(tuple(pins_high(f5[k]) for k in ('A1', 'A2', 'B')))
+check('fans: with no config and no ECU, only board A2 OUT2 is on, and it stays on (10 s awake); A1 and B have no output on',
+      all(p == ((), (fo,), ()) for p in [tuple(tuple(x) for x in s_) for s_ in fan_seen]) and st5['A2'].out_state(fo) == 1, fan_seen[-1])
+f5['A1'].set_temp(47.5, 63.0); f5['A2'].set_temp(52.0, 41.0); b5.run_for(800)
+tv = {k: (st5[k].board_temp_x10(), st5[k].die_temp_x10()) for k in ('A1', 'A2')}
+want = {'A1': (475, ps.die_temp_can(63.0)), 'A2': (520, ps.die_temp_can(41.0))}
+check('temperatures on CAN: board (MCP9808, msg 0) and STM32 die (msg 27) x10 track their own set values on each board',
+      all(tv[k][0] == want[k][0] and abs(tv[k][1] - want[k][1]) <= 4 for k in tv), f'got {tv}, want {want}')
+info['die_temp_x10'] = tv
+
+# configured board A1 (single-PDM config from S2), ECU commanding A1 outputs 1, 2, 4
+b6 = ps.Bus(); t6 = ps.Tool(b6); e6 = ps.PyNode('ecu'); a1 = ps.Board(ps.BOARD_A, 'A1', SO, fram=frams2['A1'])
+st6 = ps.Status(BASE['A1']); b6.watch.append(st6.feed); infos = []
+b6.watch.append(lambda f: infos.append((f.t, f.data[1], struct.unpack('<H', f.data[2:4])[0], struct.unpack('<H', f.data[4:6])[0])) if f.id == BASE['A1'] and f.data[0] == ord('E') else None)
+e6.every(20000, lambda t: e6.send(ECU_ID, bytes([0b1011, 0, 0, 0xA5, 0, 0, 0, 0])), 5000)
+b6.add(t6, e6, a1)
+for o_ in range(8): a1.set_load(o_, a1.vbat / 4.0)
+b6.run_for(1500); CMD_ON = [0, 1, 3]
+def temp_step(c, ms=400): a1.set_temp(c); b6.run_for(ms); return pins_high(a1)
+p_cool = temp_step(40.0); s_cool = st6.dev_state()
+p_warn = temp_step(56.0); s_warn = st6.dev_state(); m_warn = [x for x in infos if x[1] == 3]
+s_hold = (temp_step(53.6), st6.dev_state()); s_clear = (temp_step(53.4), st6.dev_state())
+check('above warn (56 C > 55): state OverTemp, one CAN error message (State_Overtemp, 560), outputs unchanged',
+      p_cool == CMD_ON and s_cool == 0 and p_warn == CMD_ON and s_warn == 2 and len(m_warn) == 1 and m_warn[0][2] == 560, (p_cool, s_cool, p_warn, s_warn, m_warn))
+check('warn clears only below warn - 1.5 C (stock MCP9808 hysteresis): 53.6 C still OverTemp, 53.4 C Run',
+      s_hold == (CMD_ON, 2) and s_clear == (CMD_ON, 0), (s_hold, s_clear))
+p77 = temp_step(77.0); v_shed = [a1.L.sim_var(a1.var_virt(ps.SHED['virt0'] + l)) for l in (0, 1)]
+check('load-shed example ships disabled: at 77 C (above both example levels, below critical) no output is shed', p77 == CMD_ON and v_shed == [0.0, 0.0], (p77, v_shed))
+infos.clear(); t_ = b6.now; a1.set_temp(80.0); t_off = None
+while b6.now < t_ + 1_000_000:
+    b6.run_for(2)
+    if t_off is None and not pins_high(a1): t_off = round((b6.now - t_) / 1000)
+m_crit = [x for x in infos if x[1] == 9]
+check('at critical (80 C): every output off within one sensor read, state OverTemp, CAN error message (Overtemp, 800, limit 800), no fatal error',
+      pins_high(a1) == [] and t_off is not None and t_off <= 260 and st6.dev_state() == 2 and len(m_crit) == 1 and m_crit[0][2:] == (800, 800) and not a1.flags()['fatal'],
+      (t_off, pins_high(a1), st6.dev_state(), m_crit, a1.flags()))
+info['crit_off_ms'] = t_off
+edges = 0; last = pins_high(a1)
+for c in [79.5, 80.0] * 8 + [77.0, 74.0, 74.5, 74.0]:
+    p = temp_step(c, 300); edges += p != last; last = p
+check('critical: no chatter at the limit (79.5 / 80.0 C x8) and still off at 74.0 C (recovery is below 80 - 6 = 74)', edges == 0 and last == [], (edges, last))
+t_ = b6.now; a1.set_temp(73.5); t_on = None
+while b6.now < t_ + 1_000_000:
+    b6.run_for(2)
+    if t_on is None and pins_high(a1) == CMD_ON: t_on = round((b6.now - t_) / 1000)
+edges = 0; last = pins_high(a1)
+for c in [74.5, 73.5] * 8 + [79.5]:
+    p = temp_step(c, 300); edges += p != last; last = p
+check('critical recovers by itself at 73.5 C (no power cycle), then no chatter at 73.5 / 74.5 C and stays on at 79.5 C',
+      t_on is not None and t_on <= 260 and edges == 0 and last == CMD_ON and not a1.flags()['fatal'], (t_on, edges, last))
+info['crit_recover_ms'] = t_on
+# limits changed over CAN act at once (no restart)
+ok_w = all(t6.write(BASE['A1'], 0x0000, ps.TEMP_PARAM[n], v) is not None for n, v in (('warn', 50), ('crit', 70), ('hyst', 4)))
+rd = {n: t6.read(BASE['A1'], 0x0000, sub) for n, sub in ps.TEMP_PARAM.items()}
+seq = [(c, temp_step(c), st6.dev_state()) for c in (45.0, 51.0, 69.5, 70.0, 66.5, 65.5)]
+check('limits set over CAN (warn 50, critical 70, recovery 4) act at once: 51 C OverTemp, 70 C all off, 66.5 C still off, 65.5 C back on',
+      ok_w and rd == {'warn': 50, 'crit': 70, 'hyst': 4} and [(p, s) for c, p, s in seq] == [(CMD_ON, 0), (CMD_ON, 2), (CMD_ON, 2), ([], 2), ([], 2), (CMD_ON, 2)], (rd, seq))
+for n in ('warn', 'crit', 'hyst'): t6.write(BASE['A1'], 0x0000, ps.TEMP_PARAM[n], ps.TEMP_DEFAULT[n])
+temp_step(40.0)
+# the prefilled load-shed example, enabled as documented (docs/firmware-thermal-plan.md section 7):
+# output 1 sheds at level 0 (70 C, back at 65 C), output 2 at level 1 (75 C, back at 70 C), output 4 is never shed
+S = ps.SHED
+for i in range(4): t6.write(BASE['A1'], 0x1500 + S['cond0'] + i, 0, 1)
+for l in (0, 1): t6.write(BASE['A1'], 0x1400 + S['virt0'] + l, 0, 1)
+for o_, l, v in ((0, 0, 1), (1, 1, 2)):                       # VI v = command AND NOT latch(l); output input = VI v
+    for sub, val in [(2, a1.var_canin(o_)), (3, 0), (4, 1), (5, a1.var_virt(S['virt0'] + l)), (8, 0), (0, 1)]: t6.write(BASE['A1'], 0x1400 + v, sub, val)
+    t6.write(BASE['A1'], 0x1000 + o_, 1, a1.var_virt(v))
+seq = [(c, temp_step(c)) for c in (60.0, 69.5, 70.0, 74.5, 75.0, 79.0, 72.0, 70.5, 70.0, 66.0, 65.5, 65.0)]
+want = [CMD_ON, CMD_ON, [1, 3], [1, 3], [3], [3], [3], [3], [1, 3], [1, 3], [1, 3], CMD_ON]
+check('load-shed example enabled: low priority (out 1) off at 70 C, high priority (out 2) off at 75 C, out 4 never; each returns at its own lower limit (70 / 65 C)',
+      [p for c, p in seq] == want, seq)
 bad = [r for r in res if not r[1]]
-print(f'\nS1-S3: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
+print(f'\nS1-S4: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
 json.dump(dict(checks=res, info=info, matrix=matrix), open('/tmp/s1_results.json', 'w'), indent=1)

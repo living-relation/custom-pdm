@@ -9,6 +9,9 @@
 const ParamInfo stParams[] = {
     // Device Config (0x0000)
     DEVICE_CONFIG_PARAMS(),
+    #if THERMAL_LIMIT_PARAMS
+    DEVICE_THERMAL_PARAMS(),
+    #endif
 
     // Outputs (0x1000+)
     #if NUM_OUTPUTS > 0

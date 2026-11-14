@@ -44,6 +44,41 @@ FACTORY = '''// Factory defaults (used only when the FRAM holds no valid config)
 #define DEFAULT_BASE_ID %s
 #define DEFAULT_CAN_BITRATE CanBitrate::Bitrate_1000K
 #define DEFAULT_RESET_MODE ProfetResetMode::Count // 3 tries (nResetLimit), 1 s apart, then Fault'''
+# Thermal protection + fans + load-shed example (Dan r5a, r3c, r7a, 2026-11-13; docs/firmware-thermal-plan.md)
+THERMAL = '''// Board temperature limits are config params (device 0x0000 sub 5-7) and critical recovers by itself
+// (core/device.cpp). Defaults in core/param_defs.h: stock 55 / 80 deg C, recovery 6 deg C below critical.
+#define THERMAL_LIMIT_PARAMS 1
+// Fans (r3c, r7a): @FAN_NOTE@
+#define FAN_OUTPUT @FAN_OUTPUT@
+#define DEFAULT_OUT_ENABLED(i) ((int)(i) == FAN_OUTPUT ? 1 : 0)
+#define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? 1 : 0) // var 1 = always true: on whenever the board is awake
+#define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(1.0f) : F(20.0f)) // two Sunon MF30101V1 = 0.13 A max
+#define DEFAULT_OUT_INRUSH_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(2.0f) : F(50.0f))
+// Load-shed example (r5a), NOT active: conditions 29-32 and virtual inputs 15-16 (1-based) come prefilled but
+// disabled. Level l (0 sheds first): latch VI = (temp >= SHED_ON_C OR itself) AND NOT (temp <= SHED_OFF_C).
+// How to enable: docs/firmware-thermal-plan.md section 7. Var-map indices follow InitVarMap (core/device.cpp).
+#define VAR_BOARD_TEMP 3
+#define VAR_VIRT(i) (VAR_MAP_SYS_VARS + NUM_DIG_INPUTS + NUM_DIG_OUTPUTS + NUM_ANALOG_INPUTS * 4 + NUM_CAN_INPUTS * 2 + (i))
+#define VAR_COND(i) (VAR_VIRT(NUM_VIRT_INPUTS) + NUM_OUTPUTS * 4 + NUM_FLASHERS + (i))
+#define SHED_COND0 (NUM_CONDITIONS - 4)       // level l: hot = SHED_COND0 + 2 l, cool = SHED_COND0 + 2 l + 1
+#define SHED_VIRT0 (NUM_VIRT_INPUTS - 2)      // level l: latch = SHED_VIRT0 + l
+#define SHED_ON_C(l) ((l) ? 75.0f : 70.0f)    // example values; real ones after the bench measurements (r6c)
+#define SHED_OFF_C(l) ((l) ? 70.0f : 65.0f)
+#define IS_SHED_COND(i) ((int)(i) >= SHED_COND0)
+#define SHED_COND_HOT(i) (((int)(i) - SHED_COND0) % 2 == 0)
+#define SHED_COND_LEVEL(i) (((int)(i) - SHED_COND0) / 2)
+#define DEFAULT_COND_INPUT(i) (IS_SHED_COND(i) ? VAR_BOARD_TEMP : 0)
+#define DEFAULT_COND_OPERATOR(i) static_cast<uint32_t>(!IS_SHED_COND(i) ? Operator::Equal : SHED_COND_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
+#define DEFAULT_COND_ARG(i) (!IS_SHED_COND(i) ? F(0.0f) : F(SHED_COND_HOT(i) ? SHED_ON_C(SHED_COND_LEVEL(i)) : SHED_OFF_C(SHED_COND_LEVEL(i))))
+#define IS_SHED_VIRT(i) ((int)(i) >= SHED_VIRT0)
+#define DEFAULT_VIRT_VAR(i, n) (!IS_SHED_VIRT(i) ? 0 : (n) == 0 ? VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0)) : (n) == 1 ? VAR_VIRT(i) : VAR_COND(SHED_COND0 + 2 * ((i) - SHED_VIRT0) + 1))
+#define DEFAULT_VIRT_COND(i, n) static_cast<uint32_t>(IS_SHED_VIRT(i) && (n) == 0 ? BoolOperator::Or : BoolOperator::And)
+#define DEFAULT_VIRT_NOT(i, n) (IS_SHED_VIRT(i) && (n) == 2 ? 1 : 0)'''
+def thermal(note, fan): return THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
+FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is always on and wired inside the box to both fans; its X1 cavity T is spare.\n'
+                '// A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)\n'
+                '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)')
+FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1')
 COMMON = [('LED_ERROR','C0'),('LED_STATUS','C1'),('BATT_SENSE','A3'),('USB_VBUS','A9'),
           ('CAN_STANDBY','C12'),('I2C1_SCL','B6'),('I2C1_SDA','B7'),('CAN_RX','B8'),('CAN_TX','B9'),
           ('USB_DM','A11'),('USB_DP','A12'),('SWDIO','A13'),('SWCLK','A14')]
@@ -67,7 +102,7 @@ t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex 
 
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n// Wake-up: DI3 (PC10) and DI4 (PC11) share EXTI 10 / 11 with DI1 (PA10) and USB D- (PA11), which keep them\n#define WAKE_DIG_INPUT_MASK 0x73U')
-p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % ('(PDM_UNIT == 2 ? 0x520 : 0x500)'))
+p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % ('(PDM_UNIT == 2 ? 0x520 : 0x500)') + '\n' + FAN_A)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
 p = p.replace('    IS1 = 0,\n    IS2,\n', '    IS1_2 = 0,\n    AnIn1, // PC2, ADC1_IN12 (old IS2 slot)\n')
@@ -113,7 +148,7 @@ CANTxMsg TxMsg27()
 {
     CANTxMsg stMsg;
     //=======================================================
-    // Build Msg 27 (custom-pdm: all digital inputs, analog input)
+    // Build Msg 27 (custom-pdm: all digital inputs, analog input, STM32 die temperature)
     //=======================================================
     stMsg.frame.SID = stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 27;
     stMsg.frame.DLC = 8; // Bytes to send
@@ -123,7 +158,7 @@ CANTxMsg TxMsg27()
     stMsg.frame.data16[0] = nDi;
     stMsg.frame.data16[1] = (uint16_t)analogIn[0].fValMillivolts;
     stMsg.frame.data16[2] = (uint16_t)analogIn[0].fVal;
-    stMsg.frame.data16[3] = 0;
+    stMsg.frame.data16[3] = (uint16_t)(int16_t)(GetTemperature() * 10.0f); // deg C x 10, signed (r5a)
 
     stMsg.bSend = true; // Always send
 
@@ -165,7 +200,7 @@ t = set_pin(t, 'B', 2, 'INPUT', 'PULLDOWN')
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n// Wake-up: DI9 (PC10), DI10 (PC11) lose EXTI 10 / 11 to DI1 (PA10) and USB D- (PA11). DI5 (PC13) is alone on EXTI 13, DI6 (PD2) on EXTI 2\n#define WAKE_DIG_INPUT_MASK 0x0FFU')
-p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % '0x540')
+p = p.replace('#define DEFAULT_BASE_ID 0x0DE', FACTORY % '0x540' + '\n' + FAN_B)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 p = p.replace('#define NUM_TX_MSGS 27', '#define NUM_TX_MSGS 28')
 p = p.replace('#define ADC1_NUM_CHANNELS 7', '#define ADC1_NUM_CHANNELS 12')
