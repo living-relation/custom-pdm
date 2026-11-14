@@ -14,7 +14,7 @@ Decisions: DECISIONS.md 2026-11-11 (B4-b(b), C1b, C2b, C3d, C6c, C7b) and docs/p
   * C6c  Manufacturer + MPN fields: on every part touched here and on the safety parts (TVS, switches, sense resistors).
   * P11 (p1a)  +5V OR-ing Schottky (A: D18, B: D4; +5VP -> +5V) -> Nexperia PMEG2010AEH, SOD123F footprint
          Diode_SMD:D_SOD-123F (290 mV max at 100 mA). The PCB footprint swap is board_fix_pcb.swap_footprint.
-Digi-Key numbers that could not be confirmed are written as "TBD".
+Digi-Key numbers that could not be confirmed are written as "TBD"; tools/sch_digikey.py fills in the confirmed ones.
 """
 import glob
 import os
