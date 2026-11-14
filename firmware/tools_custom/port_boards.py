@@ -48,8 +48,19 @@ FACTORY = '''// Factory defaults (used only when the FRAM holds no valid config)
 THERMAL = '''// Board temperature limits are config params (device 0x0000 sub 5-7) and critical recovers by itself
 // (core/device.cpp). Defaults in core/param_defs.h: stock 55 / 80 deg C, recovery 6 deg C below critical.
 #define THERMAL_LIMIT_PARAMS 1
+// MCP9808 reading (core/device.cpp UpdateBoardTemp): a failed I2C read is "no reading" (last valid temperature and
+// warn / critical state kept). 4 failures in a row (1 s at the 250 ms read period) = one CAN error message, src
+// TempSensor. Readings in the first 100 ms after the sensor starts are skipped (> 3 x tCONV 30 ms typ at 0.5 C).
+#define TEMP_SENSOR_FAIL_LIMIT 4
+#define TEMP_SENSOR_SETTLE_MS 100
+// Sleep (Dan s7a, core/sleep.cpp EnterLowPower): every PROFET IN / DEN / DSEL low, MCP9808 alert off + shutdown
+// (status / error LEDs: already off, stock States()). So the MCP9808 limits are not locked: SHDN cannot be set
+// while a lock bit is set (DS25095A Register 5-2).
+#define SLEEP_LOW_POWER 1
 // Fans (r3c, r7a): @FAN_NOTE@
 #define FAN_OUTPUT @FAN_OUTPUT@
+// Dan s10b: the fan output keeps running through a critical shutdown (device param 0x0000 sub 8, bit i = output i)
+#define DEFAULT_CRIT_EXEMPT_MASK (FAN_OUTPUT >= 0 ? (1U << (FAN_OUTPUT & 15)) : 0U)
 #define DEFAULT_OUT_ENABLED(i) ((int)(i) == FAN_OUTPUT ? 1 : 0)
 #define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? 1 : 0) // var 1 = always true: on whenever the board is awake
 #define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(1.0f) : F(20.0f)) // two Sunon MF30101V1 = 0.13 A max

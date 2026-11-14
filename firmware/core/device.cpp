@@ -95,6 +95,40 @@ static void UpdateBoardTempLimits(float fTemp)
 
     bDeviceOverTemp = bWarn || bDeviceCriticalTemp;
 }
+
+// custom-pdm: a failed I2C read is "no reading": fTempSensor and the warn / critical state keep their last valid
+// values, so a missing reading never trips or clears critical. Failures in a row are counted; from
+// TEMP_SENSOR_FAIL_LIMIT on, one CAN error message (src TempSensor) goes out (comms/infomsg.cpp).
+// Readings in the first TEMP_SENSOR_SETTLE_MS after Init are skipped: after a wake-up the ambient register still
+// holds the value from before sleep until the first conversion (tCONV 30 ms typ at 0.5 C, DS25095A Table 1-1).
+static uint32_t nTempSensorFails;
+static uint32_t nTempSensorStart;
+static bool bTempSensorSettled;
+
+static void UpdateBoardTemp()
+{
+    if (!bTempSensorSettled)
+    {
+        if ((uint32_t)(SYS_TIME - nTempSensorStart) < TEMP_SENSOR_SETTLE_MS)
+            return;
+        bTempSensorSettled = true;
+    }
+
+    float fTemp;
+    if (!tempSensor.ReadTemp(&fTemp))
+    {
+        if (nTempSensorFails < 0xFFFF)
+            nTempSensorFails++;
+        return;
+    }
+
+    nTempSensorFails = 0;
+    fTempSensor = fTemp;
+    UpdateBoardTempLimits(fTemp);
+}
+
+uint16_t GetTempSensorFails() { return (uint16_t)nTempSensorFails; }
+uint16_t GetTempSensorErrors() { return (uint16_t)tempSensor.GetErrors(); }
 #endif
 
 struct DeviceThread : chibios_rt::BaseStaticThread<DEVICE_THREAD_STACK>
@@ -129,10 +163,10 @@ struct SlowThread : chibios_rt::BaseStaticThread<256>
 
             // Temp sensor is I2C, takes a while to read
             // Don't want to slow down main thread
-            fTempSensor = tempSensor.GetTemp();
             #if THERMAL_LIMIT_PARAMS
-            UpdateBoardTempLimits(fTempSensor);
+            UpdateBoardTemp();
             #else
+            fTempSensor = tempSensor.GetTemp();
             bDeviceOverTemp = tempSensor.OverTempLimit();
             bDeviceCriticalTemp = tempSensor.CritTempLimit();
             #endif
@@ -176,12 +210,16 @@ void InitDevice()
 
     #if HAS_EXT_TEMP_SENSOR
     #if THERMAL_LIMIT_PARAMS
-    // After InitConfig: the chip gets the stored limits, then locks them until the next power-up
+    // After InitConfig: the chip gets the stored limits (alert LED only; left unlocked so sleep can shut it down,
+    // see MCP9808::Init) and returns to continuous conversion
     if (!tempSensor.Init(stConfig.stDevice.nTempWarn, stConfig.stDevice.nTempCrit))
     #else
     if (!tempSensor.Init(BOARD_TEMP_WARN, BOARD_TEMP_CRIT))
     #endif
         Error::SetFatalError(FatalErrorType::ErrTempSensor, MsgSrc::Init);
+    #if THERMAL_LIMIT_PARAMS
+    nTempSensorStart = SYS_TIME; // conversion (re)starts now; see UpdateBoardTemp
+    #endif
     #endif
 
     #if NUM_KEYPADS > 0
@@ -204,7 +242,7 @@ void InitDevice()
 void States()
 {
     // custom-pdm (THERMAL_LIMIT_PARAMS): critical temperature is not fatal; CyclicUpdate holds every output
-    // off while bDeviceCriticalTemp is set and they follow their inputs again once it clears.
+    // (except the critical-exempt ones, device param 8) off while bDeviceCriticalTemp is set and they follow their inputs again once it clears.
     #if HAS_EXT_TEMP_SENSOR && !THERMAL_LIMIT_PARAMS
     if (bDeviceCriticalTemp)
     {
@@ -326,7 +364,8 @@ void CyclicUpdate()
     #if NUM_OUTPUTS > 0
     for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
         #if HAS_EXT_TEMP_SENSOR && THERMAL_LIMIT_PARAMS
-        pf[i].Update(starter.fVal[i] && !bDeviceCriticalTemp);
+        // critical holds every output off except the ones in the exempt mask (Dan s10b: the fan output)
+        pf[i].Update(starter.fVal[i] && !(bDeviceCriticalTemp && !((stConfig.stDevice.nCritExemptMask >> i) & 1U)));
         #else
         pf[i].Update(starter.fVal[i]);
         #endif

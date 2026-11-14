@@ -6,6 +6,9 @@
 #include "status.h"
 #include "mcu_utils.h"
 #include "device_config.h"
+#if SLEEP_LOW_POWER
+#include "hw_devices.h"
+#endif
 
 #if CAN_SLEEP
 // Static variables that were in pdm.cpp
@@ -92,8 +95,28 @@ void EnableLineEventWithPull(ioline_t line, InputPull pull)
     palEnableLineEvent(line, eventMode);
 }
 
+#if SLEEP_LOW_POWER
+// custom-pdm (Dan s7a): lowest standby draw. Every PROFET to sleep / OFF mode (IN, DEN, DSEL low), MCP9808 alert
+// output off and shutdown (0.1 uA typ instead of 200 uA, DS25095A Table 1-1). The status and error LEDs (PC1, PC0)
+// are already switched off by States() (core/device.cpp) before EnterSleep. Nothing is restored here: the MCU
+// resets on wake-up (EnterStopMode), and the normal start-up sets DEN high again (Profet constructor) and puts the
+// MCP9808 back in continuous conversion (MCP9808::Init) before any current or temperature is read.
+static void EnterLowPower()
+{
+    for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        pf[i].Sleep();
+
+    // Result not needed: if it fails (I2C error, or a chip still locked by older firmware) the sensor stays on
+    tempSensor.EnterShutdown();
+}
+#endif
+
 void EnterSleep()
 {
+    #if SLEEP_LOW_POWER
+    EnterLowPower();
+    #endif
+
     // Set wakeup sources
 
     // Digital inputs change detection, with configured pullup or pulldown

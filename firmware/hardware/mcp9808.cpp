@@ -18,8 +18,17 @@ bool MCP9808::Init(float upperLimit, float critLimit)
     if (!SetLimit(MCP9808_REG_LOWER_TEMP, 0.0))
         return false;
 
+#if SLEEP_LOW_POWER
+    // custom-pdm: no lock bits. The data sheet (DS25095A, Register 5-2 bit 8 and section 5.2.1) says SHDN cannot be
+    // set to 1 while either lock bit is set, and the lock bits only clear at power-on reset, so a locked chip could
+    // never be put in shutdown for sleep. Nothing else writes the limit registers. This write also clears SHDN, so a
+    // chip left in shutdown by the last sleep returns to continuous conversion here (the MCU resets on wake-up).
+    if (!SetConfigUnlocked())
+        return false;
+#else
     if (!LockLimits())
         return false;
+#endif
 
     return true;
 }
@@ -126,6 +135,55 @@ bool MCP9808::Wake()
 
     return Write16(MCP9808_REG_CONFIG, config & ~MCP9808_REG_CONFIG_SHUTDOWN);
 }
+
+#if THERMAL_LIMIT_PARAMS
+bool MCP9808::ReadTemp(float *temp)
+{
+    uint16_t t;
+    if (!GetTempRegister(&t))
+    {
+        // After a time-out ChibiOS leaves the driver in I2C_LOCKED and every later call fails until it is
+        // restarted (os/hal/src/hal_i2c.c, i2cMasterTransmitTimeout). Restart it so readings can come back.
+        if (m_driver->state == I2C_LOCKED)
+        {
+            i2cAcquireBus(m_driver);
+            i2cStop(m_driver);
+            i2cStart(m_driver, &i2cConfig);
+            i2cReleaseBus(m_driver);
+        }
+        return false;
+    }
+
+    *temp = RawToTemp(t & 0x1FFF); // drop the three flag bits (15-13), keep sign + value
+    return true;
+}
+#endif
+
+#if SLEEP_LOW_POWER
+bool MCP9808::SetConfigUnlocked()
+{
+    // As LockLimits() without B6 / B7: alert = Tcrit only, enabled, comparator, active low, hysteresis 1.5 C, SHDN = 0
+    return Write16(MCP9808_REG_CONFIG, (MCP9808_REG_CONFIG_ALERTSEL |
+                                        MCP9808_REG_CONFIG_ALERTCTRL |
+                                        MCP9808_REG_CONFIG_HYST_1_5));
+}
+
+bool MCP9808::EnterShutdown()
+{
+    // Alert output off first: an asserted alert stays asserted through shutdown (DS25095A section 5.2.3.1), and
+    // Alert Cnt. changes do not move the pin once in shutdown (Register 5-2 bit 3). Then SHDN (bit 8).
+    if (!Write16(MCP9808_REG_CONFIG, MCP9808_REG_CONFIG_ALERTSEL | MCP9808_REG_CONFIG_HYST_1_5))
+        return false;
+    if (!Write16(MCP9808_REG_CONFIG, MCP9808_REG_CONFIG_ALERTSEL | MCP9808_REG_CONFIG_HYST_1_5 | MCP9808_REG_CONFIG_SHUTDOWN))
+        return false;
+
+    // A chip still locked by older firmware (lock bits clear only at power-on) ignores the SHDN write
+    uint16_t config;
+    if (!Read16(MCP9808_REG_CONFIG, &config))
+        return false;
+    return (config & MCP9808_REG_CONFIG_SHUTDOWN) != 0;
+}
+#endif
 
 bool MCP9808::SetLimit(uint8_t reg, float val)
 {

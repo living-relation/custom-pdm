@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "hal.h"
 #include "port.h"
+#include "custom_options.h"
 
 #if HAS_EXT_TEMP_SENSOR
 
@@ -72,6 +73,16 @@ class MCP9808
         bool OverTempLimit();
         bool UnderTempLimit();
         i2cflags_t GetErrors() { return lastErrors; }
+#if THERMAL_LIMIT_PARAMS
+        // custom-pdm: false = no reading (I2C failed); *temp is only written on success
+        bool ReadTemp(float* temp);
+#endif
+#if SLEEP_LOW_POWER
+        // custom-pdm: alert output on (Tcrit only), continuous conversion, limits NOT locked
+        bool SetConfigUnlocked();
+        // custom-pdm: alert output off, then shutdown; true when the chip reports SHDN set
+        bool EnterShutdown();
+#endif
 
     private:
         I2CDriver* m_driver;

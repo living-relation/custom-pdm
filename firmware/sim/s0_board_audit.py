@@ -81,6 +81,19 @@ def audit(model, label):
     # --- floating direct inputs with default (no) pull
     b.set_input(0, 'open'); bus.run_for(100); c2 = b.counters()
     print(f"   info: input 1 left open with pull = None -> {c2['float_reads'] - c['float_reads']} floating reads in 100 ms (undefined level on real hardware)")
+    # --- sleep (Dan s7a): request it with outputs on, then look at every PROFET line, the LEDs and the sensor
+    for i in range(n - 2): b.set_load(i, b.vbat / (2.0 + i)); tool.write(BASE, 0x1000 + i, 1, 1)   # the last two are latched Fault (above)
+    bus.run_for(300)
+    dens = sorted({o[1] for o in model['outputs']}); dsels = sorted({o[2] for o in model['outputs'] if o[2]}); ins = [o[0] for o in model['outputs']]
+    lv = lambda ps_: {p: b.level(p) for p in ps_}
+    pre = (lv(dens), [b.level(p) for p in ins], lv(ps.LEDS), b.mcp_info())
+    tool.sleep(BASE); bus.run_for(100)
+    post = (lv(dens + dsels + ins), all(b.pin_info(p)['mode'] == 'output' for p in dens + dsels + ins), lv(ps.LEDS), b.mcp_info())
+    check(f'{label} sleep request: IN / DEN{" / DSEL" if dsels else ""} of every channel driven low (were: DEN high, {n - 2} IN high), LEDs off (error LED was on)',
+          b.flags()['asleep'] and all(v == 1 for v in pre[0].values()) and pre[1] == [1] * (n - 2) + [0, 0] and pre[2]['PC0'] == 1
+          and all(v == 0 for v in post[0].values()) and post[1] and post[2] == {'PC0': 0, 'PC1': 0}, (b.flags(), pre[:3], post[:3]))
+    check(f'{label} sleep request: MCP9808 alert output off and shutdown set, once (was converting, alert on)',
+          (pre[3]['shutdown'], pre[3]['alert_on'], pre[3]['shutdown_calls']) == (0, 1, 0) and (post[3]['shutdown'], post[3]['alert_on'], post[3]['shutdown_calls']) == (1, 0, 1), (pre[3], post[3]))
 
 audit(ps.BOARD_A, 'A'); audit(ps.BOARD_B, 'B')
 bad = [r for r in res if not r[1]]

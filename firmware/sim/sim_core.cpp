@@ -252,7 +252,21 @@ bool MB85RC::GetId(uint16_t *m, uint16_t *p) { *m = MB85RC_MANUF_ID; *p = MB85RC
 bool MB85RC::Read(uint16_t a, uint8_t *d, uint16_t n) { framEnsure(); for (uint32_t i = 0; i < n; i++) d[i] = framMem[(a + i) % framSize]; return true; }
 bool MB85RC::Write(uint16_t a, uint8_t *d, uint16_t n) { framEnsure(); framWrites++; for (uint32_t i = 0; i < n; i++) framMem[(a + i) % framSize] = d[i]; return true; }
 static float boardTempC = 30.0f;
-bool MCP9808::Init(float, float) { return true; }
+// MCP9808 (Microchip DS25095A) at register-behaviour level: Init writes the config with SHDN = 0 (continuous);
+// the ambient register keeps the value from before a shutdown until the first new conversion, tCONV 30 ms typ at
+// 0.5 C (Table 1-1); in shutdown no conversions; EnterShutdown turns the alert output off, then sets SHDN.
+// mcpFail: the next n reads fail on I2C (-1 = every read until cleared).
+static int mcpShutdown = 0, mcpAlertOn = 0, mcpFail = 0; static uint32_t mcpShutdownCalls = 0, mcpReads = 0, mcpFailed = 0;
+static float mcpHeld = NAN; static uint64_t mcpFreshAt = 0;
+bool MCP9808::Init(float, float) { mcpShutdown = 0; mcpAlertOn = 1; mcpFreshAt = nowUs + 30000; return true; }
+bool MCP9808::ReadTemp(float *t)
+{
+    mcpReads++;
+    if (mcpFail) { if (mcpFail > 0) mcpFail--; mcpFailed++; return false; }
+    bool held = !std::isnan(mcpHeld) && (mcpShutdown || nowUs < mcpFreshAt);
+    *t = held ? mcpHeld : boardTempC; return true;
+}
+bool MCP9808::EnterShutdown() { mcpShutdownCalls++; mcpAlertOn = 0; mcpShutdown = 1; mcpHeld = boardTempC; return true; }
 float MCP9808::GetTemp() { return boardTempC; }
 bool MCP9808::OverTempLimit() { return boardTempC > BOARD_TEMP_WARN; }
 bool MCP9808::CritTempLimit() { return boardTempC > BOARD_TEMP_CRIT; }
@@ -365,4 +379,12 @@ API int sim_exti_port(int pad) { return extiPort[pad]; }
 // direct firmware state (cross-check only; scenarios use CAN like a real tool would)
 API int sim_out_state(int i) { return (int)pf[i].GetState(); }
 API float sim_out_current(int i) { return pf[i].GetCurrent(); }
+// MCP9808: fail reads; chip state carried over an MCU reset (no power-on reset): left in shutdown holding 'held'
+API void sim_mcp_fail(int n) { mcpFail = n; }
+API void sim_mcp_carry(float held) { mcpShutdown = 1; mcpAlertOn = 0; mcpHeld = held; }
+API void sim_mcp_info(uint32_t *out)
+{
+    out[0] = mcpShutdown; out[1] = mcpAlertOn; out[2] = mcpShutdownCalls; out[3] = mcpReads; out[4] = mcpFailed;
+    out[5] = GetTempSensorFails();
+}
 API float sim_var(int i) { extern float *pVarMap[VAR_MAP_SIZE]; return (i < VAR_MAP_SIZE && pVarMap[i]) ? *pVarMap[i] : NAN; }
