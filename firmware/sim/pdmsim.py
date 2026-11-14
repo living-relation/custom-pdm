@@ -238,6 +238,13 @@ TEMP_PARAM = {'warn': 0, 'crit': 1, 'hyst': 2, 'soon': 4}   # sub-index; 3 = cri
 TEMP_EXEMPT_SUB = 3
 TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6, 'soon': 5}   # expected factory defaults (core/param_defs.h)
 FLAG_WARN, FLAG_SOON, FLAG_CRIT = 1, 2, 4            # msg 3 byte 7
+# ---------------- wake-up set (Dan B2): param 0x7F00 sub 5, bit i = digital input i may wake; default none ----------------
+WAKE_SUB = 5
+SRC_CONFIG = 10                                      # MsgSrc::Config (core/enums.h): refused wake mask warning, type 'R'
+WRITE_ALL_OUT_OF_RANGE = 26                          # MsgCmd::WriteAllOutOfRange
+def exti_lines(b):
+    """EXTI line -> pin armed on it ('PC9'), from the sim's EXTI model (one port per line number)."""
+    return {p: f'P{"ABCDEFGH"[b.L.sim_exti_port(p)]}{p}' for p in range(16) if b.L.sim_exti_port(p) >= 0}
 FAN = ('A2', 1)                                      # fan output: board A unit 2, OUT2 (firmware index 1)
 FAN_ON_C, FAN_OFF_C = 45.0, 40.0                     # Dan s12a; source = hottest of A2 / A1 / B (s13a)
 FAN_SLOTS = dict(cond0=26, virt0=11, canin0=24)      # port_boards.py FAN_COND0 / FAN_VIRT0 / FAN_CANIN0 (0-based)

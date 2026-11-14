@@ -1,6 +1,6 @@
-"""S1-S5: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
-firmware logic, what outputs do when a CAN link is lost (three policies), thermal protection + fans (S4), and
-MCP9808 read failures + wake-up from sleep (S5).
+"""S1-S6: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
+firmware logic, what outputs do when a CAN link is lost (three policies), thermal protection + fans (S4),
+MCP9808 read failures + wake-up from sleep (S5), and the wake-up input set (S6, Dan B2).
 IDs used here: the factory base IDs, boards 0x500 / 0x540 / 0x580 (pdmsim.py BOARD_*), ECU command frame 0x4F0."""
 import sys, json, struct, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
@@ -404,6 +404,72 @@ check('wake-up: DEN high on every channel before the firmware starts (Profet con
       all(v == 1 for v in den7.values()) and (mi0['shutdown'], mi0['alert_on']) == (1, 0) and (mi1['shutdown'], mi1['alert_on']) == (0, 1), (den7, mi0, mi1))
 check('wake-up: the stale 85 C is never used (msg 0 only 0 = no reading yet, then 41.0 C; no over-temp or critical message)',
       temps7 and set(temps7) <= {0, 410} and temps7[-1] == 410 and not (set(errs7) & {3, 9}), (sorted(set(temps7)), errs7))
+
+# ------------------------------------------------------------------ S6 wake-up set (Dan B2): param 0x7F00 sub 5
+print('--- S6 wake-up set')
+WI = ps.TEMP_INDEX; WS = ps.WAKE_SUB
+CANUSB = {8: 'PB8', 11: 'PA11', 12: 'PA12'}             # CAN RX + USB D- / D+, armed on every sleep (CAN wake on)
+def wake_board(model, name):
+    bus = ps.Bus(); t = ps.Tool(bus); b = ps.Board(model, name, SO); bus.add(t, b); bus.run_for(1200)
+    return bus, t, b, model['base'][1]
+def asleep_lines(model, name, writes):
+    """Fresh board, the given param writes (each must be answered), sleep request: the EXTI lines armed in sleep."""
+    bus, t, b, base = wake_board(model, name)
+    ok = all(t.write(base, i, s_, v) is not None for i, s_, v in writes)
+    t.sleep(base); bus.run_for(300)
+    return ok and b.flags()['asleep'], ps.exti_lines(b), b.counters()['exti_clashes']
+def refused(t, base, mask):
+    """Single Write of a wake mask: (write reply?, warning frames ('R', src Config) as (data0, data1, data2), read-back)."""
+    r = t.write(base, WI, WS, mask)
+    w = [struct.unpack('<HHH', f.data[2:8]) for f in t.rxlog if f.id == base and f.data[0] == ord('R') and f.data[1] == ps.SRC_CONFIG]
+    return r is not None, w, t.read(base, WI, WS)
+A_IN = {i: p for i, (p, _) in enumerate(ps.BOARD_A['inputs'])}; B_IN = {i: p for i, (p, _) in enumerate(ps.BOARD_B['inputs'])}
+def lines_of(pins): return {int(p[2:]): p for p in pins}
+# one input wakes: A IN_2 (PC9); the old build-time set A 0x73 / B 0x0FF; A IN_3 (PC10) takes EXTI 10 when IN_1 is not set
+r = {k: asleep_lines(m, n_, [(WI, WS, v)]) for k, (m, n_, v) in {'A 0x002': (ps.BOARD_A, 'A1', 0x002), 'A 0x073': (ps.BOARD_A, 'A1', 0x073),
+     'A 0x004': (ps.BOARD_A, 'A1', 0x004), 'B 0x0FF': (ps.BOARD_B, 'B', 0x0FF), 'B 0x1FE': (ps.BOARD_B, 'B', 0x1FE)}.items()}
+want = {'A 0x002': lines_of([A_IN[1]]), 'A 0x073': lines_of([A_IN[i] for i in (0, 1, 4, 5, 6)]), 'A 0x004': lines_of([A_IN[2]]),
+        'B 0x0FF': lines_of([B_IN[i] for i in range(8)]), 'B 0x1FE': lines_of([B_IN[i] for i in range(1, 9)])}
+check('wake mask set over CAN: exactly its inputs are armed in sleep, plus CAN RX and USB, no EXTI clash (A IN_2; A IN_1,2,5,6,7; A IN_3 alone on EXTI 10; B IN_1-8; B IN_2-9 with B_IN9 on EXTI 10)',
+      all(v[0] and v[1] == want[k] | CANUSB and v[2] == 0 for k, v in r.items()), r)
+info['wake_lines'] = {k: v[1] for k, v in r.items()}
+# Shared lines and the USB line are refused: no write reply (upstream: an out-of-range Write gets none), one warning
+# frame (refused mask, its bad inputs, the mask kept), the mask stays as it was, and sleep arms the old set
+bus, t, b, base = wake_board(ps.BOARD_A, 'A1'); t.write(base, WI, WS, 0x002)
+ra = {m: refused(t, base, m) for m in (0x005, 0x008, 0x00D)}
+t.sleep(base); bus.run_for(300); la = ps.exti_lines(b)
+check('board A: IN_1 + IN_3 (0x005, both on EXTI 10) and IN_4 (0x008, EXTI 11 = USB D-) refused: no Write reply, one CAN warning (R, src Config: refused mask, bad inputs, mask kept 0x002), mask stays 0x002',
+      ra == {0x005: (False, [(0x005, 0x005, 0x002)], 0x002), 0x008: (False, [(0x008, 0x008, 0x002)], 0x002), 0x00D: (False, [(0x00D, 0x00D, 0x002)], 0x002)}, ra)
+check('board A: after the refused writes, sleep arms the kept mask (IN_2 / PC9) only', b.flags()['asleep'] and la == lines_of([A_IN[1]]) | CANUSB, la)
+bus, t, b, base = wake_board(ps.BOARD_B, 'B'); t.write(base, WI, WS, 0x0FF)
+rb = {m: refused(t, base, m) for m in (0x101, 0x200, 0x3FF)}
+check('board B: IN_1 + B_IN9 (0x101, EXTI 10), B_IN10 (0x200, EXTI 11 = USB D-) and all ten (0x3FF; bad = IN_1, B_IN9, B_IN10) refused the same way, mask stays 0x0FF',
+      rb == {0x101: (False, [(0x101, 0x101, 0x0FF)], 0x0FF), 0x200: (False, [(0x200, 0x200, 0x0FF)], 0x0FF), 0x3FF: (False, [(0x3FF, 0x301, 0x0FF)], 0x0FF)}, rb)
+ro = refused(t, base, 0x400)
+check('board B: a bit above the last input (0x400, input 11) is out of range: no reply, no warning (stock range check), mask stays 0x0FF', ro == (False, [], 0x0FF), ro)
+# full WriteAll (what dingoConfig does on "write all"): a refused mask gets the stock WriteAllOutOfRange reply
+t.rxlog.clear(); t.send(base + 1, bytes([ps.CMD['WriteAllVal'], WI & 255, WI >> 8, WS]) + struct.pack('<I', 0x101)); bus.run_for(50)
+oor = [(f.data[1] | f.data[2] << 8, f.data[3], struct.unpack('<I', f.data[4:8])[0]) for f in t.rxlog if f.id == base and f.data[0] == ps.WRITE_ALL_OUT_OF_RANGE]
+wn = [f for f in t.rxlog if f.id == base and f.data[0] == ord('R') and f.data[1] == ps.SRC_CONFIG]
+check('board B: WriteAllVal with a refused mask (0x101) -> stock WriteAllOutOfRange reply (0x7F00 / 5 / 0x101) plus the warning frame',
+      oor == [(WI, WS, 0x101)] and len(wn) == 1, (oor, len(wn)))
+# DisableDigInWake (0x0000 sub 4, upstream) wins over the mask
+d = asleep_lines(ps.BOARD_A, 'A1', [(WI, WS, 0x073), (0x0000, 4, 1)])
+check('DisableDigInWake on (0x0000 sub 4) with mask 0x73: no input armed, CAN and USB still are', d[0] and d[1] == CANUSB, d)
+# digital-input PWM measurement uses the same EXTI line: sleep stops it first, so it neither blocks nor steals a wake line
+bus, t, b, base = wake_board(ps.BOARD_A, 'A1')
+for i_ in (1, 2):                                           # IN_2 (PC9) and IN_3 (PC10) measure PWM
+    t.write(base, 0x1200 + i_, 5, 1); t.write(base, 0x1200 + i_, 0, 1)
+run_pwm = ps.exti_lines(b); t.write(base, WI, WS, 0x003)    # IN_1 (PA10, same EXTI 10 as IN_3) + IN_2 may wake
+t.sleep(base); bus.run_for(300); slp = (ps.exti_lines(b), b.counters()['exti_clashes'])
+check('PWM inputs: IN_2 / IN_3 measuring PWM (EXTI 9 / 10 on port C while awake), mask IN_1 + IN_2: sleep arms PA10 and PC9 (IN_3 PWM stopped first), no clash',
+      run_pwm == {9: 'PC9', 10: 'PC10'} and slp == (lines_of([A_IN[0], A_IN[1]]) | CANUSB, 0), (run_pwm, slp))
+# saved with the rest of the config, kept after a restart
+bus, t, b, base = wake_board(ps.BOARD_A, 'A1'); t.write(base, WI, WS, 0x042); sv = t.burn(base)
+bus2 = ps.Bus(); t2 = ps.Tool(bus2); b2_ = ps.Board(ps.BOARD_A, 'A1', SO, fram=b.fram()); bus2.add(t2, b2_); bus2.run_for(1200)
+kept = t2.read(base, WI, WS)
+check('wake mask (0x042, IN_2 + IN_7) saved to FRAM and read back after a restart', sv and kept == 0x042, (sv, kept))
+
 bad = [r for r in res if not r[1]]
-print(f'\nS1-S5: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
+print(f'\nS1-S6: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
 json.dump(dict(checks=res, info=info, matrix=matrix), open('/tmp/s1_results.json', 'w'), indent=1)
