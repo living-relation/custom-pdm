@@ -15,6 +15,8 @@
 #include "flasher.h"
 #include "counter.h"
 #include "condition.h"
+#include "timer.h"
+#include "math_block.h"
 #include "mailbox.h"
 #include "msg.h"
 #include "error.h"
@@ -43,6 +45,12 @@ VirtualInput virtIn[NUM_VIRT_INPUTS];
 Flasher flasher[NUM_FLASHERS];
 Counter counter[NUM_COUNTERS];
 Condition condition[NUM_CONDITIONS];
+#if NUM_TIMERS > 0
+Timer timer[NUM_TIMERS];
+#endif
+#if NUM_MATH > 0
+MathBlock mathBlock[NUM_MATH];
+#endif
 #if HAS_WIPERS > 0
 Wiper wiper;
 #endif
@@ -53,18 +61,20 @@ Starter starter;
 Keypad keypad[NUM_KEYPADS];
 #endif
 
-DeviceState eState = DeviceState::Run;
+volatile DeviceState eState = DeviceState::Run;
 float fState; //For var map
 FatalErrorType eError = FatalErrorType::NoError;
-DeviceConfig stConfig;
-DeviceConfig stConfigTemp; // Used for staging new config before applying
+#ifndef CCM_BSS
+#define CCM_BSS
+#endif
+DeviceConfig stConfig CCM_BSS;
+DeviceConfig stConfigTemp CCM_BSS; // Used for staging new config before applying
 float *pVarMap[VAR_MAP_SIZE];
 
 float fBattVolt;
 float fTempSensor;
-bool bDeviceOverTemp;
-bool bDeviceCriticalTemp;
-bool bSleepRequest;
+volatile bool bDeviceOverTemp;
+volatile bool bDeviceCriticalTemp;
 bool bBootloaderRequest;
 
 void InitVarMap();
@@ -79,8 +89,10 @@ struct DeviceThread : chibios_rt::BaseStaticThread<DEVICE_THREAD_STACK>
 
         while (true)
         {
+            LockConfig();
             CyclicUpdate();
             States();
+            UnlockConfig();
             chThdSleepMilliseconds(2);
         }
     }
@@ -99,13 +111,17 @@ struct SlowThread : chibios_rt::BaseStaticThread<256>
             //=================================================================
             // Perform tasks that don't need to be done every cycle here
             //=================================================================
+            #if HAS_BATT_VOLT_SENSE
             fBattVolt = GetBattVolt();
+            #endif
 
             // Temp sensor is I2C, takes a while to read
             // Don't want to slow down main thread
+            #if HAS_EXT_TEMP_SENSOR
             fTempSensor = tempSensor.GetTemp();
             bDeviceOverTemp = tempSensor.OverTempLimit();
             bDeviceCriticalTemp = tempSensor.CritTempLimit();
+            #endif
 
             // palToggleLine(LINE_E2);
             chThdSleepMilliseconds(250);
@@ -124,8 +140,13 @@ void InitDevice()
 
     InitVarMap(); // Set val pointers
 
-    #if HAS_I2C
-    if (!i2cStart(&I2CD1, &i2cConfig) == HAL_RET_SUCCESS)
+    #if HAS_I2C1
+    if (i2cStart(&I2CD1, &i2cConfig) != HAL_RET_SUCCESS)
+        Error::SetFatalError(FatalErrorType::ErrI2C, MsgSrc::Init);
+    #endif
+
+    #if HAS_I2C2
+    if (i2cStart(&I2CD2, &i2cConfig) != HAL_RET_SUCCESS)
         Error::SetFatalError(FatalErrorType::ErrI2C, MsgSrc::Init);
     #endif
 
@@ -133,14 +154,16 @@ void InitDevice()
 
     ApplyAllConfig();
 
-    if(!InitAdc() == HAL_RET_SUCCESS)
+    InitParamThread();
+
+    if (InitAdc() != HAL_RET_SUCCESS)
         Error::SetFatalError(FatalErrorType::ErrADC, MsgSrc::Init);
         
-    if(!InitCan(&stConfig.stDevice) == HAL_RET_SUCCESS) // Starts CAN threads
+    if (InitCan(&stConfig.stDevice) != HAL_RET_SUCCESS) // Starts CAN threads
         Error::SetFatalError(FatalErrorType::ErrCAN, MsgSrc::Init);
 
     #if HAS_USB
-    if (!InitUsb() == HAL_RET_SUCCESS) // Starts USB threads
+    if (InitUsb() != HAL_RET_SUCCESS) // Starts USB threads
         Error::SetFatalError(FatalErrorType::ErrUSB, MsgSrc::Init);
     #endif
 
@@ -174,7 +197,7 @@ void States()
         #if NUM_OUTPUTS > 0
         //Turn off all outputs
         for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
-            pf[i].Update(false);
+            pf[i].ForceOff();
         #endif
 
         Error::SetFatalError(FatalErrorType::ErrTemp, MsgSrc::State_Overtemp);
@@ -230,8 +253,6 @@ void States()
 
     if (eState == DeviceState::Sleep)
     {
-        bSleepRequest = false;
-        palSetLine(LINE_CAN_STANDBY); // CAN disabled
         EnterSleep();
     }
     #endif
@@ -243,7 +264,7 @@ void States()
         #if NUM_OUTPUTS > 0
         //Turn off all outputs
         for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
-            pf[i].Update(false);
+            pf[i].ForceOff();
         #endif
 
         Error::SetFatalError(eError, MsgSrc::State_Error);
@@ -257,48 +278,25 @@ void States()
 void CyclicUpdate()
 {
     CANRxFrame rxMsg;
+    uint8_t nBus;
 
-    while (!RxFramesEmpty())
+    while (FetchRxFrame(&rxMsg, &nBus) == MSG_OK)
     {
-        msg_t res = FetchRxFrame(&rxMsg);
-        if (res == MSG_OK)
-        {
-            for (uint8_t i = 0; i < NUM_CAN_INPUTS; i++)
-                canIn[i].CheckMsg(rxMsg);
+        for (uint8_t i = 0; i < NUM_CAN_INPUTS; i++)
+            canIn[i].CheckMsg(rxMsg, nBus);
 
-            #if NUM_KEYPADS > 0
-            for (uint8_t i = 0; i < NUM_KEYPADS; i++)
-                keypad[i].CheckMsg(rxMsg);
-            #endif
-
-            CheckRequestMsgs(&rxMsg);
-            
-            uint16_t nIndex = 0;
-            MsgCmd cmd = ProcessParamMsg(&rxMsg, &nIndex);
-            if (cmd == MsgCmd::WriteAllComplete)
-            {
-                ApplyAllConfig();
-            }
-            if (cmd == MsgCmd::Write)
-            {
-                ApplyConfig(nIndex & 0xFF00); // Mask instance, only base index is needed
-            }
-        }
+        #if NUM_KEYPADS > 0
+        for (uint8_t i = 0; i < NUM_KEYPADS; i++)
+            keypad[i].CheckMsg(rxMsg, nBus);
+        #endif
     }
 
-    #if NUM_OUTPUTS > 0
-    for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
-        pf[i].Update(starter.fVal[i]);
-    #endif
-
+    //=========================================================================
+    // Inputs, then logic, then outputs
+    //=========================================================================
     #if NUM_DIG_INPUTS > 0
     for (uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
         digIn[i].Update();
-    #endif
-
-    #if NUM_DIG_OUTPUTS > 0
-    for (uint8_t i = 0; i < NUM_DIG_OUTPUTS; i++)
-        digOut[i].Update();
     #endif
 
     #if NUM_ANALOG_INPUTS > 0
@@ -309,10 +307,6 @@ void CyclicUpdate()
     #if NUM_CAN_INPUTS > 0
     for (uint8_t i = 0; i < NUM_CAN_INPUTS; i++)
         canIn[i].CheckTimeout();
-    #endif
-
-    #if NUM_CAN_OUTPUTS > 0
-    canOutputs.Update();
     #endif
 
     #if NUM_VIRT_INPUTS > 0
@@ -338,14 +332,63 @@ void CyclicUpdate()
         counter[i].Update();
     #endif
 
+    // Before the conditions, so a condition can compare a math result
+    #if NUM_MATH > 0
+    for (uint8_t i = 0; i < NUM_MATH; i++)
+        mathBlock[i].Update();
+    #endif
+
     #if NUM_CONDITIONS > 0    
     for (uint8_t i = 0; i < NUM_CONDITIONS; i++)
         condition[i].Update();
     #endif
 
+    // After the conditions, so a timer can be driven by one
+    #if NUM_TIMERS > 0
+    for (uint8_t i = 0; i < NUM_TIMERS; i++)
+        timer[i].Update();
+    #endif
+
     #if NUM_KEYPADS > 0
     for (uint8_t i = 0; i < NUM_KEYPADS; i++)
         keypad[i].Update();
+    #endif
+
+    //=========================================================================
+    // Outputs last, so they act on this cycle's inputs and logic
+    //=========================================================================
+    #if NUM_OUTPUTS > 0
+    // Two passes so dual-channel DSEL settles once per pass instead of once per output
+    for (uint8_t nPass = 0; nPass < 2; nPass++)
+    {
+        bool bDual = false;
+        for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        {
+            if (pf[i].GetDselPass() == nPass && pf[i].IsDualChannel())
+            {
+                pf[i].SelectDsel();
+                bDual = true;
+            }
+        }
+
+        if (bDual)
+            chThdSleepMicroseconds(DSEL_SETTLE_US);
+
+        for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        {
+            if (pf[i].GetDselPass() == nPass)
+                pf[i].Update(starter.fVal[i]);
+        }
+    }
+    #endif
+
+    #if NUM_DIG_OUTPUTS > 0
+    for (uint8_t i = 0; i < NUM_DIG_OUTPUTS; i++)
+        digOut[i].Update();
+    #endif
+
+    #if NUM_CAN_OUTPUTS > 0
+    canOutputs.Update();
     #endif
 
     #if HAS_NEOPIXELS
@@ -468,6 +511,25 @@ void InitVarMap()
         }
     }
     #endif
+
+    #if NUM_TIMERS > 0
+    for (uint8_t i = 0; i < NUM_TIMERS; i++)
+    {
+        pVarMap[index++] = &timer[i].fVal;
+        pVarMap[index++] = &timer[i].fRunning;
+    }
+    #endif
+
+    #if NUM_MATH > 0
+    for (uint8_t i = 0; i < NUM_MATH; i++)
+        pVarMap[index++] = &mathBlock[i].fVal;
+    #endif
+
+    for (uint8_t i = 0; i < NUM_DIG_INPUTS; i++)
+    {
+        pVarMap[index++] = &digIn[i].fDuty;
+        pVarMap[index++] = &digIn[i].fFreq;
+    }
 
     //VarMap size must match the expected size
     if (index != VAR_MAP_SIZE)

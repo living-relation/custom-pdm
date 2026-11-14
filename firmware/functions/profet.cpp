@@ -17,7 +17,7 @@ void Profet::Update(bool bOutEnabled)
         return;
     }
 
-    HandleDsel();
+    // DSEL for dual-channel devices is set by the caller, see SelectDsel()
 
     // Follower device — mirror primary
     if (pPrimary != nullptr)
@@ -48,7 +48,7 @@ void Profet::Update(bool bOutEnabled)
     if (pFollower != nullptr && pFollower->eState == ProfetState::Fault)
         eState = ProfetState::Fault;
 
-    bInRushActive = (pConfig->nInrushTime + nInRushOnTime) > SYS_TIME;
+    bInRushActive = (SYS_TIME - nInRushOnTime) < pConfig->nInrushTime;
 
     switch (eState)
     {
@@ -102,30 +102,24 @@ void Profet::Update(bool bOutEnabled)
 
         palClearLine(m_in);
 
-        // No reset, straight to fault
-        if (pConfig->eResetMode == ProfetResetMode::None)
+        // No reset, or overcurrent count exceeded - latch fault
+        // Checked first so nothing below can override it
+        if ((pConfig->eResetMode == ProfetResetMode::None) ||
+            (pConfig->eResetMode == ProfetResetMode::Count && nOcCount >= pConfig->nResetLimit))
         {
             eState = ProfetState::Fault;
         }
-
-        // Overcurrent count exceeded
-        if (nOcCount >= pConfig->nResetLimit && pConfig->eResetMode == ProfetResetMode::Count)
+        // Check for turn off
+        else if (eReqState == ProfetState::Off)
         {
-            eState = ProfetState::Fault;
+            eState = ProfetState::Off;
         }
-
         // Overcurrent reset time exceeded
         // ResetEndless or ResetCount
-        if ((pConfig->nResetTime + nOcTriggerTime) < SYS_TIME)
+        else if ((SYS_TIME - nOcTriggerTime) > pConfig->nResetTime)
         {
             nInRushOnTime = SYS_TIME;
             eState = ProfetState::On;
-        }
-
-        // Check for turn off
-        if (eReqState == ProfetState::Off)
-        {
-            eState = ProfetState::Off;
         }
         break;
 
@@ -199,20 +193,14 @@ void Profet::FollowerUpdate()
     fFault = 0;
 }
 
-void Profet::HandleDsel()
+void Profet::SelectDsel()
 {
-    // Select the appropriate IS channel on dual-channel devices
-    // DSEL changeover takes max ~60us
+    // Select the IS channel on dual-channel devices
+    // Caller waits DSEL_SETTLE_US before measuring, once for all outputs in the pass
     if (m_model == ProfetModel::BTS7008_2EPA_CH1)
-    {
         palClearLine(m_dsel);
-        chThdSleepMicroseconds(60);
-    }
     else if (m_model == ProfetModel::BTS7008_2EPA_CH2)
-    {
         palSetLine(m_dsel);
-        chThdSleepMicroseconds(60);
-    }
 }
 
 void Profet::MeasureCurrent()

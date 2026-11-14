@@ -1,4 +1,5 @@
 #include "blink_keypad.h"
+#include "can_frame.h"
 #include "blink_button.h"
 #include "keypad.h"
 
@@ -30,15 +31,18 @@ uint64_t BuildLedMsg(Keypad* kp, bool bBlink)
         uint8_t nIndex = 0;
         for (uint8_t i = 0; i < kp->nNumButtons; i++)
         {
-            nMsg |= (ColorToRed(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nIndex++);
+            if (nIndex >= 64) break;
+            nMsg |= (static_cast<uint64_t>(ColorToRed(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nIndex++);
         }
         for (uint8_t i = 0; i < kp->nNumButtons; i++)
         {
-            nMsg |= (ColorToGreen(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nIndex++);
+            if (nIndex >= 64) break;
+            nMsg |= (static_cast<uint64_t>(ColorToGreen(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nIndex++);
         }
         for (uint8_t i = 0; i < kp->nNumButtons; i++)
         {
-            nMsg |= (ColorToBlue(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nIndex++);
+            if (nIndex >= 64) break;
+            nMsg |= (static_cast<uint64_t>(ColorToBlue(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nIndex++);
         }
 
         return nMsg;
@@ -55,21 +59,24 @@ uint64_t BuildLedMsg(Keypad* kp, bool bBlink)
         nByteIndex = i / 8;
         nBitIndex = i % 8;
         nBitPosition = (nByteIndex * 8) + nBitIndex;
-        nMsg |= (ColorToRed(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nBitPosition);
+        if (nBitPosition >= 64) break;
+        nMsg |= (static_cast<uint64_t>(ColorToRed(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nBitPosition);
     }
 
     for (uint8_t i = 0; i < kp->nNumButtons; i++) {
         nByteIndex = nBytesPerColor + (i / 8);
         nBitIndex = i % 8;
         nBitPosition = (nByteIndex * 8) + nBitIndex;
-        nMsg |= (ColorToGreen(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nBitPosition);
+        if (nBitPosition >= 64) break;
+        nMsg |= (static_cast<uint64_t>(ColorToGreen(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nBitPosition);
     }
 
     for (uint8_t i = 0; i < kp->nNumButtons; i++) {
         nByteIndex = 2 * nBytesPerColor + (i / 8);
         nBitIndex = i % 8;
         nBitPosition = (nByteIndex * 8) + nBitIndex;
-        nMsg |= (ColorToBlue(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor) << nBitPosition);
+        if (nBitPosition >= 64) break;
+        nMsg |= (static_cast<uint64_t>(ColorToBlue(bBlink ? kp->button[i].eLedBlinkColor : kp->button[i].eLedOnColor)) << nBitPosition);
     }
 
     return nMsg;
@@ -78,10 +85,9 @@ uint64_t BuildLedMsg(Keypad* kp, bool bBlink)
 CANTxFrame LedOnMsg(Keypad* kp)
 {
     CANTxFrame msg;
-    msg.SID = kp->pConfig->nNodeId + 0x200;
-    msg.IDE = CAN_IDE_STD;
+    CanSetId(msg, kp->pConfig->nNodeId + 0x200);
     msg.DLC = 8;
-    msg.data64[0] = BuildLedMsg(kp, false);
+    CanSetData64(msg, BuildLedMsg(kp, false));
 
     return msg;
 }
@@ -89,10 +95,9 @@ CANTxFrame LedOnMsg(Keypad* kp)
 CANTxFrame LedBlinkMsg(Keypad* kp)
 {
     CANTxFrame msg;
-    msg.SID = kp->pConfig->nNodeId + 0x300;
-    msg.IDE = CAN_IDE_STD;
+    CanSetId(msg, kp->pConfig->nNodeId + 0x300);
     msg.DLC = 8;
-    msg.data64[0] = BuildLedMsg(kp, true);
+    CanSetData64(msg, BuildLedMsg(kp, true));
 
     return msg;
 }
@@ -100,10 +105,9 @@ CANTxFrame LedBlinkMsg(Keypad* kp)
 CANTxFrame LedBrightnessMsg(Keypad* kp)
 {
     CANTxFrame msg;
-    msg.SID = kp->pConfig->nNodeId + 0x400;
-    msg.IDE = CAN_IDE_STD;
+    CanSetId(msg, kp->pConfig->nNodeId + 0x400);
     msg.DLC = 8;
-    msg.data8[0] = *kp->pDimmingInput ? kp->pConfig->nDimButtonBrightness : kp->pConfig->nButtonBrightness;
+    msg.data8[0] = *const_cast<volatile float*>(kp->pDimmingInput) ? kp->pConfig->nDimButtonBrightness : kp->pConfig->nButtonBrightness;
     msg.data8[1] = 0x00;
     msg.data8[2] = 0x00;
     msg.data8[3] = 0x00;
@@ -118,10 +122,9 @@ CANTxFrame LedBrightnessMsg(Keypad* kp)
 CANTxFrame BacklightMsg(Keypad* kp)
 {
     CANTxFrame msg;
-    msg.SID = kp->pConfig->nNodeId + 0x500;
-    msg.IDE = CAN_IDE_STD;
+    CanSetId(msg, kp->pConfig->nNodeId + 0x500);
     msg.DLC = 8;
-    msg.data8[0] = *kp->pDimmingInput ? kp->pConfig->nDimBacklightBrightness : kp->pConfig->nBacklightBrightness;
+    msg.data8[0] = *const_cast<volatile float*>(kp->pDimmingInput) ? kp->pConfig->nDimBacklightBrightness : kp->pConfig->nBacklightBrightness;
     msg.data8[1] = kp->pConfig->nBacklightColor;
     msg.data8[2] = 0x00;
     msg.data8[3] = 0x00;
@@ -172,6 +175,9 @@ void SetModelBlinkMarine(Keypad* kp)
             kp->nNumDials = 2;
             kp->numAnalogInputs = 4;
             break;
+        case KeypadModel::Blink1Key:
+            kp->nNumButtons = 1;
+            break;
         default:
             break;
     }
@@ -190,7 +196,7 @@ void SetModelBlinkMarine(Keypad* kp)
 bool CheckMsgBlinkMarine(Keypad* kp, CANRxFrame frame)
 {
 
-    switch (frame.SID - kp->pConfig->nNodeId)
+    switch (CanId(frame) - kp->pConfig->nNodeId)
     {
         case (uint16_t)BlinkMarineMessageId::ButtonState:
             for(uint8_t i = 0; i < kp->nNumButtons; i++)
@@ -200,11 +206,11 @@ bool CheckMsgBlinkMarine(Keypad* kp, CANRxFrame frame)
             break;
     
         case (uint16_t)BlinkMarineMessageId::DialState1:
-            kp->dial[0].CheckMsg(frame.data64[0]);
+            kp->dial[0].CheckMsg(CanData64(frame));
             break;
 
         case (uint16_t)BlinkMarineMessageId::DialState2:
-            kp->dial[1].CheckMsg(frame.data64[0]);
+            kp->dial[1].CheckMsg(CanData64(frame));
             break;
 
         case (uint16_t)BlinkMarineMessageId::AnalogInput:
@@ -244,8 +250,7 @@ CANTxFrame GetTxMsgBlinkMarine(Keypad* kp, uint8_t nIndex)
 CANTxFrame GetStartMsgBlinkMarine(Keypad* kp)
 {
     CANTxFrame msg;
-    msg.SID = 0x00;
-    msg.IDE = CAN_IDE_STD;
+    CanSetId(msg, 0x00);
     msg.DLC = 8;
     msg.data8[0] = 0x01;
     msg.data8[1] = kp->pConfig->nNodeId;

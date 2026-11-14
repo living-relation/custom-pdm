@@ -10,6 +10,8 @@
 #include "can_output.h"
 #include "counter.h"
 #include "condition.h"
+#include "timer.h"
+#include "math_block.h"
 #if NUM_OUTPUTS > 0
 #include "profet.h"
 #endif
@@ -32,17 +34,21 @@
 #include "analog_input.h"
 #endif  
 
-#define CONFIG_VERSION 0x0006 //Increment when config structure changes
+#define CONFIG_VERSION 0x000A //Increment when config structure changes
 
 struct Config_Device{
   uint16_t nConfigVersion;
   uint16_t nBaseId;
-  CanBitrate eCanSpeed;
+  CanBitrate eCanSpeed[2]; // per bus, [1] unused on single bus boards
   bool bCanFilterEnabled;
 
   //Not used by all devices
   bool bSleepEnabled;
+  bool bDisableDigInWake;
+  bool bDisableCanWake;
   bool bConnectUsbToCan;
+  uint16_t nMuteCanTxInput;
+  uint16_t nForceSleepInput;
 };
 
 struct DeviceConfig{
@@ -53,6 +59,12 @@ struct DeviceConfig{
   Config_CanOutput stCanOutput[NUM_CAN_OUTPUTS];
   Config_Counter stCounter[NUM_COUNTERS];
   Config_Condition stCondition[NUM_CONDITIONS];
+  #if NUM_TIMERS > 0
+  Config_Timer stTimer[NUM_TIMERS];
+  #endif
+  #if NUM_MATH > 0
+  Config_Math stMath[NUM_MATH];
+  #endif
 
   #if NUM_DIG_INPUTS > 0
   Config_DigInput stDigInput[NUM_DIG_INPUTS];
