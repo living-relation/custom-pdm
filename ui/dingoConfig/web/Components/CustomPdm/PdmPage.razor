@@ -1,0 +1,173 @@
+@page "/pdm"
+@using application.Services
+@using domain.CustomPdm
+@using domain.Enums
+@inject DeviceManager DeviceManager
+@implements IDisposable
+
+@* custom-pdm route B, phase B1 (docs/ui-route-b-plan.md): live view of the three boards as one PDM. Read-only. *@
+<PageTitle>PDM</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (!_view.Any)
+    {
+        <MudAlert Severity="Severity.Info">
+            No custom-pdm boards in the project. Add the devices "custom-pdm A" (twice) and "custom-pdm B" on the Devices page.
+        </MudAlert>
+    }
+    else
+    {
+        @foreach (var problem in _view.Problems)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@problem</MudAlert>
+        }
+
+        <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
+        <MudGrid Class="mb-4">
+            <MudItem>
+                <MudCard Style="height: 100%">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h6">@_view.TotalCurrent.ToString("F1") A</MudText>
+                        <MudText Typo="Typo.body2">PDM Total Current</MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+            @foreach (var board in _view.Boards)
+            {
+                var dev = board.Device;
+                <MudItem>
+                    <MudCard Style="height: 100%">
+                        <MudCardContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudText Typo="Typo.h6">@board.Role</MudText>
+                                <MudLink Href="@($"device/{dev.Guid}")" Typo="Typo.body2">@dev.Name (0x@(dev.BaseId.ToString("X")))</MudLink>
+                                <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small"
+                                         Color="@(dev.Connected ? Color.Success : Color.Default)">
+                                    @(dev.Connected ? "Connected" : "Offline")
+                                </MudChip>
+                                @if (!dev.FullReadDone)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">Not read yet: settings are PC defaults</MudChip>
+                                }
+                            </MudStack>
+                            <MudText Typo="Typo.body2">
+                                @dev.BatteryVoltage.ToString("F1") V &nbsp; @dev.TotalCurrent.ToString("F1") A &nbsp;
+                                board @dev.BoardTempC.ToString("F1") &deg;C &nbsp; chip @(dev.CustomPdm?.DieTempC.ToString("F1")) &deg;C
+                            </MudText>
+                            <MudStack Row="true" Spacing="1" Class="mt-1">
+                                <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small"
+                                         Color="@(dev.CustomPdm?.OverWarn == true ? Color.Warning : Color.Default)">Over Warn</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small"
+                                         Color="@(dev.CustomPdm?.CriticalSoon == true ? Color.Warning : Color.Default)">Critical Soon</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small"
+                                         Color="@(dev.CustomPdm?.Critical == true ? Color.Error : Color.Default)">Critical</MudChip>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudText Typo="Typo.h6" Class="mb-2">Outputs (@_view.Outputs.Count)</MudText>
+        <MudDataGrid Items="@_view.Outputs" Dense="true" Hover="true" ReadOnly="true" SortMode="SortMode.Single"
+                     FixedHeader="true" Height="calc(55vh)" Class="mb-4">
+            <Columns>
+                <PropertyColumn Property="x => x.Number" Title="#" />
+                <PropertyColumn Property="x => x.Board" Title="Board" />
+                <PropertyColumn Property="x => x.BoardOutput" Title="Board Out" />
+                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" />
+                <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" />
+                <TemplateColumn Title="Name" SortBy="@(x => x.Output.Name)">
+                    <CellTemplate>@context.Item.Output.Name</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Enabled" SortBy="@(x => x.Output.Enabled)">
+                    <CellTemplate>@(context.Item.Output.Enabled ? "Yes" : "No")</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="State" SortBy="@(x => (int)x.Output.State)">
+                    <CellTemplate>
+                        <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 50px;"
+                                 Color="@GetOutputColor(context.Item.Output.State)">
+                            @GetOutputStateText(context.Item.Output.State)
+                        </MudChip>
+                    </CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Current (A)" SortBy="@(x => x.Output.Current)">
+                    <CellTemplate>@context.Item.Output.Current.ToString("F1")</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Limit (A)" SortBy="@(x => x.Output.CurrentLimit)">
+                    <CellTemplate>@context.Item.Output.CurrentLimit.ToString("F1")</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Reset Count" SortBy="@(x => x.Output.ResetCount)">
+                    <CellTemplate>@context.Item.Output.ResetCount</CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+
+        <MudText Typo="Typo.h6" Class="mb-2">Inputs (@_view.Inputs.Count)</MudText>
+        <MudDataGrid Items="@_view.Inputs" Dense="true" Hover="true" ReadOnly="true" SortMode="SortMode.Single"
+                     FixedHeader="true" Height="calc(55vh)" Class="mb-4">
+            <Columns>
+                <PropertyColumn Property="x => x.Number" Title="#" />
+                <PropertyColumn Property="x => x.Board" Title="Board" />
+                <PropertyColumn Property="x => x.Kind" Title="Kind" />
+                <PropertyColumn Property="x => x.BoardInput" Title="Board In" />
+                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" />
+                <PropertyColumn Property="x => x.Name" Title="Name" />
+                <TemplateColumn Title="Enabled" SortBy="@(x => x.Enabled)">
+                    <CellTemplate>@(context.Item.Enabled ? "Yes" : "No")</CellTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="State / Value">
+                    <CellTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 50px;"
+                                     Color="@(di.State ? Color.Success : Color.Default)">@(di.State ? "ON" : "OFF")</MudChip>
+                        }
+                        else if (context.Item.Analog is { } an)
+                        {
+                            @($"{an.Millivolts:F0} mV")
+                        }
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    }
+</MudContainer>
+
+@code {
+    private PdmView _view = new();
+    private Timer? _refreshTimer;
+
+    protected override void OnInitialized()
+    {
+        _view = PdmView.Build(DeviceManager.GetDevicesByType<domain.Devices.FwDevice>());
+
+        // Same pattern as Device.razor, at 10 Hz
+        _refreshTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                _view = PdmView.Build(DeviceManager.GetDevicesByType<domain.Devices.FwDevice>());
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+    }
+
+    private static Color GetOutputColor(OutState state) => state switch
+    {
+        OutState.On => Color.Success,
+        OutState.Overcurrent => Color.Warning,
+        OutState.Fault => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string GetOutputStateText(OutState state) => state switch
+    {
+        OutState.On => "ON",
+        OutState.Overcurrent => "OVERCURRENT",
+        OutState.Fault => "FAULT",
+        _ => "OFF"
+    };
+
+    public void Dispose() => _refreshTimer?.Dispose();
+}
