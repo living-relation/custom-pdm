@@ -20,7 +20,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-14)
-1. Route B (K1a): one combined page (24 outputs in one grid, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); B1 done (Status 2026-11-15); next B2 (k2b), outputs as one list 1-24 with board and connector-pin columns (k3a); B4 cross-board picking later (k4a). Route A done (PR #65) and checked in a browser (Status 2026-11-15).
+1. First (d1a): repo-cleanup of this file's Goal now / Next list (Goal does not name the PC tool work; Next 4 is finished; Next 5 repeats `ui/README.md`). Then Route B (K1a): one combined page (24 outputs in one grid, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); B1 done (Status 2026-11-15); next B2 (k2b), outputs as one list 1-24 with board and connector-pin columns (k3a); B4 cross-board picking later (k4a). Route A done (PR #65) and checked in a browser (Status 2026-11-15).
 2. Firmware thermal limits: set real warn / critical values after bench measurements (r6c) for the fitted MCU (RET7, or the RET6 alternate, s9a), so every part stays inside its rating: board parts at 85 C (TSR 1-2450, crystal, X5R caps, LEDs, USB-C, BOOT switch), RET6 TJ 105 C, FRAM 105 C (``docs/parts-audit.md`` section 11); check the input board (under the lid, not in the heat model) with a thermocouple too. Done: board power (PR #54), thermal protection (PR #55), sleep fix + fan exemption (PR #56).
 3. Digi-Key leftovers: KEMET C0805C473K5RAC7800 47 nF and UNI-ROYAL 0805W8F1200T5E 120R have no Digi-Key listing (PR #57).
 4. (done 2026-11-14, PR #64: B2 wake firmware)
@@ -30,7 +30,7 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
 - None open (2026-11-15). B2 design choices, if any, come from the B2 job.
-- Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a (`DECISIONS.md`).
+- Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
 - Answered 2026-11-14: s11 (c, then steady flags; `DECISIONS.md` 2026-11-14).
 - Answered: enclosure A-H (e1-e7 and the v2 / v2b follow-ups, `DECISIONS.md` 2026-11-12/13); R1-R4, B1-B4, C1-C7, L1 and the board / wiring questions of 2026-11-12 (`DECISIONS.md`).
 
