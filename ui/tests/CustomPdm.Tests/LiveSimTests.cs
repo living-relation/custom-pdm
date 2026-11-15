@@ -131,4 +131,30 @@ public class LiveSimTests(ITestOutputHelper output)
         Assert.Empty(wrong);
     }
 
+    // The two cases found in the route A review, on A2 (base 0x540, not the type default 0x500):
+    // Read Modified would move the PC device to 0x500 (A1); Write All before a read would set the board to 500K.
+    [SimFact]
+    public void GuardsStopTheA2Hazards()
+    {
+        using var bus = new SimBus();
+        var pc = Boot(bus, 14, 0x540);
+        Assert.Empty(pc.Dev.GetReadMsgs(false));             // Read Modified: nothing to send
+        Assert.Empty(pc.Dev.GetWriteMsgs(true));             // Write All before Read All: nothing to send
+        pc.Send(pc.Dev.GetWriteMsgs(true));
+        pc.Run(500);
+        Assert.Equal(0, pc.CountCmd(MessageCommand.WriteAll));
+        Assert.Equal(0x540, pc.Dev.BaseId);
+
+        Assert.True(pc.ReadAll());
+        Assert.True(pc.Dev.FullReadDone);
+        Assert.Equal((0x540, CanBitRate.BitRate1000K, 2), (pc.Dev.BaseId, pc.Dev.BitRate, pc.Dev.CustomPdm!.CritExemptMask));
+        pc.Dev.CustomPdm.TempWarn = 57;
+        Assert.True(pc.WriteAll());                          // allowed now, and writes what was read
+        Assert.Contains("dev: Write Successful", pc.Notes);
+        var pc2 = PcTool.For(bus, 14, 0x540);
+        Assert.True(pc2.ReadAll());
+        Assert.Equal((CanBitRate.BitRate1000K, 57, 2, true), (pc2.Dev.BitRate, pc2.Dev.CustomPdm!.TempWarn,
+            pc2.Dev.CustomPdm.CritExemptMask, pc2.Dev.Outputs[1].Enabled)); // board still 1000K, fan config kept
+    }
+
 }

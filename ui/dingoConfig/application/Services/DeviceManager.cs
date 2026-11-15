@@ -405,6 +405,12 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
         if (device is not IDeviceConfigurable configurable)
             return;
 
+        if (domain.CustomPdm.CustomPdmGuards.ReadBlockedReason(configurable, false) is { } blocked) // custom-pdm
+        {
+            logger.LogError("{DeviceName}: {Reason}", device.Name, blocked);
+            return;
+        }
+
         GetDeviceUiState(deviceId).NeedsRead = false;
 
         var readMsgs = configurable.GetReadMsgs(allParams: false);
@@ -452,6 +458,12 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
         if (device is not IDeviceConfigurable configurable)
             return false;
 
+        if (domain.CustomPdm.CustomPdmGuards.WriteBlockedReason(configurable, false) is { } blocked) // custom-pdm
+        {
+            logger.LogError("{DeviceName}: {Reason}", device.Name, blocked);
+            return false;
+        }
+
         var downloadMsgs = configurable.GetWriteMsgs(allParams: false);
         foreach (var msg in downloadMsgs)
         {
@@ -475,6 +487,12 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
         var device = GetDevice(deviceId);
         if (device is not IDeviceConfigurable configurable)
             return false;
+
+        if (domain.CustomPdm.CustomPdmGuards.WriteBlockedReason(configurable, true) is { } blocked) // custom-pdm
+        {
+            logger.LogError("{DeviceName}: {Reason}", device.Name, blocked);
+            return false;
+        }
 
         var downloadMsgs = configurable.GetWriteMsgs(allParams: true);
         foreach (var msg in downloadMsgs)

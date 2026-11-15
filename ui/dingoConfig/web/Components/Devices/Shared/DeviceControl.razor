@@ -1,4 +1,5 @@
 @using application.Services
+@using domain.CustomPdm
 @using domain.Devices
 @using domain.Devices.Keypad.BlinkMarine
 @using domain.Devices.Keypad.Grayhill
@@ -12,7 +13,7 @@
                        Color="@(DeviceManager.GetDeviceUiState(Device.Guid).NeedsRead && Device.Connected ? Color.Warning : Color.Default)"
                        Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Download"
-                       Disabled="@(!Device.Connected || !AdapterConnected)"
+                       Disabled="@(!Device.Connected || !AdapterConnected || !CustomPdmGuards.ModifiedOpsAllowed(Device))"
                        OnClick="@OnReadDeviceAsync"
                        Class="@(DeviceManager.GetDeviceUiState(Device.Guid).NeedsRead && Device.Connected ? "flash-button" : "")">
                 Read
@@ -21,7 +22,7 @@
                        Color="Color.Default"
                        Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Upload"
-                       Disabled="@(!Device.Connected || !AdapterConnected)"
+                       Disabled="@(!Device.Connected || !AdapterConnected || !CustomPdmGuards.ModifiedOpsAllowed(Device))"
                        OnClick="@OnWriteDeviceAsync">
                 Write
             </MudButton>
@@ -69,7 +70,7 @@
                        Color="Color.Default"
                        Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Upload"
-                       Disabled="@(!Device.Connected || !AdapterConnected)"
+                       Disabled="@(!Device.Connected || !AdapterConnected || CustomPdmGuards.WriteAllBlockedReason(Device) != null)"
                        OnClick="@OnWriteAllDeviceAsync">
                 Write All
             </MudButton>
@@ -81,6 +82,19 @@
                        OnClick="@OnResetAsync">
                 Reset
             </MudButton>
+            @* custom-pdm (types 14 / 15): why Read / Write (Modified) and, until a Read All, Write All are off *@
+            @if (!CustomPdmGuards.ModifiedOpsAllowed(Device))
+            {
+                <MudTooltip Text="@CustomPdmGuards.ModifiedOffReason">
+                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Icon="@Icons.Material.Filled.Info">Read / Write Modified off</MudChip>
+                </MudTooltip>
+            }
+            @if (CustomPdmGuards.WriteAllBlockedReason(Device) is { } writeAllBlocked)
+            {
+                <MudTooltip Text="@writeAllBlocked">
+                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small">Read All first</MudChip>
+                </MudTooltip>
+            }
             @if (Device.ConfigMismatch)
             {
                 <MudChip T="string" Variant="Variant.Outlined"
@@ -133,7 +147,7 @@
     {
         try
         {
-            DeviceManager.WriteDeviceConfig(Device.Guid);
+            if (!DeviceManager.WriteDeviceConfig(Device.Guid)) { Notification.NewError(CustomPdmGuards.WriteBlockedReason(Device, false) ?? $"Write not started: {DeviceName}"); return; } // custom-pdm
             Notification.NewSuccess($"Device write modified: {DeviceName}");
         }
         catch (Exception ex)
@@ -146,7 +160,7 @@
     {
         try
         {
-            DeviceManager.WriteAllDeviceConfig(Device.Guid);
+            if (!DeviceManager.WriteAllDeviceConfig(Device.Guid)) { Notification.NewError(CustomPdmGuards.WriteBlockedReason(Device, true) ?? $"Write not started: {DeviceName}"); return; } // custom-pdm
             Notification.NewSuccess($"Device write all: {DeviceName}");
         }
         catch (Exception ex)

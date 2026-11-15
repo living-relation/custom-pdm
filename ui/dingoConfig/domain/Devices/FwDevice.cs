@@ -76,6 +76,8 @@ public class FwDevice : IDeviceConfigurable
     // custom-pdm: param block 0x7F00 of device types 14 / 15 only; null (and not saved) for every stock type
     [JsonPropertyName("customPdm")][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public CustomPdmSettings? CustomPdm { get; set; }
+    // custom-pdm: set once a full Read All of this device succeeded in this session (CustomPdmGuards)
+    [JsonIgnore] public bool FullReadDone { get; private set; }
     
     [JsonIgnore] private DateTime LastRxTime { get; set; }
 
@@ -505,7 +507,8 @@ public class FwDevice : IDeviceConfigurable
 
         _paramProtocol = new ParamProtocol(this, Params)
         {
-            NotifySuccess = msg => SuccessNotification?.Invoke(msg)
+            NotifySuccess = msg => SuccessNotification?.Invoke(msg),
+            NotifyFullReadDone = () => FullReadDone = true
         };
     }
 
@@ -638,6 +641,7 @@ public class FwDevice : IDeviceConfigurable
 
     public List<DeviceCanFrame> GetReadMsgs(bool allParams)
     {
+        if (CustomPdmGuards.ReadBlockedReason(this, allParams) != null) return []; // custom-pdm, see CustomPdmGuards
         var cmd = allParams ? MessageCommand.ReadAll : MessageCommand.ReadAllModified;
         var name = allParams ? "ReadAll" : "ReadAllModified";
         
@@ -661,6 +665,7 @@ public class FwDevice : IDeviceConfigurable
 
     public List<DeviceCanFrame> GetWriteMsgs(bool allParams)
     {
+        if (CustomPdmGuards.WriteBlockedReason(this, allParams) != null) return []; // custom-pdm, see CustomPdmGuards
         var cmd = allParams ? MessageCommand.WriteAll : MessageCommand.WriteAllModified;
         var name = allParams ? "WriteAll" : "WriteAllModified";
         

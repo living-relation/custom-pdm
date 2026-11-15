@@ -21,6 +21,7 @@ internal class ParamProtocol(IDeviceConfigurable device, List<DeviceParameter> @
     private bool _lastWriteAllModified;
     private const int MaxBulkRetries = 3;
     public Action<string>? NotifySuccess;
+    public Action? NotifyFullReadDone; // custom-pdm: a full Read All (not Read Modified) completed with a matching CRC
 
     private readonly CumulativeCrc32 _writeCrc32 = new();
     private readonly CumulativeCrc32 _readCrc32 = new();
@@ -249,6 +250,7 @@ internal class ParamProtocol(IDeviceConfigurable device, List<DeviceParameter> @
             _logger.LogInformation("{Name} ID: {BaseId}, Read All Complete {pdmCrc} = {thisCrc}, {fromPdm}",
                 name, baseId, readAllCrc, _readCrc32.Final, readAllCount);
             NotifySuccess?.Invoke($"{name}: Read Successful");
+            if (!_lastReadAllModified) NotifyFullReadDone?.Invoke();
         }
         else
         {
