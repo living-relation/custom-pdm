@@ -1,0 +1,133 @@
+using System.Text.Json.Serialization;
+using domain.Common;
+using domain.Enums;
+using domain.Interfaces;
+using domain.Models;
+
+namespace domain.Devices.Functions;
+
+public class DigitalInput : IDeviceFunction
+{
+    [JsonIgnore] public const int BaseIndex = 0x1200;
+    [JsonPropertyName("enabled")] public bool Enabled { get; set; }
+    [JsonPropertyName("name")] public string Name { get; set; }
+    [JsonPropertyName("number")] public int Number { get; }
+    [JsonPropertyName("invert")] public bool Invert { get; set; }
+    [JsonPropertyName("mode")] public InputMode Mode { get; set; } = InputMode.Momentary;
+    [JsonPropertyName("debounceTime")] public int DebounceTime { get; set; } = 20;
+    [JsonPropertyName("pull")] public InputPull Pull { get; set; } = InputPull.NoPull;
+    [JsonPropertyName("pwm")] public bool Pwm { get; set; }
+    [JsonPropertyName("pwmMinPulseUs")] public int PwmMinPulseUs { get; set; }
+
+    [JsonIgnore][Plotable(displayName:"State")] public bool State { get; set; }
+    [JsonIgnore][Plotable(displayName:"Duty", unit:"%")] public double Duty { get; set; }
+    [JsonIgnore][Plotable(displayName:"Frequency", unit:"Hz")] public double Frequency { get; set; }
+
+    [JsonIgnore] public List<DeviceParameter> Params { get; }
+
+    [JsonConstructor]
+    public DigitalInput(int number, string name)
+    {
+        Number = number;
+        Name = name;
+        Params = InitParams();
+    }
+
+    private List<DeviceParameter> InitParams()
+    {
+        var subIndex = 0;
+        return
+        [
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].enabled", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => Enabled, SetValue = val => Enabled = (bool)val,
+                ValueType = Enabled.GetType(),
+                DefaultValue = false
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].mode", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => Mode, SetValue = val => Mode = (InputMode)val,
+                ValueType = Mode.GetType(),
+                DefaultValue = InputMode.Momentary
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].invert", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => Invert, SetValue = val => Invert = (bool)val,
+                ValueType = Invert.GetType(),
+                DefaultValue = false
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].debounceTime", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => DebounceTime, SetValue = val => DebounceTime = (int)val,
+                ValueType = DebounceTime.GetType(),
+                DefaultValue = 20
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].pull", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => Pull, SetValue = val => Pull = (InputPull)val,
+                ValueType = Pull.GetType(),
+                DefaultValue = InputPull.NoPull
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].pwm", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => Pwm, SetValue = val => Pwm = (bool)val,
+                ValueType = Pwm.GetType(),
+                DefaultValue = false
+            },
+            new DeviceParameter
+            {
+                ParentName = Name, Name = $"input[{Number}].pwmMinPulseUs", Index = BaseIndex + (Number - 1), SubIndex = subIndex++,
+                GetValue = () => PwmMinPulseUs, SetValue = val => PwmMinPulseUs = (int)val,
+                ValueType = PwmMinPulseUs.GetType(),
+                DefaultValue = 0
+            }
+        ];
+    }
+
+    public List<DeviceVariable> GetVarMap(ref int index)
+    {
+        List<DeviceVariable> varMap =
+        [
+            new()
+            {
+                GetName = () => Name,
+                PropertyName = "State",
+                DataType = "bool",
+                VariableIndex = index++,
+                SingleVariable = false
+            }
+
+        ];
+
+        return varMap;
+    }
+
+    // Appended after all other vars in the firmware's InitVarMap(), so FwDevice adds these separately
+    public List<DeviceVariable> GetPwmVarMap(ref int index) =>
+    [
+        new()
+        {
+            GetName = () => Name,
+            PropertyName = "Duty",
+            DataType = "float",
+            VariableIndex = index++,
+            SingleVariable = false,
+            IsAvailable = () => Pwm
+        },
+        new()
+        {
+            GetName = () => Name,
+            PropertyName = "Frequency",
+            DataType = "float",
+            VariableIndex = index++,
+            SingleVariable = false,
+            IsAvailable = () => Pwm
+        }
+    ];
+}

@@ -1,0 +1,186 @@
+@using application.Services
+@inject ConfigFileManager FileManager
+@inject DeviceManager DeviceManager
+@inject UserPreferencesManager UserPrefs
+@inject IDialogService DialogService
+@implements IDisposable
+
+<MudToolBar Dense="true" Class="mb-3">
+    <MudTooltip Text="New">
+        <MudIconButton Icon="@Icons.Material.Outlined.Add"
+                       Color="Color.Default"
+                       OnClick="@HandleNew" />
+    </MudTooltip>
+
+    <MudTooltip Text="Open">
+        <MudIconButton Icon="@Icons.Material.Outlined.FolderOpen"
+                       Color="Color.Default"
+                       OnClick="@HandleOpen" />
+    </MudTooltip>
+
+    <MudTooltip Text="Save">
+        <MudIconButton Icon="@Icons.Material.Outlined.Save"
+                       Color="Color.Default"
+                       OnClick="@HandleSave"
+                       Disabled="@(string.IsNullOrEmpty(FileManager.CurrentFileName))" />
+    </MudTooltip>
+
+    <MudTooltip Text="Save As">
+        <MudIconButton Icon="@Icons.Material.Outlined.SaveAs"
+                       Color="Color.Default"
+                       OnClick="@HandleSaveAs" />
+    </MudTooltip>
+
+    <MudDivider Vertical="true" FlexItem="true" Class="mx-2" />
+
+    <MudTooltip Text="Settings">
+        <MudIconButton Icon="@Icons.Material.Outlined.Settings"
+                       Color="Color.Default"
+                       OnClick="@HandleSettings" />
+    </MudTooltip>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Color="Color.Secondary">
+        @GetStatusText()
+    </MudText>
+</MudToolBar>
+
+@code {
+    [Parameter]
+    public EventCallback OnNew { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSaveAs { get; set; }
+
+    protected override void OnInitialized()
+    {
+        FileManager.OnStateChanged += OnFileManagerStateChanged;
+
+        // Sync working directory from user preferences
+        FileManager.WorkingDirectory = UserPrefs.Preferences.WorkingDirectory;
+    }
+
+    private void OnFileManagerStateChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetStatusText()
+    {
+        if (string.IsNullOrEmpty(FileManager.CurrentFileName))
+        {
+            return "No file open";
+        }
+
+        return $"{FileManager.CurrentFileName}";
+    }
+
+    private async Task HandleNew()
+    {
+        if (DeviceManager.GetDevices().Count > 0)
+        {
+            var result = await DialogService.ShowMessageBox(
+                "New file",
+                "New file will remove all existing devices. Create a new file?",
+                yesText: "Continue",
+                cancelText: "Cancel");
+
+            if (result != true)
+                return;
+        }
+
+        await OnNew.InvokeAsync();
+    }
+
+    private async Task HandleOpen()
+    {
+        if (DeviceManager.GetDevices().Count > 0)
+        {
+            var result = await DialogService.ShowMessageBox(
+                "Open file",
+                "Open file will remove all existing devices. Open a new file?",
+                yesText: "Continue",
+                cancelText: "Cancel");
+
+            if (result != true)
+                return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { nameof(OpenFileDialog.FileFilter), "*.json" }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<OpenFileDialog>("Open File", parameters, options);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is { Canceled: false, Data: string fileName })
+        {
+            await OnOpen.InvokeAsync(fileName);
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        await OnSave.InvokeAsync();
+    }
+
+    private async Task HandleSaveAs()
+    {
+        var parameters = new DialogParameters
+        {
+            { nameof(SaveAsDialog.InitialFileName), FileManager.CurrentFileName }
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<SaveAsDialog>("Save As", parameters, options);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is { Canceled: false, Data: string fileName })
+        {
+            await OnSaveAs.InvokeAsync(fileName);
+        }
+    }
+
+    private async Task HandleSettings()
+    {
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<SettingsDialog>("Settings", options);
+        var dialogResult = await dialog.Result;
+
+        if (dialogResult is { Canceled: false, Data: string newDirectory })
+        {
+            FileManager.WorkingDirectory = newDirectory;
+            UserPrefs.Preferences.WorkingDirectory = newDirectory;
+            UserPrefs.Save();
+        }
+    }
+
+    public void Dispose()
+    {
+        FileManager.OnStateChanged -= OnFileManagerStateChanged;
+    }
+}

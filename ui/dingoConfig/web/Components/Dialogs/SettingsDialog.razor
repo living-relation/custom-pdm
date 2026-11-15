@@ -1,0 +1,123 @@
+@using application.Models
+@using application.Services
+@inject UserPreferencesManager UserPrefs
+@inject ConfigFileManager FileManager
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+            File Manager Settings
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="_workingDirectory"
+                      Label="Working Directory"
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      HelperText="Directory where configuration files are stored"
+                      Lines="1" />
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+            Current: @FileManager.WorkingDirectory
+        </MudText>
+
+        @if (_showValidationError)
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Class="mt-3">
+                Please enter a valid directory path.
+            </MudAlert>
+        }
+
+        @if (_showChangeWarning)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-3">
+                Changing the working directory will affect where files are saved and loaded from.
+            </MudAlert>
+        }
+        
+        <MudDivider Vertical="false"/>
+        <MudText Typo="Typo.body2">ID Format:</MudText>
+        <MudSelect @bind-Value="@_idFormat"
+                   Variant="Variant.Outlined"
+                   Dense="true"
+                   FitContent="true"
+                   Style="min-width: 120px;">
+            <MudSelectItem Value="NumberFormat.Hex">Hex</MudSelectItem>
+            <MudSelectItem Value="NumberFormat.Decimal">Dec</MudSelectItem>
+        </MudSelect>
+        
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Outlined"
+                   OnClick="Submit"
+                   Disabled="@(string.IsNullOrWhiteSpace(_workingDirectory))">
+            Apply
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private string? _workingDirectory;
+    private bool _showValidationError;
+    private bool _showChangeWarning;
+    
+    private NumberFormat _idFormat;
+
+    protected override void OnInitialized()
+    {
+        _workingDirectory = UserPrefs.Preferences.WorkingDirectory;
+        _idFormat = UserPrefs.Preferences.IdFormat;
+        CheckForChanges();
+    }
+
+    private void CheckForChanges()
+    {
+        _showChangeWarning = !string.IsNullOrWhiteSpace(_workingDirectory) &&
+                           _workingDirectory != FileManager.WorkingDirectory;
+        _showValidationError = false;
+    }
+
+    private void Submit()
+    {
+        if (string.IsNullOrWhiteSpace(_workingDirectory))
+        {
+            _showValidationError = true;
+            return;
+        }
+
+        try
+        {
+            // Expand environment variables and user path
+            var expandedPath = Environment.ExpandEnvironmentVariables(_workingDirectory);
+
+            // Handle user home directory shorthand (~)
+            if (expandedPath.StartsWith("~"))
+            {
+                expandedPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                    expandedPath[1..].TrimStart(Path.DirectorySeparatorChar));
+            }
+
+            UserPrefs.Preferences.IdFormat = _idFormat;
+            UserPrefs.Preferences.WorkingDirectory = expandedPath;
+            UserPrefs.Save();
+
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch
+        {
+            _showValidationError = true;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+}

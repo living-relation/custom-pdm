@@ -1,0 +1,240 @@
+{
+  "messages": [
+    {
+      "idOffset": 2,
+      "signals": [
+        {"target": "DigitalInput.State", "count": 7, "dbc": {"name": "DigitalInput{n}.State", "length": 1}},
+        {"target": "DeviceState", "dbc": {"name": "DeviceState", "startBit": 8, "length": 4}},
+        {"target": "PdmTypeCheck", "dbc": {"name": "PdmType", "startBit": 12, "length": 4}},
+        {"target": "TotalCurrent", "dbc": {"name": "TotalCurrent", "startBit": 16, "length": 16, "factor": 1.0, "unit": "A"}},
+        {"target": "BatteryVoltage", "dbc": {"name": "BatteryVoltage", "startBit": 32, "length": 16, "factor": 0.1, "unit": "V"}},
+        {"target": "BoardTempC", "dbc": {"name": "BoardTemp", "startBit": 48, "length": 16, "factor": 0.1, "unit": "degC"}}
+      ]
+    },
+    {
+      "idOffset": 3,
+      "signals": [
+        {"target": "Output.Current", "count": 4, "dbc": {"name": "Output{n}.Current", "length": 16, "factor": 1.0, "unit": "A"}}
+      ]
+    },
+    {
+      "idOffset": 4,
+      "signals": [
+        {"target": "Output.Current", "count": 4, "startIndex": 4, "dbc": {"name": "Output{n}.Current", "length": 16, "factor": 1.0, "unit": "A"}}
+      ]
+    },
+    {
+      "idOffset": 5,
+      "signals": [
+        {"target": "Output.State", "count": 8, "dbc": {"name": "Output{n}.State", "length": 4}},
+        {"target": "Wiper.SlowState", "dbc": {"name": "WiperSlowState", "startBit": 32, "length": 1}},
+        {"target": "Wiper.FastState", "dbc": {"name": "WiperFastState", "startBit": 33, "length": 1}},
+        {"target": "Wiper.Speed", "dbc": {"name": "WiperSpeed", "startBit": 40, "length": 4}},
+        {"target": "Wiper.State", "dbc": {"name": "WiperState", "startBit": 44, "length": 4}},
+        {"target": "Flasher.Value", "count": 4, "dbc": {"name": "Flasher{n}", "startBit": 48, "length": 1}},
+        {"target": "CustomPdm.ThermalFlags", "dbc": {"name": "ThermalFlags", "startBit": 56, "length": 8}}
+      ]
+    },
+    {
+      "idOffset": 6,
+      "signals": [
+        {"target": "Output.ResetCount", "count": 8, "dbc": {"name": "Output{n}.ResetCount", "length": 8}}
+      ]
+    },
+    {
+      "idOffset": 7,
+      "signals": [
+        {"target": "CanInput.Output", "count": 32, "dbc": {"name": "CanInput{n}", "length": 1}},
+        {"target": "VirtualInput.Value", "count": 16, "dbc": {"name": "VirtualInput{n}", "startBit": 32, "length": 1}}
+      ]
+    },
+    {
+      "idOffset": 8,
+      "signals": [
+        {"target": "Counter.Value", "count": 4, "dbc": {"name": "Counter{n}", "length": 8}},
+        {"target": "Condition.Value", "count": 32, "dbc": {"name": "Condition{n}", "startBit": 32, "length": 1}}
+      ]
+    },
+    {
+      "idOffset": 9,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 10,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 2, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 11,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 4, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 12,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 6, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 13,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 8, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 14,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 10, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 15,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 12, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 16,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 14, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 17,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 16, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 18,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 18, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 19,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 20, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 20,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 22, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 21,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 24, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 22,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 26, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 23,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 28, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 24,
+      "signals": [
+        {"target": "CanInput.Value", "count": 2, "startIndex": 30, "dbc": {"name": "CanInput{n}.Value", "length": 32, "isSigned": true}}
+      ]
+    },
+    {
+      "idOffset": 25,
+      "signals": [
+        {"target": "Output.DutyCycle", "count": 8, "dbc": {"name": "Output{n}.DutyCycle", "length": 8, "unit": "%"}}
+      ]
+    },
+    {
+      "idOffset": 29,
+      "signals": [
+        {"target": "Timer.Value", "count": 8, "dbc": {"name": "Timer{n}.Output", "length": 1}},
+        {"target": "Timer.Running", "count": 8, "dbc": {"name": "Timer{n}.Running", "startBit": 8, "length": 1}}
+      ]
+    },
+    {
+      "idOffset": 30,
+      "signals": [
+        {"target": "Timer.Elapsed", "count": 4, "dbc": {"name": "Timer{n}.Elapsed", "length": 16, "factor": 0.01, "unit": "s"}}
+      ]
+    },
+    {
+      "idOffset": 31,
+      "signals": [
+        {"target": "Timer.Elapsed", "count": 4, "startIndex": 4, "dbc": {"name": "Timer{n}.Elapsed", "length": 16, "factor": 0.01, "unit": "s"}}
+      ]
+    },
+    {
+      "idOffset": 32,
+      "signals": [
+        {"target": "Math.Value", "count": 2, "dbc": {"name": "Math{n}.Value", "length": 32, "isSigned": true, "factor": 0.001}}
+      ]
+    },
+    {
+      "idOffset": 33,
+      "signals": [
+        {"target": "Math.Value", "count": 2, "startIndex": 2, "dbc": {"name": "Math{n}.Value", "length": 32, "isSigned": true, "factor": 0.001}}
+      ]
+    },
+    {
+      "idOffset": 34,
+      "signals": [
+        {"target": "Math.Value", "count": 2, "startIndex": 4, "dbc": {"name": "Math{n}.Value", "length": 32, "isSigned": true, "factor": 0.001}}
+      ]
+    },
+    {
+      "idOffset": 35,
+      "signals": [
+        {"target": "Math.Value", "count": 2, "startIndex": 6, "dbc": {"name": "Math{n}.Value", "length": 32, "isSigned": true, "factor": 0.001}}
+      ]
+    },
+    {
+      "idOffset": 36,
+      "signals": [
+        {"target": "DigitalInput.Duty", "count": 1, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 0, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 16, "length": 16, "factor": 0.1, "unit": "Hz"}},
+        {"target": "DigitalInput.Duty", "count": 1, "startIndex": 1, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 32, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "startIndex": 1, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 48, "length": 16, "factor": 0.1, "unit": "Hz"}}
+      ]
+    },
+    {
+      "idOffset": 37,
+      "signals": [
+        {"target": "DigitalInput.Duty", "count": 1, "startIndex": 2, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 0, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "startIndex": 2, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 16, "length": 16, "factor": 0.1, "unit": "Hz"}},
+        {"target": "DigitalInput.Duty", "count": 1, "startIndex": 3, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 32, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "startIndex": 3, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 48, "length": 16, "factor": 0.1, "unit": "Hz"}}
+      ]
+    },
+    {
+      "idOffset": 38,
+      "signals": [
+        {"target": "DigitalInput.Duty", "count": 1, "startIndex": 4, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 0, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "startIndex": 4, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 16, "length": 16, "factor": 0.1, "unit": "Hz"}},
+        {"target": "DigitalInput.Duty", "count": 1, "startIndex": 5, "dbc": {"name": "DigitalInput{n}.Duty", "startBit": 32, "length": 16, "factor": 0.01, "unit": "%"}},
+        {"target": "DigitalInput.Frequency", "count": 1, "startIndex": 5, "dbc": {"name": "DigitalInput{n}.Frequency", "startBit": 48, "length": 16, "factor": 0.1, "unit": "Hz"}}
+      ]
+    },
+    {
+      "idOffset": 39,
+      "signals": [
+        {"target": "DigitalInput.State", "count": 7, "dbc": {"name": "DigitalInput{n}.State", "length": 1}},
+        {"target": "AnalogInput.Millivolts", "count": 1, "dbc": {"name": "AnalogInput{n}.Millivolts", "startBit": 16, "length": 16, "unit": "mV"}},
+        {"target": "CustomPdm.AnalogRaw", "dbc": {"name": "AnalogInput1.Raw", "startBit": 32, "length": 16}},
+        {"target": "CustomPdm.DieTempC", "dbc": {"name": "DieTemp", "startBit": 48, "length": 16, "isSigned": true, "factor": 0.1, "unit": "degC"}}
+      ]
+    }
+  ]
+}

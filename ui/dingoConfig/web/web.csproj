@@ -1,0 +1,100 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\application\application.csproj" />
+    <ProjectReference Include="..\infrastructure\infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8" />
+    <PackageReference Include="MudBlazor" Version="8.14.0" />
+    <PackageReference Include="Plotly.Blazor" Version="6.0.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="ClientApp\package-lock.json" />
+    <_ContentIncludedByDefault Remove="ClientApp\package.json" />
+    <_ContentIncludedByDefault Remove="ClientApp\tsconfig.json" />
+    <_ContentIncludedByDefault Remove="ClientApp\tsconfig.node.json" />
+    <_ContentIncludedByDefault Remove="Components\Devices\dingoPdm\Functions\GrayhillKeypad\GrayhillButtonsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\dingoPdm\Functions\GrayhillKeypad\GrayhillDeviceSettings.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\AnalogInputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\BlinkMarineKeypad\BlinkMarineButtonsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\BlinkMarineKeypad\BlinkMarineDeviceSettings.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\BlinkMarineKeypad\BlinkMarineDialsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\CanInputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\CanOutputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\ConditionsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\CountersGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\DigitalInputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\DigitalOutputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\FlashersGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\GrayhillKeypad\GrayhillButtonsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\GrayhillKeypad\GrayhillDeviceSettings.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\OutputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\OutputsPwmGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\RotarySwitchGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\StarterDisableConfig.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\VirtualInputsGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\Devices\Functions\WiperConfig.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Icons\PTDPDM.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\AnalogInputsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\BlinkMarineKeypad\BlinkMarineButtonsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\BlinkMarineKeypad\BlinkMarineDeviceSettings.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\BlinkMarineKeypad\BlinkMarineDialsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\CanInputsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\CanOutputsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\ConditionsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\CountersGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\DigitalInputsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\DigitalOutputsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\FlashersGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\GrayhillKeypad\GrayhillButtonsGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\GrayhillKeypad\GrayhillDeviceSettings.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\RotarySwitchGrid.razor" />
+    <AdditionalFiles Include="Components\Devices\FwDevice\Functions\VirtualInputsGrid.razor" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>dingoConfig</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <OutputType>Exe</OutputType>
+    <Version>0.5.0</Version>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <PackageIcon>wwwroot\icon.png</PackageIcon>
+    <!-- Console window is hidden programmatically in Program.cs for Windows -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RuntimeIdentifier>$(RuntimeIdentifier)</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != '' AND $([System.String]::Copy('$(RuntimeIdentifier)').StartsWith('linux'))">
+    <DefineConstants>LINUX;$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!-- Flow editor JS source; its build output is committed to wwwroot/js/flow (see ClientApp/package.json) -->
+  <PropertyGroup>
+    <DefaultItemExcludes>$(DefaultItemExcludes);ClientApp\**</DefaultItemExcludes>
+  </PropertyGroup>
+</Project>

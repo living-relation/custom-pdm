@@ -1,0 +1,62 @@
+@using web.Components.Devices.Generic
+@using web.Components.Devices.Keypad
+@using domain.Devices.Generic
+@using domain.Devices.Keypad.BlinkMarine
+@using domain.Devices.Keypad.Grayhill
+@using domain.Interfaces
+@using web.Components.Devices.FwDevice
+@using web.Components.Devices.Shared
+@typeparam TDevice where TDevice : domain.Interfaces.IDevice
+
+<MudContainer MaxWidth="MaxWidth.False"
+              Style="display: flex; flex-direction: column; height: calc(100vh - 100px); width: 100%; padding: 0;">
+    <div class="pa-3">
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            @{
+                var configurableDevice = Device as IDeviceConfigurable;
+            }
+            @if (configurableDevice != null)
+            {
+                <DeviceControl TDevice="IDeviceConfigurable" Device="configurableDevice" AdapterConnected="AdapterConnected"/>
+            }
+            <MudSpacer/>
+            <MudChip T="string" Variant="Variant.Outlined"
+                     Color="@(Device.Connected ? Color.Success : Color.Error)" Size="Size.Small">
+                @(Device.Connected ? "Connected" : "Disconnected")
+            </MudChip>
+        </MudStack>
+        <MudDivider Class="my-2"/>
+    </div>
+
+    @switch (Device)
+    {
+        case domain.Devices.FwDevice fwDevice:
+            <FwDeviceTabs TDevice="domain.Devices.FwDevice" Device="fwDevice" />
+            break;
+
+        case DbcDevice statusDevice:
+            <DbcDeviceTabs TDevice="DbcDevice" Device="statusDevice"/>
+            break;
+
+        case BlinkMarineKeypadDevice blinkKeypad:
+            <KeypadDeviceTabs Device="blinkKeypad" />
+            break;
+
+        case GrayhillKeypadDevice grayhillKeypad:
+            <KeypadDeviceTabs Device="grayhillKeypad" />
+            break;
+
+        default:
+            <MudAlert Severity="Severity.Warning">
+                Unknown device type: @Device.GetType().Name
+            </MudAlert>
+            break;
+    }
+</MudContainer>
+
+@code {
+    [Parameter, EditorRequired] public TDevice Device { get; set; } = default!;
+
+    [Parameter, EditorRequired] public bool AdapterConnected { get; set; }
+
+}
