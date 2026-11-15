@@ -21,7 +21,7 @@ Build the firmware host sim once (WSL), from a committed branch:
 
     wsl -e bash -c 'S=~/scratch/ui-sim; rm -rf $S; mkdir -p $S/src $S/so; cd /mnt/c/projects/active/custom-pdm; git archive main firmware | tar -x -C $S/src; cd $S/src/firmware; for u in 1 2; do bash sim/build.sh custompdm_a $S/so $u; done; bash sim/build.sh custompdm_b $S/so 1'
 
-Tests (without `CUSTOMPDM_SIM_SO` the live ones only print "skipped"):
+Tests (without `CUSTOMPDM_SIM_SO` the live ones are reported as Skipped):
 
     dotnet test ui\tests\CustomPdm.Tests
     $env:CUSTOMPDM_SIM_SO='/home/daniel/scratch/ui-sim/so'; dotnet test ui\tests\CustomPdm.Tests

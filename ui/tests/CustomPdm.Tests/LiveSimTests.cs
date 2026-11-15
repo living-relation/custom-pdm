@@ -18,11 +18,10 @@ public class LiveSimTests(ITestOutputHelper output)
         return pc;
     }
 
-    [Theory]
+    [SimTheory]
     [MemberData(nameof(Boards))]
     public void ReadAllWriteAllAndCrcCheck(string board, int type, int baseId)
     {
-        if (SkipNoSim()) return;
         using var bus = new SimBus();
         var pc = Boot(bus, type, baseId);
 
@@ -67,11 +66,10 @@ public class LiveSimTests(ITestOutputHelper output)
 
     // Status page values decoded from the firmware's real cyclic frames: DIs (msg 0 / 37), analog (msg 37),
     // board temperature (msg 0), die temperature (msg 37), thermal flags (msg 3 byte 7)
-    [Theory]
+    [SimTheory]
     [MemberData(nameof(Boards))]
     public void StatusDecode(string board, int type, int baseId)
     {
-        if (SkipNoSim()) return;
         using var bus = new SimBus();
         var pc = Boot(bus, type, baseId);
         // Read first: a new project's PC defaults are not our factory defaults (bit rate 500K vs 1000K, fan config)
@@ -111,12 +109,11 @@ public class LiveSimTests(ITestOutputHelper output)
     }
 
     // The checkbox rule (CustomPdmSettings.WakeInputMaskBadBits) accepts exactly the masks the firmware accepts
-    [Theory]
+    [SimTheory]
     [InlineData("A1", 14, 0x500)]
     [InlineData("B", 15, 0x580)]
     public void WakeRuleMatchesFirmware(string board, int type, int baseId)
     {
-        if (SkipNoSim()) return;
         using var bus = new SimBus();
         bus.Run(1500);
         var n = type == 14 ? 7 : 10;
@@ -134,10 +131,4 @@ public class LiveSimTests(ITestOutputHelper output)
         Assert.Empty(wrong);
     }
 
-    private bool SkipNoSim()
-    {
-        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CUSTOMPDM_SIM_SO"))) return false;
-        output.WriteLine("skipped: CUSTOMPDM_SIM_SO not set");
-        return true;
-    }
 }

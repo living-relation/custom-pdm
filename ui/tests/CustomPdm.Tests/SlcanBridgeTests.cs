@@ -12,11 +12,10 @@ namespace CustomPdm.Tests;
 [Collection("sim")] // the sim tests run one after another (WSL processes, real-time bridge)
 public class SlcanBridgeTests(ITestOutputHelper output)
 {
-    [Fact]
+    [SimFact]
     public async Task DingoConfigSlcanTcpAdapterTalksToTheSim()
     {
         var so = Environment.GetEnvironmentVariable("CUSTOMPDM_SIM_SO");
-        if (string.IsNullOrEmpty(so)) { output.WriteLine("skipped: CUSTOMPDM_SIM_SO not set"); return; }
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (!File.Exists(Path.Combine(dir!.FullName, "ui", "tests", "sim_bridge.py"))) dir = dir.Parent;
         var win = Path.Combine(dir.FullName, "ui", "tests", "sim_bridge.py");
