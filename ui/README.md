@@ -8,7 +8,7 @@
 
 ## Our changes (route A)
 - Device types 14 (board A) and 15 (board B): `dingoConfig/web/Definitions/device-definitions.json` plus `custompdm-a-signals.json` / `custompdm-b-signals.json` (cyclic layout of `firmware/boards/custompdm_*/msg.cpp`).
-- Param block 0x7F00 (temperature limits, critical-exempt outputs, critical-soon margin, wake inputs): `dingoConfig/domain/CustomPdm/CustomPdmSettings.cs`, hooked into `FwDevice` for types 14 / 15 only. Shown on the device Configuration tab (Device panel); die temperature and the thermal flags on the device status (Dashboard) tab.
+- Param block 0x7F00 (temperature limits, critical-exempt outputs, critical-soon margin, wake inputs): `dingoConfig/domain/CustomPdm/CustomPdmSettings.cs`, hooked into `FwDevice` for types 14 / 15 only. Shown on the device Configuration tab (Device panel); die temperature and the thermal flags on the device status (Dashboard) tab. Wake inputs on a shared line / the USB line are greyed out. For types 14 / 15, Read / Write Modified are off and Write All needs a successful Read All first (a new project holds stock dingoPDM defaults, not our factory defaults; A2 could otherwise be written with A1's ID).
 - Route B phase B1 (`docs/ui-route-b-plan.md`): page `/pdm` (menu entry PDM, shown once a custom-pdm board is in the project), a read-only live view of the three boards as one PDM: `dingoConfig/domain/CustomPdm/PdmView.cs` (roles, numbering, connector pins from `docs/box-connectors.md`) and `dingoConfig/web/Components/CustomPdm/PdmPage.razor`. Board roles: the two type 14 devices by base ID are A1 then A2; the type 15 device is B.
 - Tests: `tests/CustomPdm.Tests` (C#). The live ones talk to the host simulation of our firmware through `tests/sim_bridge.py`.
 
