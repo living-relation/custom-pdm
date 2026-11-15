@@ -29,8 +29,8 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 7. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- m1 (2026-11-15): the working-memory index still gives the 2026-11-05 goal (6 x 15 A + 2 x 30 A, 16 inputs); fix it to the repo's numbers (README.md)? a) yes (recommended); b) leave it.
-- Answered 2026-11-15: k2b, k3a, k4a, c1a (`DECISIONS.md`).
+- None open (2026-11-15). B2 design choices, if any, come from the B2 job.
+- Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a (`DECISIONS.md`).
 - Answered 2026-11-14: s11 (c, then steady flags; `DECISIONS.md` 2026-11-14).
 - Answered: enclosure A-H (e1-e7 and the v2 / v2b follow-ups, `DECISIONS.md` 2026-11-12/13); R1-R4, B1-B4, C1-C7, L1 and the board / wiring questions of 2026-11-12 (`DECISIONS.md`).
 
@@ -51,6 +51,8 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - Small: board B `MedCurrentDrivers.kicad_sch` is not in the hierarchy (stock Max leftover, old format, still says LM324 / U21); the op-amp library symbol is still `Amplifier_Operational:LM324` (fields say LM2902PWR); leftover board A mask window at the old U9 spot (x -12.9..-8.94, y 11.38..14.02); the pin map still lists `LINE_SWO` for removal on board A although board B keeps it, and board A HSE crystal is by net name only; 5 schematic-parity findings on board B (stock Max 0 on this check); courtyards_overlap 10 (stock 4) and lib_footprint_issues 199 (stock 140) from the new parts.
 
 - Firmware (2026-11-14): msg 0 board temperature is uint16, so negatives wrap (stock); DBC files have no msg 37; s1 / Renode "one PDM" recipe configures all 24 outputs and overwrites the fan default (fan tested on fresh boards only); Renode does not emulate STOP, so EXTI wake is untested; the 2026-11-13 sleep-study numbers do not add up (16 PROFETs x 1.2 mA = 19.2 mA from the DEN fix vs 14.6 mA quoted): re-check on the bench. Upstream dev limits (code read): DI PWM is reported for inputs 1-6 only (msgs 34-36), and it uses the input's EXTI line, so the shared-line pairs limit it; Blink keypads transmit on node + 0x180..+0x500 (e.g. 0x515, inside A1's block).
+
+- UI (2026-11-15): a greyed shared-line wake input gives no reason text; the card on `/devices` shows no device name (not compared with stock); the `/pdm` 'Not read yet' chip, an output switched on and the missing-board warning are not yet seen in a browser; not browser-checked on route A: Burn, Sleep / Wakeup, the kept-on-at-critical boxes, flag chips lit.
 
 ## Status (done work, newest first)
 - 2026-11-15: Route B phase B1: page `/pdm` in `ui/dingoConfig/` (what it is: `ui/README.md`), read-only. Tests 69 with the sim (26 new in `PdmViewTests`), 7 one-line mutations RED. Browser check with A1 / A2 / B on the sim bridge: three board cards live, 24 outputs and 27 inputs (24 digital + 3 analog) listed with connector pins, sorting by a column works and survives the live refresh. Not seen in the browser: the 'Not read yet' chip (added after the check, build + tests only), an output switched on, a missing-board warning. Until a Read All of each board, names / enabled / limits on the page are the PC's stock defaults (the chip says so).
@@ -115,9 +117,12 @@ Dan's goals (orchestrator session 3): (1) finish the boards, parts and firmware;
 - `%TEMP%\custom-pdm-fw-import\` (two import tarballs and helper scripts; the scripts that matter are already in `firmware/sim/renode/`).
 - `%TEMP%\custom-pdm-parts-audit\`; `%TEMP%\board-b-build\` build outputs; B1 job temp folders `%TEMP%\bin5-build-base`, `%TEMP%\bin5-build-pc13`, `%TEMP%\bin5-stock-max`, `%TEMP%\bin5-fwcheck.*`, WSL `~/bin5-pdm`; `%TEMP%\renode-bench-2026-11-11.log*`.
 - The zip sent in chat on 2026-11-10 (`custom-pdm-firmware-sim-2026-11-10.zip`) predates the C1 / C2 / D3 firmware changes: the repo is the source of truth.
+- WSL `~/scratch/ui-sim/` (firmware host sim built from main a1dc6aa for the UI tests and the browser check; `CUSTOMPDM_SIM_SO` points at its `so/`; rebuild per `ui/README.md` after firmware changes) and `%TEMP%\cpdm-ui\` (build / run logs, `bridge.sh`, `kill.sh`, `simbuild.sh`).
 - `%LOCALAPPDATA%\Workstation\claude-fusion\`: helper scripts (`call.ps1`, `up*.py`, `chk*.py`, `*.ulp`, `kicad\`), TE drawings in `te-drawings\`.
 
 ## Mistakes not to repeat
+- 2026-11-15: asked Dan m1 quoting only 8 of the 24 outputs (left out the 16 x 7.5 A). Quote the full set from `README.md` when asking about totals.
+- 2026-11-15: `Start-Process wsl ... bash -c "..."` from Desktop Commander dropped the arguments (the sim build did not run, the bridge started a bare python). Write an LF `.sh` file and start that.
 - 2026-11-14: asked Dan part-swap questions (t2-t6) treating the heat-model worst case (100 C) as a hard limit, and assumed the input board was at 100 C, against DECISIONS 2026-11-12 ('heat targets are guides', firmware protection) and x2c (input board under the lid). Read DECISIONS and history for the subject before asking; don't invent problems.
 - `git worktree remove` also deletes git-ignored files: removing the encl-v2b worktree (2026-11-13 cleanup) deleted the licence-restricted vendor STEPs and the pack copy under `enclosure/v2b/`. Re-download per `enclosure/v2b/vendor/README.md` before the next full `build_v2b.py` run. Move ignored inputs out (or check `git status --ignored`) before removing a worktree.
 - Commit 458ef4c (2026-11-12) went to main without a PR: another session switched the shared folder to main mid-turn. Check `git branch --show-current` right before every commit; one orchestrator per repo folder.
