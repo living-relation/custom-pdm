@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 using domain.Common;
+using domain.CustomPdm;
 using domain.Devices.Functions;
 using domain.Devices.Functions.Keypad;
 using domain.Enums;
@@ -72,6 +73,9 @@ public class FwDevice : IDeviceConfigurable
     [JsonPropertyName("flowLayout")] public Dictionary<string, FlowNodePosition> FlowLayout { get; set; } = new();
     [JsonPropertyName("timers")] public List<DeviceTimer> Timers { get; init; } = [];
     [JsonPropertyName("mathBlocks")] public List<MathBlock> MathBlocks { get; init; } = [];
+    // custom-pdm: param block 0x7F00 of device types 14 / 15 only; null (and not saved) for every stock type
+    [JsonPropertyName("customPdm")][JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public CustomPdmSettings? CustomPdm { get; set; }
     
     [JsonIgnore] private DateTime LastRxTime { get; set; }
 
@@ -117,6 +121,12 @@ public class FwDevice : IDeviceConfigurable
     {
         Def = def;
         DeviceTypeId = def.DeviceType;
+
+        // custom-pdm: only our board types carry the 0x7F00 settings
+        if (CustomPdmSettings.IsCustomType(def.DeviceType))
+            (CustomPdm ??= new CustomPdmSettings()).Configure(def);
+        else
+            CustomPdm = null;
         
         InitFunctions();
 
@@ -466,6 +476,9 @@ public class FwDevice : IDeviceConfigurable
                 DefaultValue = CanBitRate.BitRate500K
             }
         ]);
+
+        // custom-pdm: block 0x7F00 right after the device block, as in the firmware's stParams (CRC order)
+        if (CustomPdm != null) allParams.AddRange(CustomPdm.GetParams(Name));
         
         foreach (var output in Outputs) allParams.AddRange(output.Params);
         foreach (var input in DigitalInputs) allParams.AddRange(input.Params);
