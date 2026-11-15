@@ -109,6 +109,32 @@ public class PdmViewTests
         Assert.Empty(view.Inputs);
     }
 
+    // B2: the page keeps its rows (the cell being edited, the sort order) while the boards stay the same
+    [Fact]
+    public void SameBoardsUntilADeviceOrARoleChanges()
+    {
+        var devices = ThreeBoards();
+        var view = PdmView.Build(devices);
+        devices[1].Outputs[4].Name = "edited";
+        devices[1].Outputs[4].CurrentLimit = 12;
+        Assert.True(PdmView.Build(devices).SameBoards(view));
+        Assert.False(PdmView.Build(devices.Take(2)).SameBoards(view));          // board removed
+        Assert.False(PdmView.Build(ThreeBoards()).SameBoards(view));            // other device objects (project reloaded)
+        (devices[0].BaseId, devices[2].BaseId) = (0x500, 0x540);                // a read changed the base IDs: A1 / A2 swap
+        Assert.False(PdmView.Build(devices).SameBoards(view));
+    }
+
+    [Fact]
+    public void InputValueColumnIsLive()
+    {
+        var devices = ThreeBoards();
+        var view = PdmView.Build(devices);
+        Assert.Equal("OFF", view.Inputs.Single(i => i.Number == 1).Value);
+        devices[2].DigitalInputs[0].State = true;                               // A1 IN1
+        devices[2].AnalogInputs[0].Millivolts = 1234.4;
+        Assert.Equal(("ON", "1234 mV"), (view.Inputs.Single(i => i.Number == 1).Value, view.Inputs.Single(i => i.Number == 25).Value));
+    }
+
     [Fact]
     public void RowsPointAtTheLiveDeviceObjects()
     {
