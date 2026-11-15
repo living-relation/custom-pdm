@@ -5,3 +5,27 @@
 - Upstream: https://github.com/corygrant/dingoConfig, branch `development`, commit `01134ad057dee5c69788ccfecf63420740e932bc` (2026-10-26, "bump version"). It matches our firmware's dingoFW `development` @ 14084e9.
 - Import commit: unmodified copy (tree hash equal to upstream `e9202a9`). Our changes are separate commits on top, so `git diff <import commit> -- ui/dingoConfig` shows all of them.
 - Build output (`bin/`, `obj/`) is git-ignored.
+
+## Our changes (route A)
+- Device types 14 (board A) and 15 (board B): `dingoConfig/web/Definitions/device-definitions.json` plus `custompdm-a-signals.json` / `custompdm-b-signals.json` (cyclic layout of `firmware/boards/custompdm_*/msg.cpp`).
+- Param block 0x7F00 (temperature limits, critical-exempt outputs, critical-soon margin, wake inputs): `dingoConfig/domain/CustomPdm/CustomPdmSettings.cs`, hooked into `FwDevice` for types 14 / 15 only. Shown on the device Configuration tab (Device panel); die temperature and the thermal flags on the device status (Dashboard) tab.
+- Tests: `tests/CustomPdm.Tests` (C#). The live ones talk to the host simulation of our firmware through `tests/sim_bridge.py`.
+
+## Run on DansPC (PowerShell, repo root)
+Build and start the app (then open the address it prints):
+
+    dotnet build ui\dingoConfig\dingoConfig.sln
+    dotnet run --project ui\dingoConfig\web\web.csproj
+
+Build the firmware host sim once (WSL), from a committed branch:
+
+    wsl -e bash -c 'S=~/scratch/ui-sim; rm -rf $S; mkdir -p $S/src $S/so; cd /mnt/c/projects/active/custom-pdm; git archive main firmware | tar -x -C $S/src; cd $S/src/firmware; for u in 1 2; do bash sim/build.sh custompdm_a $S/so $u; done; bash sim/build.sh custompdm_b $S/so 1'
+
+Tests (without `CUSTOMPDM_SIM_SO` the live ones only print "skipped"):
+
+    dotnet test ui\tests\CustomPdm.Tests
+    $env:CUSTOMPDM_SIM_SO='/home/daniel/scratch/ui-sim/so'; dotnet test ui\tests\CustomPdm.Tests
+
+Use the app with the simulated boards (A1 0x500, A2 0x540, B 0x580, 1000K): start the bridge, then in dingoConfig pick adapter "SLCAN TCP", port `localhost:3333`, bit rate 1000K, add the three devices (types "custom-pdm A" / "custom-pdm B"), and press Read All before any write (a new project's defaults are stock dingoPDM ones, not our factory defaults):
+
+    wsl -e python3 /mnt/c/projects/active/custom-pdm/ui/tests/sim_bridge.py /home/daniel/scratch/ui-sim/so --slcan-tcp 3333

@@ -6,6 +6,7 @@ namespace CustomPdm.Tests;
 
 // dingoConfig's own device / param code (FwDevice, ParamProtocol, CRC) against our real firmware logic (host sim of
 // custompdm_a unit 1 / 2 and custompdm_b, factory-fresh FRAM), over the stock dingoFW parameter protocol.
+[Collection("sim")] // the sim tests run one after another (WSL processes, real-time bridge)
 public class LiveSimTests(ITestOutputHelper output)
 {
     public static TheoryData<string, int, int> Boards => new() { { "A1", 14, 0x500 }, { "A2", 14, 0x540 }, { "B", 15, 0x580 } };
