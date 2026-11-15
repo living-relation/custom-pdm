@@ -167,6 +167,13 @@ public sealed class FakePdm
         return refused;
     }
 
+    // time passes, but nothing the PC sent has reached a board yet
+    public void TickOnly()
+    {
+        Clock = Clock.AddMilliseconds(100);
+        Service.Tick(Clock);
+    }
+
     public string Line(string role)
     {
         var r = Service.Ops.Results.Single(x => x.Role == role);

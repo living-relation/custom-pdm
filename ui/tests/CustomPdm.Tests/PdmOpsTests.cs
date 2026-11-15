@@ -218,6 +218,22 @@ public class PdmOpsTests
         Assert.Equal([1, 1, 1], pdm.Boards.Values.Select(b => b.Burns));
     }
 
+    // The "match" flag of the last check is not enough: the burn waits for the reply to ITS OWN check
+    [Fact]
+    public void BurnWaitsForTheFreshCheckReply()
+    {
+        var pdm = ReadPdm();
+        Assert.All(PdmOps.Roles, r => Assert.False(pdm.Dev(r).ConfigMismatch));   // old flags: all "match"
+        pdm.Dev("A1").Outputs[2].CurrentLimit = 5.5;
+        Assert.Null(pdm.Service.Start(PdmOpKind.Burn, true, pdm.Clock));
+        for (var i = 0; i < 5; i++) pdm.TickOnly();                                // no reply has arrived yet
+        Assert.True(pdm.Service.Ops.Busy);
+        Assert.Equal((PdmStepState.Running, "config check ..."), (pdm.Service.Ops.Results[0].State, pdm.Service.Ops.Results[0].Text));
+        Assert.Equal(PdmStepState.Waiting, pdm.Service.Ops.Results[1].State);
+        pdm.Pump();
+        Assert.All(pdm.Boards.Values, b => Assert.Equal(0, b.Count(MessageCommand.BurnParams)));
+    }
+
     [Fact]
     public void BurnStopsAtTheBoardThatReportsAFailedBurn()
     {
