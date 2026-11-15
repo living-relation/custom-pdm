@@ -95,7 +95,7 @@
                 @if (!busy && Pdm.Ops.LastOp == PdmOpKind.Burn && results.Any(r => r.State != PdmStepState.Ok))
                 {
                     <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">
-                        Not every board is burned (see the lines above). A board that is not burned goes back to its old settings at the next power-up.
+                        Not every board is burned (see the lines above). A board that is not burned starts with its old burned settings at the next power-up.
                     </MudAlert>
                 }
             }
@@ -162,12 +162,12 @@
                 <PropertyColumn Property="x => x.BoardOutput" Title="Board Out" Editable="false" />
                 <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
                 <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" Editable="false" />
-                <TemplateColumn Title="Enabled" SortBy="@(x => x.Output.Enabled)">
+                <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Output.Enabled)">
                     <EditTemplate>
                         <MudCheckBox @bind-Value="context.Item.Output.Enabled" Dense="true" Disabled="@busy" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Name" SortBy="@(x => x.Output.Name)" CellStyle="min-width: 160px">
+                <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Output.Name)" CellStyle="min-width: 160px">
                     <EditTemplate>
                         <MudTextField @bind-Value="context.Item.Output.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
                     </EditTemplate>
@@ -181,28 +181,28 @@
                     </CellTemplate>
                 </PropertyColumn>
                 <PropertyColumn Property="x => x.Output.Current" Title="Current (A)" Editable="false" Format="F1" />
-                <TemplateColumn Title="Current Limit (A)" SortBy="@(x => x.Output.CurrentLimit)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Current Limit (A)" Sortable="true" SortBy="@(x => x.Output.CurrentLimit)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         <MudNumericField @key="@($"currentLimit-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.CurrentLimit" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((double val) => OnCurrentLimitChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Inrush Limit (A)" SortBy="@(x => x.Output.InrushCurrentLimit)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Inrush Limit (A)" Sortable="true" SortBy="@(x => x.Output.InrushCurrentLimit)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         <MudNumericField @key="@($"inrushLimit-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.InrushCurrentLimit" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((double val) => OnInrushLimitChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Inrush Time (ms)" SortBy="@(x => x.Output.InrushTime)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Inrush Time (ms)" Sortable="true" SortBy="@(x => x.Output.InrushTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         <MudNumericField @key="@($"inrushTime-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.InrushTime" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((int val) => OnInrushTimeChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Reset Mode" SortBy="@(x => (int)x.Output.ResetMode)" CellStyle="min-width: 130px">
+                <TemplateColumn Title="Reset Mode" Sortable="true" SortBy="@(x => (int)x.Output.ResetMode)" CellStyle="min-width: 130px">
                     <EditTemplate>
                         <MudSelect T="ResetMode" @bind-Value="context.Item.Output.ResetMode" Variant="Variant.Outlined" Dense="true"
                                    Disabled="@Locked(context.Item.Output)">
@@ -213,14 +213,14 @@
                         </MudSelect>
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Reset Count Limit" SortBy="@(x => x.Output.ResetCountLimit)" CellStyle="min-width: 80px">
+                <TemplateColumn Title="Reset Count Limit" Sortable="true" SortBy="@(x => x.Output.ResetCountLimit)" CellStyle="min-width: 80px">
                     <EditTemplate>
                         <MudNumericField @key="@($"resetCount-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.ResetCountLimit" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((int val) => OnResetCountChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Reset Time (ms)" SortBy="@(x => x.Output.ResetTime)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Reset Time (ms)" Sortable="true" SortBy="@(x => x.Output.ResetTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         <MudNumericField @key="@($"resetTime-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.ResetTime" Disabled="@Locked(context.Item.Output)"
@@ -240,7 +240,7 @@
                 <PropertyColumn Property="x => x.Kind" Title="Kind" Editable="false" />
                 <PropertyColumn Property="x => x.BoardInput" Title="Board In" Editable="false" />
                 <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
-                <TemplateColumn Title="Enabled" SortBy="@(x => x.Enabled)">
+                <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Enabled)">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -252,7 +252,7 @@
                         }
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Name" SortBy="@(x => x.Name)" CellStyle="min-width: 160px">
+                <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Name)" CellStyle="min-width: 160px">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -277,7 +277,7 @@
                         }
                     </CellTemplate>
                 </PropertyColumn>
-                <TemplateColumn Title="Mode" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Mode)" CellStyle="min-width: 140px">
+                <TemplateColumn Title="Mode" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Mode)" CellStyle="min-width: 140px">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -290,7 +290,7 @@
                         }
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Pull" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Pull)" CellStyle="min-width: 140px">
+                <TemplateColumn Title="Pull" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Pull)" CellStyle="min-width: 140px">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -303,7 +303,7 @@
                         }
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Invert" SortBy="@(x => x.Digital != null && x.Digital.Invert)">
+                <TemplateColumn Title="Invert" Sortable="true" SortBy="@(x => x.Digital != null && x.Digital.Invert)">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -311,7 +311,7 @@
                         }
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Debounce (ms)" SortBy="@(x => x.Digital == null ? -1 : x.Digital.DebounceTime)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Debounce (ms)" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : x.Digital.DebounceTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {

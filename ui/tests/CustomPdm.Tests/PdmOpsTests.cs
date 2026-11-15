@@ -149,7 +149,7 @@ public class PdmOpsTests
         pdm.Boards["A2"].Silent = true;                // still "connected" for the PC: it stops answering mid-way
         Assert.Null(pdm.Run(PdmOpKind.WriteAll));
         Assert.Equal([Ok, Failed, NotDone], pdm.States);
-        Assert.Equal("Failed: no reply (write not confirmed in 20 s)", pdm.Line("A2"));
+        Assert.Equal("Failed: no reply (write not confirmed in 90 s)", pdm.Line("A2"));
         Assert.Equal("NotDone: not written (run stopped at A2)", pdm.Line("B"));
         Assert.Equal((5.5f, before.Item2, before.Item3), OnBoards(pdm));
         Assert.Equal(0, pdm.Boards["B"].Count(MessageCommand.WriteAll));

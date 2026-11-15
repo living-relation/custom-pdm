@@ -39,10 +39,11 @@ public class PdmOps(PdmOpsLinks links)
     public const string NoBoardReason = "No custom-pdm board is connected.";
 
     // Measured against the firmware sim (ui/tests PdmLiveSimTests output, about 2500 params per board, frames 2 ms
-    // apart): Read All of one board about 0.6 s, Write All about 5 s.
+    // apart): Read All of one board about 0.6 s, Write All about 5 s. Through the real-time SLCAN TCP sim bridge
+    // (ui/README.md) one Write All took 40 to 55 s in the browser check (the sim runs slower than real time), so the write waits 90 s.
     // DeviceManager re-sends an unanswered Write All / Burn request once after 3 s, so those two wait past 6 s.
     public TimeSpan ReadTimeout { get; set; } = TimeSpan.FromSeconds(10);
-    public TimeSpan WriteTimeout { get; set; } = TimeSpan.FromSeconds(20);
+    public TimeSpan WriteTimeout { get; set; } = TimeSpan.FromSeconds(90);
     public TimeSpan CheckTimeout { get; set; } = TimeSpan.FromSeconds(3);
     public TimeSpan BurnTimeout { get; set; } = TimeSpan.FromSeconds(8);
 
