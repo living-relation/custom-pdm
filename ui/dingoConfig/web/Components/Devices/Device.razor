@@ -1,0 +1,89 @@
+@page "/device/{DeviceId:guid}"
+@using domain.Interfaces
+@using domain.Devices
+@using domain.Devices.Generic
+@using domain.Devices.Keypad.BlinkMarine
+@using domain.Devices.Keypad.Grayhill
+@using application.Services
+@inject DeviceManager DeviceManager
+@inject ICommsAdapterManager AdapterManager
+@implements IDisposable
+
+<PageTitle>Device</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    @if (_currentDevice != null)
+    {
+        @* Render BaseDeviceView with appropriate device type *@
+        @switch (_currentDevice)
+        {
+            case domain.Devices.FwDevice fwDevice:
+                <BaseDeviceView TDevice="domain.Devices.FwDevice"
+                               Device="fwDevice"
+                               AdapterConnected="@AdapterManager.IsConnected" />
+                break;
+                
+            case DbcDevice statusDevice:
+                <BaseDeviceView TDevice="DbcDevice"
+                                Device="statusDevice"
+                                AdapterConnected="@AdapterManager.IsConnected"/>
+                break;
+
+            case BlinkMarineKeypadDevice blinkKeypad:
+                <BaseDeviceView TDevice="BlinkMarineKeypadDevice"
+                               Device="blinkKeypad"
+                               AdapterConnected="@AdapterManager.IsConnected" />
+                break;
+
+            case GrayhillKeypadDevice grayhillKeypad:
+                <BaseDeviceView TDevice="GrayhillKeypadDevice"
+                               Device="grayhillKeypad"
+                               AdapterConnected="@AdapterManager.IsConnected" />
+                break;
+
+            default:
+                <MudAlert Severity="Severity.Warning">
+                    Unknown device type: @_currentDevice.GetType().Name
+                </MudAlert>
+                break;
+        }
+    }
+    else
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudProgressCircular Indeterminate="true" />
+                <MudText Class="ml-2">Loading device...</MudText>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid DeviceId { get; set; }
+
+    private IDevice? _currentDevice;
+    private Timer? _refreshTimer;
+
+    protected override void OnInitialized()
+    {
+        // Get initial device
+        _currentDevice = DeviceManager.GetDevice(DeviceId);
+
+        // Refresh at 20 Hz (every 50ms) to update UI with latest device state
+        _refreshTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                _currentDevice = DeviceManager.GetDevice(DeviceId);
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50));
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

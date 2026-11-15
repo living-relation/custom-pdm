@@ -1,0 +1,143 @@
+@page "/"
+@using application.Services
+@using domain.Devices
+@using domain.Interfaces
+@using domain.Devices.Keypad.BlinkMarine
+@using domain.Devices.Keypad.Grayhill
+@using web.Services
+@inject DeviceManager DeviceManager
+@inject FwDeviceDefManager FwDeviceDefManager
+@inject IWebHostEnvironment Env
+@inject NavigationManager Navigation
+
+<PageTitle>Home</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudPaper Elevation="0" Class="pa-6">
+        <MudStack Row="false" Justify="Justify.Center" AlignItems="AlignItems.Center">
+            <MudImage Src="logo/dingoCONFIG-logo-color-no-bg.svg"/>
+            <MudText Typo="Typo.body1" Class="mb-4">
+                Configure and monitor your devices
+            </MudText>
+
+            <MudGrid Justify="Justify.Center">
+                @foreach (var device in _devices)
+                {
+                    <MudItem>
+                        <MudCard Elevation="4" Style="width: 175px; height: 100%; cursor: pointer;" @onclick="@(() => OpenFirst(d => d is FwDevice f && f.Def.DeviceType == device.DeviceType))">
+                            <MudCardContent>
+                                <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                    <MudIcon Size="Size.Large" Icon="@Utils.GetIcon(device.Icon, Env.WebRootPath)"/>
+                                    @if (GetDeviceLogo(device) is { } logo)
+                                    {
+                                        <MudImage Src="@logo" Width="120" ObjectPosition="ObjectPosition.Left"/>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.h6">@device.TypeName</MudText>
+                                    }
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+
+                <MudItem>
+                    <MudCard Elevation="4" Style="width: 175px; height: 100%; cursor: pointer;" @onclick="@(() => OpenFirst(d => d is BlinkMarineKeypadDevice))">
+                        <MudCardContent>
+                            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                <MudIcon Size="Size.Large" Icon="@Icons.Material.Filled.CalendarViewMonth"/>
+                                <MudText Typo="Typo.h6">
+                                    Blink Marine
+                                </MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+                
+                <MudItem>
+                    <MudCard Elevation="4" Style="width: 175px; height: 100%; cursor: pointer;" @onclick="@(() => OpenFirst(d => d is GrayhillKeypadDevice))">
+                        <MudCardContent>
+                            <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                                <MudIcon Size="Size.Large" Icon="@Icons.Material.Filled.CalendarViewMonth"/>
+                                <MudText Typo="Typo.h6">
+                                    Grayhill
+                                </MudText>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+            </MudGrid>
+        </MudStack>
+
+        <MudDivider Class="my-6"/>
+
+        <MudText Typo="Typo.h5" GutterBottom="true">Features</MudText>
+
+        <MudList ReadOnly="true" T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Cable">
+                Connect to various comms adapters
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Memory">
+                Add device(s) to configure and monitor
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Outlined.SaveAs">
+                Save the devices to a config file
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Outlined.FolderOpen">
+                Open devices from a config file
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Article">
+                Monitor and export CAN traffic
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ListAlt">
+                Monitor and export system message logs
+            </MudListItem>
+        </MudList>
+        
+        <MudDivider Class="my-6"/>
+
+        <MudText Typo="Typo.h6" GutterBottom="true">Getting Started</MudText>
+
+        <MudList ReadOnly="true" T="string">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.Cable">
+                Select a comms adapter and connect
+            </MudListItem>
+            <MudListItem T="string" href="/devices" Icon="@Icons.Material.Filled.Memory">
+                Add device(s)
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Outlined.SaveAs">
+                Save the devices to a config file
+            </MudListItem>
+        </MudList>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private IReadOnlyList<FwDeviceDef> _devices = [];
+
+    protected override void OnInitialized()
+    {
+        _devices = FwDeviceDefManager.GetAllDevices();
+    }
+
+    private void OpenFirst(Func<IDevice, bool> match)
+    {
+        var device = DeviceManager.GetAllDevices().FirstOrDefault(match);
+        Navigation.NavigateTo(device is null ? "/devices" : $"/device/{device.Guid}");
+    }
+    
+    private static string? GetDeviceLogo(FwDeviceDef device) => device switch
+    {
+        not null => device.TypeName switch
+        {
+            "dingoPDM" => "logo/dingoPDM-logo-color-no-bg.svg",
+            "dingoPDM-Max" => "logo/dingoPDM-MAX-logo-color-no-bg.svg",
+            "CANBoard" => "logo/CANboard-logo-color-no-bg.svg",
+            _ => null
+        },
+        _ => null
+    };
+    
+}

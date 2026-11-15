@@ -1,0 +1,438 @@
+@page "/devices"
+@using web.Services
+@using domain.Interfaces
+@using application.Services
+@using domain.Devices
+@using domain.Devices.Keypad.BlinkMarine
+@using domain.Devices.Keypad.Grayhill
+@inject DeviceManager DeviceManager
+@inject NotificationService Notification
+@inject IWebHostEnvironment Env
+@inject IDialogService DialogService
+@inject UserPreferencesManager UserPrefs
+@inject NavigationManager Navigation
+@inject FwDeviceDefManager DevDefManager
+
+<PageTitle>Devices</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-4">
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Outlined.Add"
+                   OnClick="@ToggleCreateForm">
+            @(_showCreateForm ? "Cancel" : "Add Device")
+        </MudButton>
+    </MudStack>
+    
+
+    @if (_showCreateForm)
+    {
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Create New Device</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="_newDeviceName"
+                                      Label="Device Name"
+                                      Required="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudSelect Value="_newDeviceType"
+                                   ValueChanged="OnDeviceTypeChanged"
+                                   Label="Device Type"
+                                   Required="true"
+                                   Variant="Variant.Outlined"
+                                   T="string">
+                            @foreach (var def in DevDefManager.GetAllDevices())
+                            {
+                                <MudSelectItem T="string" Value="@($"fwD:{def.DeviceType}")">@def.TypeName</MudSelectItem>
+                            }
+                            <MudSelectItem T="string" Value="@("DbcDevice")">DBC Device</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("BlinkKeypad")">Blink Marine Keypad</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("GrayhillKeypad")">Grayhill Keypad</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    @if (_newDeviceType == "BlinkKeypad")
+                    {
+                        <MudItem xs="12" sm="4">
+                            <MudSelect @bind-Value="_newDeviceModel"
+                                       Label="Model"
+                                       Required="true"
+                                       Variant="Variant.Outlined"
+                                       T="string">
+                                <MudSelectItem T="string" Value="@("pkp1100")">PKP-1100</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp1200")">PKP-1200</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp1500")">PKP-1500</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp1600")">PKP-1600</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp2200")">PKP-2200</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp2300")">PKP-2300</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp2400")">PKP-2400</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp2500")">PKP-2500</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp2600")">PKP-2600</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp3500")">PKP-3500</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("pkp3500mt")">PKP-3500-MT</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    }
+                    @if (_newDeviceType == "GrayhillKeypad")
+                    {
+                        <MudItem xs="12" sm="4">
+                            <MudSelect @bind-Value="_newDeviceModel"
+                                       Label="Model"
+                                       Required="true"
+                                       Variant="Variant.Outlined"
+                                       T="string">
+                                <MudSelectItem T="string" Value="@("3kx06")">3Kx06</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("3kx08")">3Kx08</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("3kx12")">3Kx12</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("3kx15")">3Kx15</MudSelectItem>
+                                <MudSelectItem T="string" Value="@("3kx20")">3Kx20</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                    }
+                </MudGrid>
+                <MudGrid>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="_newDeviceBaseIdString"
+                                         Label="Base ID"
+                                         Required="true"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton OnClick="@ToggleCreateForm">Cancel</MudButton>
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Outlined"
+                           OnClick="@CreateDevice"
+                           Disabled="@(string.IsNullOrWhiteSpace(_newDeviceName) || string.IsNullOrWhiteSpace(_newDeviceType))">
+                    Create
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+    
+    @if (_showModifyForm)
+    {
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Modify Device</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_modifyDeviceName"
+                                  Label="Device Name"
+                                  Required="true"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_modifyDeviceBaseIdString"
+                                     Label="Base ID"
+                                     Required="true"
+                                     Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton OnClick="@CloseModifyForm">Cancel</MudButton>
+                <MudButton Color="Color.Tertiary"
+                           Variant="Variant.Outlined"
+                           OnClick="@ModifyDevice"
+                           Disabled="@(string.IsNullOrWhiteSpace(_modifyDeviceName) || string.IsNullOrWhiteSpace(_modifyDeviceBaseIdString))">
+                    Modify
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+
+    @if (_loading)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else if (!_devices.Any())
+    {
+        <MudAlert Severity="Severity.Warning">
+            No devices configured. Click "Add Device" to create one.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="5">
+            @foreach (var device in _devices)
+            {
+                <MudItem>
+                    <MudCard Outlined="true" Style="height: 100%">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true">
+                                    <MudIcon Icon="@GetDeviceIcon(device)" Size="Size.Large"/>
+                                    <MudText Typo="Typo.body2">
+                                        @(Utils.FormatId(device.BaseId, UserPrefs.Preferences.IdFormat))
+                                    </MudText>
+                                </MudStack>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@(device.Connected ? Color.Success : Color.Error)">
+                                    @(device.Connected ? "Connected" : "Disconnected")
+                                </MudChip>
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (GetDeviceLogo(device) is { } logo)
+                            {
+                                <MudImage Src="@logo" Width="200" ObjectPosition="ObjectPosition.Left"/>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.h6">@device.Type</MudText>
+                            }
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Class="mx-2"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@(() => NavigateToDevice(device.Guid))">
+                                Open
+                            </MudButton>
+                            <MudButton Class="mx-2"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Info"
+                                       Size="Size.Small"
+                                       OnClick="@(() => ShowModifyForm(device))">
+                                Modify
+                            </MudButton>
+                            <MudButton Class="mx-2"
+                                       Variant="Variant.Outlined"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => DeleteDevice(device))">
+                                Delete
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private List<IDevice> _devices = [];
+    private Timer? _refreshTimer;
+    private bool _loading = true;
+    private bool _showCreateForm;
+    private bool _showModifyForm;
+
+    // Form fields
+    private string _newDeviceName = string.Empty;
+    private string _newDeviceType = string.Empty;
+    private string _newDeviceBaseIdString = string.Empty;
+    private string _newDeviceModel = string.Empty;
+
+    private string _modifyDeviceName = string.Empty;
+    private string _modifyDeviceType = string.Empty;
+    private string _modifyDeviceBaseIdString = string.Empty;
+
+    private IDevice? _modifyDevice;
+
+    protected override void OnInitialized()
+    {
+        LoadDevices();
+        
+        // Refresh at 20 Hz (every 50ms) to update UI with latest device state
+        _refreshTimer = new Timer(_ =>
+        {
+            InvokeAsync(() =>
+            {
+                LoadDevices();
+                StateHasChanged();
+            });
+        }, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50));
+    }
+
+    private void LoadDevices()
+    {
+        _loading = true;
+        try
+        {
+            _devices = DeviceManager.GetAllDevices().ToList();
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError("Error loading devices",ex);
+            _devices = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ToggleCreateForm()
+    {
+        _showCreateForm = !_showCreateForm;
+        _showModifyForm = false;
+        if (!_showCreateForm) return;
+
+        _newDeviceName = string.Empty;
+        _newDeviceType = string.Empty;
+        _newDeviceBaseIdString = "0x0";
+    }
+
+    private void ShowModifyForm(IDevice device)
+    {
+        _showModifyForm = true;
+        _showCreateForm = false;
+
+        _modifyDevice = device;
+        _modifyDeviceName = device.Name;
+        _modifyDeviceBaseIdString = Utils.FormatId(device.BaseId, UserPrefs.Preferences.IdFormat);
+        _modifyDeviceType = device.Type;
+    }
+
+    private void CloseModifyForm()
+    {
+        _showModifyForm = false;
+    }
+
+    private void CreateDevice()
+    {
+        try
+        {
+            var ids = Utils.ParseId(_newDeviceBaseIdString, UserPrefs.Preferences.IdFormat, Notification);
+
+            if (_newDeviceType is "BlinkKeypad" or "GrayhillKeypad")
+                DeviceManager.AddDevice($"{_newDeviceType}-{_newDeviceModel}", _newDeviceName, ids);
+            else
+                DeviceManager.AddDevice(_newDeviceType, _newDeviceName, ids);
+
+            Notification.NewSuccess($"Device '{_newDeviceName}' created successfully");
+            _showCreateForm = false;
+            LoadDevices();
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError($"Error creating device: {_newDeviceName}", ex);
+        }
+    }
+
+    private void ModifyDevice()
+    {
+        try
+        {
+            if (_modifyDevice == null)
+            {
+                Notification.NewError($"Device '{_modifyDeviceName}' could not be modified");
+                return;
+            }
+
+            var ids = Utils.ParseId(_modifyDeviceBaseIdString, UserPrefs.Preferences.IdFormat, Notification);
+
+            DeviceManager.ModifyDeviceConfig(_modifyDevice.Guid, _modifyDeviceName, ids);
+
+            Notification.NewSuccess($"Device '{_modifyDeviceName}' modify successfully sent.");
+            Notification.NewWarning("Remember to Burn after modifying device base ID to store new ID on device");
+            _showModifyForm = false;
+            
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError($"Error modifying device {_modifyDeviceName}", ex);
+        }
+    }
+
+    private async Task DeleteDevice(IDevice device)
+    {
+        var result = await DialogService.ShowMessageBox(
+            $"Delete device?",
+            $"Delete {device.Name}?",
+            yesText: "Yes",
+            cancelText: "Cancel");
+
+        if (result != true)
+            return;
+        
+        try
+        {
+            DeviceManager.RemoveDevice(device.Guid);
+            Notification.NewSuccess($"Device '{device.Name}' deleted successfully");
+            LoadDevices();
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError($"Error deleting device {device.Name}", ex);
+        }
+    }
+    
+    private void OnDeviceTypeChanged(string deviceType)
+    {
+        _newDeviceType = deviceType;
+
+        FwDeviceDef? fwDevDef = null;
+        int defaultId;
+
+        if (deviceType.StartsWith("fwD:") && int.TryParse(deviceType[4..], out var tid))
+        {
+            fwDevDef = DevDefManager.GetAllDevices().FirstOrDefault(d => d.DeviceType == tid);
+            defaultId = Convert.ToInt32(fwDevDef?.DefaultId, 16);
+        }
+        else
+        {
+            defaultId = _newDeviceType switch
+            {
+                "BlinkKeypad"    => BlinkMarineKeypadDevice.DefaultId,
+                "GrayhillKeypad" => GrayhillKeypadDevice.DefaultId,
+                _                => 0
+            };
+        }
+
+        _newDeviceName = fwDevDef?.TypeName ?? deviceType;
+
+        _newDeviceBaseIdString = Utils.FormatId(defaultId, UserPrefs.Preferences.IdFormat);
+    }
+
+    private void NavigateToDevice(Guid deviceId)
+    {
+        Navigation.NavigateTo($"/device/{deviceId}");
+    }
+    
+    private static string? GetDeviceLogo(IDevice device) => device switch
+    {
+        domain.Devices.FwDevice fwd => fwd.Def.TypeName switch
+        {
+            "dingoPDM" => "logo/dingoPDM-logo-color-no-bg.svg",
+            "dingoPDM-Max" => "logo/dingoPDM-MAX-logo-color-no-bg.svg",
+            "CANBoard" => "logo/CANboard-logo-color-no-bg.svg",
+            _ => null
+        },
+        _ => null
+    };
+    
+    private string GetDeviceIcon(IDevice device) => device switch
+    {
+        domain.Devices.FwDevice fwd => Utils.GetIcon(fwd.Def.Icon, Env.WebRootPath),
+        _ => device.GetType().Name switch
+        {
+            "DbcDevice" => Icons.Material.Filled.FactCheck,
+            "BlinkMarineKeypadDevice" or "GrayhillKeypadDevice" => Icons.Material.Filled.CalendarViewMonth,
+            _ => Icons.Material.Filled.DeviceUnknown
+        }
+    };
+    
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+}

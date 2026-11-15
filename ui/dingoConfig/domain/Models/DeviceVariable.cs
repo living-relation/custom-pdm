@@ -1,0 +1,14 @@
+using domain.Interfaces;
+
+namespace domain.Models;
+
+public class DeviceVariable
+{
+    public Func<string> GetName { get; init; } = null!;
+    public string PropertyName { get; set; } = string.Empty;
+    public int VariableIndex { get; set; }
+    public bool SingleVariable { get; set; }
+    public string DataType { get; set; } = string.Empty;
+    public IDeviceFunction? Owner { get; set; } // null for device level variables
+    public Func<bool> IsAvailable { get; init; } = () => true; // e.g. PWM vars only while PWM is enabled
+}
