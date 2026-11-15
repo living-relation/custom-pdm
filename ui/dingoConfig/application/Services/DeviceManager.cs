@@ -205,7 +205,7 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
         return devices;
     }
 
-    private void CheckConfig(Guid deviceId)
+    public void CheckConfig(Guid deviceId) // custom-pdm: public (was private) for PdmOpsService, the fresh check before a burn
     {
         var device = GetDevice(deviceId);
         if (device is not IDeviceConfigurable) return;

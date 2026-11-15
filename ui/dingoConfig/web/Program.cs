@@ -68,6 +68,7 @@ builder.Services.AddSingleton<ICommsAdapterManager, CommsAdapterManager>();
 builder.Services.AddSingleton<FwDeviceDefManager>();
 builder.Services.AddSingleton<ConfigFileManager>();
 builder.Services.AddSingleton<DeviceManager>();
+builder.Services.AddSingleton<PdmOpsService>(sp => new PdmOpsService(sp.GetRequiredService<DeviceManager>())); // custom-pdm: /pdm Read All / Write All / Burn
 builder.Services.AddSingleton<CanMsgLogger>();
 builder.Services.AddSingleton<SystemLogger>();
 builder.Services.AddSingleton<SimPlayback>();

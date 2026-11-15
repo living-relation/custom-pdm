@@ -1,11 +1,20 @@
 @page "/pdm"
 @using application.Services
 @using domain.CustomPdm
+@using domain.Devices.Functions
 @using domain.Enums
+@using domain.Interfaces
+@using web.Services
 @inject DeviceManager DeviceManager
+@inject PdmOpsService Pdm
+@inject ICommsAdapterManager AdapterManager
+@inject NotificationService Notification
 @implements IDisposable
 
-@* custom-pdm route B, phase B1 (docs/ui-route-b-plan.md): live view of the three boards as one PDM. Read-only. *@
+@* custom-pdm route B (docs/ui-route-b-plan.md): the three boards as one PDM.
+   B1: live view. B2: editable settings and ONE Read All / Write All / Burn (domain/CustomPdm/PdmOps.cs).
+   Editing follows the stock grids (Devices/FwDevice/Functions/OutputsGrid.razor, DigitalInputsGrid.razor): same
+   clamps, same "disabled when not enabled / paired" rules. *@
 <PageTitle>PDM</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
@@ -17,10 +26,80 @@
     }
     else
     {
+        var busy = Pdm.Ops.Busy;
+        var readBlocked = Pdm.BlockedReason(PdmOpKind.ReadAll, _view, AdapterManager.IsConnected);
+        var writeBlocked = Pdm.BlockedReason(PdmOpKind.WriteAll, _view, AdapterManager.IsConnected);
+        var burnBlocked = Pdm.BlockedReason(PdmOpKind.Burn, _view, AdapterManager.IsConnected);
+        var results = Pdm.Ops.Results;
+
         @foreach (var problem in _view.Problems)
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@problem</MudAlert>
         }
+
+        <MudPaper Outlined="true" Class="pa-3 mb-4">
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Download"
+                           Disabled="@(readBlocked != null)" OnClick="@(() => Start(PdmOpKind.ReadAll))">Read All</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Upload"
+                           Disabled="@(writeBlocked != null)" OnClick="@(() => Start(PdmOpKind.WriteAll))">Write All</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save"
+                           Disabled="@(burnBlocked != null)" OnClick="@(() => Start(PdmOpKind.Burn))">Burn</MudButton>
+                @if (busy)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    <MudText Typo="Typo.body2">@OpName(Pdm.Ops.LastOp) running: boards are handled one after another (A1, A2, B). Settings are locked until it ends.</MudText>
+                }
+            </MudStack>
+            @if (!busy && readBlocked != null)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Read All is off: @readBlocked</MudText>
+            }
+            @if (!busy && writeBlocked != null && writeBlocked == burnBlocked && writeBlocked != readBlocked)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Write All and Burn are off: @writeBlocked</MudText>
+            }
+            else if (!busy)
+            {
+                @if (writeBlocked != null && writeBlocked != readBlocked)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Write All is off: @writeBlocked</MudText>
+                }
+                @if (burnBlocked != null && burnBlocked != readBlocked)
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Burn is off: @burnBlocked</MudText>
+                }
+            }
+            <MudText Typo="Typo.caption" Class="mt-2" Style="display: block">
+                Write All changes the running settings only. Burn is never automatic: it is its own button, it first checks that all
+                three boards hold exactly the PC settings (one mismatch: nothing is burned), and each board answers with its own burn result.
+                Names are kept in the project file only, not on the boards.
+            </MudText>
+            @if (Pdm.Ops.LastOp != null && results.Count > 0)
+            {
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.body2"><b>@OpName(Pdm.Ops.LastOp)</b> @(busy ? "(running)" : "(last run)")</MudText>
+                @foreach (var r in results)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
+                        <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 44px;" Color="@ResultColor(r.State)">@r.Role</MudChip>
+                        <MudText Typo="Typo.body2">@r.Text</MudText>
+                    </MudStack>
+                }
+                @if (!busy && Pdm.Ops.LastOp == PdmOpKind.WriteAll && results.Any(r => r.State != PdmStepState.Ok))
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">
+                        The boards are NOT all on the PC settings (see the lines above). Fix the cause, then Write All again.
+                    </MudAlert>
+                }
+                @if (!busy && Pdm.Ops.LastOp == PdmOpKind.Burn && results.Any(r => r.State != PdmStepState.Ok))
+                {
+                    <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">
+                        Not every board is burned (see the lines above). A board that is not burned starts with its old burned settings at the next power-up.
+                    </MudAlert>
+                }
+            }
+        </MudPaper>
 
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
         <MudGrid Class="mb-4">
@@ -49,6 +128,12 @@
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">Not read yet: settings are PC defaults</MudChip>
                                 }
+                                else if (dev.ConfigMismatch)
+                                {
+                                    <MudTooltip Text="As of the last config check (after connect, Read All, Write All, or the check before a burn). Edits made on the PC since then are not in it.">
+                                        <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Warning">Config Mismatch</MudChip>
+                                    </MudTooltip>
+                                }
                             </MudStack>
                             <MudText Typo="Typo.body2">
                                 @dev.BatteryVoltage.ToString("F1") V &nbsp; @dev.TotalCurrent.ToString("F1") A &nbsp;
@@ -69,54 +154,117 @@
         </MudGrid>
 
         <MudText Typo="Typo.h6" Class="mb-2">Outputs (@_view.Outputs.Count)</MudText>
-        <MudDataGrid Items="@_view.Outputs" Dense="true" Hover="true" ReadOnly="true" SortMode="SortMode.Single"
-                     FixedHeader="true" Height="calc(55vh)" Class="mb-4">
+        <MudDataGrid Items="@_view.Outputs" Dense="true" Hover="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
+                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="true" Height="calc(55vh)" Class="mb-4">
             <Columns>
-                <PropertyColumn Property="x => x.Number" Title="#" />
-                <PropertyColumn Property="x => x.Board" Title="Board" />
-                <PropertyColumn Property="x => x.BoardOutput" Title="Board Out" />
-                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" />
-                <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" />
-                <TemplateColumn Title="Name" SortBy="@(x => x.Output.Name)">
-                    <CellTemplate>@context.Item.Output.Name</CellTemplate>
+                <PropertyColumn Property="x => x.Number" Title="#" Editable="false" />
+                <PropertyColumn Property="x => x.Board" Title="Board" Editable="false" />
+                <PropertyColumn Property="x => x.BoardOutput" Title="Board Out" Editable="false" />
+                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
+                <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" Editable="false" />
+                <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Output.Enabled)">
+                    <EditTemplate>
+                        <MudCheckBox @bind-Value="context.Item.Output.Enabled" Dense="true" Disabled="@busy" />
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Enabled" SortBy="@(x => x.Output.Enabled)">
-                    <CellTemplate>@(context.Item.Output.Enabled ? "Yes" : "No")</CellTemplate>
+                <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Output.Name)" CellStyle="min-width: 160px">
+                    <EditTemplate>
+                        <MudTextField @bind-Value="context.Item.Output.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="State" SortBy="@(x => (int)x.Output.State)">
+                <PropertyColumn Property="x => x.Output.State" Title="State" Editable="false">
                     <CellTemplate>
                         <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 50px;"
                                  Color="@GetOutputColor(context.Item.Output.State)">
                             @GetOutputStateText(context.Item.Output.State)
                         </MudChip>
                     </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Output.Current" Title="Current (A)" Editable="false" Format="F1" />
+                <TemplateColumn Title="Current Limit (A)" Sortable="true" SortBy="@(x => x.Output.CurrentLimit)" CellStyle="min-width: 100px">
+                    <EditTemplate>
+                        <MudNumericField @key="@($"currentLimit-{context.Item.Number}-{_refreshCounter}")"
+                                         Value="@context.Item.Output.CurrentLimit" Disabled="@Locked(context.Item.Output)"
+                                         ValueChanged="@((double val) => OnCurrentLimitChanged(context.Item.Output, val))" />
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Current (A)" SortBy="@(x => x.Output.Current)">
-                    <CellTemplate>@context.Item.Output.Current.ToString("F1")</CellTemplate>
+                <TemplateColumn Title="Inrush Limit (A)" Sortable="true" SortBy="@(x => x.Output.InrushCurrentLimit)" CellStyle="min-width: 100px">
+                    <EditTemplate>
+                        <MudNumericField @key="@($"inrushLimit-{context.Item.Number}-{_refreshCounter}")"
+                                         Value="@context.Item.Output.InrushCurrentLimit" Disabled="@Locked(context.Item.Output)"
+                                         ValueChanged="@((double val) => OnInrushLimitChanged(context.Item.Output, val))" />
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Limit (A)" SortBy="@(x => x.Output.CurrentLimit)">
-                    <CellTemplate>@context.Item.Output.CurrentLimit.ToString("F1")</CellTemplate>
+                <TemplateColumn Title="Inrush Time (ms)" Sortable="true" SortBy="@(x => x.Output.InrushTime)" CellStyle="min-width: 100px">
+                    <EditTemplate>
+                        <MudNumericField @key="@($"inrushTime-{context.Item.Number}-{_refreshCounter}")"
+                                         Value="@context.Item.Output.InrushTime" Disabled="@Locked(context.Item.Output)"
+                                         ValueChanged="@((int val) => OnInrushTimeChanged(context.Item.Output, val))" />
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Reset Count" SortBy="@(x => x.Output.ResetCount)">
-                    <CellTemplate>@context.Item.Output.ResetCount</CellTemplate>
+                <TemplateColumn Title="Reset Mode" Sortable="true" SortBy="@(x => (int)x.Output.ResetMode)" CellStyle="min-width: 130px">
+                    <EditTemplate>
+                        <MudSelect T="ResetMode" @bind-Value="context.Item.Output.ResetMode" Variant="Variant.Outlined" Dense="true"
+                                   Disabled="@Locked(context.Item.Output)">
+                            @foreach (ResetMode resetMode in Enum.GetValues(typeof(ResetMode)))
+                            {
+                                <MudSelectItem T="ResetMode" Value="@resetMode">@resetMode</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
                 </TemplateColumn>
+                <TemplateColumn Title="Reset Count Limit" Sortable="true" SortBy="@(x => x.Output.ResetCountLimit)" CellStyle="min-width: 80px">
+                    <EditTemplate>
+                        <MudNumericField @key="@($"resetCount-{context.Item.Number}-{_refreshCounter}")"
+                                         Value="@context.Item.Output.ResetCountLimit" Disabled="@Locked(context.Item.Output)"
+                                         ValueChanged="@((int val) => OnResetCountChanged(context.Item.Output, val))" />
+                    </EditTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Reset Time (ms)" Sortable="true" SortBy="@(x => x.Output.ResetTime)" CellStyle="min-width: 100px">
+                    <EditTemplate>
+                        <MudNumericField @key="@($"resetTime-{context.Item.Number}-{_refreshCounter}")"
+                                         Value="@context.Item.Output.ResetTime" Disabled="@Locked(context.Item.Output)"
+                                         ValueChanged="@((int val) => OnResetTimeChanged(context.Item.Output, val))" />
+                    </EditTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.Output.ResetCount" Title="Reset Count" Editable="false" />
             </Columns>
         </MudDataGrid>
 
         <MudText Typo="Typo.h6" Class="mb-2">Inputs (@_view.Inputs.Count)</MudText>
-        <MudDataGrid Items="@_view.Inputs" Dense="true" Hover="true" ReadOnly="true" SortMode="SortMode.Single"
-                     FixedHeader="true" Height="calc(55vh)" Class="mb-4">
+        <MudDataGrid Items="@_view.Inputs" Dense="true" Hover="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
+                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="true" Height="calc(55vh)" Class="mb-4">
             <Columns>
-                <PropertyColumn Property="x => x.Number" Title="#" />
-                <PropertyColumn Property="x => x.Board" Title="Board" />
-                <PropertyColumn Property="x => x.Kind" Title="Kind" />
-                <PropertyColumn Property="x => x.BoardInput" Title="Board In" />
-                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" />
-                <PropertyColumn Property="x => x.Name" Title="Name" />
-                <TemplateColumn Title="Enabled" SortBy="@(x => x.Enabled)">
-                    <CellTemplate>@(context.Item.Enabled ? "Yes" : "No")</CellTemplate>
+                <PropertyColumn Property="x => x.Number" Title="#" Editable="false" />
+                <PropertyColumn Property="x => x.Board" Title="Board" Editable="false" />
+                <PropertyColumn Property="x => x.Kind" Title="Kind" Editable="false" />
+                <PropertyColumn Property="x => x.BoardInput" Title="Board In" Editable="false" />
+                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
+                <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Enabled)">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudCheckBox @bind-Value="di.Enabled" Dense="true" Disabled="@busy" />
+                        }
+                        else
+                        {
+                            @(context.Item.Enabled ? "Yes" : "No")
+                        }
+                    </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="State / Value">
+                <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Name)" CellStyle="min-width: 160px">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudTextField @bind-Value="di.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
+                        }
+                        else
+                        {
+                            @context.Item.Name
+                        }
+                    </EditTemplate>
+                </TemplateColumn>
+                <PropertyColumn Property="x => x.Value" Title="State / Value" Editable="false">
                     <CellTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -128,29 +276,138 @@
                             @($"{an.Millivolts:F0} mV")
                         }
                     </CellTemplate>
+                </PropertyColumn>
+                <TemplateColumn Title="Mode" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Mode)" CellStyle="min-width: 140px">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudSelect T="domain.Enums.InputMode" @bind-Value="di.Mode" Variant="Variant.Outlined" Dense="true" Disabled="@Locked(di)">
+                                @foreach (domain.Enums.InputMode mode in Enum.GetValues(typeof(domain.Enums.InputMode)))
+                                {
+                                    <MudSelectItem T="domain.Enums.InputMode" Value="@mode">@mode</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    </EditTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Pull" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : (int)x.Digital.Pull)" CellStyle="min-width: 140px">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudSelect T="InputPull" @bind-Value="di.Pull" Variant="Variant.Outlined" Dense="true" Disabled="@Locked(di)">
+                                @foreach (InputPull pull in Enum.GetValues(typeof(InputPull)))
+                                {
+                                    <MudSelectItem T="InputPull" Value="@pull">@pull</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    </EditTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Invert" Sortable="true" SortBy="@(x => x.Digital != null && x.Digital.Invert)">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudCheckBox @bind-Value="di.Invert" Dense="true" Disabled="@Locked(di)" />
+                        }
+                    </EditTemplate>
+                </TemplateColumn>
+                <TemplateColumn Title="Debounce (ms)" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : x.Digital.DebounceTime)" CellStyle="min-width: 100px">
+                    <EditTemplate>
+                        @if (context.Item.Digital is { } di)
+                        {
+                            <MudNumericField @key="@($"debounce-{context.Item.Number}-{_refreshCounter}")"
+                                             Value="@di.DebounceTime" Disabled="@Locked(di)"
+                                             ValueChanged="@((int val) => OnDebounceChanged(di, val))" />
+                        }
+                    </EditTemplate>
                 </TemplateColumn>
             </Columns>
         </MudDataGrid>
+        <MudText Typo="Typo.caption">Analog inputs (rows 25-27) are read-only here: set them on the board's own page.</MudText>
     }
 </MudContainer>
 
 @code {
     private PdmView _view = new();
     private Timer? _refreshTimer;
+    private int _refreshCounter;
 
     protected override void OnInitialized()
     {
-        _view = PdmView.Build(DeviceManager.GetDevicesByType<domain.Devices.FwDevice>());
+        _view = Pdm.BuildView();
 
-        // Same pattern as Device.razor, at 10 Hz
+        // Live refresh at 10 Hz. The rows are rebuilt only when the boards change (PdmView.SameBoards): a rebuild
+        // on every tick would recreate every row and throw away the cell being edited.
         _refreshTimer = new Timer(_ =>
         {
             InvokeAsync(() =>
             {
-                _view = PdmView.Build(DeviceManager.GetDevicesByType<domain.Devices.FwDevice>());
+                var fresh = Pdm.BuildView();
+                if (!fresh.SameBoards(_view)) _view = fresh;
                 StateHasChanged();
             });
         }, null, TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(100));
+    }
+
+    private void Start(PdmOpKind op)
+    {
+        try
+        {
+            var refused = Pdm.Start(op, AdapterManager.IsConnected);
+            if (refused != null) Notification.NewError($"PDM {OpName(op)} not started: {refused}");
+            else Notification.NewInfo($"PDM {OpName(op)} started (A1, A2, B)");
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError($"Error starting PDM {OpName(op)}", ex);
+        }
+    }
+
+    private static string OpName(PdmOpKind? op) => op switch
+    {
+        PdmOpKind.ReadAll => "Read All",
+        PdmOpKind.WriteAll => "Write All",
+        PdmOpKind.Burn => "Burn",
+        _ => ""
+    };
+
+    private static Color ResultColor(PdmStepState state) => state switch
+    {
+        PdmStepState.Ok => Color.Success,
+        PdmStepState.Failed => Color.Error,
+        PdmStepState.NotDone => Color.Warning,
+        PdmStepState.Running => Color.Info,
+        _ => Color.Default
+    };
+
+    // Stock rules (OutputsGrid / DigitalInputsGrid), plus: locked while a PDM run is active
+    private bool Locked(Output o) => Pdm.Ops.Busy || !o.Enabled || o.PrimaryOutput >= 0;
+    private bool Locked(DigitalInput i) => Pdm.Ops.Busy || !i.Enabled;
+
+    // Same limits and messages as the stock grids
+    private void OnCurrentLimitChanged(Output item, double value) =>
+        item.CurrentLimit = Clamp(value, 0, 100.0, $"{item.Name}.CurrentLimit");
+
+    private void OnInrushLimitChanged(Output item, double value) =>
+        item.InrushCurrentLimit = Clamp(value, 0, 100.0, $"{item.Name}.InrushCurrentLimit");
+
+    private void OnInrushTimeChanged(Output item, int value) =>
+        item.InrushTime = (int)Clamp(value, 0, 10000, $"{item.Name}.InrushTime");
+
+    private void OnResetCountChanged(Output item, int value) =>
+        item.ResetCountLimit = (int)Clamp(value, 0, 20, $"{item.Name}.ResetCountLimit");
+
+    private void OnResetTimeChanged(Output item, int value) =>
+        item.ResetTime = (int)Clamp(value, 0, 60000, $"{item.Name}.ResetTime");
+
+    private void OnDebounceChanged(DigitalInput item, int value) =>
+        item.DebounceTime = (int)Clamp(value, 0, 1000, $"{item.Name}.DebounceTime");
+
+    private double Clamp(double value, double min, double max, string what)
+    {
+        if (value < min || value > max) Notification.NewWarning($"{what} must be {min} to {max}");
+        _refreshCounter++;
+        return Math.Clamp(value, min, max);
     }
 
     private static Color GetOutputColor(OutState state) => state switch

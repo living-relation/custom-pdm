@@ -17,6 +17,7 @@ public record PdmInputRow(int Number, string Board, string Kind, int BoardInput,
 {
     public string Name => Digital?.Name ?? Analog?.Name ?? "";
     public bool Enabled => Digital?.Enabled ?? Analog?.Enabled ?? false;
+    public string Value => Digital != null ? (Digital.State ? "ON" : "OFF") : $"{Analog?.Millivolts:F0} mV"; // live
 }
 
 public class PdmView
@@ -34,6 +35,13 @@ public class PdmView
 
     public double TotalCurrent => Boards.Sum(b => b.Device.TotalCurrent);
     public bool Any => Boards.Count > 0;
+
+    // B2: true when both views hold the same device objects in the same roles. The /pdm page then keeps its rows
+    // through the live refresh, so a cell that is being edited (and the sort order) is not thrown away 10 times a second.
+    public bool SameBoards(PdmView other) =>
+        Boards.Count == other.Boards.Count
+        && Boards.Zip(other.Boards).All(p => p.First.Role == p.Second.Role && ReferenceEquals(p.First.Device, p.Second.Device))
+        && Problems.SequenceEqual(other.Problems);
 
     public static PdmView Build(IEnumerable<FwDevice> devices)
     {
