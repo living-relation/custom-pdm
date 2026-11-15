@@ -14,6 +14,7 @@ stdio commands (one per line, every reply ends with a line "OK"):
   IN <board> <i> <open|gnd|12v> [up|down|off]   digital input i (0-based) wire / input-board DIP
   TEMP <board> <board C> [die C]                MCP9808 reading (and STM32 die temperature)
   AN <board> <volts>          analog input wire voltage
+  LINK <board> <on|off>       CAN wires of one board (off = silent: it neither hears nor sends; it keeps running)
   QUIT
 """
 import os, sys, time, socket, select
@@ -59,6 +60,8 @@ def stdio(so):
             boards[a[1]].set_temp(float(a[2]), float(a[3]) if len(a) > 3 else None)
         elif c == 'AN':
             boards[a[1]].set_analog(float(a[2]))
+        elif c == 'LINK':
+            boards[a[1]].connected = a[2].lower() == 'on'
         else:
             sys.stdout.write(f'ERR {raw.strip()}\n')
         sys.stdout.write('OK\n'); sys.stdout.flush()
