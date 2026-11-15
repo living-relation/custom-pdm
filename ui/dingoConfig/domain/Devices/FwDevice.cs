@@ -155,6 +155,10 @@ public class FwDevice : IDeviceConfigurable
         _setters["Wiper.FastState"]  = val => Wipers.FastState = val != 0;
         _setters["Wiper.Speed"]      = val => Wipers.Speed = (WiperSpeed)val;
         _setters["Wiper.State"]      = val => Wipers.State = (WiperState)val;
+        // custom-pdm (types 14 / 15 signals files only): msg 3 byte 7 flags, msg 37 raw ADC and STM32 die temperature
+        _setters["CustomPdm.ThermalFlags"] = val => CustomPdm?.ThermalFlags = (int)val;
+        _setters["CustomPdm.AnalogRaw"]    = val => CustomPdm?.AnalogRaw = val;
+        _setters["CustomPdm.DieTempC"]     = val => CustomPdm?.DieTempC = val;
 
         _indexedSetters["AnalogInput.Millivolts"]   = (i, val) => AnalogInputs[i].Millivolts = val;
         _indexedSetters["AnalogInput.RotaryPos"]    = (i, val) => AnalogInputs[i].Rotary.Pos = (short)val;
@@ -531,6 +535,8 @@ public class FwDevice : IDeviceConfigurable
 
         foreach(var canInput in CanInputs)
             canInput.Output = false;
+
+        CustomPdm?.ClearStatus();
         
         Logger.LogDebug("Device {Name} cleared", Name);
     }

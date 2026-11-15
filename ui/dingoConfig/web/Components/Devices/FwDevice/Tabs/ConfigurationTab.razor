@@ -1,5 +1,6 @@
 @using application.Services
 @using domain.Enums
+@using domain.CustomPdm
 @using web.Components.Devices.FwDevice.Functions
 @using web.Services
 @inject UserPreferencesManager UserPrefs
@@ -110,6 +111,54 @@
                                         <MudText>@GetSelectedVarText(Device.ForceSleepInput)</MudText>
                                     </MudStack>
                                 </MudPaper>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                }
+                @* custom-pdm: param block 0x7F00, device types 14 / 15 only (CustomPdm is null for stock types) *@
+                @if (Device.CustomPdm is { } cpdm)
+                {
+                    <MudItem>
+                        <MudCard Elevation="4" Style="height: 100%">
+                            <MudCardContent>
+                                <MudText Typo="Typo.body1">Board Temperature Limits</MudText>
+                                <MudNumericField T="int" @bind-Value="cpdm.TempWarn" Label="Warn (°C)"
+                                                 Min="CustomPdmSettings.TempMin" Max="CustomPdmSettings.TempMax"
+                                                 Variant="Variant.Outlined" Style="max-width: 200px"/>
+                                <MudNumericField T="int" @bind-Value="cpdm.TempCrit" Label="Critical, all outputs off (°C)"
+                                                 Min="CustomPdmSettings.TempMin" Max="CustomPdmSettings.TempMax"
+                                                 Variant="Variant.Outlined" Style="max-width: 200px"/>
+                                <MudNumericField T="int" @bind-Value="cpdm.TempCritHyst" Label="Recovery below critical (°C)"
+                                                 Min="CustomPdmSettings.HystMin" Max="CustomPdmSettings.HystMax"
+                                                 Variant="Variant.Outlined" Style="max-width: 200px"/>
+                                <MudNumericField T="int" @bind-Value="cpdm.TempCritSoonMargin" Label="Critical-soon margin (°C, 0 = off)"
+                                                 Min="CustomPdmSettings.MarginMin" Max="CustomPdmSettings.MarginMax"
+                                                 Variant="Variant.Outlined" Style="max-width: 200px"/>
+                                <MudText Typo="Typo.body2" Class="mt-2">Outputs kept on at critical</MudText>
+                                @for (var i = 0; i < cpdm.NumOutputs; i++)
+                                {
+                                    var bit = i;
+                                    <MudCheckBox T="bool" Dense="true" Label="@Device.Outputs[bit].Name"
+                                                 Value="@((cpdm.CritExemptMask & (1 << bit)) != 0)"
+                                                 ValueChanged="@((bool v) => cpdm.CritExemptMask = v ? cpdm.CritExemptMask | (1 << bit) : cpdm.CritExemptMask & ~(1 << bit))"/>
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem>
+                        <MudCard Elevation="4" Style="height: 100%">
+                            <MudCardContent>
+                                <MudText Typo="Typo.body1">Wake Inputs</MudText>
+                                <MudText Typo="Typo.caption">CAN and USB always wake. Ignored while Disable Digital Input Wake is on. One input per shared wake line.</MudText>
+                                @for (var i = 0; i < cpdm.NumDigitalInputs; i++)
+                                {
+                                    var bit = i;
+                                    var label = Device.DigitalInputs[bit].Name + (cpdm.WakeInputNeverAllowed(bit) ? " (USB line, cannot wake)" : "");
+                                    <MudCheckBox T="bool" Dense="true" Label="@label"
+                                                 Disabled="@cpdm.WakeInputBlocked(bit)"
+                                                 Value="@((cpdm.WakeInputMask & (1 << bit)) != 0)"
+                                                 ValueChanged="@((bool v) => cpdm.WakeInputMask = v ? cpdm.WakeInputMask | (1 << bit) : cpdm.WakeInputMask & ~(1 << bit))"/>
+                                }
                             </MudCardContent>
                         </MudCard>
                     </MudItem>

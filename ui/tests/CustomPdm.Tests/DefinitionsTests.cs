@@ -72,5 +72,14 @@ public class DefinitionsTests
             Assert.Equal(((diMask >> i) & 1) == 1, dev.DigitalInputs[i].State);
         Assert.Equal(3210.0, dev.AnalogInputs[0].Millivolts);
         Assert.True(dev.InIdRange(baseId + 0x27));
+        Assert.Equal((2600.0, -12.3), (dev.CustomPdm!.AnalogRaw, Math.Round(dev.CustomPdm.DieTempC, 1)));
+
+        // msg 3 (base + 5): bytes 0-3 output states, byte 7 thermal flags (bit 0 warn, 1 critical soon, 2 critical)
+        var m3 = new byte[8];
+        m3[0] = 0x21; m3[7] = 0b101;
+        Feed(dev, baseId + 5, m3);
+        Assert.Equal((5, true, false, true), (dev.CustomPdm.ThermalFlags, dev.CustomPdm.OverWarn, dev.CustomPdm.CriticalSoon, dev.CustomPdm.Critical));
+        Assert.Equal((domain.Enums.OutState)1, dev.Outputs[0].State);
+        Assert.Equal((domain.Enums.OutState)2, dev.Outputs[1].State);
     }
 }

@@ -64,6 +64,51 @@ public class LiveSimTests(ITestOutputHelper output)
         Assert.True(pc2.Dev.ConfigMismatch, "CRC check must see a changed 0x7F00 value");
     }
 
+    // Status page values decoded from the firmware's real cyclic frames: DIs (msg 0 / 37), analog (msg 37),
+    // board temperature (msg 0), die temperature (msg 37), thermal flags (msg 3 byte 7)
+    [Theory]
+    [MemberData(nameof(Boards))]
+    public void StatusDecode(string board, int type, int baseId)
+    {
+        if (SkipNoSim()) return;
+        using var bus = new SimBus();
+        var pc = Boot(bus, type, baseId);
+        // Read first: a new project's PC defaults are not our factory defaults (bit rate 500K vs 1000K, fan config)
+        Assert.True(pc.ReadAll());
+        foreach (var d in pc.Dev.DigitalInputs) d.Enabled = true;
+        pc.Dev.AnalogInputs[0].Enabled = true;
+        Assert.True(pc.WriteAll());
+        var n = pc.Dev.DigitalInputs.Count;
+        for (var i = 0; i < n; i++) bus.Cmd($"IN {board} {i} {(i % 3 == 0 ? "12v" : "gnd")} off");
+        bus.Cmd($"AN {board} 3.0");
+
+        byte[] Last(int offset) => pc.Seen.Last(s => s.Id == baseId + offset).Data;
+        int flags = 0;
+        foreach (var (temp, expectBit) in new[] { (62.5, 1), (77.0, 2), (81.0, 4) })
+        {
+            bus.Cmd($"TEMP {board} {temp} 41");
+            pc.Run(1500);
+            var m37 = Last(0x27);
+            var di = BitConverter.ToUInt16(m37, 0);
+            Assert.True(di != 0 && di != (1 << n) - 1, $"input pattern not seen by the firmware: {di:X}");
+            for (var i = 0; i < n; i++) Assert.Equal(((di >> i) & 1) == 1, pc.Dev.DigitalInputs[i].State);
+            Assert.Equal(BitConverter.ToUInt16(m37, 2), pc.Dev.AnalogInputs[0].Millivolts);
+            Assert.Equal(BitConverter.ToUInt16(m37, 4), pc.Dev.CustomPdm!.AnalogRaw);
+            Assert.True(pc.Dev.AnalogInputs[0].Millivolts > 0);
+            Assert.Equal(BitConverter.ToInt16(m37, 6) / 10.0, pc.Dev.CustomPdm.DieTempC, 3);
+            // what the firmware sends for a 41 C die in the sim (firmware/sim/pdmsim.py die_temp_can: sensor model, one
+            // 12-bit sample, GetTemperature() with the sim's calibration values) = 45.6 C
+            var raw = (int)((0.76 + (41 - 25.0) * 0.0025) / 3.3 * 4095.0 + 0.5);
+            Assert.Equal((int)((30.0 + (raw - 943) / (1199.0 - 943) * 80.0) * 10.0) / 10.0, pc.Dev.CustomPdm.DieTempC, 3);
+            Assert.Equal(temp, pc.Dev.BoardTempC, 3);
+            flags = Last(5)[7];
+            Assert.Equal(flags, pc.Dev.CustomPdm.ThermalFlags);
+            Assert.True((flags & expectBit) != 0, $"{temp} C: flags {flags}");
+            output.WriteLine($"{board} {temp} C: flags {flags} (warn {pc.Dev.CustomPdm.OverWarn}, soon {pc.Dev.CustomPdm.CriticalSoon}, crit {pc.Dev.CustomPdm.Critical}), die {pc.Dev.CustomPdm.DieTempC}, DI {di:X}, AN {pc.Dev.AnalogInputs[0].Millivolts} mV / raw {pc.Dev.CustomPdm.AnalogRaw}");
+        }
+        Assert.True(pc.Dev.CustomPdm!.Critical);
+    }
+
     // The checkbox rule (CustomPdmSettings.WakeInputMaskBadBits) accepts exactly the masks the firmware accepts
     [Theory]
     [InlineData("A1", 14, 0x500)]

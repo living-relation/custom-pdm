@@ -31,7 +31,8 @@
         {"target": "Wiper.FastState", "dbc": {"name": "WiperFastState", "startBit": 33, "length": 1}},
         {"target": "Wiper.Speed", "dbc": {"name": "WiperSpeed", "startBit": 40, "length": 4}},
         {"target": "Wiper.State", "dbc": {"name": "WiperState", "startBit": 44, "length": 4}},
-        {"target": "Flasher.Value", "count": 4, "dbc": {"name": "Flasher{n}", "startBit": 48, "length": 1}}
+        {"target": "Flasher.Value", "count": 4, "dbc": {"name": "Flasher{n}", "startBit": 48, "length": 1}},
+        {"target": "CustomPdm.ThermalFlags", "dbc": {"name": "ThermalFlags", "startBit": 56, "length": 8}}
       ]
     },
     {
@@ -230,7 +231,9 @@
       "idOffset": 39,
       "signals": [
         {"target": "DigitalInput.State", "count": 10, "dbc": {"name": "DigitalInput{n}.State", "length": 1}},
-        {"target": "AnalogInput.Millivolts", "count": 1, "dbc": {"name": "AnalogInput{n}.Millivolts", "startBit": 16, "length": 16, "unit": "mV"}}
+        {"target": "AnalogInput.Millivolts", "count": 1, "dbc": {"name": "AnalogInput{n}.Millivolts", "startBit": 16, "length": 16, "unit": "mV"}},
+        {"target": "CustomPdm.AnalogRaw", "dbc": {"name": "AnalogInput1.Raw", "startBit": 32, "length": 16}},
+        {"target": "CustomPdm.DieTempC", "dbc": {"name": "DieTemp", "startBit": 48, "length": 16, "isSigned": true, "factor": 0.1, "unit": "degC"}}
       ]
     }
   ]
