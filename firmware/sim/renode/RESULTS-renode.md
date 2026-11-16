@@ -14,17 +14,17 @@ Update 2026-11-14 (branch `feat/fw-thermal`, thermal protection + fans, `docs/fi
 | 20 | Above warn (56 C) | A1 outputs 1, 2, 4 stay on; state 0 -> 2 -> 0; last message E / State_Overtemp / 560 |
 | 21 | At critical (80 C) | A1 all off after 20 ms (sensor read phase), state 2, message E / Overtemp / 800 / 800, other boards untouched; still off at 79.5 / 80 / 77 / 74.0 C; back on 160 ms after 73.5 C; no fatal error |
 
-Update 2026-11-14 (branch `feat/fw-sleep`, sleep fix + MCP9808 reads + critical-exempt fan): **25 of 25 pass**. Test 5 now also reads device param 8 (critical-exempt mask: A1 0, A2 2, B 0). New tests (run after test 22):
+Update 2026-11-14 (branch `feat/fw-sleep`, sleep fix + MCP9808 reads + critical-exempt fan): **25 of 25 pass**. Test 5 now also reads device param 8 (critical-exempt mask: A1 0, A2 2, B 0). New tests (run after the manual ID / bit-rate test; named, not numbered, because the numbers shifted with later tests):
 
-| # | Test | Evidence from the run |
+| Name | Test | Evidence from the run |
 |---|---|---|
-| 23 (new) | Sleep request on A1 (alone on the bus) | before: DEN high on all 4 pairs, output 3 on, status LED on, sensor converting with alert on; after: every IN / DEN / DSEL low, both LEDs off, sensor in shutdown with alert off (1 shutdown write, 0 rejected), status frames stop |
-| 24 (new) | Wake-up (MCU reset, no sensor power-on reset) | DEN high at the first status frame; sensor back to continuous, alert on, not locked; msg 0 shows only 0 (no reading yet) then 41.5 C, never the 33.0 C held from before sleep |
-| 25 (new) | MCP9808 NAKs | A1 at 80 C: all off; 2 s of NAKs while it cools to 40 C: still all off, state 2, msg 0 keeps 80.0 C, message E / TempSensor (14) / 4 / I2C flags; reads back: outputs on and state Run |
+| Sleep (new) | Sleep request on A1 (alone on the bus) | before: DEN high on all 4 pairs, output 3 on, status LED on, sensor converting with alert on; after: every IN / DEN / DSEL low, both LEDs off, sensor in shutdown with alert off (1 shutdown write, 0 rejected), status frames stop |
+| Wake-up (new) | Wake-up (MCU reset, no sensor power-on reset) | DEN high at the first status frame; sensor back to continuous, alert on, not locked; msg 0 shows only 0 (no reading yet) then 41.5 C, never the 33.0 C held from before sleep |
+| MCP9808 read failures (new) | MCP9808 NAKs | A1 at 80 C: all off; 2 s of NAKs while it cools to 40 C: still all off, state 2, msg 0 keeps 80.0 C, message E / TempSensor (14) / 4 / I2C flags; reads back: outputs on and state Run |
 
 Model changes (`models/PdmI2C.cs`): the MCP9808 stand-in now follows DS25095A Register 5-2 for the lock bits (sticky until `PowerOnReset`; SHDN cannot be set while locked; locked fields and limit registers keep their value), shutdown (ambient register frozen), tCONV 30 ms after start or after SHDN clears (ambient register holds the old value meanwhile; 0 C after power-on), `Nak` (no address acknowledge, the controller reports AF). `machine Reset` is now an MCU reset only for the sensor; the bench's power cycle calls `PowerOnReset` first.
 
-STOP mode is not emulated: in Renode SysTick keeps running and ends the WFI at once (seen in a debug run: the board reset and restarted 620 ms after the sleep request). Test 23 therefore halts the CPU at `EnterStopMode()` (address from `arm-none-eabi-nm`, a file-local LTO symbol), and test 24 does the MCU reset the firmware does after STOP. EXTI wake-up from STOP stays untested here.
+STOP mode is not emulated: in Renode SysTick keeps running and ends the WFI at once (seen in a debug run: the board reset and restarted 620 ms after the sleep request). The sleep test therefore halts the CPU at `EnterStopMode()` (address from `arm-none-eabi-nm`, a file-local LTO symbol), and the wake-up test does the MCU reset the firmware does after STOP. EXTI wake-up from STOP stays untested here.
 
 Update 2026-11-14 (branch `feat/fw-fan-warn` @ 503f201, thermal flags + critical soon + temperature-switched fans + params at 0x7F00): **28 of 28 pass** (about 470 s). Test 5 now expects the fan OFF at 30 C (no output high at any 200 ms sample for 2 s, A2 OUT2 status Off) and reads warn / critical / recovery / exempt mask / critical-soon margin from block 0x7F00 sub 0-4: A1 and B (55, 80, 6, 0, 5), A2 (55, 80, 6, 2, 5). New tests:
 
@@ -32,9 +32,9 @@ Update 2026-11-14 (branch `feat/fw-fan-warn` @ 503f201, thermal flags + critical
 |---|---|---|
 | 6 (new) | Fan on A2's own sensor, 30 -> 46 -> 42 -> 39 C (800 ms per step) | global output 10 off, on, on, off |
 | 7 (new) | Fan when only a remote board is hot (A2 at 30 C) | A1 47 -> on, 41 -> on, 39 -> off; B 46 -> on, 30 -> off (temperatures reach A2 in A1 / B msg 0 over the CAN hub) |
-| 23 (new, after the critical test) | Thermal flags + critical-soon message on A1 | msg 3 byte 7 sampled every 100 ms for 1 s at 30 / 56 / 76 / 81 / 30 C = 0 / 1 / 3 / 5 / 0 in every sample, 9-11 msg 3 frames per second; last message on A1's base ID after 76 C = R / Overtemp (9) / 760 / 800 |
+| Thermal flags (new, after the critical test) | Thermal flags + critical-soon message on A1 | msg 3 byte 7 sampled every 100 ms for 1 s at 30 / 56 / 76 / 81 / 30 C = 0 / 1 / 3 / 5 / 0 in every sample, 9-11 msg 3 frames per second; last message on A1's base ID after 76 C = R / Overtemp (9) / 760 / 800 |
 
-One-line mutations, each a full bench run on a mutated `git archive` copy, all RED: R1 msg 3 byte 7 = 0 (test 23 fails: flags 0 in every sample); R2 critical-soon message on any over-temperature (tests 21, 22, 23 fail: an R message replaces the expected last message); R3 fan source A2 only (test 7 fails: fan never on); R4 fan latch without its self-hold (tests 6 and 7 fail: fan off at 42 / 41 C). After a mutation run the bench `fw` folder holds mutated binaries: run with `--build`.
+One-line mutations, each a full bench run on a mutated `git archive` copy, all RED: R1 msg 3 byte 7 = 0 (the thermal-flags test fails: flags 0 in every sample); R2 critical-soon message on any over-temperature (the above-warn, at-critical and thermal-flags tests fail: an R message replaces the expected last message); R3 fan source A2 only (test 7 fails: fan never on); R4 fan latch without its self-hold (tests 6 and 7 fail: fan off at 42 / 41 C). After a mutation run the bench `fw` folder holds mutated binaries: run with `--build`.
 
 Update 2026-11-14 (branch `feat/fw-dingofw-dev` @ aca0c62, firmware on dingoFW `development` @ 14084e9, s15a): **28 of 28 pass** (439 s suite). No model change was needed: the FRAM model takes upstream's 32-byte chunked writes (each its own transaction with its own address), the sleep path (CAN stopped, TX pin as GPIO, pending EXTI / NVIC cleared) runs up to the `EnterStopMode()` hook, and the param thread answers within the bench's reply time-out. Test edits: IDs, status msg and version from `pdmsim.py` (0x500 / 0x540 / 0x580, msg 37, 0.6.2). Evidence that changed: default config 4812 bytes (A) / 4840 (B) written at first start; 322 writes in 0.12 s with 0 retries (each run used to need one resend); cross-board rule on after 40 ms; link-loss changes at 1020 ms; outputs back 620 ms after a restart; overcurrent pulses at 20 / 2020 / 4020 ms, 1000-1020 ms long. RAM: .bss 59.9 kB (A) / 60.2 kB (B) of 128 kB, heap 68.6-69.0 kB left; flash .text 107 kB. Linker RWX warning only.
 
@@ -77,11 +77,11 @@ Time steps: pin states are sampled every 20 ms (10 ms in test 7), so times are r
 ## Differences from the host simulation (`../RESULTS.md`)
 
 - Output back on after power-up: 620 ms here, 506 to 516 ms there. The host simulation reads the FRAM in no time;
-  here the 4364-byte config read takes about 98 ms at 400 kbit/s (9 bit times per byte).
+  here the config read took about 98 ms at 400 kbit/s (9 bit times per byte) for the 4364-byte config of 2026-11-11
+  (the config is larger since the dingoFW `development` port: update above).
 - Saving the config (burn) answers after about 100 ms for the same reason; a 100 ms reply time-out is too short for it.
-- In each run one of the 322 parameter writes got no reply within 100 ms and was sent a second time (a different
-  write each run). Cause not confirmed. Likely the bench: the Renode CAN hub delivers frames in no time, so bursts
-  of status frames from the other boards can overrun the 3-deep receive FIFO. TBD: check on hardware.
+- Before the dingoFW `development` port, one of the 322 parameter writes in each run got no reply within 100 ms and
+  was sent a second time. Fixed upstream: since the port all 322 writes are answered with 0 retries (update above).
 
 ## Renode model problems found (all worked around in `models/`, none in the firmware)
 
@@ -98,7 +98,7 @@ Time steps: pin states are sampled every 20 ms (10 ms in test 7), so times are r
   so test 18 proves the stored timing, not that the bus works at that rate. No receive-overrun or
   transmit-time-out counters (the host simulation has them).
 - USB: no model. The firmware sees "not connected". Config over USB is not tested.
-- STOP mode and EXTI wake-up, brown-out, boot pins, watchdog: not tested (the sleep steps before STOP and the restart after it are, tests 23-24).
+- STOP mode and EXTI wake-up, brown-out, boot pins, watchdog: not tested (the sleep steps before STOP and the restart after it are: the sleep and wake-up tests).
 - PWM outputs and soft start: not tested (all outputs are plain on/off, as in `s1_system.py`).
 - Analog: ideal ADC, no noise or settling; sense clamp 3.3 V assumed (as in the host simulation); die temperature
   channel returns a fixed plausible value; analog input and digital-input pull settings not tested.
