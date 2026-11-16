@@ -14,7 +14,7 @@ Status: option B implemented 2026-11-14 on custom boards only (r5a, r7a, r6c, s1
 
 **Key finding 1 (stock limits would shut the PDM down):** the v2b heat model (worst load 31.1 W, 60 C air, fans on, pad k 3; `docs/diagrams/heat-v2b-F1-board-top-fans.png`) puts the board-top background at about **91-100 C** where the MCP9808 sits. Stock CRIT 80 C would turn **every output off and latch** at sustained worst load, and WARN 55 C would be active almost always in 60 C air. The limits must move and become settable.
 
-**Key finding 2 (MCU temperature grade):** the same background (about 92-99 C) is above the STM32F446RE**T6** rating (-40 to 85 C ambient, `docs/parts-audit.md` P8). Decision C4a said to look at **RET7** (105 C grade) if board air exceeds about 75 C - that trigger was met; RET7 is fitted since PR #54 (r2a), RET6 possibly as an alternate (s9), so limits must suit the fitted chip. Also check the other parts near it at about 100 C (FRAM, TSR 1-2450, MCP2562FD).
+**Key finding 2 (MCU temperature grade):** the same background (about 92-99 C) is above the STM32F446RE**T6** rating (-40 to 85 C ambient, `docs/parts-audit.md` P8). Decision C4a said to look at **RET7** (105 C grade) if board air exceeds about 75 C - that trigger was met; RET7 is fitted since PR #54 (r2a), RET6 is an approved alternate (s9a), so limits must suit the fitted chip. Also check the other parts near it at about 100 C (FRAM, TSR 1-2450, MCP2562FD).
 
 ## 2. Fans: how they are driven
 
@@ -48,13 +48,13 @@ Status: option B implemented 2026-11-14 on custom boards only (r5a, r7a, r6c, s1
 - Bench after hardware: thermocouples on the MCP9808 spot and one BTS70012 to calibrate the 20-25 K offset.
 
 ## 5. Recommended plan (needs Dan's answers)
-1. MCU grade: done (r2a, PR #54: boards now STM32F446RET7, 105 C; RET6, 85 C, may become an approved alternate, Dan s9). The bench limits (r6c) must suit whichever chip is fitted.
+1. MCU grade: done (r2a, PR #54: boards now STM32F446RET7, 105 C; RET6, 85 C, is an approved alternate, Dan s9a). The bench limits (r6c) must suit whichever chip is fitted.
 2. Fan power per r3; fan-fail detection per r4.
 3. Firmware option B: WARN / CRIT as params with new defaults, CRIT auto-recover, STM32 die temp on CAN; fan latch + shedding delivered as a **default config** (no code).
 4. Sim + Renode tests above, then bench calibration.
 
-## 6. Open questions (answers go to DECISIONS.md)
-r2 MCU grade, r3 fan power, r4 fan-fail detection, r5 protection approach, r6 default limits (details in the PR description).
+## 6. Questions r2-r6 (answered)
+r2 MCU grade, r3 fan power, r4 fan-fail detection, r5 protection approach, r6 default limits. Answered: `DECISIONS.md` 2026-11-13 (r2a, r3c, r4c, r5a, r6c; r3c later replaced by the temperature-switched fans, 2026-11-14).
 
 ## 7. What was built (2026-11-14)
 Only builds whose `port.h` sets `THERMAL_LIMIT_PARAMS` (custompdm_a / _b, from `firmware/tools_custom/port_boards.py`) change; stock boards build as before.

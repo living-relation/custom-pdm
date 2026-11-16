@@ -14,7 +14,7 @@ Inside the box, wires solder straight to the boards (Dan 2026-11-12, e6a / a1a /
 DT15-12PA holes (1.77 mm drill: 16 AWG outputs, 20 AWG IN / CAN), silkscreen CL CH O1-O8 I1 I2 between the pad rows;
 board B J6 = wire pads in the old Micro-Fit 2x2 holes (1.02 mm drill, 20 AWG), silkscreen CL CH I1 I2. Footprints:
 `tools/wirepads.py`. "J3 pad 8" below = the J3 hole numbered 8. Board B J6 wires run flat on the top surface under the
-T1-T4 straps (REDCUBE 74650074R body is 3.0 mm tall).
+OUT1-4 copper risers on T1-T4 (REDCUBE 74650074R body is 3.0 mm tall; layout in `docs/enclosure-v2b.md` section 5b).
 
 ## Overview
 
@@ -22,7 +22,7 @@ T1-T4 straps (REDCUBE 74650074R body is 3.0 mm tall).
 |---|---|---|---|---|
 | X1 | HD34-24-21SN (aluminum, flange, sockets) | HD36-24-21PN (pins) | 24-21: 17 x size 16, 4 x size 12 | 15 x 7.5 A outputs (boards A1, A2; A2 OUT2 feeds the fans inside) + 4 x 15 A outputs (board B OUT5-8) |
 | X2 | HDP24-24-47SE-L017 (sockets) | HDP26-24-47PE-L015 (pins) | 24-47: 42 x size 20, 5 x size 16 | inputs, analog, CAN, signal GND |
-| - | 6 studs | ring terminals | - | 150 A battery feed (+12 V); chassis ground; board B OUT1-4 (31 A each, one stud per output, rubber boots) |
+| - | copper bosses / risers through the lid | ring terminals | - | 150 A battery feed (+12 V) and chassis ground on M6 copper bosses; board B OUT1-4 (31 A each) on M4 copper offset risers on T1-T4 (b4a, d1a; parts in `docs/enclosure-v2b.md`) |
 
 ## X1 - outputs: boards A1 and A2 (size 16, 16 AWG) and board B OUT5-8 (size 12, 14 AWG)
 
@@ -63,7 +63,7 @@ The drawing labels only some numbers (1, 2, 20, 30, 40, 47); the rest come from 
 | 17-21 | A2_IN3 .. A2_IN7 | input board #2 J2 pins 1-5 |
 | 22 | A2_AN | input board #2 J2 pin 9 |
 | 23, 24 | B_IN1, B_IN2 | board B stock inputs |
-| 25-32 | B_IN3 .. B_IN10 | input board #3 J2 pins 1-8 (board B pin count to confirm) |
+| 25-32 | B_IN3 .. B_IN10 | input board #3 J2 pins 1-8 |
 | 33 | B_AN | input board #3 J2 pin 9 |
 | 35-38 | SIG_GND | signal ground (switch/sensor returns), from input boards J2 pins 10-12 |
 | 39-47 | spare | 9 x size 20 |
@@ -71,30 +71,27 @@ The drawing labels only some numbers (1, 2, 20, 30, 40, 47); the rest come from 
 
 33 used, 14 spare.
 
-## Studs
+## Power terminals (bosses and risers)
 
 Dan, 2026-11-09: no X3 connector. One pin per output on enclosure connectors (no ganged pins), and no HD30/HDP shell-24 insert has four cavities above 25 A.
+The separate studs planned on 2026-11-09 are replaced by copper bosses and offset risers that show through the lid (b4a, d1a); design and parts: `docs/enclosure-v2b.md`.
 
-| Stud | Signal | Current |
+| Terminal | Signal | Current |
 |---|---|---|
-| BATT | +12 V feed from the battery | 150 A |
-| GND | chassis ground | - |
-| OUT1 .. OUT4 | board B OUT1-4 (BTS70012), from board terminals T1-T4 | 31 A each |
-
-Output studs are live when their output is on: fit rubber boots.
+| BATT boss | +12 V feed from the battery | 150 A |
+| GND boss | chassis ground | - |
+| OUT1 .. OUT4 risers | board B OUT1-4 (BTS70012), on board terminals T1-T4 | 31 A each |
 
 ## Contacts needed vs on hand
 
 | Size | Needed (pins + sockets) | On hand | Buy |
 |---|---|---|---|
 | 20 | 33 + 33 | none | yes, about 70 total plus spares |
-| 16 | 16 + 16 | plenty (16-20 AWG and 14 AWG) | no |
+| 16 | 15 + 15 | plenty (16-20 AWG and 14 AWG) | no |
 | 12 | 4 + 4 | 20 + 20 | no |
 
-Also buy: 6 studs with boots, sealing plugs for spare cavities (size 20, 16). The HDP 24-9 set is not used.
+Also buy: sealing plugs for spare cavities (size 20, 16). The HDP 24-9 set is not used.
 
-## Open items
-- X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers.
-- Board B input count (dingoPDM-Max spare pins: about 8-9 fan out cleanly; confirm when board B is built).
-- X1 current (checked 2026-11-09): TE's HD30/HDP20 catalog and technical manual give only per-contact ratings (continuous at 125 C) and no total-connector limit or multi-contact derating. Loads here are 7.5 A on size 16 (13 A) and 15 A on size 12 (25 A), about 60% of each contact's rating. Dan: per-contact rating is the criterion; the enclosure gets ample cooling.
-- Board B terminals are all REDCUBE 74650074R (50 A at 20 C); OUT1-4 carry 31 A (62%). Dan: per-contact rating is the criterion. Pictures: `docs/diagrams/` (illustrations, not a source of truth).
+## Notes
+- X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers before crimping.
+- Other open items (contacts to buy, current checks): `STATE.md`, Open items (hardware). Pictures: `docs/diagrams/` (illustrations, not a source of truth).

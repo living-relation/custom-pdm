@@ -3,7 +3,7 @@
 > **Superseded 2026-11-13** by the 3D enclosure v2b: `docs/enclosure-v2b.md` (Fusion folder enclosure-v2b). This 2D proposal is kept as history; its questions A-H are answered in `DECISIONS.md` (e1-e7, 2026-11-12). Current-state corrections: board A J3 (DT15-12PA) and board B J6 (Micro-Fit) are wire pads now, not fitted connectors (PR #41), so the DT15 / DT06 height notes below no longer set any height.
 
 Status: PROPOSAL for Dan to approve or change. Nothing here is decided. Written 2026-11-10 on branch `feat/enclosure` (from main 62d38fc).
-Picture: `docs/diagrams/enclosure-layout.svg` (illustration, drawn by `tools/gen_enclosure_layout.py` from the board files; not a source of truth).
+Picture: `docs/diagrams/enclosure-layout.svg` (static illustration, not a source of truth; its generator `tools/gen_enclosure_layout.py` was removed 2026-11-13, h1b).
 2D only. No 3D model and no Fusion thermal study (Dan: heat by hand calc, Elmer later). Fusion was used only to measure vendor STEP files in a scratch document (closed, nothing saved).
 Marks: **TBD** = not confirmed, **ASSUMED** = my placement choice, each one is a question in the last section.
 

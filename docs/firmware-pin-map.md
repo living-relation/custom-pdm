@@ -1,6 +1,6 @@
 # Firmware pin map (boards A and B)
 
-Status: first version, 2026-11-10 (job B, branch `feat/fw-pin-map`). No firmware code. Nothing here is a design decision: open points are in "Questions for Dan".
+Status: pin reference for the built firmware (`firmware/boards/custompdm_a` / `_b`, generated from this map by `firmware/tools_custom/port_boards.py`); first written 2026-11-10 (job B). Nothing here is a design decision: the answers to "Questions for Dan" are in `DECISIONS.md`.
 
 **Sources**
 - Schematics at main `62d38fc`, board B re-checked after B1 at `0ba8c5d` (PR #12), netlists exported read-only with `kicad-cli sch export netlist` and read with `tools/netlist_pins.py` (commands at the end). The schematic is the truth, not the PCB.
@@ -193,17 +193,17 @@ How the custom firmware handles it (B2, built 2026-11-14, `WAKE_INPUT_PARAM`):
 - What the PC tool sees on a refused mask: single Write = no reply (stock for any bad value) plus a CAN warning on the base ID (type 'R' Warning, src 10 Config, data 0 = refused mask, data 1 = its inputs that cannot wake, data 2 = the mask still in use); WriteAll = the stock `WriteAllOutOfRange` reply (0x7F00 / 5 / value) plus the same warning. The stored mask stays as it was.
 - Digital-input PWM measurement (upstream) uses the same EXTI line while awake; sleep stops every PWM input first, so a PWM input can still be a wake source and never blocks another input's wake line. Two PWM inputs on one shared line while awake is an upstream limit (only one works), not affected by the mask.
 
-## 7. What differs from stock dingoFW (work list for later, no code here)
+## 7. What differs from stock dingoFW (done: built in the firmware port, 2026-11-10; results `firmware/sim/RESULTS.md`)
 
 **Board A** (base: `dingopdm_v7`)
 - Outputs 1 and 2: model `BTS7008_2EPA_CH1` / `CH2` instead of two `BTS7002_1EPP`; DEN `PB2`, DSEL `PC7`, IS channel one shared `IS1_2` (PA0). New `LINE_PF1_2_DEN` and `LINE_PF1_2_DSEL`; `AnalogChannel` loses `IS2`, gains `IS1_2` and an analog-input slot for PC2.
 - `NUM_DIG_INPUTS` 2 -> 7 (PA10, PC9, PC10, PC11, PB4, PC13, PB3). `NUM_ANALOG_INPUTS` 0 -> 1 (PC2). Both feed `VAR_MAP_SIZE`, the config blocks and the CAN status messages (`param_defs.h`, `status.cpp`, `msg.cpp`): TBD how much of this is generic in dingoFW.
-- `board.h` pin setup: PC10, PC11, PC13 from output (E1-E3) to input; PB3 from AF0 (SWO) to input; PB4 stays input; PC7 stays output (now DSEL); remove `LINE_SWO`, `LINE_E1..E3`. `profet.cpp` drives `LINE_E2` (PC11) as a debug pin every update: remove it (PC11 is a real input now).
+- `board.h` pin setup: PC10, PC11, PC13 from output (E1-E3) to input; PB3 from AF0 (SWO) to input; PB4 stays input; PC7 stays output (now DSEL); remove `LINE_SWO` (board A only: board B keeps SWO, below) and `LINE_E1..E3`. `profet.cpp` drives `LINE_E2` (PC11) as a debug pin every update: remove it (PC11 is a real input now).
 - `BTS7008_2EPA_KILIS` already exists in `port.h`.
 
 **Board B** (base: `dingopdmmax_v1`, which has 4 outputs)
 - `NUM_OUTPUTS` 4 -> 8; PWM configs for TIM10-13 and callbacks `pwmOut5..8` are copied from v7 `port_pwm.h`; timers already enabled in `mcuconf.h`.
-- New `ProfetModel` for BTS7004-1EPP with its own kILIS constant: TBD (value from the Infineon datasheet, not read). The 1.2k sense resistor (R72-R75) is on the board; check the IS voltage range against the 3.3 V op-amp (LM2902) supply: TBD.
+- New `ProfetModel` for BTS7004-1EPP with its own kILIS constant: done (value in `firmware/sim/RESULTS.md`, What was built). The 1.2k sense resistor (R72-R75) is on the board; check the IS voltage range against the 3.3 V op-amp (LM2902) supply: TBD.
 - DEN is shared per pair (PB12 for 5+6, PB15 for 7+8) but there is no DSEL: pass `LINE_UNUSED` for DSEL as stock Max does for singles. Stock `HandleDsel` only touches DSEL for the BTS7008 models, so it is never written for singles.
 - Stock `LINE_UNUSED` is **PA15**, which is now `PF_IN7`. Not written today, but it is a trap: redefine it to the free pin. That is PB2 since the B1 move (was PC13): set as input with pull-down, never as output (Q4).
 - `AnalogChannel`: IS1..IS4 as stock Max, add IS5..IS8 and one analog-input slot (PB1); `ADC1_NUM_CHANNELS` 7 -> 12 (IS x 8, battery, analog input, temperature, VrefInt).
@@ -237,10 +237,10 @@ Same input board for both, so a board-A build only has 5 live channels. Firmware
 
 ## 9. Questions for Dan
 
-- **Q1. B_IN5 sat on PB2 = BOOT1 (board B). Answered: moved to PC13** (`DECISIONS.md`, B1; done in the board scripts and the firmware). Left over: PB2 now has nothing on it, exactly as on the stock Max. BOOT1 is read only at a reset with BOOT0 high (SW1 closed): low = system bootloader (DFU), high = boot from SRAM. The update command over CAN / USB does not use the pins (`boards/cortex-m4/enter_bootloader.S` jumps to the bootloader itself). Open choice: (A) leave PB2 open like the stock Max; (B) add a 10k resistor from PB2 to GND so the SW1 way never depends on a floating pin (one new part, one more routing pass). Answered (B): `DECISIONS.md` B4-b(b), built in the board fix.
+- **Q1. B_IN5 sat on PB2 = BOOT1 (board B). Answered: moved to PC13** (`DECISIONS.md`, B1; done in the board scripts and the firmware). Left over: PB2 now has nothing on it, exactly as on the stock Max. BOOT1 is read only at a reset with BOOT0 high (SW1 closed): low = system bootloader (DFU), high = boot from SRAM. The update command over CAN / USB does not use the pins (`firmware/boards/stm32f446/enter_bootloader.S` jumps to the bootloader itself). Open choice: (A) leave PB2 open like the stock Max; (B) add a 10k resistor from PB2 to GND so the SW1 way never depends on a floating pin (one new part, one more routing pass). Answered (B): `DECISIONS.md` B4-b(b), built in the board fix.
 - **Q2. Sleep wake-up (section 6).** Two EXTI clashes (three before the B1 move; answered as B2 in `DECISIONS.md`, built 2026-11-14: end of section 6). Options as asked: (A) only IN_1 and IN_2 (PA10, PC9) plus CAN wake the PDM; the new input-board channels never wake it (firmware arms only those two); (B) re-pin PC10 / PC11 / PD2 on a later revision. Recommendation: A. In a car with CAN-controlled switching the ECU wakes it over CAN anyway.
 - **Q3. Hardware PWM (section 1).** Stock uses software PWM, so the IN pin timers are irrelevant. Options: (A) keep stock software PWM, no pin change; (B) hardware PWM on the IN pins later (PA8 TIM1_CH1 and PC8 TIM8_CH3 would work; PB10 and PA15 would need the system tick moved off TIM2). Recommendation: A.
-- **Q4. `LINE_UNUSED` (board B).** Must not be PA15 (output 7's IN pin). It was PC13 until B_IN5 took that pin; the only pin with no signal now is PB2, so the firmware uses PB2, set as input with pull-down (a write to it changes nothing on the pin; the pull-down matches the 10k BOOT1 resistor). Other choices: (B) a port bit with no pin on this 64-pin package (for example PD0), (C) PB3 (SWO, wired to J5.6). To confirm with Dan.
+- **Q4. `LINE_UNUSED` (board B).** Must not be PA15 (output 7's IN pin). It was PC13 until B_IN5 took that pin; the only pin with no signal now is PB2, so the firmware uses PB2, set as input with pull-down (a write to it changes nothing on the pin; the pull-down matches the 10k BOOT1 resistor). Other choices: (B) a port bit with no pin on this 64-pin package (for example PD0), (C) PB3 (SWO, wired to J5.6). Answered: B4-a, stays PB2 (`DECISIONS.md` 2026-11-11).
 
 ## 10. Spot-check against the netlist and regenerate
 
@@ -266,4 +266,4 @@ Five quick checks:
 | B | PC13 (2) | B_IN5 | J7 pin 3 (PB2, pin 28: 10k to GND only) |
 | B | PC4 (24) | PF_IS8 | R53 -> U22A buffer <- CH8 (U26 sense) |
 
-Not yet checked (TBD): RM0390 reset states of PA15 / PB3 / PB4 and drive limits of PC13-PC15; ChibiOS behaviour for a repeated EXTI line; BTS7004-1EPP kILIS; whether `NUM_DIG_INPUTS` / `NUM_ANALOG_INPUTS` can be raised in dingoFW without changes to the CAN message layout.
+Checked since: ChibiOS behaviour for a repeated EXTI line (`STATE.md`, Wake lines); BTS7004-1EPP kILIS (section 7). Not yet checked (TBD): RM0390 reset states of PA15 / PB3 / PB4 and drive limits of PC13-PC15; whether `NUM_DIG_INPUTS` / `NUM_ANALOG_INPUTS` can be raised in dingoFW without changes to the CAN message layout.

@@ -1,7 +1,7 @@
 # Parts audit - custom-pdm
 
 Written 2026-11-11 on branch `feat/parts-audit` (from main d319ad3). Stock and prices were checked 2026-11-10 to 2026-11-11.
-This file lists what the design really needs and where each rating came from. It makes no choices: the open ones are in section 3.
+This file lists what the design really needs and where each rating came from. It makes no choices: the choices it offered are in section 3, each now marked with its decision (`DECISIONS.md` 2026-11-11 to 2026-11-14).
 Progress and open items are not repeated here: see `STATE.md` ("Open items") and `DECISIONS.md`.
 Machine-readable copy of the board tables, one row per part group with LCSC stock and price breaks: `docs/parts-audit.csv`.
 
@@ -23,7 +23,7 @@ Board count for one PDM: **2 x board A, 1 x board B, 3 x input board** (input bo
 | ...named only by a footprint or a short value (guesses) | 9 | JST GH x 2, Micro-Fit x 2, DIP switch, and 4 input-board resistor / capacitor values |
 | Off-board parts (box connectors, mates, contacts, studs) | about 20 lines | on hand: section 4.3; still to buy: section 3, C5 |
 | Problems and thin margins | 16 | section 2 |
-| Open choices | 7 | section 3 |
+| Choices offered (all decided since) | 7 | section 3 |
 | BOM v4 lines that are guesses | 11 of 20 | section 5 |
 
 ## 2. Problems and thin margins (most serious first)
@@ -32,15 +32,15 @@ Status after the board fix (2026-11-11, branch `feat/board-fix`): section 9. Aft
 
 | # | What | Why it matters | Source |
 |---|---|---|---|
-| P1 | **Three 5 V regulators are all in the parts list of every main board** (A: U1, U14, U15; B: U1, U12, U13). All three sit on the same input (+12P) and output (+5VP) nets and none is marked "do not fit". | The schematic's own note says "Use one in place of U1". An assembler working from the BOM would fit all three and tie three switching outputs together. One must be chosen and the other two marked DNP. The default one (U1, VXO7805-500-M-TR) is out of stock everywhere I looked. | Netlist export (nets `+12P`, `+5VP`); text in `Power.kicad_sch`; stock: section 3, C1. Choice C1. |
-| P2 | **No CAN termination resistor or jumper exists on any board.** Nets CAN_H / CAN_L only reach the transceiver, the protection diode and the connector. The 120 ohm resistors that are on the boards (9 on A, 12 on B) are current-sense filters and LED resistors. | `DECISIONS.md` (CAN, 2026-11-08) says every board keeps a selectable 120 ohm termination. That part is not in the design. | Netlist export, both main boards. Choice C7. |
+| P1 | **Fixed 2026-11-11 (C1b): one TSR 1-2450 fitted, the other two DNP; see section 9.** Problem as found: **Three 5 V regulators are all in the parts list of every main board** (A: U1, U14, U15; B: U1, U12, U13). All three sit on the same input (+12P) and output (+5VP) nets and none is marked "do not fit". | The schematic's own note says "Use one in place of U1". An assembler working from the BOM would fit all three and tie three switching outputs together. One must be chosen and the other two marked DNP. The default one (U1, VXO7805-500-M-TR) is out of stock everywhere I looked. | Netlist export (nets `+12P`, `+5VP`); text in `Power.kicad_sch`; stock: section 3, C1. Choice C1. |
+| P2 | **Fixed 2026-11-11 (C7b): 120 ohm + solder jumper on each main board; see section 9.** Problem as found: **No CAN termination resistor or jumper exists on any board.** Nets CAN_H / CAN_L only reach the transceiver, the protection diode and the connector. The 120 ohm resistors that are on the boards (9 on A, 12 on B) are current-sense filters and LED resistors. | `DECISIONS.md` (CAN, 2026-11-08) says every board keeps a selectable 120 ohm termination. That part is not in the design. | Netlist export, both main boards. Choice C7. |
 | P3 | **Fixed 2026-11-11 (C3d): U3 is now Microchip MCP2562FD-E/SN on both main boards (netlist checked 2026-11-14), wiring unchanged; see section 9.** Problem as found: **CAN transceiver U3 was a PCA82C250, wired as if it were a 3.3 V-logic type.** Pin 5 is tied to +3V3 and pin 8 is driven straight from a 3.3 V MCU pin. On a PCA82C250 pin 5 is a reference *output* (0.45 to 0.55 x VCC, specified only for +-50 uA) and standby needs pin 8 above 0.75 x VCC = 3.75 V at 5 V. | A 3.3 V pin cannot reach the 3.75 V standby level, so sleep / standby was not guaranteed; pin 5 was being fed from a supply. This project did not change that part of the circuit, so it most likely comes from stock dingoPDM (not compared with `reference/`); it was outside the data sheet. BOM v4 lists a different chip (TJA1051T/3/2Z). `hardware/board-a/CAN.kicad_sch` is a leftover sheet (its U5 = TJA1042T/3 is not in the netlist). | NXP PCA82C250 data sheet Rev. 06 (2011-08-25), Table 3, Table 5, Table 8. Choice C3. |
-| P4 | **FRAM U5 (MB85RC256V): the LCSC number in the schematic (C47538) no longer exists**, and the order code behind the Digi-Key field could not be confirmed. Mouser sells the part only as RAMXEED MB85RC256VPNF-G-AMERE2 at 8.41 USD. | Needs a decision anyway (already an open item). | LCSC lookup returned nothing; Mouser search. Choice C2. |
+| P4 | **Fixed 2026-11-11 (C2b): U5 is now MB85RC64TA; see section 9.** Problem as found: **FRAM U5 (MB85RC256V): the LCSC number in the schematic (C47538) no longer exists**, and the order code behind the Digi-Key field could not be confirmed. Mouser sells the part only as RAMXEED MB85RC256VPNF-G-AMERE2 at 8.41 USD. | Needs a decision anyway (already an open item). | LCSC lookup returned nothing; Mouser search. Choice C2. |
 | P5 | **Output terminals T1-T8 (Wuerth 74650074R): rated 50 A "at 20 C" only.** The data sheet has no derating curve and says "Operating current depends on PCB, cable lug and cross section of the cable". | OUT1-4 carry 31 A (62 % of the 20 C figure) in a box designed for about 60 C air. The margin at 60 C is **TBD**: it cannot be read from the data sheet. T5-T8 at 15 A are at 30 %. | Wuerth data sheet 74650074R, rev. 002.002, 2022-08-01, page 1. |
 | P6 | **Feed terminals (Wuerth 7461084, 2 per main board): press-fit only, 160 A at 20 C.** The data sheet says "Wave and reflow soldering is not applicable". | (a) They must be pressed in, not soldered: check that the assembler does press-fit and that the hole size follows the Wuerth drawing. (b) Board B can draw 4 x 31 + 4 x 15 = 184 A at rated load, more than the terminal's 160 A; with the 150 A feed limit it is at 94 % of the 20 C figure. Derating at 60 C: **TBD**. | Wuerth data sheet 7461084, rev. 001.003, 2025-06-18. |
 | P7 | **All three switch types are used at 100 % of their nominal current.** BTS7008-2EPA 7.5 A of 7.5 A, BTS7004-1EPP 15 A of 15 A, BTS70012-1ESP 31 A of 31.3 A. | The nominal current is defined at 85 C air on a standard test board with junction at or under 150 C. There is no spare: whether it holds depends fully on the heat sink (not designed yet). | Infineon data sheets, Table 13 (P_7.5.1.8, P_7.5.11.8, P_7.5.23.8). Section 6. |
 | P8 | **Changed 2026-11-14 (r2a): U4 is now STM32F446RET7 (-40 to 105 C) on both main boards; stock and checks in section 10.** Problem as found: **MCU STM32F446RET6: scarce, and the "6" grade ends at 85 C air.** Mouser 0 in stock with a 52-week factory lead time; LCSC 79; Octopart showed 0 at TME, Newark, Future, Avnet, Arrow. | 3 needed. Buy early. The box air is planned at about 60 C plus its own heating; the 105 C grade is STM32F446RET7 (availability **TBD**). | Mouser, LCSC, Octopart (2026-11-10/11); ST DS10693 Rev 11, ordering scheme. |
-| P9 | **Capacitors on the +12 V rail below the schematic's own voltage note.** C3 (10 uF, next to the "Min 35V" note) has LCSC part CL21A106KAYNNNE = 25 V. The 47 nF caps on +12 V (4 on A, 8 on B) are 25 V parts too. The TVS clamps at 32.4 V (LCSC listing; schematic note says 33 V). | During a voltage spike the rail may sit above the capacitors' rating. Which part the Digi-Key field points to was not confirmed (**TBD**). | `Power.kicad_sch` text positions; LCSC C15850, C520039, C152086. |
+| P9 | **Fixed 2026-11-11: +12 V caps now 35 V / 50 V parts; see section 9.** Problem as found: **Capacitors on the +12 V rail below the schematic's own voltage note.** C3 (10 uF, next to the "Min 35V" note) has LCSC part CL21A106KAYNNNE = 25 V. The 47 nF caps on +12 V (4 on A, 8 on B) are 25 V parts too. The TVS clamps at 32.4 V (LCSC listing; schematic note says 33 V). | During a voltage spike the rail may sit above the capacitors' rating. Which part the Digi-Key field points to was not confirmed (**TBD**). | `Power.kicad_sch` text positions; LCSC C15850, C520039, C152086. |
 | P10 | **Current-sense resistors (1.2 kohm, 4 per A, 8 on B): the LCSC part is a 5 % type** (FOJAN FRC0805J122). | These set the measured output current (and the overcurrent trip). 5 % resistor error adds straight onto the switch's own 4 to 5 % sense error. The Digi-Key field may point to a 1 % part (**TBD**). | LCSC C2933520; Infineon Table 21 / 22 (kILIS tolerance). |
 | P11 | **Fixed 2026-11-11 (p1a, PMEG2010AEH): see section 9. Regulator U2 changed 2026-11-14 to TI TLV1117LV33DCYR (90 mV dropout at 200 mA): section 10.** Problem as found: **The 3.3 V regulator and the CAN chip are fed through a diode from 5 V.** +5VP goes through Schottky D18 (A) / D4 (B) to +5V, which fed LD1117S33 (dropout 1.10 V typ, 1.20 V max at 800 mA) and feeds the CAN chip U3 (then PCA82C250, now MCP2562FD-E/SN; both VDD 4.5 to 5.5 V). | 5.0 V - 3.3 V = 1.7 V, minus the diode drop, is what the regulator gets against a need of up to 1.2 V; the same diode drop may put the CAN chip under its 4.5 V minimum. Diode drop at the real current: worked out in section 9. Most likely the same in stock dingoPDM (not compared). | ST LD1117 Rev 38 Table 12; NXP PCA82C250 Table 1; Microchip DS20005284B section 2.3; netlist. |
 | P12 | **LCSC and Digi-Key fields name different makers for protection parts.** TVS D2: LCSC gives BORN SMCJ20CA; CAN protector: LCSC gives DOWO "NUP2105LT1G" (not onsemi); 47 uF: LCSC gives PSA FS55X476K250LRG. | Which column is the real choice? If the boards are assembled from the LCSC column, these are second-source copies of the named parts. | LCSC lookups (section 4.1). Choice C6. |
@@ -52,11 +52,13 @@ Status after the board fix (2026-11-11, branch `feat/board-fix`): section 9. Aft
 Not problems, checked and fine: LD1117S33**C**TR is the -40 to +125 C version (ST Table 1: "for C version -40 to +125 C"; replaced by TLV1117LV33DCYR 2026-11-14, section 10); FRAM address pins and write-protect are all tied to ground (address 0x50, writes enabled); DT15-12PA contacts are rated 13 A against 7.5 A loads; JST GH carries only signals (1 A rating).
 
 
-## 3. Open choices (for Dan)
+## 3. Choices offered (all decided since)
 
 Prices are USD each at quantity 1 unless noted. "Rec." is my recommendation, not a decision.
 
 ### C1. Which 5 V regulator is fitted (3 per PDM)? The other two positions become "do not fit".
+
+Decided 2026-11-11: **b** (C1b, `DECISIONS.md`); built in section 9. The table is the choice as it was offered.
 
 | | Option | Stock (2026-11-10/11) | Trade-off |
 |---|---|---|---|
@@ -69,7 +71,9 @@ Rec.: **b**, if the pin clearance under the board is fine; otherwise check d. In
 
 ### C2. FRAM (config memory, 3 per PDM)
 
-What the firmware assumes (read in `firmware/hardware/mb85rc.cpp`, `mb85rc.h`, `firmware/core/config_ext.cpp`): I2C address 0x50, **two address bytes**, config written at address 0 in one go, 4-byte CRC right after it, and the chip-ID check is switched off (`CheckId()` returns true before reading the ID). Config is 4,364 bytes (`STATE.md`, Status) + 4 = 4,368 bytes.
+Decided 2026-11-11: **b** (C2b, `DECISIONS.md`); built in section 9. The table is the choice as it was offered.
+
+What the firmware assumes (read in `firmware/hardware/mb85rc.cpp`, `mb85rc.h`, `firmware/core/config_ext.cpp`): I2C address 0x50, **two address bytes**, config written at address 0 in one go, 4-byte CRC right after it, and the chip-ID check is switched off (`CheckId()` returns true before reading the ID). Config size today: `firmware/sim/RESULTS.md` (Results); the "% used" figures below are from the 2026-11-11 size.
 
 | | Option | Stock | Trade-off |
 |---|---|---|---|
@@ -105,6 +109,8 @@ Rec.: **a** now (it exists), and look at b only if the enclosure heat check show
 
 ### C5. Harness-side parts still to buy
 
+Decided 2026-11-11: studs **a** for BATT and GND (C5, `DECISIONS.md`); the studs were then replaced by copper bosses and OUT1-4 offset risers (v3b, b4a, d1a; `docs/enclosure-v2b.md`), so the stud table below is superseded. The harness-part list is the list as it was offered; what is still to buy: `STATE.md`, Open items (hardware).
+
 Checked against TE product pages (contacts, plugs, shells), JST's GH data sheet and Molex part pages. Quantities are for one PDM, no spares.
 
 | Part | Exact number | Qty | Stock | Note |
@@ -119,7 +125,7 @@ Checked against TE product pages (contacts, plugs, shells), JST's GH data sheet 
 | Mate for board B J6 (**not needed since PR #41: wire pads**) | Molex 43025-0400 (Micro-Fit receptacle, 4-way). Proposal: not verified | 1 | TBD | Same terminal as above. |
 | Screws and ring lugs for T1-T8 (M4) and the M6 feed terminals | generic | 8 x M4, 6 x M6 | - | Torque: 1.2 Nm (M4, 74650074R), 3.9 Nm (M6, 7461084), Wuerth data sheets. Wire size for 31 A: TBD. |
 
-Studs (6: BATT 150 A, GND, OUT1-4 at 31 A each):
+Studs (6: BATT 150 A, GND, OUT1-4 at 31 A each). **Superseded: no studs; copper bosses (BATT, GND) and offset risers (OUT1-4) instead (b4a, d1a, `docs/enclosure-v2b.md`).** The options as offered:
 
 | | Option | Trade-off |
 |---|---|---|
@@ -130,6 +136,8 @@ Studs (6: BATT 150 A, GND, OUT1-4 at 31 A each):
 Rec.: **a** for BATT and GND. For the four 31 A outputs **a** also works (large for the job); tell me if size matters and I will research smaller insulated studs. Boots: TBD for every option.
 
 ### C6. Which column is the truth for the common parts?
+
+Decided 2026-11-11: **c** (C6c, `DECISIONS.md`); started in section 9. The table is the choice as it was offered.
 
 The schematics carry a Digi-Key number and an LCSC number per part, and no maker part number. In at least 5 places the two point to different parts (P9, P10, P12).
 
@@ -142,6 +150,8 @@ The schematics carry a Digi-Key number and an LCSC number per part, and no maker
 Rec.: **c**, starting with the safety parts (TVS, +12 V capacitors, sense resistors, switches).
 
 ### C7. CAN termination (P2)
+
+Decided 2026-11-11: **b** (C7b, `DECISIONS.md`); built in section 9. The table is the choice as it was offered.
 
 | | Option | Trade-off |
 |---|---|---|
@@ -164,7 +174,7 @@ Per PDM = 2 x A + 1 x B.
 | BTS70012-1ESP | Infineon BTS700121ESPXUMA1 | 0 | 4 | 4 | C3232444: **23**, 6.84 | P15 |
 | BTS7004-1EPP | Infineon (order code BTS70041EPPXUMA1 at Mouser) | 0 | 4 | 4 | no field. C534825: 20,982, 1.80 | P13. Mouser 2,720 at 2.39 |
 | STM32F446RET7 (was STM32F446RETx = RET6 until 2026-11-14) | ST STM32F446RET7 | 1 | 1 | 3 | C1343794: **0** (2026-11-14); was RET6 C69336: 79, 11.61 | P8, C4, section 10 |
-| MB85RC256V | not resolved | 1 | 1 | 3 | C47538: **gone** | P4, C2 |
+| MB85RC64TA (was MB85RC256V until 2026-11-11) | RAMXEED MB85RC64TAPNF-G-AWERE2 | 1 | 1 | 3 | C43379785 (was MB85RC256V C47538: **gone**) | P4, C2b, section 9 |
 | MCP9808 | Microchip MCP9808T-E/MS | 1 | 1 | 3 | C129490: 516, 2.12 | Mouser 21,642 at 1.40 |
 | MCP2562FD-E/SN (was PCA82C250 until 2026-11-11) | Microchip MCP2562FD-E/SN | 1 | 1 | 3 | C124016 (was PCA82C250T/YM,118, C7439) | P3, C3, section 9 |
 | LM2902PWR (TSSOP-14; was LM324 until 2026-11-14) | TI LM2902PWR | 2 | 2 | 6 | see CSV; was LM324PWR C7942: 112,900, 0.15 | sense buffers; swap: section 11 |
@@ -237,7 +247,7 @@ To buy: section 3, C5. Already on hand: 4.3. Wire sizes and the cavity maps: `do
 | 15 A outputs | BTS7004-1EPP x 6 | x 4 | **-2** |
 | 30 A outputs | BTS70012-1ESP x 2 | x 4 | **+2** (about +14 USD at LCSC price) |
 | MCU, plan B | STM32F446RET6 x 3 | STM32F446RET7 x 3 (since 2026-11-14) | **different grade** (r2a) |
-| FRAM | MB85RC64TA x 3 ("Estimate") | schematic says MB85RC256V | open (C2) |
+| FRAM | MB85RC64TA x 3 ("Estimate") | MB85RC64TA x 3 (since 2026-11-11; MB85RC256V before) | same (C2b) |
 | Temperature sensor | MCP9808T-E/MS x 3 | x 3 | same |
 | CAN transceiver | TJA1051T/3/2Z x 3 | schematic says MCP2562FD-E/SN (PCA82C250 until 2026-11-11) | **different chip** (C3) |
 | MCU plan C, external ADC, board-to-board connectors | plan C lines | not in the built design | drop |
@@ -245,8 +255,8 @@ To buy: section 3, C5. Already on hand: 4.3. Wire sizes and the cavity maps: `do
 | Flyback diodes | **guess**, 8 | 8 x BYG23M (board B only) | count right, price was a guess |
 | Passives and misc | **guess**, 10 USD per board | 4.1 | - |
 | Universal input front end | **guess**, 21 inputs | 3 input boards with 9 channels each (27 built), plus 2 inputs on each main board | different |
-| Connectors, 16 x 8 A | **guess**: 2 Deutsch DT sets | 2 x DT15-12PA header + 2 x DT06-12SA plug inside the box, X1 HD30 on the wall (on hand) | different |
-| Screw terminals / studs | **guess** | 8 x 74650074R on board B, 6 studs on the wall | different |
+| Connectors, 16 x 8 A | **guess**: 2 Deutsch DT sets | wires soldered to board A J3 wire pads (PR #41; no header or plug), X1 HD30 on the wall (on hand) | different |
+| Screw terminals / studs | **guess** | 8 x 74650074R on board B; BATT / GND copper bosses and OUT1-4 copper offset risers through the lid (b4a, d1a; `docs/enclosure-v2b.md`) | different |
 | Heat plate, feed stud / busbar, enclosure | **guess** x 3 | not designed yet | - |
 
 Guessed lines in v4: 11 of 20 (10 marked "Guess", 1 "Estimate"); 2 more are "Marketplace" prices.
@@ -360,7 +370,7 @@ Checks vs `main` efa632d (KiCad 10 kicad-cli, read-only): board A ERC 625 (35 er
 
 Sources for this section: TI TLV1117LV SBVS160C (https://www.ti.com/lit/ds/symlink/tlv1117lv.pdf); ST DS10693 Rev 11 (https://www.st.com/resource/en/datasheet/stm32f446re.pdf); Traco TSR 1 (https://tracopower.com/tsr1-datasheet); USB 3.1 ECN "VBUS Max Limit" (https://doc.xdevs.com/doc/Standards/USB%203.1/usb_31_030215/ECNs/USB%203.1%20ECN%20VBUS%20Max%20Limit.pdf); Digi-Key https://www.digikey.com/en/products/detail/texas-instruments/TLV1117LV33DCYR/2666508 and https://www.digikey.ca/en/products/detail/stmicroelectronics/STM32F446RET7/6207480; Mouser search pages for both parts; LCSC through `tools/gen_parts_audit_csv.py`.
 
-- 2026-11-14 (Dan s9a): STM32F446RET7 stays the design part; STM32F446RET6 (same die, LQFP-64, pin-for-pin) is an approved alternate if RET7 cannot be sourced at build time. Firmware thermal limits are set for the fitted part.
+- RET6 as an approved alternate: s9a, `DECISIONS.md` 2026-11-14.
 
 ## 11. Temperature-grade check (2026-11-14, research only)
 
@@ -376,16 +386,17 @@ Basis: board-top background 100 C at worst load, hot spots 119-121 C at the swit
 | OSRAM LS R976 / LG R971 LEDs (9) | -30 to +85 C (LG R971 current sheet TBD) | -15 K | best 0805 found: Lumex SML-LX0805SIC-HT, -40 to +100 C |
 | GCT USB4085-GF-A (A J5, B J2; 3) | -40 to +85 C | -15 K | service port; no 105 C part found |
 | CJS-1200TB BOOT switch (3) | -40 to 85 C | -15 K | bench use only; no replacement found |
-| STM32F446RET7 (U4; 3) | TA 105 C at max power, TJ max 125 C (DS10693 Rev 11 Table 16) | TA +5 K; TJ about 110-115 C (power TBD) | keep; RET6 TJ max is 105 C (same table), so it is NOT a safe alternate at this temperature |
+| STM32F446RET7 (U4; 3) | TA 105 C at max power, TJ max 125 C (DS10693 Rev 11 Table 16) | TA +5 K; TJ about 110-115 C (power TBD) | keep; RET6 is an approved alternate (s9a, `DECISIONS.md` 2026-11-14), but its TJ max is 105 C (same table), so the firmware thermal limits must suit RET6 if it is fitted |
 | MB85RC64TA FRAM (U5; 3) | -40 to +105 C (RAMXEED DS5v0) | +5 K | keep, or Infineon CY15B064J-SXE (-40 to 125 C, about +3.4 USD) |
 | JST GH, Molex Micro-Fit 43045 | -40 to +105 C incl. current rise | +5 K | keep |
 
 Pass: TLV1117LV (TJ 125 C), MCP2562FD-E (TA 125 C), MCP9808-E (125 C; accuracy +-1 C above 100 C), PMEG2010AEH / PMEG10010ELR / PDZ3.3B / SMCJ20CA / BYG23M (150-175 C), NUP2105L (125 C), BLM21PG ferrite (125 C), UNI-ROYAL / FOJAN resistors (155 C), X7R / C0G caps, REDCUBE terminals (150 C). TBD: BAT54S, YAGEO and Viking resistors, input-board passives (no part numbers yet).
 
-FRAM size: config is 4,368 bytes (53 % of 64 Kbit). The 256 Kbit MB85RC256V is rated only 85 C; a 125 C 256 Kbit part exists (CY15B256J-SXE, about +15 USD). Recommendation: stay at 64 Kbit.
+FRAM size: config size in `firmware/sim/RESULTS.md` (Results); it fits the 8,192-byte 64 Kbit part. The 256 Kbit MB85RC256V is rated only 85 C; a 125 C 256 Kbit part exists (CY15B256J-SXE, about +15 USD). Recommendation: stay at 64 Kbit.
 
 Sources: TI SLOS066AE (LM324 / LM2902); Omron https://media.onlinecomponents.com/productfiles/mf-om/en-a6ta6s.pdf ; Traco TSR 1 data sheet; TI SNVSAQ4C (LMZM23601); RECOM https://recom-power.com/pdf/Innoline/RPX-1.0.pdf ; Abracon ABM3; OSRAM https://ams-osram.com/de/products/leds/color-leds/osram-chip-led-0805-ls-r976 ; GCT https://gct.co/connector/USB4085 ; ST DS10693 Rev 11; RAMXEED https://mouser.com/datasheet/2/1113/MB85RC64TA_DS5v0_E-3538551.pdf ; Infineon 002-42371 (CY15B256J); TI SBVS160C; Microchip DS20005284A, DS20005095B; JST eGH.
-## 8. Sources
+
+## 12. Sources (was section 8; sections 10 and 11 list their own sources)
 
 Data sheets (maker):
 - Board fix: Traco TSR 1 (https://tracopower.com/tsr1-datasheet; drawing in the 2012 copy https://www.dessy.ru/include/images/ware/pdf/t/tsr_1-2450.pdf); Microchip MCP2561/2FD DS20005284B (https://ww1.microchip.com/downloads/aemDocuments/documents/APID/ProductDocuments/DataSheets/MCP2561-2FD-High-Speed-CAN-Flexible-Data-Rate-Transceiver-DS20005284.pdf); Nexperia PMEG10010ELR v.5 (https://assets.nexperia.com/documents/data-sheet/PMEG10010ELR.pdf); Nexperia PMEG2010AEH v.4, 13 June 2023 (https://assets.nexperia.com/documents/data-sheet/PMEG2010AEH.pdf, blocked for scripts; same file read from a distributor copy https://store.comet.bg/download-file.php?id=22368); Digi-Key https://www.digikey.nl/en/products/detail/nexperia-usa-inc/PMEG2010AEH-115/1157670; LCSC listings C124016, C43379785, C162422, C3879816, C17437, C17414, C534825.
