@@ -1,0 +1,42 @@
+@using domain.CustomPdm
+@using web.Services
+@inject IJSRuntime JS
+@inject NotificationService Notification
+@implements IAsyncDisposable
+
+@* custom-pdm route B phase B5 (Dan u4c): ONE DBC file with the boards of this project (A1, A2, B) at their own
+   base IDs, for the ECU. Same generator as the repo files firmware/dbc/custompdm_*.dbc (ui/tools/DbcGen):
+   domain/CustomPdm/DbcExport.cs. One combined file: the ECU imports one file for the whole PDM. *@
+<MudTooltip Text="One DBC file for the ECU: the status messages of the boards in this project, at their base IDs">
+    <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Description"
+               Disabled="@(View.Boards.Count == 0)" OnClick="Export">Export DBC</MudButton>
+</MudTooltip>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private IJSObjectReference? _module;
+
+    private async Task Export()
+    {
+        try
+        {
+            var text = DbcExport.Build(View.Boards.Select(b => new DbcBoard(b.Role, b.Device)));
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/custompdm/download.js");
+            await _module.InvokeVoidAsync("downloadText", DbcExport.PdmFileName, text);
+            Notification.NewInfo($"DBC exported ({string.Join(", ", View.Boards.Select(b => $"{b.Role} 0x{b.Device.BaseId:X3}"))})");
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError("DBC export failed", ex);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            try { await _module.DisposeAsync(); } catch (JSDisconnectedException) { }
+        }
+    }
+}

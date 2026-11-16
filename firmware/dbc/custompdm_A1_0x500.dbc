@@ -1,0 +1,387 @@
+VERSION "custom-pdm"
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: A1
+
+
+BO_ 1282 A1_Msg0: 8 A1
+ SG_ A1_DigitalInput1_State : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput2_State : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput3_State : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput4_State : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput5_State : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput6_State : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput7_State : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DeviceState : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_PdmType : 12|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_TotalCurrent : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_BatteryVoltage : 32|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
+ SG_ A1_BoardTemp : 48|16@1+ (0.1,0) [0|6553.5] "degC" Vector__XXX
+
+BO_ 1283 A1_Msg1: 8 A1
+ SG_ A1_Output1_Current : 0|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output2_Current : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output3_Current : 32|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output4_Current : 48|16@1+ (1,0) [0|65535] "A" Vector__XXX
+
+BO_ 1284 A1_Msg2: 8 A1
+ SG_ A1_Output5_Current : 0|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output6_Current : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output7_Current : 32|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ A1_Output8_Current : 48|16@1+ (1,0) [0|65535] "A" Vector__XXX
+
+BO_ 1285 A1_Msg3: 8 A1
+ SG_ A1_Output1_State : 0|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output2_State : 4|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output3_State : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output4_State : 12|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output5_State : 16|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output6_State : 20|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output7_State : 24|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Output8_State : 28|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_WiperSlowState : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_WiperFastState : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_WiperSpeed : 40|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_WiperState : 44|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ A1_Flasher1 : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Flasher2 : 49|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Flasher3 : 50|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Flasher4 : 51|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_ThermalOverWarn : 56|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_ThermalCritSoon : 57|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_ThermalCritical : 58|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1286 A1_Msg4: 8 A1
+ SG_ A1_Output1_ResetCount : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output2_ResetCount : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output3_ResetCount : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output4_ResetCount : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output5_ResetCount : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output6_ResetCount : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output7_ResetCount : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Output8_ResetCount : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1287 A1_Msg5: 8 A1
+ SG_ A1_CanInput1 : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput2 : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput3 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput4 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput5 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput6 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput7 : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput8 : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput9 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput10 : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput11 : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput12 : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput13 : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput14 : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput15 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput16 : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput17 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput18 : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput19 : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput20 : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput21 : 20|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput22 : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput23 : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput24 : 23|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput25 : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput26 : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput27 : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput28 : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput29 : 28|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput30 : 29|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput31 : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_CanInput32 : 31|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput1 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput2 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput3 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput4 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput5 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput6 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput7 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput8 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput9 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput10 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput11 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput12 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput13 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput14 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput15 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_VirtualInput16 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1288 A1_Msg6: 8 A1
+ SG_ A1_Counter1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Counter2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Counter3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Counter4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ A1_Condition1 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition2 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition3 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition4 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition5 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition6 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition7 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition8 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition9 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition10 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition11 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition12 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition13 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition14 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition15 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition16 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition17 : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition18 : 49|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition19 : 50|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition20 : 51|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition21 : 52|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition22 : 53|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition23 : 54|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition24 : 55|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition25 : 56|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition26 : 57|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition27 : 58|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition28 : 59|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition29 : 60|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition30 : 61|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition31 : 62|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Condition32 : 63|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1289 A1_Msg7: 8 A1
+ SG_ A1_CanInput1_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput2_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1290 A1_Msg8: 8 A1
+ SG_ A1_CanInput3_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput4_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1291 A1_Msg9: 8 A1
+ SG_ A1_CanInput5_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput6_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1292 A1_Msg10: 8 A1
+ SG_ A1_CanInput7_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput8_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1293 A1_Msg11: 8 A1
+ SG_ A1_CanInput9_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput10_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1294 A1_Msg12: 8 A1
+ SG_ A1_CanInput11_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput12_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1295 A1_Msg13: 8 A1
+ SG_ A1_CanInput13_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput14_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1296 A1_Msg14: 8 A1
+ SG_ A1_CanInput15_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput16_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1297 A1_Msg15: 8 A1
+ SG_ A1_CanInput17_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput18_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1298 A1_Msg16: 8 A1
+ SG_ A1_CanInput19_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput20_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1299 A1_Msg17: 8 A1
+ SG_ A1_CanInput21_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput22_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1300 A1_Msg18: 8 A1
+ SG_ A1_CanInput23_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput24_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1301 A1_Msg19: 8 A1
+ SG_ A1_CanInput25_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput26_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1302 A1_Msg20: 8 A1
+ SG_ A1_CanInput27_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput28_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1303 A1_Msg21: 8 A1
+ SG_ A1_CanInput29_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput30_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1304 A1_Msg22: 8 A1
+ SG_ A1_CanInput31_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ A1_CanInput32_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1305 A1_Msg23: 8 A1
+ SG_ A1_Output1_DutyCycle : 0|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output2_DutyCycle : 8|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output3_DutyCycle : 16|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output4_DutyCycle : 24|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output5_DutyCycle : 32|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output6_DutyCycle : 40|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output7_DutyCycle : 48|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ A1_Output8_DutyCycle : 56|8@1+ (1,0) [0|255] "%" Vector__XXX
+
+BO_ 1309 A1_Msg27: 8 A1
+ SG_ A1_Timer1_Output : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer2_Output : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer3_Output : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer4_Output : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer5_Output : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer6_Output : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer7_Output : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer8_Output : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer1_Running : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer2_Running : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer3_Running : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer4_Running : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer5_Running : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer6_Running : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer7_Running : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_Timer8_Running : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1310 A1_Msg28: 8 A1
+ SG_ A1_Timer1_Elapsed : 0|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer2_Elapsed : 16|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer3_Elapsed : 32|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer4_Elapsed : 48|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+
+BO_ 1311 A1_Msg29: 8 A1
+ SG_ A1_Timer5_Elapsed : 0|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer6_Elapsed : 16|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer7_Elapsed : 32|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ A1_Timer8_Elapsed : 48|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+
+BO_ 1312 A1_Msg30: 8 A1
+ SG_ A1_Math1_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ A1_Math2_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1313 A1_Msg31: 8 A1
+ SG_ A1_Math3_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ A1_Math4_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1314 A1_Msg32: 8 A1
+ SG_ A1_Math5_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ A1_Math6_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1315 A1_Msg33: 8 A1
+ SG_ A1_Math7_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ A1_Math8_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1316 A1_Msg34: 8 A1
+ SG_ A1_DigitalInput1_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput1_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ A1_DigitalInput2_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput2_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1317 A1_Msg35: 8 A1
+ SG_ A1_DigitalInput3_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput3_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ A1_DigitalInput4_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput4_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1318 A1_Msg36: 8 A1
+ SG_ A1_DigitalInput5_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput5_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ A1_DigitalInput6_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ A1_DigitalInput6_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1319 A1_Msg37: 8 A1
+ SG_ A1_DigitalInput1_State_M37 : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput2_State_M37 : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput3_State_M37 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput4_State_M37 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput5_State_M37 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput6_State_M37 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_DigitalInput7_State_M37 : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ A1_AnalogInput1_Millivolts : 16|16@1+ (1,0) [0|65535] "mV" Vector__XXX
+ SG_ A1_AnalogInput1_Raw : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ A1_DieTemp : 48|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+
+
+CM_ "custom-pdm status messages (firmware NUM_TX_MSGS 38, msg n = base ID + 2 + n, Intel byte order, 8 bytes). Generated by ui/tools/DbcGen and the /pdm Export DBC button from the same code (ui/dingoConfig/domain/CustomPdm/DbcExport.cs): do not edit.";
+CM_ BU_ A1 "custom-pdm board A, base ID 0x500";
+CM_ BO_ 1282 "A1 msg 0: always sent";
+CM_ BO_ 1283 "A1 msg 1: always sent";
+CM_ BO_ 1284 "A1 msg 2: always sent";
+CM_ BO_ 1285 "A1 msg 3: always sent";
+CM_ BO_ 1286 "A1 msg 4: always sent";
+CM_ BO_ 1287 "A1 msg 5: sent when any CAN input or virtual input is enabled";
+CM_ BO_ 1288 "A1 msg 6: sent when any counter or condition is enabled";
+CM_ BO_ 1289 "A1 msg 7: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1290 "A1 msg 8: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1291 "A1 msg 9: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1292 "A1 msg 10: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1293 "A1 msg 11: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1294 "A1 msg 12: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1295 "A1 msg 13: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1296 "A1 msg 14: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1297 "A1 msg 15: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1298 "A1 msg 16: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1299 "A1 msg 17: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1300 "A1 msg 18: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1301 "A1 msg 19: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1302 "A1 msg 20: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1303 "A1 msg 21: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1304 "A1 msg 22: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1305 "A1 msg 23: sent when any output has PWM enabled";
+CM_ BO_ 1309 "A1 msg 27: sent when any timer is enabled";
+CM_ BO_ 1310 "A1 msg 28: sent when any timer is enabled";
+CM_ BO_ 1311 "A1 msg 29: sent when any timer is enabled";
+CM_ BO_ 1312 "A1 msg 30: sent when one of its two math blocks is enabled";
+CM_ BO_ 1313 "A1 msg 31: sent when one of its two math blocks is enabled";
+CM_ BO_ 1314 "A1 msg 32: sent when one of its two math blocks is enabled";
+CM_ BO_ 1315 "A1 msg 33: sent when one of its two math blocks is enabled";
+CM_ BO_ 1316 "A1 msg 34: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1317 "A1 msg 35: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1318 "A1 msg 36: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1319 "A1 msg 37: custom-pdm: always sent; all digital inputs, analog input, STM32 die temperature";
+CM_ SG_ 1282 A1_BoardTemp "MCP9808 board temperature; unsigned (stock dingoFW uint16), so a reading below 0 degC is not sent correctly";
+CM_ SG_ 1285 A1_ThermalOverWarn "1 = board temperature above the warn limit (msg 3 byte 7 bit 0)";
+CM_ SG_ 1285 A1_ThermalCritSoon "1 = board temperature within the critical-soon margin of the critical limit (bit 1)";
+CM_ SG_ 1285 A1_ThermalCritical "1 = critical: all outputs held off except the exempt ones (bit 2)";
+CM_ SG_ 1319 A1_AnalogInput1_Raw "analog input raw ADC value (msg 37)";
+CM_ SG_ 1319 A1_DieTemp "STM32 die temperature, signed (msg 37)";
+VAL_ 1282 A1_DeviceState 0 "Run" 1 "Sleep" 2 "OverTemp" 3 "Error" ;
+VAL_ 1282 A1_PdmType 14 "custom-pdm A" 15 "custom-pdm B" ;
+VAL_ 1285 A1_Output1_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output2_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output3_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output4_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output5_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output6_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output7_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1285 A1_Output8_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
