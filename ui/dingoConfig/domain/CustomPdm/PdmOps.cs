@@ -7,7 +7,8 @@ namespace domain.CustomPdm;
 //   real result: the stock "... Successful" notification of FwDevice plus, for read and write, a config CRC check
 //   reply that matches (FwDevice.ConfigMismatch false). No reply in time = failed.
 // - Write All and Burn are refused unless A1, A2 and B are all in the project, connected and read in this session
-//   (FwDevice.FullReadDone). A failure stops a Write All / Burn run: later boards are left alone and every board
+//   (FwDevice.FullReadDone), or come from "New PDM" (B3, CustomPdmGuards.ReadOrFactoryNew). A failure stops a
+//   Write All / Burn run: later boards are left alone and every board
 //   keeps its own result line, so it is visible that the boards are on different settings.
 // - Burn is never started by a read or a write. It first asks every board for a fresh config CRC check; one
 //   mismatch (or no reply) and nothing is burned. The firmware answers a burn with its own result
@@ -100,7 +101,7 @@ public class PdmOps(PdmOpsLinks links)
             var dev = view.Boards.FirstOrDefault(b => b.Role == role)?.Device;
             if (dev == null) why.Add($"{role}: not in the project");
             else if (!isConnected(dev)) why.Add($"{role}: offline");
-            else if (!dev.FullReadDone) why.Add($"{role}: not read yet (Read All first)");
+            else if (!CustomPdmGuards.ReadOrFactoryNew(dev)) why.Add($"{role}: not read yet (Read All first)");
             // Burn: FwDevice.ConfigMismatch is NOT looked at here. It is only as fresh as the last check (an edit on
             // the PC does not change it), so the burn run asks every board for a fresh check first.
         }

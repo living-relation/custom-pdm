@@ -25,16 +25,24 @@ public sealed class PdmRig
     public DateTime Now => _t0.AddMilliseconds(SimMs);       // sim time as a clock for PdmOps
     public Action<CanFrame>? BeforeSend { get; set; }         // called just before a frame goes to the bus
 
-    public PdmRig(SimBus bus)
+    // newPdm: the three devices come from the /pdm "New PDM" button (PdmOpsService.NewPdm, our factory defaults)
+    public PdmRig(SimBus bus, bool newPdm = false)
     {
         _bus = bus;
         Mgr = new DeviceManager(NullLogger<DeviceManager>.Instance, NullLoggerFactory.Instance,
             new SystemLogger(Path.Combine(Path.GetTempPath(), "cpdm-ui-test-logs")), new FwDeviceDefManager());
         Mgr.SetBatchTransmitCallback(batch => { lock (_pending) _pending.AddRange(batch); });
-        // same call as the Devices page ("fwD:<type>")
-        Mgr.AddDevice("fwD:14", "A1", 0x500);
-        Mgr.AddDevice("fwD:14", "A2", 0x540);
-        Mgr.AddDevice("fwD:15", "B", 0x580);
+        if (newPdm)
+        {
+            if (new PdmOpsService(Mgr).NewPdm() is { } refused) throw new InvalidOperationException(refused);
+        }
+        else
+        {
+            // same call as the Devices page ("fwD:<type>")
+            Mgr.AddDevice("fwD:14", "A1", 0x500);
+            Mgr.AddDevice("fwD:14", "A2", 0x540);
+            Mgr.AddDevice("fwD:15", "B", 0x580);
+        }
         var devs = Mgr.GetDevicesByType<FwDevice>().ToList();
         A1 = devs.Single(d => d.Name == "A1");
         A2 = devs.Single(d => d.Name == "A2");

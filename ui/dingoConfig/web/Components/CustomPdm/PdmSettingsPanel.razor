@@ -1,0 +1,228 @@
+@using application.Services
+@using domain.CustomPdm
+@using domain.Interfaces
+@using web.Services
+@inject PdmOpsService Pdm
+@inject ICommsAdapterManager AdapterManager
+@inject NotificationService Notification
+
+@* custom-pdm route B, phase B3 (docs/ui-route-b-plan.md): settings set ONCE for the PDM (domain/CustomPdm/PdmLinked.cs).
+   Temperature limits and fan thresholds are PC edits: they reach the boards with the Write All above, and stay
+   after Burn. Base IDs move the board at once (stock Modify message), see PdmOpsService.ChangeBaseId. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel Text="PDM settings (set once for A1, A2 and B)" @bind-Expanded="_open">
+        @{
+            var busy = Pdm.Ops.Busy;
+            var a2 = View.Boards.FirstOrDefault(b => b.Role == "A2")?.Device;
+        }
+        <MudGrid Spacing="4">
+            @* ---- temperature limits (u1a: one set for all three boards) ---- *@
+            <MudItem>
+                <MudCard Elevation="2" Style="height: 100%">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1">Board temperature limits (all three boards)</MudText>
+                        @if (PdmLinked.TempLimitsDiffer(View))
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true" Class="my-1">
+                                The boards differ: @string.Join("; ", PdmLinked.TempLimitsByBoard(View).Select(t => $"{t.Role} {t.Limits.Warn} / {t.Limits.Crit} / {t.Limits.Hyst} / {t.Limits.Margin}"))
+                                (warn / critical / recovery / margin). Set once to make them equal.
+                            </MudAlert>
+                        }
+                        <MudNumericField T="int" Value="_warn" ValueChanged="@(v => { _warn = v; _tempDirty = true; })" Label="Warn (°C)"
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        <MudNumericField T="int" Value="_crit" ValueChanged="@(v => { _crit = v; _tempDirty = true; })" Label="Critical, all outputs off (°C)"
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        <MudNumericField T="int" Value="_hyst" ValueChanged="@(v => { _hyst = v; _tempDirty = true; })" Label="Recovery below critical (°C)"
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        <MudNumericField T="int" Value="_margin" ValueChanged="@(v => { _margin = v; _tempDirty = true; })" Label="Critical-soon margin (°C, 0 = off)"
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        @if (TempInput.Problem() is { } tempWhy)
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Error">@tempWhy</MudText>
+                        }
+                        <MudStack Row="true" Spacing="2" Class="mt-2">
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || TempInput.Problem() != null)"
+                                       OnClick="SetTemps">Set on A1, A2, B</MudButton>
+                            @if (_tempDirty)
+                            {
+                                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _tempDirty = false)">Undo edits</MudButton>
+                            }
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @* ---- fan thresholds (A2: 6 params that move together) ---- *@
+            <MudItem>
+                <MudCard Elevation="2" Style="height: 100%">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1">Fans (A2 OUT2): on / off on the hottest of A2, A1, B</MudText>
+                        @if (a2 == null)
+                        {
+                            <MudText Typo="Typo.body2">No A2 in the project.</MudText>
+                        }
+                        else if (PdmLinked.FanLayoutProblem(a2) is { } fanLayoutWhy)
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true" Class="my-1">@fanLayoutWhy</MudAlert>
+                        }
+                        else
+                        {
+                            @if (PdmLinked.FanThresholds(a2) == null)
+                            {
+                                <MudAlert Severity="Severity.Warning" Dense="true" Class="my-1">The six fan values on A2 differ. Set once to make them equal.</MudAlert>
+                            }
+                            <MudNumericField T="double" Value="_fanOn" ValueChanged="@(v => { _fanOn = v; _fanDirty = true; })" Label="Fan on at (°C)"
+                                             Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" Step="0.5" />
+                            <MudNumericField T="double" Value="_fanOff" ValueChanged="@(v => { _fanOff = v; _fanDirty = true; })" Label="Fan off at or below (°C)"
+                                             Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" Step="0.5" />
+                            @if (FanInput.Problem() is { } fanWhy)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Error">@fanWhy</MudText>
+                            }
+                            <MudStack Row="true" Spacing="2" Class="mt-2">
+                                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || FanInput.Problem() != null)"
+                                           OnClick="@(() => SetFan(a2))">Set on A2</MudButton>
+                                @if (_fanDirty)
+                                {
+                                    <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _fanDirty = false)">Undo edits</MudButton>
+                                }
+                            </MudStack>
+                            <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">On A2 now: @string.Join("; ", PdmLinked.FanParamsText(a2)).</MudText>
+                            @foreach (var p in PdmLinked.FanRemoteIdProblems(View))
+                            {
+                                <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@p</MudAlert>
+                            }
+                            @if (PdmLinked.FanRemoteIdProblems(View).Count > 0)
+                            {
+                                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="mt-1" Disabled="@busy"
+                                           OnClick="PointFan">Point A2's fan inputs at A1 / B</MudButton>
+                            }
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @* ---- base IDs ---- *@
+            <MudItem>
+                <MudCard Elevation="2" Style="height: 100%">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1">Base IDs (one board uses base to base + 0x@((PdmLinked.BlockSize - 1).ToString("X2")))</MudText>
+                        @foreach (var board in View.Boards)
+                        {
+                            var role = board.Role;
+                            var cur = board.Device.BaseId;
+                            var typed = _newBase.GetValueOrDefault(role, "");
+                            var parsed = ParseHex(typed);
+                            var why = parsed is { } nb && nb != cur ? PdmLinked.BaseIdProblem(View, role, nb) : null;
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
+                                <MudText Typo="Typo.body2" Style="min-width: 150px">@role 0x@(cur.ToString("X3"))-0x@((cur + PdmLinked.BlockSize - 1).ToString("X3"))</MudText>
+                                <MudTextField T="string" Value="@typed" ValueChanged="@(v => _newBase[role] = v)" Label="New base (hex)"
+                                              Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 130px" Disabled="@busy"
+                                              Immediate="true" />
+                                <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                                           Disabled="@(busy || parsed == null || parsed == cur || why != null)"
+                                           OnClick="@(() => Move(role, parsed!.Value))">Move</MudButton>
+                            </MudStack>
+                            @if (typed != "" && parsed == null)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Error">Type a hex ID, e.g. 600 or 0x600.</MudText>
+                            }
+                            else if (why != null)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Error">@why</MudText>
+                            }
+                            else if (parsed is { } ok && ok != cur)
+                            {
+                                @foreach (var w in PdmLinked.BaseIdWarnings(View, role, ok))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Warning">@w</MudText>
+                                }
+                            }
+                        }
+                        <MudText Typo="Typo.caption" Style="display: block; max-width: 420px" Class="mt-2">
+                            Move is not a Write All value: it sends ONE message to the board now (as Modify on the Devices
+                            page) and the board answers on the new ID at once. A2's fan inputs follow A1 / B on the PC.
+                            Then press Write All (A2 learns the new fan IDs) and Burn: until the Burn, a power cycle puts
+                            the board back on its old ID. The ECU needs the new IDs too (DBC).
+                        </MudText>
+                        @if (_moveDone.Count > 0)
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="mt-1">@string.Join("; ", _moveDone). Next: Write All, then Burn.</MudAlert>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open = true;
+    private int _warn, _crit, _hyst, _margin;
+    private bool _tempDirty;
+    private double _fanOn, _fanOff;
+    private bool _fanDirty;
+    private readonly Dictionary<string, string> _newBase = new();
+    private List<string> _moveDone = [];
+
+    private PdmTempLimits TempInput => new(_warn, _crit, _hyst, _margin);
+    private PdmFanThresholds FanInput => new(_fanOn, _fanOff);
+
+    // Until the user types, the fields follow the PC values (they change with Read All / New PDM / the board pages)
+    protected override void OnParametersSet()
+    {
+        if (!_tempDirty && View.Boards.FirstOrDefault() is { } first && PdmTempLimits.Of(first.Device) is { } t)
+            (_warn, _crit, _hyst, _margin) = (t.Warn, t.Crit, t.Hyst, t.Margin);
+        var a2 = View.Boards.FirstOrDefault(b => b.Role == "A2")?.Device;
+        if (!_fanDirty && a2 != null && PdmLinked.FanLayoutProblem(a2) == null)
+        {
+            var c0 = PdmFactoryDefaults.FanCond0(a2);
+            (_fanOn, _fanOff) = (a2.Conditions[c0].Arg, a2.Conditions[c0 + 1].Arg);
+        }
+    }
+
+    private void SetTemps()
+    {
+        if (PdmLinked.SetTempLimits(View, TempInput) is { } why) { Notification.NewError(why); return; }
+        _tempDirty = false;
+        Notification.NewInfo("Temperature limits set on the PC for A1, A2 and B. Write All sends them to the boards.");
+    }
+
+    private void SetFan(domain.Devices.FwDevice a2)
+    {
+        if (PdmLinked.SetFanThresholds(a2, FanInput) is { } why) { Notification.NewError(why); return; }
+        _fanDirty = false;
+        Notification.NewInfo("Fan thresholds set on the PC for A2 (all six values). Write All sends them to A2.");
+    }
+
+    private void PointFan()
+    {
+        PdmLinked.PointFanAtBoards(View);
+        Notification.NewInfo("A2's fan inputs now listen to A1 / B on the PC. Write All sends them to A2.");
+    }
+
+    private void Move(string role, int newBase)
+    {
+        try
+        {
+            var (refused, done) = Pdm.ChangeBaseId(role, newBase, AdapterManager.IsConnected);
+            if (refused != null) { Notification.NewError($"{role} not moved: {refused}"); return; }
+            _moveDone = done.ToList();
+            _newBase[role] = "";
+            Notification.NewWarning($"{role} moved to 0x{newBase:X3} (running settings only). Write All, then Burn to keep it.");
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError($"Error moving {role}", ex);
+        }
+    }
+
+    private static int? ParseHex(string s)
+    {
+        s = s.Trim();
+        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = s[2..];
+        return s.Length is > 0 and <= 3 && int.TryParse(s, System.Globalization.NumberStyles.HexNumber, null, out var v) ? v : null;
+    }
+}

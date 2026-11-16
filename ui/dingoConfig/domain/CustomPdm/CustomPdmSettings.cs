@@ -32,6 +32,10 @@ public class CustomPdmSettings
     [JsonPropertyName("tempCritSoonMargin")] public int TempCritSoonMargin { get; set; } = DefaultTempCritSoonMargin;
     [JsonPropertyName("wakeInputMask")] public int WakeInputMask { get; set; } = DefaultWakeInputMask;
 
+    // B3 (u2a): the PC values were set by "New PDM" (PdmFactoryDefaults) = our firmware's factory config, proven equal
+    // against the sim. Not saved: a project loaded from a file counts as not read.
+    [JsonIgnore] public bool FactoryNew { get; set; }
+
     [JsonIgnore] public int DeviceType { get; private set; }
     [JsonIgnore] public int NumOutputs { get; private set; }
     [JsonIgnore] public int NumDigitalInputs { get; private set; }

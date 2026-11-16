@@ -13,6 +13,7 @@
 
 @* custom-pdm route B (docs/ui-route-b-plan.md): the three boards as one PDM.
    B1: live view. B2: editable settings and ONE Read All / Write All / Burn (domain/CustomPdm/PdmOps.cs).
+   B3: "New PDM" (PdmNewProject.razor) and the settings set once for the PDM (PdmSettingsPanel.razor).
    Editing follows the stock grids (Devices/FwDevice/Functions/OutputsGrid.razor, DigitalInputsGrid.razor): same
    clamps, same "disabled when not enabled / paired" rules. *@
 <PageTitle>PDM</PageTitle>
@@ -23,6 +24,7 @@
         <MudAlert Severity="Severity.Info">
             No custom-pdm boards in the project. Add the devices "custom-pdm A" (twice) and "custom-pdm B" on the Devices page.
         </MudAlert>
+        <PdmNewProject />
     }
     else
     {
@@ -101,6 +103,8 @@
             }
         </MudPaper>
 
+        <PdmSettingsPanel View="@_view" />
+
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
         <MudGrid Class="mb-4">
             <MudItem>
@@ -124,7 +128,11 @@
                                          Color="@(dev.Connected ? Color.Success : Color.Default)">
                                     @(dev.Connected ? "Connected" : "Offline")
                                 </MudChip>
-                                @if (!dev.FullReadDone)
+                                @if (!dev.FullReadDone && dev.CustomPdm?.FactoryNew == true)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">New PDM: factory settings, not read</MudChip>
+                                }
+                                else if (!dev.FullReadDone)
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">Not read yet: settings are PC defaults</MudChip>
                                 }
