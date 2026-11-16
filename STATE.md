@@ -15,7 +15,7 @@ Updated 2026-11-15. Decisions: `DECISIONS.md`. Scripts: `automation.yml`. Rules,
 Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench with passing tests (done 2026-11-11); (3) enclosure with heat sink (handbuilt-cad tools + Fusion; v2b done 2026-11-13); (4) PC tool: the three boards shown and set up as one PDM in our dingoConfig copy (`ui/`, K1a; route A done, route B in progress, see Next 1).
 
 ## Where work is
-- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Working branches: none (2026-11-15).
+- `main`, level with `origin` (private GitHub `living-relation/custom-pdm`, re-attached 2026-11-10; PRs and the state-check workflow run again). Working branches (2026-11-16): `feat/ui-b3-write-wait` (job b3), `docs/a2-sweep-fixes` (job a2), worktrees in `.claude/worktrees/`.
 - Owner (Dan A1a, 2026-11-10): one orchestrator session plus the sub-agents it deploys. Sub-agents work in worktrees `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (inside the repo root, git-ignored; rule in `AGENTS.md`) and do not edit `STATE.md` / `DECISIONS.md`; the orchestrator reviews and merges. Orchestrator handoff file (local, git-ignored): `.claude/handoff/HANDOFF-<date>.md`, newest first.
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
@@ -27,8 +27,7 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- b3 (2026-11-15, open; follows b1c): the board sends nothing back while it takes in the settings (firmware `core/param_protocol.cpp`: WriteAllVal has no reply; dingoConfig sends all values in one go after the board's "start" reply), so "restart when the board answers" leaves one long silent gap of about 40-55 s through the sim bridge. a) restart the wait on every frame the PC actually sends to that board and on every board reply, then 10 s after the last one (one more stock edit in `DeviceManager.OnFrameTransmitted`; not yet proven against the sim bridge's buffering); b) keep 90 s; c) a wait set on the page (default 20 s; set 90 s for the sim).
-- a2 (2026-11-15, open; follows a1a): the docs sweep found 29 stale / conflicting spots in README.md, `docs/box-connectors.md`, `docs/parts-audit.md`, `docs/firmware-thermal-plan.md`, `docs/firmware-pin-map.md`, `firmware/sim/RESULTS.md`, `firmware/sim/renode/RESULTS-renode.md`, `ui/README.md`, `docs/ui-route-b-plan.md` (mostly: studs now bosses, decided items without a "decided" mark, old test / byte counts), plus here: Open items "Decide 256 Kbit FRAM" (settled by C2b) and `docs/enclosure-layout.md` pointing to the deleted `tools/gen_enclosure_layout.py`. a) fix all in one docs PR; b) fix only the wrong facts, leave the order / wording ones; c) leave.
+- Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
 - Answered 2026-11-14: s11 (c, then steady flags; `DECISIONS.md` 2026-11-14).
