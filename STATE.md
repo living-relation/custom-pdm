@@ -20,18 +20,16 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-15)
-1. PC tool, route B (K1a): one combined page (24 outputs in one list, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); what is built and how to run it: `ui/README.md`. B1 and B2 done (Status 2026-11-15; k2b, k3a); B3-B5: go (Dan, 2026-11-16); B5 done (PR #81), B3 done (PR #82); B4 next. Route A done (PR #65) and checked in a browser (Status 2026-11-15).
+1. PC tool, route B (K1a): one combined page (24 outputs in one list, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); what is built and how to run it: `ui/README.md`. B1 and B2 done (Status 2026-11-15; k2b, k3a); B3-B5: go (Dan, 2026-11-16); B5 done (PR #81), B3 done (PR #82); B4 in progress (job b4). After B4 (Dan, 2026-11-16, all as dummy test files in this repo, other repos read-only): DBC PDM-wide names (d2b); Link JSON / .lcs PDM channels (L1a); dummy copy of the car CAN ID table (L2); bus-load check (L3a); preliminary plan for ECU -> PDM output control (L4a). Route A done (PR #65) and checked in a browser (Status 2026-11-15).
 2. Firmware thermal limits: set real warn / critical values after bench measurements (r6c) for the fitted MCU (RET7, or the RET6 alternate, s9a), so every part stays inside its rating: board parts at 85 C (TSR 1-2450, crystal, X5R caps, LEDs, USB-C, BOOT switch), RET6 TJ 105 C, FRAM 105 C (``docs/parts-audit.md`` section 11); check the input board (under the lid, not in the heat model) with a thermocouple too. Done: board power (PR #54), thermal protection (PR #55), sleep fix + fan exemption (PR #56).
 3. Digi-Key leftovers: KEMET C0805C473K5RAC7800 47 nF and UNI-ROYAL 0805W8F1200T5E 120R have no Digi-Key listing (PR #57).
 4. Enclosure open items listed in `docs/enclosure-v2b.md` (USB-C bulkhead part number and cut-out, seals, wire lengths, manufacturing drawings, CNC check).
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- d1 (2026-11-16, open; B5): keypad msgs 24-26 (sent only when a keypad is enabled) in the DBC: a) leave out, no keypads planned (rec); b) add them.
-- d2 (2026-11-16, open; B5): DBC signal names: a) per board, as now (`B_Output1_Current`) (rec); b) also PDM-wide numbers (`PDM_Out17`).
 - p1 (2026-11-16, open; B3): base-ID Move on /pdm sends the stock Modify message at once (outside Write All; Burn needed, a power cycle before Burn puts the board back): a) keep as built (rec); b) /pdm only shows / checks IDs, change them on the Devices page.
 - p2 (2026-11-16, open; B3): a New PDM project may Write All without a Read All first (it replaces what the boards hold; warning shown): a) keep as built (rec, lets you prepare a config offline); b) keep the Read All guard for New PDM too.
-- Answered 2026-11-16: u1a, u2a, u3c, u4c, u5a (`DECISIONS.md`).
+- Answered 2026-11-16: u1a, u2a, u3c, u4c, u5a, L1a, L2 (later; dummy copy now), L3a, L4a (preliminary), d1a, d2b (`DECISIONS.md`).
 - Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).

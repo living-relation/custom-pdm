@@ -16,6 +16,8 @@ Rules:
 - Defaults (Dan, 2026-11-11): if a question only amounts to "keep going or not" and the step is a normal part of the process that breaks nothing, take the common-sense answer, log it in `DECISIONS.md` as a default, and move on. Ask Dan only about real problems or real design choices. Do not invent problems.
 - At a finishing point, do not stop and wait: update STATE/DECISIONS/plans and working memory, then continue with the next task. Stop only for something Dan must answer or do (Dan, 2026-11-09).
 
+- Other repos (Dan, 2026-11-16): st185-link-ecu-config, center-cluster-esp32-p4, realdash-dashboard-builder and any other repo are read-only for this project: read / pull only, never commit or push there without Dan's say. Copies of their content in this repo are dummy test copies (say so in the file and its name), never a source of truth, and never the only reason for a design change without Dan's approval.
+
 - UI check (Dan, 2026-11-14): every firmware feature or setting we add must be checked against the dingo UI (dingoConfig, repo corygrant/dingoConfig; docs at corygrant/dingoElec): say whether it is shown / editable there, or list the UI change it needs.
 
 Firmware checks (run before any commit that touches `firmware/`):
