@@ -7,8 +7,8 @@ namespace domain.CustomPdm;
 //   real result: the stock "... Successful" notification of FwDevice plus, for read and write, a config CRC check
 //   reply that matches (FwDevice.ConfigMismatch false). No reply in time = failed.
 // - Write All and Burn are refused unless A1, A2 and B are all in the project, connected and read in this session
-//   (FwDevice.FullReadDone). A failure stops the run: later boards are left alone and every board keeps its own
-//   result line, so it is visible that the boards are on different settings.
+//   (FwDevice.FullReadDone). A failure stops a Write All / Burn run: later boards are left alone and every board
+//   keeps its own result line, so it is visible that the boards are on different settings.
 // - Burn is never started by a read or a write. It first asks every board for a fresh config CRC check; one
 //   mismatch (or no reply) and nothing is burned. The firmware answers a burn with its own result
 //   (comms/request_msg.cpp: cmd 30, byte 4 = WriteConfig()), dingoConfig turns only result 1 into "Burn Successful".
