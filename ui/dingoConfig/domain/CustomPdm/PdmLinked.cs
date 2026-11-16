@@ -186,7 +186,7 @@ public static class PdmLinked
             {
                 var ci = b.Device.CanInputs[i];
                 if (!ci.Enabled || ci.Ide || ci.Id < old || ci.Id >= old + BlockSize) continue;
-                if (IsFanSlotFor(v, b, i, role)) continue;
+                if (IsFanSlotFor(v, b, i, role) || PdmLinks.FollowsBoard(v, b, i, role)) continue; // B4: link slots follow too
                 list.Add($"{b.Role} CAN input {ci.Number} listens to 0x{ci.Id:X3} ({role}'s old block): change it by hand.");
             }
         }
@@ -201,13 +201,14 @@ public static class PdmLinked
         b.Role == "A2" && FanLayoutProblem(b.Device) == null
         && FanRemotes().Any(r => r.Remote == role && r.Slots.Contains(i - PdmFactoryDefaults.FanCanIn0));
 
-    // Before role moves to newBase: A2's fan CAN inputs that listen to the role's msg 0 follow it. Returns what moved.
+    // Before role moves to newBase: A2's fan CAN inputs that listen to the role's msg 0 follow it, and (B4) every
+    // cross-board link slot that listens to the role's msg 37. Returns what moved.
     public static IReadOnlyList<string> FollowBaseId(PdmView v, string role, int newBase)
     {
+        var list = new List<string>(PdmLinks.FollowBaseId(v, role, newBase));
         var moved = Board(v, role);
         var a2 = Board(v, "A2");
-        if (moved == null || a2 == null || FanLayoutProblem(a2) != null) return [];
-        var list = new List<string>();
+        if (moved == null || a2 == null || FanLayoutProblem(a2) != null) return list;
         foreach (var (remote, slots) in FanRemotes().Where(r => r.Remote == role))
         {
             var cis = slots.Select(k => a2.CanInputs[PdmFactoryDefaults.FanCanIn0 + k]).ToList();
