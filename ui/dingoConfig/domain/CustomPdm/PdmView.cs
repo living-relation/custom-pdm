@@ -10,7 +10,16 @@ namespace domain.CustomPdm;
 public record PdmBoard(string Role, FwDevice Device);
 
 public record PdmOutputRow(int Number, string Board, int BoardOutput, double RatingA, string Connector,
-    FwDevice Device, Output Output);
+    FwDevice Device, Output Output)
+{
+    // b2b (Dan, 2026-11-15): a current limit above the row's rating is allowed (as in stock dingoConfig, 0-100 A)
+    // but warned about. Live: it follows the edited value.
+    public bool OverRating => Output.CurrentLimit > RatingA;
+
+    public string? RatingWarning => OverRating
+        ? $"Output {Number} ({Board} OUT{BoardOutput}): current limit {Output.CurrentLimit:0.##} A is above its {RatingA:0.#} A rating."
+        : null;
+}
 
 public record PdmInputRow(int Number, string Board, string Kind, int BoardInput, string Connector,
     FwDevice Device, DigitalInput? Digital, AnalogInput? Analog)
@@ -34,6 +43,7 @@ public class PdmView
     public List<PdmInputRow> Inputs { get; } = [];
 
     public double TotalCurrent => Boards.Sum(b => b.Device.TotalCurrent);
+    public List<PdmOutputRow> OverRating => Outputs.Where(o => o.OverRating).ToList();
     public bool Any => Boards.Count > 0;
 
     // B2: true when both views hold the same device objects in the same roles. The /pdm page then keeps its rows
