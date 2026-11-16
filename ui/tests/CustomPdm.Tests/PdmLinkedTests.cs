@@ -169,11 +169,24 @@ public class PdmLinkedTests
         Assert.Equal(new PdmFanThresholds(45, 40), PdmLinked.FanThresholds(a2));
     }
 
-    [Fact]
-    public void FanLogicChangedByHandIsNotTouched()
+    [Theory]
+    [InlineData("canIn25op")]
+    [InlineData("canIn27off")]
+    [InlineData("condOnOff")]
+    [InlineData("condOffOp")]
+    [InlineData("condOnInput")]
+    public void FanLogicChangedByHandIsNotTouched(string change)
     {
         var a2 = Dev(NewPdm(), "A2");
-        a2.CanInputs[25].Operator = Operator.GreaterThan;
+        var c0 = PdmFactoryDefaults.FanCond0(a2);
+        switch (change)
+        {
+            case "canIn25op": a2.CanInputs[25].Operator = Operator.GreaterThan; break;
+            case "canIn27off": a2.CanInputs[27].Enabled = false; break;
+            case "condOnOff": a2.Conditions[c0].Enabled = false; break;
+            case "condOffOp": a2.Conditions[c0 + 1].Operator = Operator.GreaterThanOrEqual; break;
+            case "condOnInput": a2.Conditions[c0].Input = 0; break;
+        }
         Assert.NotNull(PdmLinked.FanLayoutProblem(a2));
         Assert.Equal(PdmLinked.FanLayoutProblem(a2), PdmLinked.SetFanThresholds(a2, new PdmFanThresholds(50, 44)));
         Assert.Equal(45.0, a2.CanInputs[24].Operand);
@@ -195,6 +208,7 @@ public class PdmLinkedTests
     [InlineData("B", 0x7D9, "Base ID must be 0x000 to 0x7D8 (the board uses base to base + 0x27).")]
     [InlineData("A2", 0x4F0, "A2 must stay above A1 (0x500): the PDM page tells the two A boards apart by base ID.")]
     [InlineData("A1", 0x600, "A1 must stay below A2 (0x540): the PDM page tells the two A boards apart by base ID.")]
+    [InlineData("A1", 0x541, "A1 must stay below A2 (0x540): the PDM page tells the two A boards apart by base ID.")]
     public void BaseIdChecks(string role, int newBase, string? why)
     {
         Assert.Equal(why, PdmLinked.BaseIdProblem(NewPdm(), role, newBase));
