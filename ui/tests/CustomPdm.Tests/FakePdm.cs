@@ -20,6 +20,7 @@ public sealed class FakeBoard
     public Dictionary<(int Index, int Sub), byte[]> Values { get; } = new();
     public bool Silent { get; set; }            // answers nothing
     public bool WrongCheckCrc { get; set; }     // config check never matches
+    public bool NoWriteResult { get; set; }     // answers the Write All start, never the WriteAllComplete
     public byte BurnResult { get; set; } = 1;   // byte 4 of the burn reply (WriteConfig())
     public List<MessageCommand> Got { get; } = [];
     public int Burns { get; private set; }
@@ -81,6 +82,7 @@ public sealed class FakeBoard
                 _staged[key] = d[4..8];
                 break;
             case MessageCommand.WriteAllComplete:
+                if (NoWriteResult) break;
                 var ok = _staged.Count == (d[2] << 8 | d[1]) && Crc(_staged.Values).SequenceEqual(d[4..8]);
                 if (ok) foreach (var (k, v) in _staged) Values[k] = v;
                 tx.Add(Reply(cmd, d[1], d[2], ok ? 1 : 0, d[4..8]));
@@ -98,9 +100,16 @@ public sealed class FakeBoard
 // The three PC devices in one real DeviceManager + PdmOpsService, on a bus of FakeBoards, with a hand clock
 public sealed class FakePdm
 {
-    private readonly List<CanFrame> _pending = [];
+    private readonly List<DeviceCanFrame> _pending = [];
 
     public DeviceManager Mgr { get; }
+    // a slow bus / bridge: at most this many PC frames reach the boards per Pump (one Pump per 100 ms round)
+    public int? MaxFramesPerPump { get; set; }
+    // these boards send a harmless config-channel reply (Version) every Pump, whatever the PC sends
+    public HashSet<string> Chatty { get; } = [];
+    // clock of every frame the PC sent (same order as Sent)
+    public List<(int Id, MessageCommand Cmd, DateTime At)> SentAt { get; } = [];
+    public DateTime? FinishedAt { get; private set; }   // clock when the last Run ended
     public PdmOpsService Service { get; }
     public Dictionary<string, FakeBoard> Boards { get; } = new();
     public HashSet<string> Offline { get; } = [];      // by device name
@@ -116,7 +125,7 @@ public sealed class FakePdm
         if (roles.Length == 0) roles = PdmOps.Roles;
         Mgr = new DeviceManager(NullLogger<DeviceManager>.Instance, NullLoggerFactory.Instance,
             new SystemLogger(Path.Combine(Path.GetTempPath(), "cpdm-ui-test-logs")), new FwDeviceDefManager());
-        Mgr.SetBatchTransmitCallback(batch => { lock (_pending) _pending.AddRange(batch.Select(f => f.Frame)); });
+        Mgr.SetBatchTransmitCallback(batch => { lock (_pending) _pending.AddRange(batch); });
         foreach (var role in roles)
         {
             var (type, id) = role switch { "A1" => (14, 0x500), "A2" => (14, 0x540), _ => (15, 0x580) };
@@ -135,17 +144,31 @@ public sealed class FakePdm
     public PdmView View => Service.BuildView();
     public string? Blocked(PdmOpKind op) => Service.BlockedReason(op, View, Adapter);
 
+    // Does the job of CommsDataPipeline: sends what DeviceManager queued (then OnFrameTransmitted, as the pipeline
+    // does after the adapter took the frame), and hands every board reply to OnCanDataReceived
     public void Pump()
     {
-        while (true)
+        foreach (var role in Chatty)
+            Mgr.OnCanDataReceived(new CanFrame(Boards[role].BaseId, 8, [(byte)MessageCommand.Version, 0, 0, 0, 99, 0, 0, 0]));
+        var left = MaxFramesPerPump ?? int.MaxValue;
+        while (left > 0)
         {
-            List<CanFrame> batch;
-            lock (_pending) { batch = _pending.ToList(); _pending.Clear(); }
-            if (batch.Count == 0) return;
-            foreach (var f in batch)
+            List<DeviceCanFrame> batch;
+            lock (_pending)
             {
+                batch = _pending.Take(left).ToList();
+                _pending.RemoveRange(0, batch.Count);
+            }
+
+            if (batch.Count == 0) return;
+            left -= batch.Count;
+            foreach (var df in batch)
+            {
+                var f = df.Frame;
                 Sent.Add((f.Id, (MessageCommand)f.Payload[0], Notes.ToArray(),
                     _devices.Where(d => !d.ConfigMismatch).Select(d => d.Name).ToArray()));
+                SentAt.Add((f.Id, (MessageCommand)f.Payload[0], Clock));
+                Mgr.OnFrameTransmitted(df);
                 foreach (var board in Boards.Values)
                 foreach (var (id, data) in board.Rx(f))
                     Mgr.OnCanDataReceived(new CanFrame(id, 8, data));
@@ -153,17 +176,19 @@ public sealed class FakePdm
         }
     }
 
-    // Start the operation and run it to its end (100 ms of clock per round). Returns the refusal text, if any.
+    // Start the operation and run it to its end (100 ms of clock per round, 10 min at most). Returns the refusal text, if any.
     public string? Run(PdmOpKind op)
     {
+        FinishedAt = null;
         var refused = Service.Start(op, Adapter, Clock);
-        for (var i = 0; refused == null && Service.Ops.Busy && i < 2000; i++)
+        for (var i = 0; refused == null && Service.Ops.Busy && i < 6000; i++)
         {
             Pump();
             Clock = Clock.AddMilliseconds(100);
             Service.Tick(Clock);
         }
 
+        if (refused == null) FinishedAt = Clock;
         return refused;
     }
 

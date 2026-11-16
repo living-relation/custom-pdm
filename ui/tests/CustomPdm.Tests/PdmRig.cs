@@ -11,7 +11,7 @@ namespace CustomPdm.Tests;
 public sealed class PdmRig
 {
     private readonly SimBus _bus;
-    private readonly List<CanFrame> _pending = [];
+    private readonly List<DeviceCanFrame> _pending = [];
     private readonly DateTime _t0 = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     public DeviceManager Mgr { get; }
@@ -30,7 +30,7 @@ public sealed class PdmRig
         _bus = bus;
         Mgr = new DeviceManager(NullLogger<DeviceManager>.Instance, NullLoggerFactory.Instance,
             new SystemLogger(Path.Combine(Path.GetTempPath(), "cpdm-ui-test-logs")), new FwDeviceDefManager());
-        Mgr.SetBatchTransmitCallback(batch => { lock (_pending) _pending.AddRange(batch.Select(f => f.Frame)); });
+        Mgr.SetBatchTransmitCallback(batch => { lock (_pending) _pending.AddRange(batch); });
         // same call as the Devices page ("fwD:<type>")
         Mgr.AddDevice("fwD:14", "A1", 0x500);
         Mgr.AddDevice("fwD:14", "A2", 0x540);
@@ -54,7 +54,13 @@ public sealed class PdmRig
         while (true)
         {
             List<CanFrame> batch;
-            lock (_pending) { batch = _pending.Take(64).ToList(); _pending.RemoveRange(0, batch.Count); }
+            lock (_pending)
+            {
+                var queued = _pending.Take(64).ToList();
+                _pending.RemoveRange(0, queued.Count);
+                foreach (var df in queued) Mgr.OnFrameTransmitted(df);   // as CommsDataPipeline does after the adapter
+                batch = queued.Select(df => df.Frame).ToList();
+            }
             if (batch.Count == 0) break;
             if (BeforeSend == null) { Sent.AddRange(batch); Feed(_bus.Tx(batch), 2 * batch.Count); continue; }
             foreach (var f in batch) { BeforeSend(f); Sent.Add(f); Feed(_bus.Tx([f]), 2); }
