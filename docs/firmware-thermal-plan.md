@@ -47,7 +47,7 @@ Status: option B implemented 2026-11-14 on custom boards only (r5a, r7a, r6c, s1
 - **Renode bench** (18 Robot tests now; `firmware/sim/renode/`): the MCP9808 model already has a settable `Temperature` and sets the crit / upper flags (`models/PdmI2C.cs:271-333`). New Robot cases: (1) CAN msg 0 data16[3] tracks the set temperature x 10; (2) fan output follows the configured latch across a 30 -> 50 -> 42 -> 38 C ramp; (3) above WARN: OverTemp state + error msg, outputs unchanged (stock) / shed (configured); (4) above CRIT: all outputs off, then recovery below CRIT minus hysteresis (option B); (5) three-node case: board B hot -> A1 / A2 shed via CAN input.
 - Bench after hardware: thermocouples on the MCP9808 spot and one BTS70012 to calibrate the 20-25 K offset.
 
-## 5. Recommended plan (needs Dan's answers)
+## 5. Recommended plan (answered: r2a, r3c, r4c, r5a, r6c, `DECISIONS.md` 2026-11-13)
 1. MCU grade: done (r2a, PR #54: boards now STM32F446RET7, 105 C; RET6, 85 C, is an approved alternate, Dan s9a). The bench limits (r6c) must suit whichever chip is fitted.
 2. Fan power per r3; fan-fail detection per r4.
 3. Firmware option B: WARN / CRIT as params with new defaults, CRIT auto-recover, STM32 die temp on CAN; fan latch + shedding delivered as a **default config** (no code).
