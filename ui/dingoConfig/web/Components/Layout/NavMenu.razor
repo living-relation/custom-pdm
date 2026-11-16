@@ -38,13 +38,10 @@
         }
     }
     
-    @* custom-pdm route B: combined page, shown once a custom-pdm board is in the project *@
-    @if (_devices.OfType<domain.Devices.FwDevice>().Any(d => d.CustomPdm != null))
-    {
-        <MudNavLink Href="pdm" Icon="@Icons.Material.Filled.ViewList">
-            PDM
-        </MudNavLink>
-    }
+    @* custom-pdm route B: combined page; always shown (B3: its "New PDM" button is there when no board is in the project) *@
+    <MudNavLink Href="pdm" Icon="@Icons.Material.Filled.ViewList">
+        PDM
+    </MudNavLink>
 
     <MudNavLink Href="plot" Icon="@Icons.Material.Filled.StackedLineChart">
         Plot

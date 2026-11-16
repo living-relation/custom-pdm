@@ -24,7 +24,11 @@ public static class CustomPdmGuards
     public static bool ModifiedOpsAllowed(IDeviceConfigurable device) => !IsCustom(device);
 
     public static string? WriteAllBlockedReason(IDeviceConfigurable device) =>
-        IsCustom(device) && !((FwDevice)device).FullReadDone ? WriteAllNeedsReadReason : null;
+        IsCustom(device) && !ReadOrFactoryNew((FwDevice)device) ? WriteAllNeedsReadReason : null;
+
+    // B3 (u2a): a board of a "New PDM" project holds our factory defaults on the PC (PdmFactoryDefaults, proven equal
+    // to the firmware's against the sim), so its Write All is as safe as one after a Read All.
+    public static bool ReadOrFactoryNew(FwDevice device) => device.FullReadDone || device.CustomPdm?.FactoryNew == true;
 
     // Why a config operation must not run (null = allowed). allParams false = the Modified variants.
     public static string? ReadBlockedReason(IDeviceConfigurable device, bool allParams) =>

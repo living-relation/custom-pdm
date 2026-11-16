@@ -1,0 +1,32 @@
+@using application.Services
+@using domain.CustomPdm
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+
+@* custom-pdm route B, phase B3 (u2a): "New PDM" adds A1, A2, B with our firmware's factory defaults
+   (domain/CustomPdm/PdmFactoryDefaults.cs, proven equal to fresh boards against the firmware sim). *@
+<MudPaper Outlined="true" Class="pa-3 mt-2">
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.AddBox"
+                   Disabled="@Pdm.Ops.Busy" OnClick="@Create">New PDM</MudButton>
+        <MudText Typo="Typo.body2">
+            Adds A1 (0x@(PdmFactoryDefaults.BaseA1.ToString("X3"))), A2 (0x@(PdmFactoryDefaults.BaseA2.ToString("X3"))) and
+            B (0x@(PdmFactoryDefaults.BaseB.ToString("X3"))) with our firmware's factory settings (1000K, fans on A2 OUT2
+            at @PdmFactoryDefaults.FanOnC.ToString("0") / @PdmFactoryDefaults.FanOffC.ToString("0") &deg;C, limits 55 / 80 &deg;C), not stock dingoPDM ones.
+        </MudText>
+    </MudStack>
+    <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">
+        A New PDM project can be written without a Read All first: Write All then REPLACES whatever the boards hold with
+        these settings plus your edits. To keep what is on the boards, press Read All first.
+    </MudText>
+</MudPaper>
+
+@code {
+    private void Create()
+    {
+        var refused = Pdm.NewPdm();
+        if (refused != null) Notification.NewError($"New PDM not created: {refused}");
+        else Notification.NewSuccess("New PDM: A1, A2 and B added with our factory settings");
+    }
+}
