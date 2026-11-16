@@ -20,17 +20,15 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 - Do not push anything upstream to dingoPDM / dingoFW. Do not flash anything: no hardware exists yet. Do not run two agents in Fusion at once.
 
 ## Next (in this order unless Dan says otherwise; updated 2026-11-15)
-1. PC tool, route B (K1a): one combined page (24 outputs in one list, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); what is built and how to run it: `ui/README.md`. B1 and B2 done (Status 2026-11-15; k2b, k3a); B3-B5: go (Dan, 2026-11-16); B5 and B3 wait for answers u1-u4 below, then B4 (after B3, same page). Route A done (PR #65) and checked in a browser (Status 2026-11-15).
+1. PC tool, route B (K1a): one combined page (24 outputs in one list, all inputs) in `ui/dingoConfig/`. Plan: `docs/ui-route-b-plan.md` (phases B1-B5); what is built and how to run it: `ui/README.md`. B1 and B2 done (Status 2026-11-15; k2b, k3a); B3-B5: go (Dan, 2026-11-16); B5 and B3 in progress (jobs b5, b3p), then B4 (after B3, same page). Route A done (PR #65) and checked in a browser (Status 2026-11-15).
 2. Firmware thermal limits: set real warn / critical values after bench measurements (r6c) for the fitted MCU (RET7, or the RET6 alternate, s9a), so every part stays inside its rating: board parts at 85 C (TSR 1-2450, crystal, X5R caps, LEDs, USB-C, BOOT switch), RET6 TJ 105 C, FRAM 105 C (``docs/parts-audit.md`` section 11); check the input board (under the lid, not in the heat model) with a thermocouple too. Done: board power (PR #54), thermal protection (PR #55), sleep fix + fan exemption (PR #56).
 3. Digi-Key leftovers: KEMET C0805C473K5RAC7800 47 nF and UNI-ROYAL 0805W8F1200T5E 120R have no Digi-Key listing (PR #57).
 4. Enclosure open items listed in `docs/enclosure-v2b.md` (USB-C bulkhead part number and cut-out, seals, wire lengths, manufacturing drawings, CNC check).
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- u1 (2026-11-16, open; B3): temperature warn / critical limits: a) one set for all three boards (rec); b) per board; c) one set plus a per-board override.
-- u2 (2026-11-16, open; B3): defaults for a "new PDM" project: a) our firmware's built-in defaults (rec); b) a template file you edit.
-- u3 (2026-11-16, open; B4): what a new cross-board link does when its CAN message stops: a) output off (rec, safe); b) hold last state; c) pick per link, default off.
-- u4 (2026-11-16, open; B5): DBC for the ECU (no DBC export exists in dingoConfig today; files are static): a) a script makes DBC files for A1 / A2 / B in the repo (rec); b) an Export DBC button in the app; c) both.
+- u5 (2026-11-16, open): the rest of board A's generated `board.h` GPIOB comments are stock text: a) fix them in `port_boards.py` with B3 (rec); b) leave them.
+- Answered 2026-11-16: u1a, u2a, u3c, u4c (`DECISIONS.md`).
 - Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
