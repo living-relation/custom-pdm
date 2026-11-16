@@ -45,6 +45,21 @@ public sealed class SimBus : IDisposable
     public List<(int Id, byte[] Data)> Tx(IEnumerable<CanFrame> frames, double gapMs = 2) =>
         Cmd($"TX {gapMs} " + string.Join(' ', frames.Select(f => $"{f.Id:X}:{Convert.ToHexString(f.Payload, 0, f.Len)}")));
 
+    // B4: output o (0-based) of a board, from its PROFET IN pin (ground truth, not the status message)
+    public bool Pin(string board, int o)
+    {
+        _p.StandardInput.WriteLine($"PIN {board} {o}");
+        _p.StandardInput.Flush();
+        bool? level = null;
+        while (true)
+        {
+            var r = _p.StandardOutput.ReadLine() ?? throw new InvalidOperationException("sim bridge stopped");
+            if (r == "OK") return level ?? throw new InvalidOperationException("no P line");
+            if (r.StartsWith("ERR")) throw new InvalidOperationException(r);
+            if (r.StartsWith("P ")) level = r == "P 1";
+        }
+    }
+
     public void Dispose()
     {
         try { _p.StandardInput.WriteLine("QUIT"); _p.WaitForExit(5000); } catch { /* ignored */ }

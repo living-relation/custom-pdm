@@ -14,6 +14,7 @@
 @* custom-pdm route B (docs/ui-route-b-plan.md): the three boards as one PDM.
    B1: live view. B2: editable settings and ONE Read All / Write All / Burn (domain/CustomPdm/PdmOps.cs).
    B3: "New PDM" (PdmNewProject.razor) and the settings set once for the PDM (PdmSettingsPanel.razor).
+   B4: links, any input as the trigger of any output (PdmLinksPanel.razor).
    Editing follows the stock grids (Devices/FwDevice/Functions/OutputsGrid.razor, DigitalInputsGrid.razor): same
    clamps, same "disabled when not enabled / paired" rules. *@
 <PageTitle>PDM</PageTitle>
@@ -105,6 +106,7 @@
         </MudPaper>
 
         <PdmSettingsPanel View="@_view" />
+        <PdmLinksPanel View="@_view" />
 
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
         <MudGrid Class="mb-4">
