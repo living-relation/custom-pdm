@@ -177,10 +177,24 @@ t = set_lines(t, L([
     ('AIN1','C2')] + COMMON + [('UNUSED','A15')]), 'custom-pdm board A (dingoPDM v7.5 based)')
 for port, pin in [('C',10),('C',11),('C',13),('B',3),('B',4)]:   # new digital inputs (ex E1-E3, SWO)
     t = set_pin(t, port, pin, 'INPUT', 'FLOATING')
-t = rep(t, ' * PB3  - SWO                       (alternate 0, swo).',   # stock comment; board A has no LINE_SWO
-           ' * PB3  - DI7                       (input floating).')
 t = set_pin(t, 'C', 2, 'ANALOG', 'FLOATING')                      # AIN (ex PF2_IS)
 t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex DEN2)
+# GPIOx setup comment blocks: stock v7 text, rewritten where it is wrong for board A (u5a): names = the LINE_ defines
+# above (docs/firmware-pin-map.md section 3), modes = the VAL_GPIOx_* register values. Comment lines only.
+def pin_comment(txt, pin, name, mode):
+    txt, k = re.subn(rf'^ \* {pin} +- .*$', f' * {pin:<4} - {name:<25} ({mode}).', txt, flags=re.M)
+    assert k == 1, (pin, k)
+    return txt
+for pin, name, mode in [
+        ('PA0', 'PF1_2_IS', 'analog in'), ('PA5', 'PF7_8_DSEL', 'output pushpull pulldown'),
+        ('PA9', 'USB_VBUS', 'input floating'), ('PA10', 'DI1', 'input pullup'), ('PA15', 'UNUSED', 'input pullup'),
+        ('PB0', 'PF5_6_DEN', 'output pushpull pulldown'), ('PB2', 'PF1_2_DEN', 'output pushpull pulldown'),
+        ('PB3', 'DI7', 'input floating'), ('PB4', 'DI5', 'input floating'),     # PB3: stock SWO, board A has no LINE_SWO
+        ('PC2', 'AIN1', 'analog input'), ('PC7', 'PF1_2_DSEL', 'output pushpull pulldown'), ('PC9', 'DI2', 'input pullup'),
+        ('PC10', 'DI3', 'input floating'), ('PC11', 'DI4', 'input floating'), ('PC13', 'DI6', 'input floating'),
+        ('PF0', 'PIN0', 'input pullup'), ('PF1', 'PIN1', 'input pullup'),           # stock: Nucleo ARD_D7 / D8 names
+        ('PH0', 'OSC_IN', 'input pullup, HSE crystal'), ('PH1', 'OSC_OUT', 'input pullup, HSE crystal')]:
+    t = pin_comment(t, pin, name, mode)
 (d/'board.h').write_text(t)
 
 p = (d/'port.h').read_text()
