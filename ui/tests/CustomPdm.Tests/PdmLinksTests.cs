@@ -236,6 +236,19 @@ public class PdmLinksTests
         Assert.True(b.CanInputs[5].Enabled); // a slot set by hand is not a link slot
     }
 
+    // an inverted slot (Equal 0) with the time-out off is not a link: it would be "on while the input is off"
+    [Fact]
+    public void InvertedSlotWithoutTimeoutIsNotALink()
+    {
+        var v = NewPdm();
+        var b = Dev(v, "B");
+        Assert.Null(PdmLinks.Add(v, 1, 21, PdmLinkLoss.On));
+        b.CanInputs[0].TimeoutEnabled = false; // changed by hand
+        Assert.Empty(PdmLinks.Links(v));
+        Assert.Equal("set by hand (enabled, ID 0x527): never changed here", PdmLinks.Slots(v).Single(s => s.Board == "B").CanInputs[0].UsedBy);
+        Assert.Equal(0, PdmLinks.RemoveUnused(v));
+    }
+
     [Fact]
     public void LinkSlotsFollowABaseIdMove()
     {
