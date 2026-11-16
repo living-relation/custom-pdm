@@ -403,7 +403,7 @@
  * PB0  - PF5_6_DEN                 (output pushpull puLLdown).
  * PB1  - PF5_IN                    (output pushpull pulldown).
  * PB2  - PF1_DEN                   (output pushpull pulldown).
- * PB3  - SWO                       (alternate 0, swo).
+ * PB3  - DI7                       (input floating).
  * PB4  -                           (input pullup).
  * PB5  -                           (input pullup).
  * PB6  - I2C1_SCL                  (alternate 4, i2c scl).
