@@ -15,6 +15,7 @@ stdio commands (one per line, every reply ends with a line "OK"):
   TEMP <board> <board C> [die C]                MCP9808 reading (and STM32 die temperature)
   AN <board> <volts>          analog input wire voltage
   LINK <board> <on|off>       CAN wires of one board (off = silent: it neither hears nor sends; it keeps running)
+  PIN <board> <o>             output o (0-based): prints "P 1" when its PROFET IN pin is high, else "P 0"
   QUIT
 """
 import os, sys, time, socket, select
@@ -62,6 +63,8 @@ def stdio(so):
             boards[a[1]].set_analog(float(a[2]))
         elif c == 'LINK':
             boards[a[1]].connected = a[2].lower() == 'on'
+        elif c == 'PIN':   # B4: ground truth of an output, its PROFET IN pin (as s1_system.py pins_on)
+            b = boards[a[1]]; sys.stdout.write(f'P {int(bool(b.level(b.model["outputs"][int(a[2])][0])))}\n')
         else:
             sys.stdout.write(f'ERR {raw.strip()}\n')
         sys.stdout.write('OK\n'); sys.stdout.flush()
