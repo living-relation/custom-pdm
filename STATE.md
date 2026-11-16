@@ -27,8 +27,7 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- u5 (2026-11-16, open): the rest of board A's generated `board.h` GPIOB comments are stock text: a) fix them in `port_boards.py` with B3 (rec); b) leave them.
-- Answered 2026-11-16: u1a, u2a, u3c, u4c (`DECISIONS.md`).
+- Answered 2026-11-16: u1a, u2a, u3c, u4c, u5a (`DECISIONS.md`).
 - Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
