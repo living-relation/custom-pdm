@@ -118,6 +118,18 @@ automations:
     enabled: true
     run_cmd: wsl -d Ubuntu -- bash firmware/sim/renode/install_wsl.sh   # strip CR first if checked out with CRLF
     owner: claude
+  - id: dbc-gen
+    script: ui/tools/DbcGen/Program.cs
+    helpers: [ui/tools/DbcGen/DbcGen.csproj, ui/dingoConfig/domain/CustomPdm/DbcExport.cs]   # same generator as the /pdm Export DBC button
+    trigger: manual
+    reads: ["ui/dingoConfig/web/Definitions/custompdm-*-signals.json", ui/dingoConfig/web/Definitions/device-definitions.json]
+    writes: [firmware/dbc/custompdm_A1_0x500.dbc, firmware/dbc/custompdm_A2_0x540.dbc, firmware/dbc/custompdm_B_0x580.dbc, firmware/dbc/custompdm_PDM.dbc]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: dotnet run --project ui/tools/DbcGen
+    check_cmd: dotnet run --project ui/tools/DbcGen -- --check   # also ui/tests DbcExportTests.RepoFilesEqualGenerator
+    owner: claude
   - id: state-check
     script: .github/workflows/state-check.yml
     helpers: [.github/state-check.sh, .github/registry-check.py]

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- custom-pdm (route B phase B5): writes firmware/dbc/custompdm_*.dbc with the same generator as the /pdm
+       Export DBC button (ui/dingoConfig/domain/CustomPdm/DbcExport.cs). Not part of upstream. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\dingoConfig\domain\domain.csproj" />
+    <ProjectReference Include="..\..\dingoConfig\application\application.csproj" />
+  </ItemGroup>
+
+  <!-- FwDeviceDefManager reads Definitions/ next to the running assembly, as the app does -->
+  <ItemGroup>
+    <None Include="..\..\dingoConfig\web\Definitions\*.json" Link="Definitions\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
