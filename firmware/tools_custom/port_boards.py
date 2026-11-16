@@ -177,6 +177,8 @@ t = set_lines(t, L([
     ('AIN1','C2')] + COMMON + [('UNUSED','A15')]), 'custom-pdm board A (dingoPDM v7.5 based)')
 for port, pin in [('C',10),('C',11),('C',13),('B',3),('B',4)]:   # new digital inputs (ex E1-E3, SWO)
     t = set_pin(t, port, pin, 'INPUT', 'FLOATING')
+t = rep(t, ' * PB3  - SWO                       (alternate 0, swo).',   # stock comment; board A has no LINE_SWO
+           ' * PB3  - DI7                       (input floating).')
 t = set_pin(t, 'C', 2, 'ANALOG', 'FLOATING')                      # AIN (ex PF2_IS)
 t = set_pin(t, 'C', 7, 'OUTPUT', 'PULLDOWN')                      # DSEL1_2 (ex DEN2)
 (d/'board.h').write_text(t)
