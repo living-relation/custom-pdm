@@ -28,6 +28,6 @@ Tests (without `CUSTOMPDM_SIM_SO` the live ones are reported as Skipped):
     dotnet test ui\tests\CustomPdm.Tests
     $env:CUSTOMPDM_SIM_SO='/home/daniel/scratch/ui-sim/so'; dotnet test ui\tests\CustomPdm.Tests
 
-Use the app with the simulated boards (A1 0x500, A2 0x540, B 0x580, 1000K): start the bridge, then in dingoConfig pick adapter "SLCAN TCP", port `localhost:3333`, bit rate 1000K, add the three devices (types "custom-pdm A" / "custom-pdm B"), and press Read All before any write (a new project's defaults are stock dingoPDM ones, not our factory defaults). The real-time sim is slower than a board: one Write All takes 40 to 55 s per board through the bridge:
+Use the app with the simulated boards (A1 0x500, A2 0x540, B 0x580, 1000K): start the bridge, then in dingoConfig pick adapter "SLCAN TCP", port `localhost:3333`, bit rate 1000K, add the three devices (types "custom-pdm A" / "custom-pdm B"), and press Read All before any write (a new project's defaults are stock dingoPDM ones, not our factory defaults). The real-time sim is slower than a board: one Write All takes 40 to 55 s per board through the bridge (about 39 s on 2026-11-16). The /pdm Write All has no fixed wait: per board, it restarts on every frame the PC sends to that board and every config reply from it, fails "no reply (no answer for 10 s while writing)" 10 s after the last one, and gives up at 5 min per board ("write not confirmed in 5 min"):
 
     wsl -e python3 /mnt/c/projects/active/custom-pdm/ui/tests/sim_bridge.py /home/daniel/scratch/ui-sim/so --slcan-tcp 3333
