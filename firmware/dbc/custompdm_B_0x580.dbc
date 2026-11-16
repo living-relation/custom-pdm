@@ -1,0 +1,391 @@
+VERSION "custom-pdm"
+
+
+NS_ :
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: B
+
+
+BO_ 1410 B_Msg0: 8 B
+ SG_ B_DigitalInput1_State : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput2_State : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput3_State : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput4_State : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput5_State : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput6_State : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput7_State : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput8_State : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DeviceState : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_PdmType : 12|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_TotalCurrent : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_BatteryVoltage : 32|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
+ SG_ B_BoardTemp : 48|16@1+ (0.1,0) [0|6553.5] "degC" Vector__XXX
+
+BO_ 1411 B_Msg1: 8 B
+ SG_ B_Output1_Current : 0|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output2_Current : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output3_Current : 32|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output4_Current : 48|16@1+ (1,0) [0|65535] "A" Vector__XXX
+
+BO_ 1412 B_Msg2: 8 B
+ SG_ B_Output5_Current : 0|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output6_Current : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output7_Current : 32|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ B_Output8_Current : 48|16@1+ (1,0) [0|65535] "A" Vector__XXX
+
+BO_ 1413 B_Msg3: 8 B
+ SG_ B_Output1_State : 0|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output2_State : 4|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output3_State : 8|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output4_State : 12|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output5_State : 16|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output6_State : 20|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output7_State : 24|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Output8_State : 28|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_WiperSlowState : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_WiperFastState : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_WiperSpeed : 40|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_WiperState : 44|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ B_Flasher1 : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Flasher2 : 49|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Flasher3 : 50|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Flasher4 : 51|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_ThermalOverWarn : 56|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_ThermalCritSoon : 57|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_ThermalCritical : 58|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1414 B_Msg4: 8 B
+ SG_ B_Output1_ResetCount : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output2_ResetCount : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output3_ResetCount : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output4_ResetCount : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output5_ResetCount : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output6_ResetCount : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output7_ResetCount : 48|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Output8_ResetCount : 56|8@1+ (1,0) [0|255] "" Vector__XXX
+
+BO_ 1415 B_Msg5: 8 B
+ SG_ B_CanInput1 : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput2 : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput3 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput4 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput5 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput6 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput7 : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput8 : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput9 : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput10 : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput11 : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput12 : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput13 : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput14 : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput15 : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput16 : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput17 : 16|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput18 : 17|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput19 : 18|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput20 : 19|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput21 : 20|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput22 : 21|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput23 : 22|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput24 : 23|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput25 : 24|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput26 : 25|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput27 : 26|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput28 : 27|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput29 : 28|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput30 : 29|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput31 : 30|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_CanInput32 : 31|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput1 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput2 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput3 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput4 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput5 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput6 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput7 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput8 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput9 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput10 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput11 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput12 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput13 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput14 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput15 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_VirtualInput16 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1416 B_Msg6: 8 B
+ SG_ B_Counter1 : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Counter2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Counter3 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Counter4 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ B_Condition1 : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition2 : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition3 : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition4 : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition5 : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition6 : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition7 : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition8 : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition9 : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition10 : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition11 : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition12 : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition13 : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition14 : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition15 : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition16 : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition17 : 48|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition18 : 49|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition19 : 50|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition20 : 51|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition21 : 52|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition22 : 53|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition23 : 54|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition24 : 55|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition25 : 56|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition26 : 57|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition27 : 58|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition28 : 59|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition29 : 60|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition30 : 61|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition31 : 62|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Condition32 : 63|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1417 B_Msg7: 8 B
+ SG_ B_CanInput1_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput2_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1418 B_Msg8: 8 B
+ SG_ B_CanInput3_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput4_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1419 B_Msg9: 8 B
+ SG_ B_CanInput5_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput6_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1420 B_Msg10: 8 B
+ SG_ B_CanInput7_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput8_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1421 B_Msg11: 8 B
+ SG_ B_CanInput9_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput10_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1422 B_Msg12: 8 B
+ SG_ B_CanInput11_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput12_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1423 B_Msg13: 8 B
+ SG_ B_CanInput13_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput14_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1424 B_Msg14: 8 B
+ SG_ B_CanInput15_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput16_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1425 B_Msg15: 8 B
+ SG_ B_CanInput17_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput18_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1426 B_Msg16: 8 B
+ SG_ B_CanInput19_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput20_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1427 B_Msg17: 8 B
+ SG_ B_CanInput21_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput22_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1428 B_Msg18: 8 B
+ SG_ B_CanInput23_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput24_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1429 B_Msg19: 8 B
+ SG_ B_CanInput25_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput26_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1430 B_Msg20: 8 B
+ SG_ B_CanInput27_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput28_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1431 B_Msg21: 8 B
+ SG_ B_CanInput29_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput30_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1432 B_Msg22: 8 B
+ SG_ B_CanInput31_Value : 0|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+ SG_ B_CanInput32_Value : 32|32@1- (1,0) [-2147483648|2147483647] "" Vector__XXX
+
+BO_ 1433 B_Msg23: 8 B
+ SG_ B_Output1_DutyCycle : 0|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output2_DutyCycle : 8|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output3_DutyCycle : 16|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output4_DutyCycle : 24|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output5_DutyCycle : 32|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output6_DutyCycle : 40|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output7_DutyCycle : 48|8@1+ (1,0) [0|255] "%" Vector__XXX
+ SG_ B_Output8_DutyCycle : 56|8@1+ (1,0) [0|255] "%" Vector__XXX
+
+BO_ 1437 B_Msg27: 8 B
+ SG_ B_Timer1_Output : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer2_Output : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer3_Output : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer4_Output : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer5_Output : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer6_Output : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer7_Output : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer8_Output : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer1_Running : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer2_Running : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer3_Running : 10|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer4_Running : 11|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer5_Running : 12|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer6_Running : 13|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer7_Running : 14|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_Timer8_Running : 15|1@1+ (1,0) [0|1] "" Vector__XXX
+
+BO_ 1438 B_Msg28: 8 B
+ SG_ B_Timer1_Elapsed : 0|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer2_Elapsed : 16|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer3_Elapsed : 32|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer4_Elapsed : 48|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+
+BO_ 1439 B_Msg29: 8 B
+ SG_ B_Timer5_Elapsed : 0|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer6_Elapsed : 16|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer7_Elapsed : 32|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+ SG_ B_Timer8_Elapsed : 48|16@1+ (0.01,0) [0|655.35] "s" Vector__XXX
+
+BO_ 1440 B_Msg30: 8 B
+ SG_ B_Math1_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ B_Math2_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1441 B_Msg31: 8 B
+ SG_ B_Math3_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ B_Math4_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1442 B_Msg32: 8 B
+ SG_ B_Math5_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ B_Math6_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1443 B_Msg33: 8 B
+ SG_ B_Math7_Value : 0|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+ SG_ B_Math8_Value : 32|32@1- (0.001,0) [-2147483.648|2147483.647] "" Vector__XXX
+
+BO_ 1444 B_Msg34: 8 B
+ SG_ B_DigitalInput1_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput1_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ B_DigitalInput2_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput2_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1445 B_Msg35: 8 B
+ SG_ B_DigitalInput3_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput3_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ B_DigitalInput4_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput4_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1446 B_Msg36: 8 B
+ SG_ B_DigitalInput5_Duty : 0|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput5_Frequency : 16|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+ SG_ B_DigitalInput6_Duty : 32|16@1+ (0.01,0) [0|655.35] "%" Vector__XXX
+ SG_ B_DigitalInput6_Frequency : 48|16@1+ (0.1,0) [0|6553.5] "Hz" Vector__XXX
+
+BO_ 1447 B_Msg37: 8 B
+ SG_ B_DigitalInput1_State_M37 : 0|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput2_State_M37 : 1|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput3_State_M37 : 2|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput4_State_M37 : 3|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput5_State_M37 : 4|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput6_State_M37 : 5|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput7_State_M37 : 6|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput8_State_M37 : 7|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput9_State : 8|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_DigitalInput10_State : 9|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ B_AnalogInput1_Millivolts : 16|16@1+ (1,0) [0|65535] "mV" Vector__XXX
+ SG_ B_AnalogInput1_Raw : 32|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ B_DieTemp : 48|16@1- (0.1,0) [-3276.8|3276.7] "degC" Vector__XXX
+
+
+CM_ "custom-pdm status messages (firmware NUM_TX_MSGS 38, msg n = base ID + 2 + n, Intel byte order, 8 bytes). Generated by ui/tools/DbcGen and the /pdm Export DBC button from the same code (ui/dingoConfig/domain/CustomPdm/DbcExport.cs): do not edit.";
+CM_ BU_ B "custom-pdm board B, base ID 0x580";
+CM_ BO_ 1410 "B msg 0: always sent";
+CM_ BO_ 1411 "B msg 1: always sent";
+CM_ BO_ 1412 "B msg 2: always sent";
+CM_ BO_ 1413 "B msg 3: always sent";
+CM_ BO_ 1414 "B msg 4: always sent";
+CM_ BO_ 1415 "B msg 5: sent when any CAN input or virtual input is enabled";
+CM_ BO_ 1416 "B msg 6: sent when any counter or condition is enabled";
+CM_ BO_ 1417 "B msg 7: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1418 "B msg 8: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1419 "B msg 9: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1420 "B msg 10: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1421 "B msg 11: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1422 "B msg 12: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1423 "B msg 13: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1424 "B msg 14: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1425 "B msg 15: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1426 "B msg 16: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1427 "B msg 17: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1428 "B msg 18: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1429 "B msg 19: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1430 "B msg 20: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1431 "B msg 21: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1432 "B msg 22: sent when one of its two CAN inputs is enabled; values are encoded with each CAN input's own factor / offset, this file uses factor 1, offset 0 as dingoConfig does";
+CM_ BO_ 1433 "B msg 23: sent when any output has PWM enabled";
+CM_ BO_ 1437 "B msg 27: sent when any timer is enabled";
+CM_ BO_ 1438 "B msg 28: sent when any timer is enabled";
+CM_ BO_ 1439 "B msg 29: sent when any timer is enabled";
+CM_ BO_ 1440 "B msg 30: sent when one of its two math blocks is enabled";
+CM_ BO_ 1441 "B msg 31: sent when one of its two math blocks is enabled";
+CM_ BO_ 1442 "B msg 32: sent when one of its two math blocks is enabled";
+CM_ BO_ 1443 "B msg 33: sent when one of its two math blocks is enabled";
+CM_ BO_ 1444 "B msg 34: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1445 "B msg 35: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1446 "B msg 36: sent when one of its two digital inputs is in PWM mode";
+CM_ BO_ 1447 "B msg 37: custom-pdm: always sent; all digital inputs, analog input, STM32 die temperature";
+CM_ SG_ 1410 B_BoardTemp "MCP9808 board temperature; unsigned (stock dingoFW uint16), so a reading below 0 degC is not sent correctly";
+CM_ SG_ 1413 B_ThermalOverWarn "1 = board temperature above the warn limit (msg 3 byte 7 bit 0)";
+CM_ SG_ 1413 B_ThermalCritSoon "1 = board temperature within the critical-soon margin of the critical limit (bit 1)";
+CM_ SG_ 1413 B_ThermalCritical "1 = critical: all outputs held off except the exempt ones (bit 2)";
+CM_ SG_ 1447 B_AnalogInput1_Raw "analog input raw ADC value (msg 37)";
+CM_ SG_ 1447 B_DieTemp "STM32 die temperature, signed (msg 37)";
+VAL_ 1410 B_DeviceState 0 "Run" 1 "Sleep" 2 "OverTemp" 3 "Error" ;
+VAL_ 1410 B_PdmType 14 "custom-pdm A" 15 "custom-pdm B" ;
+VAL_ 1413 B_Output1_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output2_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output3_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output4_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output5_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output6_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output7_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;
+VAL_ 1413 B_Output8_State 0 "Off" 1 "On" 2 "Overcurrent" 3 "Fault" ;

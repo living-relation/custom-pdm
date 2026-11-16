@@ -283,22 +283,22 @@
 /*
  * GPIOA setup:
  *
- * PA0  - PF1_IS                    (analog in).
+ * PA0  - PF1_2_IS                  (analog in).
  * PA1  - PF5_6_IS                  (analog in).
  * PA2  - PF7_8_IS                  (analog in).
  * PA3  - BATT_SENSE                (analog in).
  * PA4  - PF8_IN                    (output pushpull pulldown).
- * PA5  - PF7_8_DSEl                (output pushpull pulldown).
+ * PA5  - PF7_8_DSEL                (output pushpull pulldown).
  * PA6  - PF7_8_DEN                 (output pushpull pulldown).
  * PA7  - PF7_IN                    (output pushpull pulldown).
  * PA8  -                           (input pullup).
- * PA9  - USB_VBUS                  (input pulldown).
- * PA10 - DIG_IN1                   (input).
+ * PA9  - USB_VBUS                  (input floating).
+ * PA10 - DI1                       (input pullup).
  * PA11 - USB_DM                    (alternate 10, usb dm).
  * PA12 - USB_DP                    (alternate 10, usb dp).
  * PA13 - SWDIO                     (alternate 0, swdio).
  * PA14 - SWCLK                     (alternate 0, swclk).
- * PA15 -                           (input pullup).
+ * PA15 - UNUSED                    (input pullup).
  */
 #define VAL_GPIOA_MODER             (PIN_MODE_ANALOG(GPIOA_PIN0) |          \
                                      PIN_MODE_ANALOG(GPIOA_PIN1) |          \
@@ -400,11 +400,11 @@
 /*
  * GPIOB setup:
  *
- * PB0  - PF5_6_DEN                 (output pushpull puLLdown).
+ * PB0  - PF5_6_DEN                 (output pushpull pulldown).
  * PB1  - PF5_IN                    (output pushpull pulldown).
- * PB2  - PF1_DEN                   (output pushpull pulldown).
+ * PB2  - PF1_2_DEN                 (output pushpull pulldown).
  * PB3  - DI7                       (input floating).
- * PB4  -                           (input pullup).
+ * PB4  - DI5                       (input floating).
  * PB5  -                           (input pullup).
  * PB6  - I2C1_SCL                  (alternate 4, i2c scl).
  * PB7  - I2C1_SDA                  (alternate 4, i2c sda).
@@ -519,18 +519,18 @@
  *
  * PC0  - ERROR_LED                 (output pushpull pulldown).
  * PC1  - STATUS_LED                (output pushpull pulldown).
- * PC2  - PF2_IS                    (analog input).
+ * PC2  - AIN1                      (analog input).
  * PC3  - PF3_4_IS                  (analog input).
  * PC4  - PF6_IN                    (output pushpull pulldown).
  * PC5  - PF5_6_DSEL                (output pushpull pulldown).
  * PC6  - PF3_IN                    (output pushpull pulldown).
- * PC7  - PF2_DEN                   (output pushpull pulldown).
+ * PC7  - PF1_2_DSEL                (output pushpull pulldown).
  * PC8  - PF2_IN                    (output pushpull pulldown).
- * PC9  - DIG_IN2                   (input).
- * PC10 - E1                        (output pushpull pulldown).
- * PC11 - E2                        (output pushpull pulldown).
+ * PC9  - DI2                       (input pullup).
+ * PC10 - DI3                       (input floating).
+ * PC11 - DI4                       (input floating).
  * PC12 - CAN_STANDBY               (output pushpull pulldown).
- * PC13 - E3                        (output pushpull pulldown).
+ * PC13 - DI6                       (input floating).
  * PC14 -                           (input pullup).
  * PC15 -                           (input pullup).
  */
@@ -868,8 +868,8 @@
 /*
  * GPIOF setup:
  *
- * PF0  - ARD_D7                    (input pullup).
- * PF1  - ARD_D8                    (input pullup).
+ * PF0  - PIN0                      (input pullup).
+ * PF1  - PIN1                      (input pullup).
  * PF2  - PIN2                      (input pullup).
  * PF3  - PIN3                      (input pullup).
  * PF4  - PIN4                      (input pullup).
@@ -1102,8 +1102,8 @@
 /*
  * GPIOH setup:
  *
- * PH0  - PIN0                      (input pullup).
- * PH1  - PIN1                      (input pullup).
+ * PH0  - OSC_IN                    (input pullup, HSE crystal).
+ * PH1  - OSC_OUT                   (input pullup, HSE crystal).
  * PH2  - PIN2                      (input pullup).
  * PH3  - PIN3                      (input pullup).
  * PH4  - PIN4                      (input pullup).

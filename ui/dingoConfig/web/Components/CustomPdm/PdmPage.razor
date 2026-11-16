@@ -47,6 +47,7 @@
                            Disabled="@(writeBlocked != null)" OnClick="@(() => Start(PdmOpKind.WriteAll))">Write All</MudButton>
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save"
                            Disabled="@(burnBlocked != null)" OnClick="@(() => Start(PdmOpKind.Burn))">Burn</MudButton>
+                <DbcExportButton View="@_view" />
                 @if (busy)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
