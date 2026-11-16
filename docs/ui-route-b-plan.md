@@ -1,6 +1,6 @@
 # dingoConfig route B plan: one combined PDM page
 
-Status: B1 and B2 built 2026-11-15 (`ui/README.md`); B3 next. Decision behind it: `DECISIONS.md` 2026-11-14 K1a. Open choices: `STATE.md`, Open questions (k2-k4).
+Status: `STATE.md`, Next 1; what is built: `ui/README.md`. Decisions behind it: `DECISIONS.md` K1a (2026-11-14) and k2b, k3a, k4a (2026-11-15).
 
 Goal: the three boards (A1, A2, B) look like one PDM in `ui/dingoConfig/`: 24 outputs in one grid, all inputs in one grid, one set of buttons.
 
