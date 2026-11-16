@@ -176,13 +176,17 @@ public class DbcExportTests(ITestOutputHelper output)
     private static IEnumerable<int> DiBits(List<DbcExport.Message> msgs, int msg, string node) =>
         msgs.Single(m => m.MsgNumber == msg).Signals.Where(s => s.Name.StartsWith($"{node}_DigitalInput") && s.Name.Contains("_State"))
             .Select(s => { Assert.Equal(1, s.Length); return s.StartBit; });
+}
 
+[Collection("sim")] // the sim tests run one after another (WSL processes, real-time bridge)
+public class DbcLiveSimTests(ITestOutputHelper output)
+{
     // Live: the firmware's real frames (host sim of A1, A2 and B on one bus) decoded with the committed PDM file
     [SimFact]
     public void LiveFramesDecodeWithPdmFile()
     {
-        var path = Path.Combine(RepoRoot(), "firmware", "dbc", DbcExport.PdmFileName);
-        var dbc = Parse(File.ReadAllText(path));
+        var path = Path.Combine(DbcExportTests.RepoRoot(), "firmware", "dbc", DbcExport.PdmFileName);
+        var dbc = DbcExportTests.Parse(File.ReadAllText(path));
         var ids = dbc.Select(s => s.Id).ToHashSet();
         using var bus = new SimBus();
         bus.Run(1500);
