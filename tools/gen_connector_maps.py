@@ -1,4 +1,4 @@
-"""Draw the connector maps (SVG): board pins, enclosure connectors and studs, and how the boards connect.
+"""Draw the connector maps (SVG): board pins, enclosure connectors and power terminals, and how the boards connect.
 
 Illustrations only, NOT a source of truth: the KiCad schematics and docs/box-connectors.md are. Update the tables in
 this script by hand when those change.   usage: python tools/gen_connector_maps.py [out_dir]   (default docs/diagrams)
@@ -105,7 +105,7 @@ def leg(x, y, grp, text):
     return f'<rect x="{x}" y="{y - 13}" width="18" height="18" rx="4" fill="{f}" stroke="{s}" stroke-width="2"/>' + t(x + 26, y + 1, text, 13)
 
 
-e = [t(24, 36, "Enclosure wall - connectors and studs", 22, 700),
+e = [t(24, 36, "Enclosure - wall connectors and lid power terminals", 22, 700),
      t(24, 58, "Illustration only (source of truth: docs/box-connectors.md). Rear view, the side the wires go in. One pin per output.", 13, 400, MUTE)]
 
 # X1 24-21
@@ -168,19 +168,24 @@ rows = [("can", "2 = CAN_H, 3 = CAN_L"), ("a1", "A1: 7-8 = IN1-2, 9-13 = IN3-7, 
         ("gnd", "35-38 = signal ground"), ("spare", "spare: 39-47 (small); 1, 4, 5, 6, 34 (big)")]
 e.append("".join(leg(526, 556 + 21 * i, g, s2) for i, (g, s2) in enumerate(rows)))
 
-# studs (X3 removed: Dan 2026-11-09)
-def stud(x, y, label, sub, grp):
+# power terminals through the lid (X3 removed: Dan 2026-11-09; studs replaced by copper bosses / risers: b4a, d1a)
+def term(x, y, label, sub, grp, hexed=True):
+    """hexed: copper hex boss (BATT / GND, M6); else round copper riser seat (OUT1-4, M4). Centre = threaded hole."""
     f, s = C[grp]
-    return (f'<circle cx="{x}" cy="{y}" r="30" fill="{f}" stroke="{s}" stroke-width="3"/>'
-            f'<polygon points="{x - 13},{y - 7.5} {x},{y - 15} {x + 13},{y - 7.5} {x + 13},{y + 7.5} {x},{y + 15} {x - 13},{y + 7.5}" fill="#fff" stroke="{s}" stroke-width="2"/>'
+    if hexed:
+        body = (f'<polygon points="{x - 26},{y - 15} {x},{y - 30} {x + 26},{y - 15} {x + 26},{y + 15} {x},{y + 30} {x - 26},{y + 15}" '
+                f'fill="{f}" stroke="{s}" stroke-width="3"/>')
+    else:
+        body = f'<circle cx="{x}" cy="{y}" r="30" fill="{f}" stroke="{s}" stroke-width="3"/>'
+    return (body + f'<circle cx="{x}" cy="{y}" r="9" fill="#fff" stroke="{s}" stroke-width="2"/>'
             + t(x + 44, y - 3, label, 15, 700) + t(x + 44, y + 16, sub, 12, 400, MUTE))
 
 
-e.append(card(1082, 76, 470, 600, "Studs", "power in, and board B's four big outputs"))
-e.append(stud(1140, 170, "BATT +12 V", "150 A feed from the battery", "pwr"))
-e.append(stud(1140, 250, "GND", "chassis ground", "gnd"))
+e.append(card(1082, 76, 470, 600, "Power terminals (through the lid)", "copper bosses and risers: power in, and board B's four big outputs"))
+e.append(term(1140, 170, "BATT +12 V", "M6 copper boss - 150 A feed from the battery", "pwr"))
+e.append(term(1140, 250, "GND", "M6 copper boss - chassis ground", "gnd"))
 for i in range(4):
-    e.append(stud(1140, 350 + 80 * i, f"OUT{i + 1}", "board B, 31 A - needs a rubber boot", "out30"))
+    e.append(term(1140, 350 + 80 * i, f"OUT{i + 1}", f"board B, 31 A - M4 copper offset riser on T{i + 1}", "out30", False))
 e.append(t(1102, 652, "X3 (HDP 24-9) is no longer needed.", 13, 700, "#166534"))
 open(os.path.join(OUT, "enclosure-connectors.svg"), "w", encoding="utf-8").write(svg(1572, 696, "".join(e)))
 
@@ -209,9 +214,9 @@ rows3 = [("A1", 190, "Board A1", "8 x 7.5 A", "Input board 1", "5 inputs + analo
          ("A2", 420, "Board A2", "8 x 7.5 A", "Input board 2", "5 inputs + analog"),
          ("B", 650, "Board B", "4 x 31 A + 4 x 15 A", "Input board 3", "8 inputs + analog")]
 MX, MW, IX, IW, H = 700, 260, 330, 220, 150
-# studs and power buses
-w3.append(stud(800, 122, "BATT +12 V stud", "150 A from the battery", "pwr"))
-w3.append(stud(1130, 122, "GND stud", "chassis ground", "gnd"))
+# BATT / GND bosses and power buses
+w3.append(term(800, 122, "BATT +12 V boss", "M6, 150 A from the battery", "pwr"))
+w3.append(term(1130, 122, "GND boss", "M6, chassis ground", "gnd"))
 w3.append(line([(800, 152), (800, 166), (1010, 166), (1010, 675)], RED, 7))
 w3.append(line([(1130, 152), (1130, 172), (1040, 172), (1040, 695)], GRY, 7))
 for key, y, *_ in rows3:
@@ -247,7 +252,7 @@ for key, y, name, sub, iname, isub in rows3:
     w3.append(line([(MX, y + 128), (190, y + 128)], GRN, 3, "7 5"))
     src = "J6 pins 4, 3" if key == "B" else "J3 pins 12, 11"
     w3.append(note(445, y + 121, f"IN1, IN2: {src} to X2 pins {x2pins[key][1]}", GRN, "middle"))
-# outputs to X1 and the studs
+# outputs to X1 and the OUT1-4 risers
 w3.append(box(1400, 190, 150, 570, "X1", "21-pin", "#eff6ff", "#1e40af"))
 w3.append(t(1475, 255, "20 outputs", 12, 400, MUTE, "middle") + t(1475, 271, "one pin each", 12, 400, MUTE, "middle"))
 w3.append(line([(MX + MW, 300), (1400, 300)], BLU, 5))
@@ -260,7 +265,7 @@ w3.append(line([(MX + MW, 735), (1400, 735)], BLU, 5))
 w3.append(note(1225, 728, "OUT5-8 (15 A): terminals T5-T8", BLU, "middle"))
 w3.append(note(1225, 753, "to X1  B D E G", BLU, "middle", w=400))
 w3.append(line([(MX + MW, 785), (1320, 785), (1320, 822), (1380, 822)], DRD, 7))
-w3.append(stud(1410, 822, "4 output studs", "OUT1-4, 31 A each", "out30"))
+w3.append(term(1410, 822, "4 output risers", "OUT1-4, M4, 31 A each", "out30", False))
 w3.append(note(1140, 777, "OUT1-4: terminals T1-T4, one wire each", DRD, "middle"))
 open(os.path.join(OUT, "system-wiring.svg"), "w", encoding="utf-8").write(svg(1600, 896, "".join(w3)))
 print("ok")
