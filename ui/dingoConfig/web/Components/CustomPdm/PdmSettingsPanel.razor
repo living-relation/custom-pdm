@@ -141,8 +141,9 @@
                         }
                         <MudText Typo="Typo.caption" Style="display: block; max-width: 420px" Class="mt-2">
                             Move is not a Write All value: it sends ONE message to the board now (as Modify on the Devices
-                            page) and the board answers on the new ID at once. A2's fan inputs follow A1 / B on the PC.
-                            Then press Write All (A2 learns the new fan IDs) and Burn: until the Burn, a power cycle puts
+                            page) and the board answers on the new ID at once. A2's fan inputs and the link slots that
+                            listen to the moved board follow it on the PC.
+                            Then press Write All (the other boards learn the new IDs) and Burn: until the Burn, a power cycle puts
                             the board back on its old ID. The ECU needs the new IDs too (DBC).
                         </MudText>
                         @if (_moveDone.Count > 0)

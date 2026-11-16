@@ -1,0 +1,173 @@
+@using application.Services
+@using domain.CustomPdm
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+
+@* custom-pdm route B, phase B4 (docs/ui-route-b-plan.md): any digital input of the PDM as the trigger of any output
+   (domain/CustomPdm/PdmLinks.cs). A cross-board link is one stock CAN input on the output's board that listens to
+   the input board's msg 37; nothing is set on the input board. PC edits only: Write All sends them, Burn keeps them. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel @bind-Expanded="_open">
+        <TitleContent>
+            <MudText Typo="Typo.body1">Links: any input switches any output (@_links.Count)</MudText>
+        </TitleContent>
+        <ChildContent>
+            @{
+                var busy = Pdm.Ops.Busy;
+            }
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int" @bind-Value="_in" Label="Input" Variant="Variant.Outlined" Dense="true" Style="min-width: 260px"
+                           Disabled="@busy" Class="pdm-link-in">
+                    @foreach (var r in View.Inputs.Where(r => r.Digital != null))
+                    {
+                        <MudSelectItem T="int" Value="@r.Number">@InText(r)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudText Typo="Typo.body1">switches</MudText>
+                <MudSelect T="int" @bind-Value="_out" Label="Output" Variant="Variant.Outlined" Dense="true" Style="min-width: 260px"
+                           Disabled="@busy" Class="pdm-link-out">
+                    @foreach (var o in View.Outputs)
+                    {
+                        <MudSelectItem T="int" Value="@o.Number">@OutText(o)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="PdmLinkLoss" @bind-Value="_loss" Label="When the input board's message stops" Variant="Variant.Outlined"
+                           Dense="true" Style="min-width: 300px" Disabled="@(busy || !CrossBoardChoice)" Class="pdm-link-loss">
+                    @foreach (var l in PdmLinks.LossChoices)
+                    {
+                        <MudSelectItem T="PdmLinkLoss" Value="@l">@PdmLinks.LossName(l)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Link"
+                           Disabled="@(busy || _in == 0 || _out == 0)" OnClick="Add">Add link</MudButton>
+            </MudStack>
+            <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">
+                Same board: the output uses the input directly. Other board: one CAN input on the OUTPUT's board listens to the
+                input board's status message 37 (sent every 100 ms); nothing changes on the input board. "When the message
+                stops" acts 1 s after the last frame. Links are PC edits: Write All sends them, Burn keeps them. They are kept
+                in the boards' own settings, so Read All shows them again.
+            </MudText>
+
+            @if (_links.Count > 0)
+            {
+                <MudSimpleTable Dense="true" Hover="true" Class="mt-2">
+                    <thead>
+                    <tr><th>Output</th><th>Input</th><th>CAN slot used</th><th>When the message stops</th><th>Check</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var l in _links)
+                    {
+                        var link = l;
+                        <tr class="pdm-link-row">
+                            <td>@OutText(link.Out)</td>
+                            <td>@InText(link.In)</td>
+                            <td>@link.SlotText</td>
+                            <td>
+                                @if (link.CrossBoard)
+                                {
+                                    <MudSelect T="PdmLinkLoss" Value="@link.Loss!.Value" ValueChanged="@(v => SetLoss(link, v))" Dense="true"
+                                               Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" Style="min-width: 280px">
+                                        @foreach (var c in PdmLinks.LossChoices)
+                                        {
+                                            <MudSelectItem T="PdmLinkLoss" Value="@c">@PdmLinks.LossName(c)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                }
+                                else
+                                {
+                                    @link.LossText
+                                }
+                            </td>
+                            <td>
+                                @foreach (var w in PdmLinks.Warnings(link))
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Warning">@w</MudText>
+                                }
+                            </td>
+                            <td>
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="@busy"
+                                           OnClick="@(() => Remove(link))">Remove</MudButton>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            <MudText Typo="Typo.body2" Class="mt-3"><b>CAN input slots per board</b> (32 each; a link uses one on the output's board)</MudText>
+            @foreach (var b in _slots)
+            {
+                <MudText Typo="Typo.body2" Class="mt-1 pdm-slot-summary">@b.Summary</MudText>
+                @foreach (var u in b.CanInputs.Where(u => !u.Free))
+                {
+                    <MudText Typo="Typo.caption" Style="display: block; margin-left: 16px">CAN input @(u.Slot + 1): @u.UsedBy</MudText>
+                }
+            }
+            @if (_slots.Any(b => b.CanInputs.Any(u => u.UsedBy.Contains("no output uses it"))))
+            {
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="mt-1" Disabled="@Pdm.Ops.Busy" OnClick="RemoveUnused">Remove unused link slots</MudButton>
+            }
+            <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">
+                A slot counts as a link slot only when every field matches the link pattern (listens to another board's message 37,
+                one bit, equal 1, or equal 0 for "on"); a slot is free only when it is disabled with ID 0. Slots set by hand and
+                A2's fan inputs 25-28 are never changed here. An "on" link also uses one free virtual input.
+            </MudText>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open = true;
+    private int _in, _out;
+    private PdmLinkLoss _loss = PdmLinks.DefaultLoss;
+    private IReadOnlyList<PdmLink> _links = [];
+    private IReadOnlyList<PdmBoardSlots> _slots = [];
+
+    // the page re-renders this 10 times a second: the links are read from the boards' params each time
+    protected override void OnParametersSet()
+    {
+        _links = PdmLinks.Links(View);
+        _slots = PdmLinks.Slots(View);
+    }
+
+    private bool CrossBoardChoice =>
+        View.Inputs.FirstOrDefault(r => r.Number == _in) is not { } i || View.Outputs.FirstOrDefault(o => o.Number == _out) is not { } o
+        || i.Board != o.Board;
+
+    private static string InText(PdmInputRow r) => $"{r.Number}: {r.Board} IN{r.BoardInput} ({r.Connector}) {r.Name}";
+    private static string OutText(PdmOutputRow o) => $"{o.Number}: {o.Board} OUT{o.BoardOutput} ({o.Connector}) {o.Output.Name}";
+
+    private void Refresh() => OnParametersSet();
+
+    private void Add()
+    {
+        if (PdmLinks.Add(View, _in, _out, _loss) is { } why) { Notification.NewError($"Link not made: {why}"); return; }
+        Refresh();
+        var l = _links.FirstOrDefault(x => x.Out.Number == _out);
+        Notification.NewInfo($"Link input {_in} -> output {_out} made on the PC ({l?.SlotText}). Write All sends it to the boards.");
+    }
+
+    private void Remove(PdmLink l)
+    {
+        if (PdmLinks.Remove(View, l.Out.Number) is { } why) { Notification.NewError(why); return; }
+        Refresh();
+        Notification.NewInfo($"Link to output {l.Out.Number} removed on the PC (slot freed, trigger none). Write All sends it to the boards.");
+    }
+
+    private void SetLoss(PdmLink l, PdmLinkLoss loss)
+    {
+        if (PdmLinks.SetLoss(View, l.Out.Number, loss) is { } why) { Notification.NewError($"Not changed: {why}"); return; }
+        Refresh();
+        Notification.NewInfo($"Output {l.Out.Number}: {PdmLinks.LossName(loss)}. Write All sends it to the boards.");
+    }
+
+    private void RemoveUnused()
+    {
+        var n = PdmLinks.RemoveUnused(View);
+        Refresh();
+        Notification.NewInfo($"{n} unused link slot(s) freed on the PC. Write All sends it to the boards.");
+    }
+}
