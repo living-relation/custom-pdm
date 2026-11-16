@@ -28,6 +28,7 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
 
     public event EventHandler<DeviceEventArgs>? DeviceAdded;
     public event EventHandler<DeviceEventArgs>? DeviceRemoved;
+    public event Action<int>? ConfigTraffic; // custom-pdm: BaseId of a board a frame was sent to / a config reply came from (PdmOps Write All wait)
 
     public void SetBatchTransmitCallback(Action<List<DeviceCanFrame>> callback)
     {
@@ -224,6 +225,7 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
         {
             if (device.InIdRange(frame.Id))
             {
+                if (device is FwDevice && frame.Id == device.BaseId + FwDevice.ConfigRxOffset) ConfigTraffic?.Invoke(device.BaseId); // custom-pdm
                 var outgoing = new List<DeviceCanFrame>();
                 device.Read(frame.Id, frame.Payload, ref _requestQueue, outgoing);
                 if (outgoing.Count > 0)
@@ -385,6 +387,7 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
     /// </summary>
     public void OnFrameTransmitted(DeviceCanFrame frame)
     {
+        ConfigTraffic?.Invoke(frame.DeviceBaseId); // custom-pdm: every frame, also the SendOnly WriteAllVal ones
         if (frame.SendOnly) return;
 
         int index = frame.Frame.Payload[2] << 8 | frame.Frame.Payload[1];

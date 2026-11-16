@@ -7,8 +7,8 @@ namespace domain.CustomPdm;
 //   real result: the stock "... Successful" notification of FwDevice plus, for read and write, a config CRC check
 //   reply that matches (FwDevice.ConfigMismatch false). No reply in time = failed.
 // - Write All and Burn are refused unless A1, A2 and B are all in the project, connected and read in this session
-//   (FwDevice.FullReadDone). A failure stops the run: later boards are left alone and every board keeps its own
-//   result line, so it is visible that the boards are on different settings.
+//   (FwDevice.FullReadDone). A failure stops a Write All / Burn run: later boards are left alone and every board
+//   keeps its own result line, so it is visible that the boards are on different settings.
 // - Burn is never started by a read or a write. It first asks every board for a fresh config CRC check; one
 //   mismatch (or no reply) and nothing is burned. The firmware answers a burn with its own result
 //   (comms/request_msg.cpp: cmd 30, byte 4 = WriteConfig()), dingoConfig turns only result 1 into "Burn Successful".
@@ -40,10 +40,15 @@ public class PdmOps(PdmOpsLinks links)
 
     // Measured against the firmware sim (ui/tests PdmLiveSimTests output, about 2500 params per board, frames 2 ms
     // apart): Read All of one board about 0.6 s, Write All about 5 s. Through the real-time SLCAN TCP sim bridge
-    // (ui/README.md) one Write All took 40 to 55 s in the browser check (the sim runs slower than real time), so the write waits 90 s.
-    // DeviceManager re-sends an unanswered Write All / Burn request once after 3 s, so those two wait past 6 s.
+    // (ui/README.md) one Write All took 40 to 55 s (the sim runs slower than real time); real boards about 5 s.
+    // So the write has no fixed wait (b3a, 2026-11-16): the wait restarts on every frame the PC actually sends to
+    // that board and on every config-channel reply from it (NoteTraffic), and the board fails WriteIdleTimeout after
+    // the last of those. WriteMaxTimeout caps one board's write in any case.
+    // DeviceManager re-sends an unanswered Write All / Burn request once after 3 s, so the write idle wait and the
+    // burn wait must stay past 6 s.
     public TimeSpan ReadTimeout { get; set; } = TimeSpan.FromSeconds(10);
-    public TimeSpan WriteTimeout { get; set; } = TimeSpan.FromSeconds(90);
+    public TimeSpan WriteIdleTimeout { get; set; } = TimeSpan.FromSeconds(10);
+    public TimeSpan WriteMaxTimeout { get; set; } = TimeSpan.FromMinutes(5);
     public TimeSpan CheckTimeout { get; set; } = TimeSpan.FromSeconds(3);
     public TimeSpan BurnTimeout { get; set; } = TimeSpan.FromSeconds(8);
 
@@ -56,8 +61,12 @@ public class PdmOps(PdmOpsLinks links)
         public StepKind Kind { get; } = kind;
         public volatile bool Acked;
         public Action<string>? Handler;
-        public DateTime Started;
+        public DateTime Started;        // write: the last traffic with this board
+        public DateTime Begun;
+        public volatile bool Traffic;   // set by NoteTraffic (pipeline thread), turned into Started by Tick
     }
+
+    private volatile Step? _current;
 
     private readonly object _lock = new();
     private readonly List<Step> _steps = [];
@@ -130,6 +139,14 @@ public class PdmOps(PdmOpsLinks links)
         }
     }
 
+    // A config frame the PC sent to the board with this BaseId, or a config-channel reply from it (any thread).
+    // Only marks it: the next Tick restarts the write wait on its own clock.
+    public void NoteTraffic(int baseId)
+    {
+        var step = _current;
+        if (step is { Kind: StepKind.Write } && step.Dev.BaseId == baseId) step.Traffic = true;
+    }
+
     // Call often (the page and PdmOpsService do, at 10 Hz): looks at the board in work, moves on or times out
     public void Tick(DateTime now)
     {
@@ -138,6 +155,12 @@ public class PdmOps(PdmOpsLinks links)
             if (!Busy) return;
             var step = _steps[_index];
             var dev = step.Dev;
+            if (step.Traffic)
+            {
+                step.Traffic = false;
+                step.Started = now;
+            }
+
             var late = now - step.Started > Timeout(step.Kind);
             switch (step.Kind)
             {
@@ -150,10 +173,12 @@ public class PdmOps(PdmOpsLinks links)
                     break;
                 case StepKind.Write:
                     if (step.Acked && !dev.ConfigMismatch) Finish(step, true, "written OK (the board confirms the same settings)", now);
+                    else if (now - step.Begun > WriteMaxTimeout)
+                        Finish(step, false, $"write not confirmed in {WriteMaxTimeout.TotalMinutes:0} min", now);
                     else if (late)
                         Finish(step, false, step.Acked
                             ? "written, but the config check after it did not confirm a match"
-                            : $"no reply (write not confirmed in {WriteTimeout.TotalSeconds:0} s)", now);
+                            : $"no reply (no answer for {WriteIdleTimeout.TotalSeconds:0} s while writing)", now);
                     break;
                 case StepKind.Check:
                     if (!dev.ConfigMismatch)
@@ -177,7 +202,7 @@ public class PdmOps(PdmOpsLinks links)
     private TimeSpan Timeout(StepKind kind) => kind switch
     {
         StepKind.Read => ReadTimeout,
-        StepKind.Write => WriteTimeout,
+        StepKind.Write => WriteIdleTimeout,
         StepKind.Check => CheckTimeout,
         _ => BurnTimeout
     };
@@ -189,6 +214,7 @@ public class PdmOps(PdmOpsLinks links)
             _index++;
             if (_index >= _steps.Count)
             {
+                _current = null;
                 Busy = false;
                 return;
             }
@@ -202,7 +228,9 @@ public class PdmOps(PdmOpsLinks links)
     private bool Begin(Step step, DateTime now)
     {
         var dev = step.Dev;
-        step.Started = now;
+        step.Started = step.Begun = now;
+        step.Traffic = false;
+        _current = step;   // before sending: the frames of this request count as traffic
         if (!links.IsConnected(dev))
         {
             Finish(step, false, "offline: nothing sent", now, advance: false);
@@ -276,6 +304,7 @@ public class PdmOps(PdmOpsLinks links)
             foreach (var role in _results.Keys.ToList())
                 if (_results[role].State is PdmStepState.Waiting or PdmStepState.Running)
                     _results[role] = new PdmBoardResult(role, PdmStepState.NotDone, $"{left} (run stopped at {step.Role})");
+            _current = null;
             Busy = false;
             return;
         }

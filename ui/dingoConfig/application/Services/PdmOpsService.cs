@@ -30,6 +30,8 @@ public class PdmOpsService : IDisposable
             SendCheck = d => deviceManager.CheckConfig(d.Guid),
             IsConnected = isConnected ?? (d => d.Connected)
         });
+        // frames sent to / config replies from a board (pipeline thread): the Write All wait restarts on them
+        deviceManager.ConfigTraffic += Ops.NoteTraffic;
     }
 
     // GetDevicesByType also refreshes FwDevice.Connected, as on every stock page refresh
@@ -64,6 +66,7 @@ public class PdmOpsService : IDisposable
 
     public void Dispose()
     {
+        _deviceManager.ConfigTraffic -= Ops.NoteTraffic;
         lock (_timerLock)
         {
             _timer?.Dispose();

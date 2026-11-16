@@ -147,9 +147,12 @@ public class PdmOpsTests
         var before = OnBoards(pdm);
         Edit(pdm);
         pdm.Boards["A2"].Silent = true;                // still "connected" for the PC: it stops answering mid-way
+        var t0 = pdm.Clock;
         Assert.Null(pdm.Run(PdmOpKind.WriteAll));
         Assert.Equal([Ok, Failed, NotDone], pdm.States);
-        Assert.Equal("Failed: no reply (write not confirmed in 90 s)", pdm.Line("A2"));
+        Assert.Equal("Failed: no reply (no answer for 10 s while writing)", pdm.Line("A2"));
+        var took = (pdm.FinishedAt!.Value - t0).TotalSeconds;
+        Assert.InRange(took, 10, 11);                  // A1 is quick; A2 fails 10 s after its last frame, not 90 s
         Assert.Equal("NotDone: not written (run stopped at A2)", pdm.Line("B"));
         Assert.Equal((5.5f, before.Item2, before.Item3), OnBoards(pdm));
         Assert.Equal(0, pdm.Boards["B"].Count(MessageCommand.WriteAll));
@@ -162,6 +165,71 @@ public class PdmOpsTests
         pdm2.Run(PdmOpKind.WriteAll);
         Assert.Equal([Failed, NotDone, NotDone], pdm2.States);
         Assert.Equal(0, pdm2.Boards["A2"].Count(MessageCommand.WriteAll) + pdm2.Boards["B"].Count(MessageCommand.WriteAll));
+    }
+
+    // b3a: the write wait restarts on every frame the PC actually sends to the board (and every reply from it)
+    private static DateTime LastSentTo(FakePdm pdm, string role) =>
+        pdm.SentAt.Last(s => s.Id == pdm.Boards[role].BaseId + 1).At;
+
+    [Fact]
+    public void WriteAllOnASlowBusKeepsWaitingWhileFramesGoOut()
+    {
+        var pdm = ReadPdm();
+        Edit(pdm);
+        pdm.MaxFramesPerPump = 4;                      // a slow bridge: 40 frames/s, no reply to the value frames
+        var t0 = pdm.Clock;
+        Assert.Null(pdm.Run(PdmOpKind.WriteAll));
+        Assert.Equal([Ok, Ok, Ok], pdm.States);
+        Assert.Equal((5.5f, 6.5f, 55), OnBoards(pdm));
+        var a1 = pdm.SentAt.Where(s => s.Id == 0x501).ToList();
+        var a1Write = (a1.Last().At - a1.First(s => s.Cmd == MessageCommand.WriteAll).At).TotalSeconds;
+        Assert.True(a1Write > 60, $"A1 write took {a1Write} s of clock");   // far past the old fixed waits
+        Assert.True((pdm.FinishedAt!.Value - t0).TotalSeconds > 180);
+    }
+
+    [Fact]
+    public void WriteAllFailsTenSecondsAfterTheLastFrameWhenTheResultNeverComes()
+    {
+        var pdm = ReadPdm();
+        Edit(pdm);
+        pdm.MaxFramesPerPump = 4;
+        pdm.Boards["A2"].NoWriteResult = true;         // answers the start, then nothing after the stream
+        Assert.Null(pdm.Run(PdmOpKind.WriteAll));
+        Assert.Equal([Ok, Failed, NotDone], pdm.States);
+        Assert.Equal("Failed: no reply (no answer for 10 s while writing)", pdm.Line("A2"));
+        Assert.Equal("NotDone: not written (run stopped at A2)", pdm.Line("B"));
+        var gap = (pdm.FinishedAt!.Value - LastSentTo(pdm, "A2")).TotalSeconds;
+        Assert.InRange(gap, 10, 10.5);
+        Assert.True(pdm.Boards["A2"].Count(MessageCommand.WriteAllComplete) >= 1);  // the whole stream went out
+    }
+
+    [Fact]
+    public void WriteAllGivesUpAfterFiveMinutesEvenWithTraffic()
+    {
+        var pdm = ReadPdm();
+        Edit(pdm);
+        pdm.Boards["A1"].NoWriteResult = true;
+        pdm.Chatty.Add("A1");                          // keeps talking on its config channel, never confirms
+        var t0 = pdm.Clock;
+        Assert.Null(pdm.Run(PdmOpKind.WriteAll));
+        Assert.Equal([Failed, NotDone, NotDone], pdm.States);
+        Assert.Equal("Failed: write not confirmed in 5 min", pdm.Line("A1"));
+        Assert.InRange((pdm.FinishedAt!.Value - t0).TotalSeconds, 300, 301);
+        Assert.Equal(0, pdm.Boards["A2"].Count(MessageCommand.WriteAll));
+    }
+
+    // traffic of another board does not keep this board's wait alive
+    [Fact]
+    public void TrafficOfAnotherBoardDoesNotCount()
+    {
+        var pdm = ReadPdm();
+        Edit(pdm);
+        pdm.Boards["A1"].Silent = true;
+        pdm.Chatty.UnionWith(["A2", "B"]);
+        var t0 = pdm.Clock;
+        Assert.Null(pdm.Run(PdmOpKind.WriteAll));
+        Assert.Equal("Failed: no reply (no answer for 10 s while writing)", pdm.Line("A1"));
+        Assert.InRange((pdm.FinishedAt!.Value - t0).TotalSeconds, 10, 11);
     }
 
     [Fact]
