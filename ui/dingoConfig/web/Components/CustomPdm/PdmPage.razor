@@ -154,6 +154,13 @@
         </MudGrid>
 
         <MudText Typo="Typo.h6" Class="mb-2">Outputs (@_view.Outputs.Count)</MudText>
+        @if (_view.OverRating is { Count: > 0 } over)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">
+                @(over.Count == 1 ? over[0].RatingWarning
+                    : $"{over.Count} outputs have a current limit above their rating: {string.Join(", ", over.Select(o => o.Number))}.")
+            </MudAlert>
+        }
         <MudDataGrid Items="@_view.Outputs" Dense="true" Hover="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
                      SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="true" Height="calc(55vh)" Class="mb-4">
             <Columns>
@@ -185,7 +192,8 @@
                     <EditTemplate>
                         <MudNumericField @key="@($"currentLimit-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.CurrentLimit" Disabled="@Locked(context.Item.Output)"
-                                         ValueChanged="@((double val) => OnCurrentLimitChanged(context.Item.Output, val))" />
+                                         Error="@context.Item.OverRating" ErrorText="Above rating"
+                                         ValueChanged="@((double val) => OnCurrentLimitChanged(context.Item, val))" />
                     </EditTemplate>
                 </TemplateColumn>
                 <TemplateColumn Title="Inrush Limit (A)" Sortable="true" SortBy="@(x => x.Output.InrushCurrentLimit)" CellStyle="min-width: 100px">
@@ -385,8 +393,11 @@
     private bool Locked(DigitalInput i) => Pdm.Ops.Busy || !i.Enabled;
 
     // Same limits and messages as the stock grids
-    private void OnCurrentLimitChanged(Output item, double value) =>
-        item.CurrentLimit = Clamp(value, 0, 100.0, $"{item.Name}.CurrentLimit");
+    private void OnCurrentLimitChanged(PdmOutputRow row, double value)
+    {
+        row.Output.CurrentLimit = Clamp(value, 0, 100.0, $"{row.Output.Name}.CurrentLimit");
+        if (row.RatingWarning is { } warn) Notification.NewWarning(warn); // b2b: allowed, but warned
+    }
 
     private void OnInrushLimitChanged(Output item, double value) =>
         item.InrushCurrentLimit = Clamp(value, 0, 100.0, $"{item.Name}.InrushCurrentLimit");

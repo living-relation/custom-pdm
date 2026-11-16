@@ -37,6 +37,29 @@ public class PdmViewTests
         Assert.Equal(24, view.Outputs.Select(o => o.Output).Distinct().Count());
     }
 
+    // b2b: a limit above the row's rating is allowed but warned; exactly the rating is fine
+    [Theory]
+    [InlineData(1, 7.5, false)]
+    [InlineData(1, 7.6, true)]
+    [InlineData(16, 100.0, true)]
+    [InlineData(17, 31.0, false)]
+    [InlineData(17, 31.5, true)]
+    [InlineData(24, 15.0, false)]
+    [InlineData(24, 15.01, true)]
+    public void LimitAboveRatingIsWarned(int number, double limit, bool warned)
+    {
+        var view = PdmView.Build(ThreeBoards());
+        foreach (var o in view.Outputs) o.Output.CurrentLimit = 1.0; // stock defaults may sit above our ratings
+        Assert.Empty(view.OverRating);
+        var row = view.Outputs.Single(o => o.Number == number);
+        row.Output.CurrentLimit = limit;
+        Assert.Equal(warned, row.OverRating);
+        Assert.Equal(warned ? [number] : Array.Empty<int>(), view.OverRating.Select(o => o.Number));
+        if (warned) Assert.Equal($"Output {number} ({row.Board} OUT{row.BoardOutput}): current limit {limit:0.##} A is above its {row.RatingA:0.#} A rating.", row.RatingWarning);
+        else Assert.Null(row.RatingWarning);
+        Assert.Equal(limit, row.Output.CurrentLimit); // warned, not clamped
+    }
+
     [Theory]
     [InlineData(1, "A1", 1, "X1-H")]
     [InlineData(8, "A1", 8, "X1-R")]
