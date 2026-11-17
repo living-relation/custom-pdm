@@ -1,0 +1,13 @@
+# Fails the PR if git tracks CLAUDE.md, CLAUDE.local.md, or .claude/CLAUDE.md.
+name: no-claude-files
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions: { contents: read }
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: no tracked CLAUDE instruction files
+        run: bash .github/no-claude-files.sh

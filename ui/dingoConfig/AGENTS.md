@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md - dingoConfig copy
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Folded from `CLAUDE.md` in this folder (2026-11-17). These notes apply when working in `ui/dingoConfig/`. Paths below are relative to this folder. Claude Code and Cursor load this file for this folder.
 
 ## Project Overview
 

@@ -15,7 +15,7 @@ dotnet run --project web/web.csproj
 
 ## Layout
 
-The code follows a clean-architecture split: `domain` (devices and the CAN protocol) ← `application` (services) ← `infrastructure` (adapters and the comms pipeline) ← `web` (Blazor UI). Keep each dependency pointing in that direction. `CLAUDE.md` has a more detailed map of the code.
+The code follows a clean-architecture split: `domain` (devices and the CAN protocol) ← `application` (services) ← `infrastructure` (adapters and the comms pipeline) ← `web` (Blazor UI). Keep each dependency pointing in that direction. The detailed map is in `AGENTS.md` in this folder.
 
 ## Testing
 

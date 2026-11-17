@@ -19,6 +19,7 @@ Rules:
 - Other repos (Dan, 2026-11-16): st185-link-ecu-config, center-cluster-esp32-p4, realdash-dashboard-builder and any other repo are read-only for this project: read / pull only, never commit or push there without Dan's say. Copies of their content in this repo are dummy test copies (say so in the file and its name), never a source of truth, and never the only reason for a design change without Dan's approval.
 
 - UI check (Dan, 2026-11-14): every firmware feature or setting we add must be checked against the dingo UI (dingoConfig, repo corygrant/dingoConfig; docs at corygrant/dingoElec): say whether it is shown / editable there, or list the UI change it needs.
+- A tracked file named `CLAUDE.md` or `CLAUDE.local.md`, or `.claude/CLAUDE.md`, is folded into the `AGENTS.md` for its folder (keep every rule, drop exact duplicates) and deleted in a PR (Dan, 2026-11-17). A file at the repo root folds into this file. A file inside a folder folds into that folder's `AGENTS.md` (Claude Code and Cursor both load it).
 
 Firmware checks (run before any commit that touches `firmware/`):
 - WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one. Never build from `/mnt/c` (CRLF checkout): the script builds from `git archive` of a named branch (`main`).
