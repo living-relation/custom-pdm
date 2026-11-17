@@ -28,13 +28,11 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
 - Next question ID: a3 (one letter + one digit, letters I / L / O / Q skipped; Dan 2026-11-16).
-- a1 (2026-11-16, open): engine-management feeds (EFI main, coils, injectors, ETB) on the PDM later, or stay on relays: a) stay on relays (rec; the ECU powers itself through EFI main and every PDM output is off in sleep); b) move to the PDM later.
-- a2 (2026-11-16, open): move turn signals and wipers from the OEM flasher / wiper relay to the PDM: a) yes (rec; firmware flashers and wiper are sim-proven, frees OEM parts); b) keep OEM.
 - k2 (open; L4): layout: a) one byte per command, up to 8 per frame, like 0x643 (rec); b) 24 bits; c) plus PWM duty.
 - k3 (open; L4): rate: a) 50 ms (rec); b) 20 ms; c) 100 ms.
 - k4 (open; L4): ECU command plus a PDM input on one output: a) ECU only for a first pass (rec); b) either turns it on.
 - k5 (open; L4): which outputs the ECU switches: Dan lists them.
-- Answered / defaulted 2026-11-16 (DECISIONS): product goal, g1, g2, o1, p1, p3, p4, p5, k1-k4, f1; k5 (which outputs the ECU switches) comes from the car docs in the parity job. w2 (replaced by the one-PDM UI rule, DECISIONS), w1 (per output on / off / hold / conditions, start-up off until first frame, critical exempt; job w1 after w3), w3a, p2a, e1a (jobs w3, p2, e1 running), u1a, u2a, u3c, u4c, u5a, L1a, L2 (later; dummy copy now), L3a, L4a (preliminary), d1a, d2b (`DECISIONS.md`).
+- Answered 2026-11-16: a1a, a2a (DECISIONS). Answered / defaulted 2026-11-16 (DECISIONS): product goal, g1, g2, o1, p1, p3, p4, p5, k1-k4, f1; k5 (which outputs the ECU switches) comes from the car docs in the parity job. w2 (replaced by the one-PDM UI rule, DECISIONS), w1 (per output on / off / hold / conditions, start-up off until first frame, critical exempt; job w1 after w3), w3a, p2a, e1a (jobs w3, p2, e1 running), u1a, u2a, u3c, u4c, u5a, L1a, L2 (later; dummy copy now), L3a, L4a (preliminary), d1a, d2b (`DECISIONS.md`).
 - Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
