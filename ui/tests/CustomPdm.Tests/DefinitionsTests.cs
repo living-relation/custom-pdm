@@ -35,8 +35,8 @@ public class DefinitionsTests
     public void VarMapSizeMatchesFirmware(int type, int numDi, int _)
     {
         // port.h VAR_MAP_SIZE: 5 sys + DI*3 + AN*4 + DO + CAN*2 + VI + OUT*4 + FL + COND + CNT + TIMERS*2 + MATH + 6 wiper
-        //                      + KEYPADS*(20 buttons + 2 dials + 4 analog)
-        var expected = 5 + numDi * 3 + 4 + 0 + 64 + 16 + 32 + 4 + 32 + 4 + 16 + 8 + 6 + 2 * 26;
+        //                      + KEYPADS*(20 buttons + 2 dials + 4 analog) + VAR_MAP_PRO_VARS (4 tables + OUT undercurrent flags)
+        var expected = 5 + numDi * 3 + 4 + 0 + 64 + 16 + 32 + 4 + 32 + 4 + 16 + 8 + 6 + 2 * 26 + 4 + 8;
         Assert.Equal(expected, StockTests.MakeDevice(type).VarMap.Count);
     }
 
