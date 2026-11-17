@@ -25,7 +25,12 @@ namespace domain.CustomPdm;
 //     LOST  = virtual input "SEEN AND NOT ALIVE", with a LOWER index than every link virtual input that uses it
 //             (virtual inputs run in index order: else a 2.2 ms drop at the time-out, s1 S7)
 //   Outputs stay off until P's first frame after power-up (SEEN = 0 -> LOST = 0): no start-up blip.
-// Cost on Q: per source board 2 CAN inputs + 1 virtual input (only while it has on / condition links); per link 1 CAN
+// Loss delay per OUTPUT (editor2, DECISIONS 2026-11-16 "per-output link-loss delay, default 1 s"): the time-out of the
+// link's own CAN input L (off / on / condition) = the delay; on / condition links read the LOST of an ALIVE with the
+// SAME time-out, so L and ALIVE (same frames, same time-out) drop in the same firmware cycle. One ALIVE + LOST per
+// (source board, delay) on Q; SEEN (no time-out) is shared by every delay of that source. Range: 3 x the 100 ms msg 37
+// period (a single late frame never trips it) to 10 s; the trigger editor's other-board terms keep 1 s.
+// Cost on Q: per source board 2 CAN inputs + 1 virtual input (+ 1 CAN input + 1 virtual input per extra delay) (only while it has on / condition links); per link 1 CAN
 // input, + 1 virtual input for on / condition.
 // Ownership: links live only in the boards' params (no PC-only state), so they survive Read All, an app restart and a
 // fresh project. A CAN input / virtual input is ours only when ALL its fields match one of the patterns above (ID = the
@@ -48,7 +53,7 @@ public record PdmSlotRole(PdmSlotKind Kind, PdmBoard Source, int Bit);
 public record PdmVirtRole(PdmVirtKind Kind, PdmBoard Source, int Slot, bool OldCritical, int Cond);
 
 // ALIVE / SEEN CAN inputs and the LOST virtual input on board Board for the links from Source
-public record PdmShared(PdmBoard Board, PdmBoard Source, int Alive, int Seen, int Lost)
+public record PdmShared(PdmBoard Board, PdmBoard Source, int Alive, int Seen, int Lost, int DelayMs = PdmLinks.TimeoutMs)
 {
     public string Text => $"{Board.Role} CAN inputs {Alive + 1} (alive) / {Seen + 1} (seen) + virtual input {Lost + 1} (lost)";
 }
@@ -59,19 +64,22 @@ public record PdmCondChoice(int Var, string Text);
 // from power-up before the first frame; DECISIONS 2026-11-16: no critical start-up exception): an old recipe, Upgrade
 // converts it.
 public record PdmLink(PdmOutputRow Out, PdmInputRow In, PdmLinkLoss? Loss, int? Slot, int? Virt,
-    int Cond = 0, string? CondText = null, bool OldRecipe = false, PdmShared? Shared = null, bool OldCritical = false)
+    int Cond = 0, string? CondText = null, bool OldRecipe = false, PdmShared? Shared = null, bool OldCritical = false,
+    int DelayMs = PdmLinks.TimeoutMs)
 {
     public bool CrossBoard => Slot != null;
 
+    private string D => PdmLinks.DelayText(DelayMs);
+
     public string LossText => (Loss, OldRecipe, OldCritical) switch
     {
-        (PdmLinkLoss.On, true, false) => "on 1 s after the message stops (old recipe: on at power-up until the first frame)",
-        (PdmLinkLoss.On, _, true) => "on 1 s after the message stops (old recipe: critical, on at power-up before the first frame)",
-        (PdmLinkLoss.Condition, _, true) => $"follows {CondText} 1 s after the message stops (old recipe: critical, acts at power-up before the first frame)",
-        (PdmLinkLoss.Off, _, _) => "off 1 s after the message stops",
+        (PdmLinkLoss.On, true, false) => $"on {D} after the message stops (old recipe: on at power-up until the first frame)",
+        (PdmLinkLoss.On, _, true) => $"on {D} after the message stops (old recipe: critical, on at power-up before the first frame)",
+        (PdmLinkLoss.Condition, _, true) => $"follows {CondText} {D} after the message stops (old recipe: critical, acts at power-up before the first frame)",
+        (PdmLinkLoss.Off, _, _) => $"off {D} after the message stops",
         (PdmLinkLoss.Hold, _, _) => "keeps its last state (off at power-up)",
-        (PdmLinkLoss.On, _, _) => "on 1 s after the message stops; off until the first frame",
-        (PdmLinkLoss.Condition, _, _) => $"follows {CondText} 1 s after the message stops; off until the first frame",
+        (PdmLinkLoss.On, _, _) => $"on {D} after the message stops; off until the first frame",
+        (PdmLinkLoss.Condition, _, _) => $"follows {CondText} {D} after the message stops; off until the first frame",
         _ => "same board: no CAN message"
     };
 
@@ -106,15 +114,24 @@ public static class PdmLinks
     public const int StatusOffset = PdmFactoryDefaults.CyclicTxOffset + StatusMsg;  // base + 0x27
     public const int TimeoutMs = 1000;                                              // stock default time-out (D3a)
     public const PdmLinkLoss DefaultLoss = PdmLinkLoss.Off;                          // u3c
+    public const int StatusPeriodMs = 100;                                           // msg 37 period (CAN_TX_CYCLIC_MSG_DELAY)
+    public const int MinDelayMs = 3 * StatusPeriodMs, MaxDelayMs = 10000;            // editor2: per-output loss delay
+
+    // "1 s", "0.5 s", "2.25 s"
+    public static string DelayText(int ms) => (ms / 1000.0).ToString("0.###", System.Globalization.CultureInfo.InvariantCulture) + " s";
+
+    public static string? BadDelay(int ms, int periodMs = StatusPeriodMs) => ms < 3 * periodMs || ms > MaxDelayMs
+        ? $"The loss delay must be {3 * periodMs} to {MaxDelayMs} ms (at least 3 message periods of {periodMs} ms, so one late frame never counts as a loss)."
+        : null;
 
     public static readonly PdmLinkLoss[] LossChoices = [PdmLinkLoss.Off, PdmLinkLoss.Hold, PdmLinkLoss.On, PdmLinkLoss.Condition];
 
     public static string LossName(PdmLinkLoss l) => l switch
     {
-        PdmLinkLoss.Off => "Off (1 s after the message stops)",
+        PdmLinkLoss.Off => "Off (after the loss delay)",
         PdmLinkLoss.Hold => "Hold (keeps its last state)",
-        PdmLinkLoss.On => "On (1 s after the message stops)",
-        _ => "Condition (follows a condition 1 s after it stops)"
+        PdmLinkLoss.On => "On (after the loss delay)",
+        _ => "Condition (follows a condition after the loss delay)"
     };
 
     // on / condition use the shared ALIVE / SEEN / LOST
@@ -199,26 +216,108 @@ public static class PdmLinks
                && vi.Var0 == seenVar && vi.Var1 == aliveVar;
     }
 
-    // The shared ALIVE / SEEN / LOST on q for the links from p (the lowest of each), or null when one is missing
-    public static PdmShared? SharedOf(PdmView v, PdmBoard q, PdmBoard p)
+    // ALIVE / SEEN shape on any frame ID (another board's msg 37, or the ECU stream, PdmEcu): bit 0, length 1, '>= 0'
+    internal static bool IsAliveSeenShape(CanInput c, int id) =>
+        c is { Enabled: true, Ide: false, BitLength: 1, Factor: 1.0, Offset: 0.0, ByteOrder: ByteOrder.LittleEndian, Signed: false,
+            Mode: InputMode.Momentary, Bus: 0, StartBit: 0, Operator: Operator.GreaterThanOrEqual, Operand: 0.0 } && c.Id == id;
+
+    // the lowest SEEN on q for frame id (no time-out), or -1
+    internal static int SeenAt(PdmBoard q, int id)
     {
-        int alive = -1, seen = -1;
         for (var s = 0; s < q.Device.CanInputs.Count; s++)
-            if (RoleOfSlot(v, q, s) is { } r && r.Source.Role == p.Role)
-            {
-                if (r.Kind == PdmSlotKind.Alive && alive < 0) alive = s;
-                if (r.Kind == PdmSlotKind.Seen && seen < 0) seen = s;
-            }
-        if (alive < 0 || seen < 0) return null;
+            if (!IsFanSlot(q, s) && IsAliveSeenShape(q.Device.CanInputs[s], id) && !q.Device.CanInputs[s].TimeoutEnabled) return s;
+        return -1;
+    }
+
+    // (ALIVE, SEEN, LOST) on q for frame id and loss delay (ALIVE's time-out), the lowest of each, or null
+    internal static (int Alive, int Seen, int Lost)? SharedAt(PdmBoard q, int id, int delayMs)
+    {
         var d = q.Device;
-        for (var k = 0; k < d.VirtualInputs.Count; k++)
-            if (IsLostVirt(q, k, PdmFactoryDefaults.CanInState(d, seen), PdmFactoryDefaults.CanInState(d, alive)))
-                return new PdmShared(q, p, alive, seen, k);
+        var seen = SeenAt(q, id);
+        if (seen < 0) return null;
+        for (var a = 0; a < d.CanInputs.Count; a++)
+        {
+            var c = d.CanInputs[a];
+            if (IsFanSlot(q, a) || !IsAliveSeenShape(c, id) || !c.TimeoutEnabled || c.Timeout != delayMs) continue;
+            for (var k = 0; k < d.VirtualInputs.Count; k++)
+                if (IsLostVirt(q, k, PdmFactoryDefaults.CanInState(d, seen), PdmFactoryDefaults.CanInState(d, a)))
+                    return (a, seen, k);
+        }
         return null;
     }
 
+    // every (ALIVE, SEEN, LOST) on q for frame id, one per delay
+    internal static IReadOnlyList<(int Alive, int Seen, int Lost, int DelayMs)> SharedAllAt(PdmBoard q, int id)
+    {
+        var d = q.Device;
+        var list = new List<(int, int, int, int)>();
+        foreach (var delay in d.CanInputs.Where((c, a) => !IsFanSlot(q, a) && IsAliveSeenShape(c, id) && c.TimeoutEnabled).Select(c => c.Timeout).Distinct())
+            if (SharedAt(q, id, delay) is { } sh) list.Add((sh.Alive, sh.Seen, sh.Lost, delay));
+        return list;
+    }
+
+    // The shared ALIVE / SEEN / LOST on q for the links from p with this loss delay, or null when one is missing
+    public static PdmShared? SharedOf(PdmView v, PdmBoard q, PdmBoard p, int delayMs = TimeoutMs) =>
+        SharedAt(q, p.Device.BaseId + StatusOffset, delayMs) is { } sh ? new PdmShared(q, p, sh.Alive, sh.Seen, sh.Lost, delayMs) : null;
+
+    // the shared ALIVE / SEEN / LOST an on / condition virtual input reads: the one with the link's delay, else (a
+    // time-out changed by hand: Warnings says so) the one whose LOST (or ALIVE, old critical recipe) it reads
+    private static PdmShared? SharedForVirt(PdmView v, PdmBoard q, PdmBoard p, VirtualInput vi, int delayMs)
+    {
+        var d = q.Device;
+        bool Reads(PdmShared sh) => vi.Var0 == (vi.Not0 ? PdmFactoryDefaults.CanInState(d, sh.Alive) : PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh.Lost]));
+        return SharedOf(v, q, p, delayMs) is { } own && Reads(own) ? own
+            : Shared(v).FirstOrDefault(sh => sh.Board.Role == q.Role && sh.Source.Role == p.Role && Reads(sh));
+    }
+
     public static IReadOnlyList<PdmShared> Shared(PdmView v) =>
-        v.Boards.SelectMany(q => v.Boards.Where(p => p.Role != q.Role).Select(p => SharedOf(v, q, p))).OfType<PdmShared>().ToList();
+        v.Boards.SelectMany(q => v.Boards.Where(p => p.Role != q.Role)
+            .SelectMany(p => SharedAllAt(q, p.Device.BaseId + StatusOffset).Select(x => new PdmShared(q, p, x.Alive, x.Seen, x.Lost, x.DelayMs)))).ToList();
+
+    // ALIVE / SEEN / LOST made on q for frame id and delay (SEEN reused when there): the free lists are consumed.
+    // null = made; else why not (nothing consumed)
+    internal static string? MakeShared(PdmBoard q, int id, int delayMs, string label, List<int> free, List<int> freeV, out (int Alive, int Seen, int Lost) made)
+    {
+        made = default;
+        var d = q.Device;
+        var seen = SeenAt(q, id);
+        var needS = seen < 0 ? 2 : 1;
+        if (free.Count < needS || freeV.Count < 1) return "too few";
+        var a = free[0];
+        SetSlot(d.CanInputs[a], $"{label} alive {DelayText(delayMs)}", id, 0, Operator.GreaterThanOrEqual, 0.0, true, delayMs);
+        if (seen < 0)
+        {
+            seen = free[1];
+            SetSlot(d.CanInputs[seen], $"{label} seen", id, 0, Operator.GreaterThanOrEqual, 0.0, false);
+        }
+        var l = freeV[0];
+        SetVirt(d.VirtualInputs[l], $"{label} lost {DelayText(delayMs)}", false, PdmFactoryDefaults.CanInState(d, seen), Conditional.And,
+            true, PdmFactoryDefaults.CanInState(d, a));
+        free.RemoveRange(0, needS);
+        freeV.RemoveAt(0);
+        made = (a, seen, l);
+        return null;
+    }
+
+    // ALIVE + LOST that nothing reads any more, and a SEEN with no ALIVE left: back to fresh-board values
+    internal static void FreeSharedAt(PdmBoard q, int id, Func<int, bool> inUse)
+    {
+        var d = q.Device;
+        foreach (var sh in SharedAllAt(q, id))
+        {
+            var lostVar = PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh.Lost]);
+            if (inUse(lostVar)) continue;
+            Reset(d.CanInputs[sh.Alive]);
+            Reset(d.VirtualInputs[sh.Lost]);
+        }
+        var seen = SeenAt(q, id);
+        if (seen >= 0 && !d.CanInputs.Where((c, a) => !IsFanSlot(q, a) && IsAliveSeenShape(c, id) && c.TimeoutEnabled).Any()
+            && !EverythingReads(d, PdmFactoryDefaults.CanInState(d, seen)))
+            Reset(d.CanInputs[seen]);
+    }
+
+    // does any function of d read var (virtual inputs included)
+    private static bool EverythingReads(FwDevice d, int var) => PdmEngine.IsRead(d, var);
 
     // What virtual input k on board q is for the links, or null (not ours)
     public static PdmVirtRole? RoleOfVirt(PdmView v, PdmBoard q, int k)
@@ -240,7 +339,7 @@ public static class PdmLinks
         var ls = SlotOfVar(d, three ? vi.Var2 : vi.Var1);
         if (ls < 0 || RoleOfSlot(v, q, ls) is not { Kind: PdmSlotKind.Link } rl || !d.CanInputs[ls].TimeoutEnabled) return null;
         if (three ? vi.Cond0 != Conditional.And || vi.Cond1 != Conditional.Or || vi.Var1 == 0 : vi.Cond0 != Conditional.Or) return null;
-        if (SharedOf(v, q, rl.Source) is not { } sh) return null;
+        if (SharedForVirt(v, q, rl.Source, vi, d.CanInputs[ls].Timeout) is not { } sh) return null;
         var want = vi.Not0 ? PdmFactoryDefaults.CanInState(d, sh.Alive) : PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh.Lost]);
         return vi.Var0 == want
             ? new PdmVirtRole(three ? PdmVirtKind.Condition : PdmVirtKind.On, rl.Source, ls, vi.Not0, three ? vi.Var1 : 0)
@@ -261,7 +360,8 @@ public static class PdmLinks
             {
                 var s = d.CanInputs.IndexOf(ci);
                 return RoleOfSlot(v, q, s) is { Kind: PdmSlotKind.Link } r
-                    ? new PdmLink(o, DigitalRow(v, r.Source.Role, r.Bit)!, ci.TimeoutEnabled ? PdmLinkLoss.Off : PdmLinkLoss.Hold, s, null)
+                    ? new PdmLink(o, DigitalRow(v, r.Source.Role, r.Bit)!, ci.TimeoutEnabled ? PdmLinkLoss.Off : PdmLinkLoss.Hold, s, null,
+                        DelayMs: ci.TimeoutEnabled ? ci.Timeout : TimeoutMs)
                     : null;
             }
             case VirtualInput vi:
@@ -270,9 +370,10 @@ public static class PdmLinks
                 if (RoleOfVirt(v, q, k) is not { } vr || vr.Kind == PdmVirtKind.Lost) return null;
                 var src = RoleOfSlot(v, q, vr.Slot)!;
                 var row = DigitalRow(v, src.Source.Role, src.Bit)!;
-                if (vr.Kind == PdmVirtKind.OldOn) return new PdmLink(o, row, PdmLinkLoss.On, vr.Slot, k, OldRecipe: true);
+                var delay = d.CanInputs[vr.Slot].Timeout;
+                if (vr.Kind == PdmVirtKind.OldOn) return new PdmLink(o, row, PdmLinkLoss.On, vr.Slot, k, OldRecipe: true, DelayMs: delay);
                 return new PdmLink(o, row, vr.Kind == PdmVirtKind.Condition ? PdmLinkLoss.Condition : PdmLinkLoss.On, vr.Slot, k,
-                    vr.Cond, vr.Cond != 0 ? CondText(v, q, vr.Cond) : null, vr.OldCritical, SharedOf(v, q, vr.Source), vr.OldCritical);
+                    vr.Cond, vr.Cond != 0 ? CondText(v, q, vr.Cond) : null, vr.OldCritical, SharedForVirt(v, q, vr.Source, vi, delay), vr.OldCritical, delay);
             }
             default:
                 return null;
@@ -313,8 +414,9 @@ public static class PdmLinks
         {
             var d = q.Device;
             var mine = links.Where(l => l.Out.Board == q.Role).ToList();
-            var shared = v.Boards.Where(p => p.Role != q.Role).Select(p => SharedOf(v, q, p)).OfType<PdmShared>().ToList();
-            int Users(PdmShared sh) => mine.Count(l => l.Shared?.Source.Role == sh.Source.Role);
+            var shared = Shared(v).Where(x => x.Board.Role == q.Role).ToList();
+            int Users(PdmShared sh) => mine.Count(l => l.Shared is { } ls && ls.Source.Role == sh.Source.Role && ls.Alive == sh.Alive);
+            int SeenUsers(PdmShared sh) => mine.Count(l => l.Shared is { } ls && ls.Source.Role == sh.Source.Role && ls.Seen == sh.Seen);
             string LinkText(PdmLink l) =>
                 $"link: {l.In.Board} IN{l.In.BoardInput} (input {l.In.Number}) -> OUT{l.Out.BoardOutput} (output {l.Out.Number}), {l.LossText}";
 
@@ -323,13 +425,15 @@ public static class PdmLinks
             {
                 var c = d.CanInputs[s];
                 var link = mine.FirstOrDefault(l => l.Slot == s);
-                var sh = shared.FirstOrDefault(x => x.Alive == s || x.Seen == s);
+                var sh = shared.FirstOrDefault(x => x.Alive == s) ?? shared.FirstOrDefault(x => x.Seen == s);
                 var role = RoleOfSlot(v, q, s);
+                var ecu = PdmEcu.SlotText(v, q, s); // editor2: the ECU stream's command / ALIVE / SEEN slots
                 cans.Add(link != null ? new PdmSlotUse(q.Role, s, false, true, LinkText(link))
-                    : sh != null && Users(sh) > 0
+                    : ecu != null ? new PdmSlotUse(q.Role, s, false, false, ecu)
+                    : sh != null && (sh.Alive == s ? Users(sh) : SeenUsers(sh)) > 0
                         ? new PdmSlotUse(q.Role, s, false, true, sh.Alive == s
-                            ? $"shared: {sh.Source.Role} alive (its message 37 heard in the last {c.Timeout / 1000.0:0.##} s), for {Users(sh)} on / condition link(s)"
-                            : $"shared: {sh.Source.Role} seen (a message 37 heard since power-up), for {Users(sh)} on / condition link(s)", true)
+                            ? $"shared: {sh.Source.Role} alive (its message 37 heard in the last {DelayText(c.Timeout)}), for {Users(sh)} on / condition link(s)"
+                            : $"shared: {sh.Source.Role} seen (a message 37 heard since power-up), for {SeenUsers(sh)} on / condition link(s)", true)
                     : role is { Kind: PdmSlotKind.Alive or PdmSlotKind.Seen }
                         ? new PdmSlotUse(q.Role, s, false, true, $"shared {role.Kind.ToString().ToUpperInvariant()} for {role.Source.Role}, no link uses it (Remove unused)", true)
                     : role != null && TriggerTerm(v, q, s) // editor1: a trigger term
@@ -347,7 +451,9 @@ public static class PdmLinks
                 var link = mine.FirstOrDefault(l => l.Virt == k);
                 var sh = shared.FirstOrDefault(x => x.Lost == k);
                 var role = RoleOfVirt(v, q, k);
+                var ecuV = PdmEcu.VirtText(v, q, k); // editor2
                 virts.Add(link != null ? new PdmSlotUse(q.Role, k, false, true, LinkText(link))
+                    : ecuV != null ? new PdmSlotUse(q.Role, k, false, false, ecuV)
                     : sh != null && Users(sh) > 0
                         ? new PdmSlotUse(q.Role, k, false, true, $"shared: {sh.Source.Role} lost (seen AND NOT alive), for {Users(sh)} on / condition link(s)", true)
                     : role is { Kind: PdmVirtKind.Lost }
@@ -366,28 +472,28 @@ public static class PdmLinks
 
     // ---------------- edits (PC side) ----------------
 
-    private static void Reset(CanInput c)
+    internal static void Reset(CanInput c)
     {
         var f = new CanInput(c.Number, "canInput" + c.Number); // fresh-board values (proven equal: PdmB3LiveSimTests)
         (c.Name, c.Enabled, c.TimeoutEnabled, c.Timeout, c.Id, c.StartBit, c.BitLength) = (f.Name, f.Enabled, f.TimeoutEnabled, f.Timeout, f.Id, f.StartBit, f.BitLength);
         (c.Factor, c.Offset, c.ByteOrder, c.Signed, c.Operator, c.Operand, c.Mode, c.Bus) = (f.Factor, f.Offset, f.ByteOrder, f.Signed, f.Operator, f.Operand, f.Mode, f.Bus);
     }
 
-    private static void Reset(VirtualInput vi)
+    internal static void Reset(VirtualInput vi)
     {
         var f = new VirtualInput(vi.Number, "virtualInput" + vi.Number);
         (vi.Name, vi.Enabled, vi.Not0, vi.Var0, vi.Cond0, vi.Not1, vi.Var1) = (f.Name, f.Enabled, f.Not0, f.Var0, f.Cond0, f.Not1, f.Var1);
         (vi.Cond1, vi.Not2, vi.Var2, vi.Mode) = (f.Cond1, f.Not2, f.Var2, f.Mode);
     }
 
-    private static void SetSlot(CanInput c, string name, int id, int bit, Operator op, double operand, bool timeout)
+    internal static void SetSlot(CanInput c, string name, int id, int bit, Operator op, double operand, bool timeout, int timeoutMs = TimeoutMs, int length = 1)
     {
-        (c.Name, c.Enabled, c.TimeoutEnabled, c.Timeout, c.Id, c.StartBit, c.BitLength) = (name, true, timeout, TimeoutMs, id, bit, 1);
+        (c.Name, c.Enabled, c.TimeoutEnabled, c.Timeout, c.Id, c.StartBit, c.BitLength) = (name, true, timeout, timeout ? timeoutMs : TimeoutMs, id, bit, length);
         (c.Factor, c.Offset, c.ByteOrder, c.Signed, c.Operator, c.Operand, c.Mode, c.Bus) =
             (1.0, 0.0, ByteOrder.LittleEndian, false, op, operand, InputMode.Momentary, 0);
     }
 
-    private static void SetVirt(VirtualInput vi, string name, bool not0, int var0, Conditional c0, bool not1, int var1,
+    internal static void SetVirt(VirtualInput vi, string name, bool not0, int var0, Conditional c0, bool not1, int var1,
         Conditional c1 = Conditional.And, int var2 = 0)
     {
         (vi.Name, vi.Enabled, vi.Not0, vi.Var0, vi.Cond0, vi.Not1, vi.Var1) = (name, true, not0, var0, c0, not1, var1);
@@ -439,9 +545,10 @@ public static class PdmLinks
         return null;
     }
 
-    private static string? BadMode(PdmView v, PdmBoard q, PdmInputRow inRow, PdmOutputRow o, PdmLinkLoss loss, int cond)
+    private static string? BadMode(PdmView v, PdmBoard q, PdmInputRow inRow, PdmOutputRow o, PdmLinkLoss loss, int cond, int delayMs)
     {
         if (inRow.Board == q.Role) return null; // same board: no CAN message, no loss mode
+        if (loss != PdmLinkLoss.Hold && BadDelay(delayMs) is { } bad) return bad;
         if (loss == PdmLinkLoss.Condition && CondChoices(v, q).All(c => c.Var != cond))
             return $"Pick the condition for output {o.Number}: one of {q.Role}'s inputs or conditions.";
         return null;
@@ -459,7 +566,7 @@ public static class PdmLinks
     }
 
     // Writes the link (the output has no trigger now). null = made; else why not (the caller restores the board)
-    private static string? Make(PdmView v, PdmBoard q, PdmOutputRow o, PdmInputRow inRow, PdmLinkLoss loss, int cond)
+    private static string? Make(PdmView v, PdmBoard q, PdmOutputRow o, PdmInputRow inRow, PdmLinkLoss loss, int cond, int delayMs)
     {
         var d = q.Device;
         if (inRow.Board == q.Role)
@@ -468,35 +575,36 @@ public static class PdmLinks
             return null;
         }
         var p = v.Boards.Single(b => b.Role == inRow.Board);
+        var msg = p.Device.BaseId + StatusOffset;
         var free = Enumerable.Range(0, d.CanInputs.Count).Where(i => IsFreeSlot(q, i)).ToList();
         var freeV = Enumerable.Range(0, d.VirtualInputs.Count).Where(k => IsFreeVirt(q, k)).ToList();
         var needShared = UsesShared(loss);
-        var sh = needShared ? SharedOf(v, q, p) : null;
-        var needSlots = needShared && sh == null ? 3 : 1;
+        var sh = needShared ? SharedOf(v, q, p, delayMs) : null;
+        var hasSeen = SeenAt(q, msg) >= 0;
+        var needSlots = needShared && sh == null ? (hasSeen ? 2 : 3) : 1;
         if (free.Count < needSlots)
         {
             var u = Slots(v).Single(b => b.Board == q.Role);
-            return $"{q.Role} has too few free CAN inputs: this link needs {(needSlots == 3 ? $"3 (the shared '{p.Role} alive' and '{p.Role} seen' and its own)" : "1")}, " +
+            var what = needSlots switch
+            {
+                3 => $"3 (the shared '{p.Role} alive' and '{p.Role} seen' and its own)",
+                2 => $"2 (a shared '{p.Role} alive' for its {DelayText(delayMs)} delay and its own)",
+                _ => "1"
+            };
+            return $"{q.Role} has too few free CAN inputs: this link needs {what}, " +
                    $"{free.Count} free ({u.LinkCanInputs + u.SharedCanInputs} used by links, the rest by the fan logic or set by hand).";
         }
-        var msg = p.Device.BaseId + StatusOffset;
         int? k = null;
         if (needShared)
         {
             var needV = sh == null ? 2 : 1;
             if (freeV.Count < needV)
-                return $"{q.Role} has too few free virtual inputs: this '{Word(loss)}' link needs {(needV == 2 ? $"2 (the shared '{p.Role} lost' and its own)" : "1")}, " +
+                return $"{q.Role} has too few free virtual inputs: this '{Word(loss)}' link needs {(needV == 2 ? $"2 (the shared '{p.Role} lost'{(delayMs != TimeoutMs ? $" for its {DelayText(delayMs)} delay" : "")} and its own)" : "1")}, " +
                        $"{freeV.Count} free. Choose 'off' or 'hold'.";
             if (sh == null)
             {
-                var (a, s0, l) = (free[0], free[1], freeV[0]);
-                SetSlot(d.CanInputs[a], $"{p.Role} alive (links)", msg, 0, Operator.GreaterThanOrEqual, 0.0, true);
-                SetSlot(d.CanInputs[s0], $"{p.Role} seen (links)", msg, 0, Operator.GreaterThanOrEqual, 0.0, false);
-                SetVirt(d.VirtualInputs[l], $"{p.Role} lost (links)", false, PdmFactoryDefaults.CanInState(d, s0), Conditional.And,
-                    true, PdmFactoryDefaults.CanInState(d, a));
-                free.RemoveRange(0, 2);
-                freeV.RemoveAt(0);
-                sh = new PdmShared(q, p, a, s0, l);
+                MakeShared(q, msg, delayMs, $"{p.Role}", free, freeV, out var made);
+                sh = new PdmShared(q, p, made.Alive, made.Seen, made.Lost, delayMs);
             }
             var lost = sh.Lost;
             k = freeV.Where(x => x > lost).Cast<int?>().FirstOrDefault();
@@ -507,7 +615,7 @@ public static class PdmLinks
 
         var s = free[0];
         var name = $"Link {inRow.Board} IN{inRow.BoardInput} -> OUT{o.BoardOutput}";
-        SetSlot(d.CanInputs[s], name, msg, inRow.BoardInput - 1, Operator.Equal, 1.0, loss != PdmLinkLoss.Hold);
+        SetSlot(d.CanInputs[s], name, msg, inRow.BoardInput - 1, Operator.Equal, 1.0, loss != PdmLinkLoss.Hold, delayMs);
         var lvar = PdmFactoryDefaults.CanInState(d, s);
         if (k is { } kk)
         {
@@ -535,19 +643,18 @@ public static class PdmLinks
     private static void FreeUnusedShared(PdmView v, PdmBoard q, string? keep = null)
     {
         var links = Links(v);
+        var d = q.Device;
         foreach (var p in v.Boards.Where(b => b.Role != q.Role && b.Role != keep))
-            if (SharedOf(v, q, p) is { } sh && !links.Any(l => l.Out.Board == q.Role && l.Shared?.Source.Role == p.Role))
-            {
-                Reset(q.Device.CanInputs[sh.Alive]);
-                Reset(q.Device.CanInputs[sh.Seen]);
-                Reset(q.Device.VirtualInputs[sh.Lost]);
-            }
+            FreeSharedAt(q, p.Device.BaseId + StatusOffset, lostVar =>
+                links.Any(l => l.Out.Board == q.Role && l.Shared is { } sh && sh.Source.Role == p.Role
+                               && PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh.Lost]) == lostVar));
     }
 
     // null = link made on the PC; else why not (nothing changed). An output that already has a trigger (Conflict) is
     // only replaced with overwrite (the UI asks "already assigned. Overwrite?" first); a trigger set elsewhere is only
     // unhooked from the output, the function behind it is never changed.
-    public static string? Add(PdmView v, int input, int output, PdmLinkLoss loss = DefaultLoss, int cond = 0, bool overwrite = false)
+    public static string? Add(PdmView v, int input, int output, PdmLinkLoss loss = DefaultLoss, int cond = 0, bool overwrite = false,
+        int delayMs = TimeoutMs)
     {
         var inRow = v.Inputs.FirstOrDefault(r => r.Number == input && r.Digital != null);
         if (inRow == null) return $"Input {input} is not a digital input of this PDM (1-24, its board must be in the project).";
@@ -555,7 +662,7 @@ public static class PdmLinks
         if (o == null) return $"Output {output} is not in this PDM (1-24, its board must be in the project).";
         if (Unlinkable(o) is { } no) return no;
         var q = BoardOf(v, o.Device)!;
-        if (BadMode(v, q, inRow, o, loss, cond) is { } bad) return bad;
+        if (BadMode(v, q, inRow, o, loss, cond, delayMs) is { } bad) return bad;
         if (!overwrite && Conflict(v, output) is { } taken) return taken;
 
         var restore = PdmSnapshot.Take([o.Device]); // editor1: every function (a trigger's conditions / timer / flasher too)
@@ -563,7 +670,7 @@ public static class PdmLinks
         else if (o.Output.Input != 0) PdmTriggers.Release(v, o); // editor1: a /pdm trigger's own parts are freed, anything else only unhooked
         o.Output.Input = 0;
         FreeUnusedShared(v, q, KeepFor(q, inRow, loss)); // so a mode without them gets the lowest slots
-        if (Make(v, q, o, inRow, loss, cond) is { } why)
+        if (Make(v, q, o, inRow, loss, cond, delayMs) is { } why)
         {
             restore.Restore();
             return why;
@@ -583,18 +690,19 @@ public static class PdmLinks
     }
 
     // Change a link's source input and / or loss mode (re-made in place; it may move to a lower free slot)
-    public static string? Change(PdmView v, int output, int input, PdmLinkLoss loss, int cond = 0)
+    public static string? Change(PdmView v, int output, int input, PdmLinkLoss loss, int cond = 0, int? delayMs = null)
     {
         var o = v.Outputs.FirstOrDefault(r => r.Number == output);
         if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
         var inRow = v.Inputs.FirstOrDefault(r => r.Number == input && r.Digital != null);
         if (inRow == null) return $"Input {input} is not a digital input of this PDM (1-24, its board must be in the project).";
         var q = BoardOf(v, o.Device)!;
-        if (BadMode(v, q, inRow, o, loss, cond) is { } bad) return bad;
+        var delay = delayMs ?? link.DelayMs;
+        if (BadMode(v, q, inRow, o, loss, cond, delay) is { } bad) return bad;
         var restore = Snapshot(o.Device);
         RemoveLink(link);
         FreeUnusedShared(v, q, KeepFor(q, inRow, loss));
-        if (Make(v, q, o, inRow, loss, cond) is { } why)
+        if (Make(v, q, o, inRow, loss, cond, delay) is { } why)
         {
             restore();
             return why;
@@ -609,6 +717,16 @@ public static class PdmLinks
         if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
         if (!link.CrossBoard) return "A same-board link has no CAN message to lose.";
         return Change(v, output, link.In.Number, loss, cond);
+    }
+
+    // editor2: the loss delay of a cross-board link (off / on / condition: the time its message may stay away)
+    public static string? SetDelay(PdmView v, int output, int delayMs)
+    {
+        var o = v.Outputs.FirstOrDefault(r => r.Number == output);
+        if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
+        if (!link.CrossBoard) return "A same-board link has no CAN message to lose.";
+        if (link.Loss == PdmLinkLoss.Hold) return "A 'hold' link keeps its state: it has no loss delay.";
+        return Change(v, output, link.In.Number, link.Loss!.Value, link.Cond, delayMs);
     }
 
     // a new source input, the loss mode kept (a new cross-board link gets the default)

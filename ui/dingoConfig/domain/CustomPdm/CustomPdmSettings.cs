@@ -40,6 +40,9 @@ public class CustomPdmSettings
     [JsonPropertyName("masterRetryInput")] public int MasterRetryInput { get; set; }
     [JsonPropertyName("outputProtection")] public List<OutputProtection> OutputProtection { get; set; } = [];
     [JsonPropertyName("tables")] public List<LookupTable> Tables { get; set; } = [];
+    // editor2: the device preset picked per output on /pdm (PdmPresets, a PdmDeviceKind name or ""). A PC-side label
+    // saved in the project file only (not a board setting); without it /pdm shows the preset whose values match.
+    [JsonPropertyName("outputPresets")] public List<string> OutputPresets { get; set; } = [];
     // var map size of this device (FwDevice.InitVarMap): range of the var-index settings
     [JsonIgnore] public int VarMapSize { get; set; }
 
