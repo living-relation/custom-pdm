@@ -7,11 +7,12 @@ public static class DummyFiles
 {
     public static List<(string FileName, string Text)> Generated(IReadOnlyList<DbcBoard> boards, string idTableMarkdown)
     {
-        _ = CanIdTableDummy.Parse(idTableMarkdown);
+        var rows = CanIdTableDummy.Parse(idTableMarkdown);
         return
         [
             (LinkPdmDummy.JsonFile, LinkPdmDummy.Json(boards)),
-            (LinkPdmDummy.LcsFile, LinkPdmDummy.Lcs(boards))
+            (LinkPdmDummy.LcsFile, LinkPdmDummy.Lcs(boards)),
+            (BusLoadDummy.FileName, BusLoadDummy.Markdown(rows))
         ];
     }
 }
