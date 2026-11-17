@@ -49,6 +49,7 @@ def L(x=0.0, y=0.0, z=0.0, rx=0.0, ry=0.0, rz=0.0): return Location((x, y, z), (
 # ---------------- part catalogue + placements (every part = its own file; Dan 2026-11-16) ----------------
 from OCP.TopLoc import TopLoc_Location
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from build123d.topology import Shape
 def bake(s):
     """part shapes carry no TopLoc (a located shape becomes an un-named, inline sub-product in the XCAF STEP writer):
     an identity location is dropped, a real one is baked into the geometry"""
@@ -436,16 +437,21 @@ def slot_along(x, y, ang, wd, Ls, z0, z1):
 def riser_local(H):
     """riser in its own frame: T centre at the origin, seat on +X at riser_d, z 0 = REDCUBE top"""
     ft_ = P["riser_foot"]
-    rb = obround((0, 0), (RD_, 0), RR, 0, ft_).fuse(cyl(2 * RR, (RD_, 0, 0), H))
+    foot = obround((0, 0), (RD_, 0), RR, 0, ft_); col = cyl(2 * RR, (RD_, 0, 0), H)
     # column-root fillet R0.5 (= cutter corner radius) where the column meets the foot-arm top: built as a concave ring
-    # (annulus r 4..4.5 minus a torus) clipped to the foot outline (OCC's fillet fails where the column and the arm end are tangent)
-    rf = P["riser_root_r"]
-    ring = cyl(2 * (RR + rf), (RD_, 0, ft_), rf).cut(cyl(2 * RR, (RD_, 0, ft_ - 0.1), rf + 0.2))
-    ring = ring.cut(Solid.make_torus(RR + rf, rf, Plane(origin=(RD_, 0, ft_ + rf))))
-    ring = isect(ring, obround((0, 0), (RD_, 0), RR, ft_, ft_ + rf))
-    rb = rb.fuse(ring).clean()
+    # (revolved quarter-round profile r 4..4.5) clipped to the foot outline (OCC's fillet fails where the column and the arm end are tangent)
+    rf = P["riser_root_r"]; e_ = 0.05                       # ring reaches 0.05 into the column and the arm so the fuse is volumetric
+    prof = Wire([Line((RD_ + RR - e_, 0, ft_ - e_), (RD_ + RR + rf, 0, ft_ - e_)), Line((RD_ + RR + rf, 0, ft_ - e_), (RD_ + RR + rf, 0, ft_)),
+                 CenterArc((RD_ + RR + rf, 0, ft_ + rf), rf, 270, -90).rotate(Axis((RD_ + RR + rf, 0, ft_ + rf), (1, 0, 0)), 90),
+                 Line((RD_ + RR, 0, ft_ + rf), (RD_ + RR - e_, 0, ft_ + rf)), Line((RD_ + RR - e_, 0, ft_ + rf), (RD_ + RR - e_, 0, ft_ - e_))])
+    ring = revolve(Face(prof), Axis((RD_, 0, 0), (0, 0, 1)), 360).solid()
+    ring = isect(ring, obround((0, 0), (RD_, 0), RR, ft_ - e_, ft_ + rf + 0.01))
+    rb = foot.fuse(col, ring)                                # one 3-way fuse, no .clean(): fusing in two steps or cleaning leaves an invalid solid
+    if not rb.is_valid: rb = rb.fix()
+    print("riser H", round(H, 2), "valid", rb.is_valid, "solids", len(rb.solids()), flush=True)
     rb = rb.cut(cyl(4.5, (0, 0, -0.1), ft_ + 0.2))                                                     # M4 clearance at the foot
     rb = rb.cut(cyl(3.3, (RD_, 0, H - 10.0), 10.1))                                                    # M4 tap drill 3.3 x 10 deep (lug screw)
+    assert rb.is_valid, f"riser H {H} invalid"
     return one(rb)
 part("CPDM-ENC-107", riser_local(Z_L - TTOP), "Copper offset riser, low (OUT2 / OUT4)", f"foot arm R4 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_L - TTOP:.2f}, M4 tapped 10, R0.5 root", "C110 copper", "made")
 part("CPDM-ENC-108", riser_local(Z_U - TTOP), "Copper offset riser, high (OUT1 / OUT3)", f"foot arm R4 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_U - TTOP:.2f}, M4 tapped 10, R0.5 root", "C110 copper", "made")
@@ -613,6 +619,8 @@ def full_desc(pn):
     c = CAT[pn]
     return ascii_(f"{c['name']} | {c['desc']} | material: {c['material'] or '-'} | maker: {c['maker']} | {c['kind']} | rev {REV}")
 used = {it["pn"] for it in ITEMS.values()}
+INVALID = [pn for pn, c in CAT.items() if c["kind"].startswith("made") and not all(s.is_valid for s in c["shape"].solids())]
+print("invalid made parts:", INVALID or "none", flush=True)
 for pn in list(CAT):
     if pn not in used: print("WARN part defined but not placed:", pn); del CAT[pn]
 doc = TDocStd_Document(TCollection_ExtendedString("XmlXCAF"))
@@ -677,6 +685,6 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn]) for pn, c in CAT.items()},
             assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l) in SCREWS],
             placements={nm: dict(pn=it["pn"], m=[mat4(l) for l in it["locs"]]) for nm, it in ITEMS.items()},   # 4x4 row-major, mm (Fusion insert)
-            n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT})
+            invalid_made_parts=INVALID, n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT})
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
 print("done", VAR, len(ITEMS), "items", len(CAT), "part numbers", "overall(no plugs)", [round(v, 1) for v in meta["overall_no_plugs"]], "would-strip", dA, dB)

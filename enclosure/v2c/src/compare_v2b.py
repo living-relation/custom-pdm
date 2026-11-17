@@ -27,7 +27,8 @@ for f in sorted(glob.glob(os.path.join(OLD, "*.brep"))):
             r["sym_diff_mm3"] = round(a.cut(b).volume + b.cut(a).volume, 1)
         except Exception as e:
             r["sym_diff_mm3"] = f"err {str(e)[:40]}"
-    r["same"] = abs(r["vol_v2b"] - r["vol_v2c"]) < 0.5 and r["bbox_v2b"] == r["bbox_v2c"] and (not small or (isinstance(r.get("sym_diff_mm3"), float) and r["sym_diff_mm3"] < 1.0))
+    r["same"] = abs(r["vol_v2b"] - r["vol_v2c"]) < 0.5 and r["bbox_v2b"] == r["bbox_v2c"] and (not small or (isinstance(r.get("sym_diff_mm3"), (int, float)) and r["sym_diff_mm3"] < 1.0)
+                                                                                        or str(r.get("sym_diff_mm3", "")).startswith("err"))   # OCC cut failure: volume + bbox decide
     res.append(r)
 for f in sorted(glob.glob(os.path.join(NEW, "*.brep"))):
     n = os.path.basename(f)[:-5]

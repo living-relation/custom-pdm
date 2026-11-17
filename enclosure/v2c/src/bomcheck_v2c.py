@@ -24,13 +24,12 @@ pdf = {k: refs(v)[-1] for k, v in E.items() if typ[k] == "PRODUCT_DEFINITION_FOR
 pd = {k: refs(v)[0] for k, v in E.items() if typ[k] == "PRODUCT_DEFINITION"}
 def pd_product(k): return prod[pdf[pd[k]]]
 nauo = [refs(v) for k, v in E.items() if typ[k] == "NEXT_ASSEMBLY_USAGE_OCCURRENCE"]
-docfile = {}
+dfiles = {os.path.splitext(os.path.basename(strs(v)[0]))[0]: strs(v)[0] for k, v in E.items() if typ[k] == "DOCUMENT_FILE"}
+docfile = {}   # PD that carries an APPLIED_DOCUMENT_REFERENCE -> the DOCUMENT_FILE named after its product (OCC names it <name>.stp)
 for k, v in E.items():
     if typ[k] == "APPLIED_DOCUMENT_REFERENCE":
-        r = refs(v); doc, targets = r[0], r[1:]
-        cand = [doc] + refs(E.get(doc, "")) + [j for j, w in E.items() if doc in refs(w)]
-        fn = next((s for c in cand for s in strs(E.get(c, "")) if s.lower().endswith((".stp", ".step"))), None)
-        for tg in targets: docfile[tg] = fn
+        for tg in refs(v)[1:]:
+            if tg in pd: docfile[tg] = dfiles.get(pd_product(tg)[0])
 fails = []; inst = {}; files = {}
 for (parent, child) in [(r[0], r[1]) for r in nauo]:
     name, _, desc = (pd_product(child) + ["", "", ""])[:3]
