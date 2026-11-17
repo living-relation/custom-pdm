@@ -15,6 +15,7 @@ if [ ${#bad[@]} -gt 0 ]; then
   echo "Tracked CLAUDE instruction file(s):"
   printf '  %s\n' "${bad[@]}"
   echo "Fold the content into AGENTS.md (keep every rule, drop exact duplicates) and delete the CLAUDE file in a PR."
+  echo "A file inside a folder folds into that folder's AGENTS.md. A file at the repo root folds into the root AGENTS.md."
   exit 1
 fi
 
