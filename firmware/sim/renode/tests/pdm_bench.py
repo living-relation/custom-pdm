@@ -470,3 +470,13 @@ class pdm_bench:
                 ('B', 0x101): (1, 3, ('R', s.ps.SRC_CONFIG), (0x101, 0x101, 0x1FE), 0x1FE), ('B', 0x200): (1, 3, ('R', s.ps.SRC_CONFIG), (0x200, 0x200, 0x1FE), 0x1FE)}
         restore = all(s._write1(BASE[k], WI, WS, 0) is not None for k in ('A1', 'B'))
         s._check(got == want and restore, f'(board, mask): (failed = no Write reply after 3 tries, frames on the reply ID = one warning per try, (type, src), (refused, bad inputs, kept), read back): {got}; reset to 0: {restore}')
+
+    # ------------------------------------------------------------------ S7 (w1): the first msg 37 after a power-up
+    def first_status_msg_after_a_power_cycle_carries_the_real_inputs(s):
+        # the first cyclic round is built in InitCan, before the device thread reads any input: msg 37 skips it (port_boards.py)
+        mid = BASE['B'] + 2 + s.ps.STATUS_MSG
+        ok = s._write1(BASE['B'], 0x1200 + 2, 0, 1) is not None and s._burn(BASE['B'])     # B input 3 enabled and saved
+        s._power_cycle('B'); s._input('B', 2, True); n0 = s._ecun(f'Count {mid:#x}'); t = 10
+        while s._ecun(f'Count {mid:#x}') == n0 and t < 2000: s._run(2); t += 2
+        d = bytes.fromhex(s._ecu(f'Last {mid:#x}')); s._input('B', 2, False); s._run(300)
+        s._check(ok and t < 2000 and (d[0] >> 2) & 1 == 1, f'saved {ok}; first msg 37 {t} ms after the reset (2 ms steps): {d.hex()} (bit 2 = B input 3, held high from 10 ms)')

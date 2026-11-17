@@ -31,7 +31,7 @@ public class PdmLinksTests
             Assert.Contains("nBaseId + CYCLIC_TX_OFFSET + 37", msg37);
             Assert.Contains("nDi |= (GetDigInputVal(i) ? 1 : 0) << i;", msg37);
             Assert.Contains("stMsg.frame.data16[0] = nDi;", msg37);
-            Assert.Contains("stMsg.bSend = true; // Always send", msg37);
+            Assert.Contains("stMsg.bSend = !bFirstRound; // then always sent", msg37); // w1: every round but the first (built before inputs are read)
         }
         Assert.Equal(0x27, PdmLinks.StatusOffset);
         Assert.Equal(PdmLinkLoss.Off, PdmLinks.DefaultLoss); // u3c

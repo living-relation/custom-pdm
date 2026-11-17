@@ -272,7 +272,11 @@ CANTxMsg TxMsg@N@()
     stMsg.frame.data16[2] = (uint16_t)analogIn[0].fVal;
     stMsg.frame.data16[3] = (uint16_t)(int16_t)(GetTemperature() * 10.0f); // deg C x 10, signed (r5a)
 
-    stMsg.bSend = true; // Always send
+    // custom-pdm (w1): not in the first round. That round is built in InitCan, before the device thread has read any
+    // input, so it would show every input OFF and cross-board links would see OFF for 100 ms at key on.
+    static bool bFirstRound = true;
+    stMsg.bSend = !bFirstRound; // then always sent
+    bFirstRound = false;
 
     return stMsg;
 }

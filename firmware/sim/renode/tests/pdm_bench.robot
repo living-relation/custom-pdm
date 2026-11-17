@@ -105,3 +105,6 @@ Wake-up Set: Default No Input On Every Board, A Valid Mask Written Over CAN Is T
 
 Wake-up Set: A Mask With Both Inputs Of A Shared Line Or The USB D- Line Is Refused, Warning Sent, Mask Kept
     Wake Mask On A Shared Or Usb Line Is Refused With A Warning
+
+Key On: Board B's First Status Msg 37 After A Power Cycle Carries Its Real Inputs (First Cyclic Round Skipped)
+    First Status Msg After A Power Cycle Carries The Real Inputs
