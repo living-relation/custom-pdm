@@ -5,7 +5,8 @@ Boards on one CAN bus at 1 Mbit/s (factory defaults): A1 = custompdm_a unit 1 (b
 
   python3 sim_bridge.py <so dir> --stdio            lock-step line protocol for the ui/tests C# tests
   python3 sim_bridge.py <so dir> --slcan-tcp 3333   real time, SLCAN over TCP: dingoConfig adapter "SLCAN TCP",
-                                                    port localhost:3333, bit rate 1000K
+                                                    port localhost:3333, bit rate 1000K; IN / LINK lines (as below)
+                                                    written to <so dir>/ctl<port> act while a PC is connected
 
 stdio commands (one per line, every reply ends with a line "OK"):
   T <id hex> <data hex>       PC tool sends a standard frame
@@ -101,6 +102,7 @@ def stdio(so):
 
 def slcan_tcp(so, port):
     bus, tool, boards, out = make_bus(so)
+    ctl = os.path.join(so, f'ctl{port}')
     srv = socket.socket(); srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     srv.bind(('0.0.0.0', port)); srv.listen(1)
     print(f'SLCAN TCP on port {port}: dingoConfig adapter "SLCAN TCP", port localhost:{port}, 1000K', flush=True)
@@ -123,6 +125,14 @@ def slcan_tcp(so, port):
                         elif line[:1] == 'S' and line[1:] in rates:
                             tool._bitrate = rates[line[1:]]
                         conn.sendall(b'\r')
+                if os.path.exists(ctl):   # w1: IN / LINK lines written to <so dir>/ctl<port> act at once (browser checks)
+                    with open(ctl) as fh: lines = fh.read().splitlines()
+                    os.remove(ctl)
+                    for raw in lines:
+                        a = raw.split()
+                        if len(a) >= 4 and a[0].upper() == 'IN': boards[a[1]].set_input(int(a[2]), a[3], a[4] if len(a) > 4 else None)
+                        elif len(a) == 3 and a[0].upper() == 'LINK': boards[a[1]].connected = a[2].lower() == 'on'
+                        print(f'ctl {raw} at {bus.now / 1000:.1f} ms', flush=True)
                 # real time: run the bus up to the wall clock (it lags if the PC is slower)
                 out.clear(); bus.run(s0 + int((time.monotonic() - t0) * 1e6))
                 if out:
