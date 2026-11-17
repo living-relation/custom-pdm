@@ -95,6 +95,7 @@ public static class PdmTriggers
                 "Temperature" => $"{role} board temperature (C)",
                 "Battery Voltage" => $"{role} battery voltage (V)",
                 "State" => $"{role} device state",
+                var n when n.StartsWith("Table ") => $"{role} lookup table {n[6..]}", // PRO_FEATURES T1 output
                 var n => $"{role} {n}"
             };
         var first = PdmFactoryDefaults.VarOf(q.Device, e.Owner) == var;
@@ -336,7 +337,7 @@ public static class PdmTriggers
         {
             var ok = e.Owner switch
             {
-                null => e.GetName() is "Battery Voltage" or "Temperature",
+                null => e.GetName() is "Battery Voltage" or "Temperature" || e.GetName().StartsWith("Table "),
                 AnalogInput => e.PropertyName is "Millivolts" or "Pos",
                 CanInput c => e.PropertyName == "Value" && m.ResOf(c) is { } r && m.ClaimOf(r).Kind == PdmClaimKind.Hand,
                 MathBlock or Counter => true,

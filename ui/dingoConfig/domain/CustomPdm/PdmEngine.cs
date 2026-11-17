@@ -28,7 +28,8 @@ namespace domain.CustomPdm;
 public enum PdmResKind
 {
     DigitalInput, AnalogInput, CanInput, VirtualInput, Condition, Timer, Counter, Flasher, Math, CanOutput, Output,
-    Keypad, Wiper, Starter, Device
+    Keypad, Wiper, Starter, Device,
+    Table // PRO_FEATURES T1 lookup table (0x7E00 + n, CustomPdmPro.cs); its output var is "Table n" (no owner in the map)
 }
 
 public record PdmRes(string Board, PdmResKind Kind, int Index)
@@ -147,7 +148,7 @@ public sealed class PdmModel
 
     // the resource that owns variable var of board q (null: a system variable such as "Always On", or not in the map)
     public PdmRes? VarRes(PdmBoard q, int var) =>
-        q.Device.VarMap.FirstOrDefault(x => x.VariableIndex == var)?.Owner is { } o ? ResOf(o) : null;
+        q.Device.VarMap.FirstOrDefault(x => x.VariableIndex == var) is not { } e ? null : e.Owner is { } o ? ResOf(o) : TableOfVar(q, e);
 
     public IEnumerable<PdmRef> RefsTo(PdmRes r) => _refs.Where(x => x.To == r);
 
@@ -189,11 +190,35 @@ public sealed class PdmModel
         }
         if (d.Wipers != null) Add(q, PdmResKind.Wiper, 0, d.Wipers, d.Wipers.Params);
         if (d.StarterDisable != null) Add(q, PdmResKind.Starter, 0, d.StarterDisable, d.StarterDisable.Params);
+        // PRO_FEATURES (PR #98): 4 lookup tables; trip time / open-load settings belong to their output; master retry
+        // (0x7F00 sub 6) to the device block. CustomPdmSettings.GetParams makes new param objects: mapped by name.
+        if (d.CustomPdm is { } cp)
+            for (var n = 0; n < cp.Tables.Count; n++)
+            {
+                var r = new PdmRes(q.Role, PdmResKind.Table, n);
+                _fnOf[r] = cp.Tables[n];
+                _resOf[cp.Tables[n]] = r;
+            }
         var dev = new PdmRes(q.Role, PdmResKind.Device, 0);
         _fnOf[dev] = d;
         _resOf[d] = dev;
-        foreach (var p in d.Params.Where(p => !_resOfParam.ContainsKey(p))) _resOfParam[p] = dev;
+        foreach (var p in d.Params.Where(p => !_resOfParam.ContainsKey(p))) _resOfParam[p] = ProRes(q, p) ?? dev;
     }
+
+    private static PdmRes? ProRes(PdmBoard q, DeviceParameter p)
+    {
+        static int? Num(string name, string prefix) =>
+            name.StartsWith(prefix) && int.TryParse(name[prefix.Length..name.IndexOf(']')], out var n) ? n - 1 : null;
+        if (Num(p.Name, "customPdm.table[") is { } t) return new PdmRes(q.Role, PdmResKind.Table, t);
+        if (Num(p.Name, "customPdm.output[") is { } o) return new PdmRes(q.Role, PdmResKind.Output, o);
+        return null;
+    }
+
+    // the table whose output is variable entry e ("Table n", no owner), or null
+    private PdmRes? TableOfVar(PdmBoard q, DeviceVariable e) =>
+        e.Owner == null && e.GetName() is var n && n.StartsWith("Table ") && int.TryParse(n[6..], out var k)
+            && _fnOf.ContainsKey(new PdmRes(q.Role, PdmResKind.Table, k - 1))
+            ? new PdmRes(q.Role, PdmResKind.Table, k - 1) : null;
 
     // ---------------- references ----------------
 
@@ -203,7 +228,7 @@ public sealed class PdmModel
         var entry = q.Device.VarMap.FirstOrDefault(x => x.VariableIndex == var);
         _refs.Add(entry == null
             ? new PdmRef(from, field, var, null, true)
-            : new PdmRef(from, field, var, entry.Owner is { } o ? ResOf(o) : null, false));
+            : new PdmRef(from, field, var, entry.Owner is { } o ? ResOf(o) : TableOfVar(q, entry), false));
     }
 
     private void CollectRefs(PdmBoard q)
@@ -257,6 +282,11 @@ public sealed class PdmModel
         var dev = R(d);
         Ref(q, dev, "mute CAN input", d.MuteCanTxInput);
         Ref(q, dev, "force-sleep input", d.ForceSleepInput);
+        if (d.CustomPdm is { } cp)
+        {
+            Ref(q, dev, "master-retry input", cp.MasterRetryInput);           // P3
+            foreach (var t in cp.Tables) Ref(q, R(t), "input", t.Input);      // T1
+        }
     }
 
     // ---------------- claims ----------------
@@ -264,7 +294,7 @@ public sealed class PdmModel
     public static readonly PdmResKind[] Allocatable =
     [
         PdmResKind.CanInput, PdmResKind.VirtualInput, PdmResKind.Condition, PdmResKind.Timer, PdmResKind.Counter,
-        PdmResKind.Flasher, PdmResKind.Math, PdmResKind.CanOutput
+        PdmResKind.Flasher, PdmResKind.Math, PdmResKind.CanOutput, PdmResKind.Table
     ];
 
     private readonly List<(PdmRes Res, PdmClaim First, PdmClaim Second)> _collisions = [];
@@ -357,6 +387,7 @@ public sealed class PdmModel
         Flasher f => !f.Enabled && f.Input == 0,
         MathBlock m => !m.Enabled && m.InputA == 0 && m.InputB == 0,
         CanOutput c => !c.Enabled && c.Input == 0 && c.Id == 0,
+        LookupTable t => !t.Enabled && t.Input == 0 && t.Points == 0,
         _ => false
     };
 
@@ -376,6 +407,7 @@ public sealed class PdmModel
         KeypadMaster x => x.Enabled,
         Wiper x => x.Enabled,
         StarterDisable x => x.Enabled,
+        LookupTable x => x.Enabled,
         _ => true
     };
 
@@ -498,7 +530,8 @@ public sealed class PdmModel
     public PdmBoardUse Use(string board)
     {
         var kinds = new[] { PdmResKind.CanInput, PdmResKind.VirtualInput, PdmResKind.Condition, PdmResKind.Timer, PdmResKind.Flasher,
-            PdmResKind.Counter, PdmResKind.Math, PdmResKind.CanOutput };
+            PdmResKind.Counter, PdmResKind.Math, PdmResKind.CanOutput, PdmResKind.Table };
+        kinds = kinds.Where(k => k != PdmResKind.Table || _fnOf.Keys.Any(r => r.Board == board && r.Kind == k)).ToArray();
         return new PdmBoardUse(board, kinds.Select(k =>
         {
             var mine = _claims.Where(c => c.Key.Board == board && c.Key.Kind == k).Select(c => c.Value.Kind).ToList();
@@ -527,6 +560,7 @@ public static class PdmEngine
         PdmResKind.Keypad => "keypad",
         PdmResKind.Wiper => "wiper",
         PdmResKind.Starter => "starter block",
+        PdmResKind.Table => "lookup table",
         _ => "device settings"
     };
 
@@ -548,7 +582,8 @@ public static class PdmEngine
                || d.Keypads.Any(k => k.DimmingVar == var || k.Buttons.Any(b => b.FaultVar == var || b.Vars.Contains(var)))
                || d.Wipers is { } w && new[] { w.SlowInput, w.FastInput, w.InterInput, w.OnInput, w.SpeedInput, w.ParkInput, w.SwipeInput, w.WashInput }.Contains(var)
                || d.StarterDisable is { } s && s.Input == var
-               || d.MuteCanTxInput == var || d.ForceSleepInput == var;
+               || d.MuteCanTxInput == var || d.ForceSleepInput == var
+               || d.CustomPdm is { } cp && (cp.MasterRetryInput == var || cp.Tables.Any(t => t.Input == var));
     }
 
     // ---------------- critical settings (p1 / p3): never changed on the Advanced screen ----------------

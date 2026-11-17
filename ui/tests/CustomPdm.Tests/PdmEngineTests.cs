@@ -275,6 +275,45 @@ public class PdmEngineTests
         Assert.NotNull(PdmCritical.Apply(v, PdmCriticalKind.BaseId, "600")); // base IDs move through PdmOpsService
     }
 
+    // PRO_FEATURES (PR #98): the 4 lookup tables are owned resources, their outputs and the open-load flags are
+    // variables the engine follows, master retry and table inputs are references
+    [Fact]
+    public void ProFeatureResourcesAreModelled()
+    {
+        var v = NewPdm();
+        var b = Dev(v, "B");
+        var m = PdmModel.Build(v);
+        Assert.Equal((4, 4), (m.Use("B").Of(PdmResKind.Table).Total, m.Use("B").Of(PdmResKind.Table).Free));
+        var t1 = b.VarMap.Single(e => e.Owner == null && e.GetName() == "Table 1").VariableIndex;
+        var uc3 = b.VarMap.Single(e => ReferenceEquals(e.Owner, b.Outputs[2]) && e.PropertyName == "Undercurrent").VariableIndex;
+        Assert.Contains(PdmTriggers.ValueChoices(m, "B"), c => c.Var == t1 && c.Text == "B lookup table 1");
+        Assert.Contains(PdmTriggers.SignalChoices(m, "B"), c => c.Var == uc3 && c.Text == "output 19 undercurrent");
+
+        // a table reading the battery voltage: in use (set by hand); an output on the table's value through a level
+        var batt = b.VarMap.Single(e => e.Owner == null && e.GetName() == "Battery Voltage").VariableIndex;
+        var tab = b.CustomPdm!.Tables[0];
+        (tab.Input, tab.Points) = (batt, 2);
+        Assert.Null(PdmTriggers.Set(v, 17, PdmTriggerSpec.Level(new PdmThreshold(t1, true, 60, 40))));
+        m = PdmModel.Build(v);
+        Assert.Equal(PdmClaimKind.Hand, m.ClaimOf(new PdmRes("B", PdmResKind.Table, 0)).Kind);
+        Assert.Equal("B lookup table 1 on at 60 or more, off at 40 or less", PdmTriggers.Of(m, 17).Words);
+        Assert.Contains("B condition 1 (input) uses B lookup table 1, which is not enabled.", Of(v, PdmProblemKind.MissingRef));
+        tab.Enabled = true;
+        Assert.DoesNotContain(Of(v, PdmProblemKind.MissingRef), x => x.Contains("lookup table"));
+
+        // master retry on an output's open-load flag: a reference of the device block
+        b.CustomPdm.MasterRetryInput = uc3;
+        Assert.Contains(PdmModel.Build(v).Refs, r => r.From.Kind == PdmResKind.Device && r.Field == "master-retry input" && r.To == new PdmRes("B", PdmResKind.Output, 2));
+        Assert.True(PdmEngine.IsRead(b, uc3));
+        Assert.True(PdmEngine.IsRead(b, batt));
+
+        // an Advanced edit of a table / trip time maps to the table / the output (not the device block)
+        m = PdmModel.Build(v);
+        Assert.Equal(new PdmRes("B", PdmResKind.Table, 0), m.ResOfParam(b.Params.Single(p => p.Name == "customPdm.table[1].points")));
+        Assert.Equal(new PdmRes("B", PdmResKind.Output, 3), m.ResOfParam(b.Params.Single(p => p.Name == "customPdm.output[4].tripTime")));
+        Assert.Equal(new PdmRes("B", PdmResKind.Device, 0), m.ResOfParam(b.Params.Single(p => p.Name == "customPdm.masterRetryInput")));
+    }
+
     [Fact]
     public void ResetGivesFreshBoardValues()
     {
