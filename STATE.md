@@ -27,10 +27,9 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes).
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- p1 (2026-11-16, open; B3): base-ID Move on /pdm sends the stock Modify message at once (outside Write All; Burn needed, a power cycle before Burn puts the board back): a) keep as built (rec); b) /pdm only shows / checks IDs, change them on the Devices page.
-- w1 (2026-11-16, open; B4): the link-lost option "on" uses one virtual input per link and is on at power-up until the first frame (same as the s1 "on" policy): a) keep (rec); b) offer only off / hold.
-- w2 (2026-11-16, open; B4): a link to an output that already has a hand-set trigger: a) refuse, never overwrite (rec); b) replace it, with a warning.
-- Answered 2026-11-16: w3a, p2a, e1a (jobs w3, p2, e1 running), u1a, u2a, u3c, u4c, u5a, L1a, L2 (later; dummy copy now), L3a, L4a (preliminary), d1a, d2b (`DECISIONS.md`).
+- p1 (2026-11-16, open; B3, Dan: a one-click change of a critical setting is bad UX): base IDs (and other critical settings) locked: a) read-only on /pdm; change only through a deliberate 'Change critical settings' dialog (unlock, type the new value, see the effects, confirm) (rec); b) only from a config file; c) only on the stock Devices page.
+- w2 (2026-11-16, open; B4, re-asked simply): an output that already has a trigger set by hand on its board page: a) refuse; b) overwrite with a warning; c) the links panel shows each output's current trigger and asks "Replace custom trigger X?" before replacing (rec).
+- Answered 2026-11-16: w1 (per output on / off / hold / conditions, start-up off until first frame, critical exempt; job w1 after w3), w3a, p2a, e1a (jobs w3, p2, e1 running), u1a, u2a, u3c, u4c, u5a, L1a, L2 (later; dummy copy now), L3a, L4a (preliminary), d1a, d2b (`DECISIONS.md`).
 - Answered 2026-11-16: b3a (build: job b3), a2a (build: job a2) (`DECISIONS.md`).
 - Answered 2026-11-15 (this session): b1c (on hold for b3), b2b (built, PR #72), a1a, c3a, c4a, c5a (`DECISIONS.md`).
 - Answered 2026-11-15: k2b, k3a, k4a, c1a, m1a, d1a, c2a, g1a (`DECISIONS.md`).
