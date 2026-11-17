@@ -32,6 +32,17 @@ public class CustomPdmSettings
     [JsonPropertyName("tempCritSoonMargin")] public int TempCritSoonMargin { get; set; } = DefaultTempCritSoonMargin;
     [JsonPropertyName("wakeInputMask")] public int WakeInputMask { get; set; } = DefaultWakeInputMask;
 
+    // PRO_FEATURES (docs/feature-parity.md): P3 master retry var (0x7F00 sub 6, 0 = off), P1 / P2 per output
+    // (0x7D00 + o, CustomPdmPro.cs), T1 tables (0x7E00 + n). The firmware registers them right after sub 5, in this
+    // order (firmware/core/param_registry.cpp), so GetParams keeps the CRC order.
+    [JsonIgnore] public const int OutputExtBaseIndex = 0x7D00, TableBaseIndex = 0x7E00, MasterRetrySub = 6;
+    [JsonIgnore] public const int NumTables = 4;     // firmware port.h NUM_TABLES
+    [JsonPropertyName("masterRetryInput")] public int MasterRetryInput { get; set; }
+    [JsonPropertyName("outputProtection")] public List<OutputProtection> OutputProtection { get; set; } = [];
+    [JsonPropertyName("tables")] public List<LookupTable> Tables { get; set; } = [];
+    // var map size of this device (FwDevice.InitVarMap): range of the var-index settings
+    [JsonIgnore] public int VarMapSize { get; set; }
+
     // B3 (u2a): the PC values were set by "New PDM" (PdmFactoryDefaults) = our firmware's factory config, proven equal
     // against the sim. Not saved: a project loaded from a file counts as not read.
     [JsonIgnore] public bool FactoryNew { get; set; }
@@ -55,6 +66,12 @@ public class CustomPdmSettings
         DeviceType = def.DeviceType;
         NumOutputs = def.NumOutputs;
         NumDigitalInputs = def.NumDigitalInputs;
+        // one OutputProtection per output, 4 tables of 8 points (a project file of another size is padded / cut)
+        while (OutputProtection.Count < NumOutputs) OutputProtection.Add(new OutputProtection());
+        if (OutputProtection.Count > NumOutputs) OutputProtection.RemoveRange(NumOutputs, OutputProtection.Count - NumOutputs);
+        while (Tables.Count < NumTables) Tables.Add(new LookupTable());
+        if (Tables.Count > NumTables) Tables.RemoveRange(NumTables, Tables.Count - NumTables);
+        foreach (var t in Tables) t.Normalize();
     }
 
     public void ClearStatus()
@@ -71,8 +88,29 @@ public class CustomPdmSettings
         Param(parentName, "customPdm.tempCritHyst", 2, () => TempCritHyst, v => TempCritHyst = v, DefaultTempCritHyst),
         Param(parentName, "customPdm.critExemptMask", 3, () => CritExemptMask, v => CritExemptMask = v, DefaultCritExemptMask),
         Param(parentName, "customPdm.tempCritSoonMargin", 4, () => TempCritSoonMargin, v => TempCritSoonMargin = v, DefaultTempCritSoonMargin),
-        Param(parentName, "customPdm.wakeInputMask", 5, () => WakeInputMask, v => WakeInputMask = v, DefaultWakeInputMask)
+        Param(parentName, "customPdm.wakeInputMask", 5, () => WakeInputMask, v => WakeInputMask = v, DefaultWakeInputMask),
+        Param(parentName, "customPdm.masterRetryInput", MasterRetrySub, () => MasterRetryInput, v => MasterRetryInput = v, 0),
+        ..OutputProtection.SelectMany((o, i) => o.GetParams(parentName, i)),
+        ..Tables.SelectMany((t, i) => t.GetParams(parentName, i))
     ];
+
+    // Var map entries the firmware appends at the very end (port.h VAR_MAP_PRO_VARS, core/device.cpp InitVarMap):
+    // the 4 table outputs, then one undercurrent (open-load) flag per output. Owner of a flag = its output.
+    public List<DeviceVariable> GetVarMap(ref int index, IReadOnlyList<domain.Interfaces.IDeviceFunction> outputs)
+    {
+        var vars = new List<DeviceVariable>();
+        for (var n = 0; n < NumTables; n++)
+        {
+            var name = $"Table {n + 1}";
+            vars.Add(new DeviceVariable { GetName = () => name, PropertyName = "Value", DataType = "float", VariableIndex = index++, SingleVariable = true });
+        }
+        for (var o = 0; o < NumOutputs; o++)
+        {
+            var output = outputs[o];
+            vars.Add(new DeviceVariable { GetName = () => output.Name, PropertyName = "Undercurrent", DataType = "bool", VariableIndex = index++, SingleVariable = false, Owner = output });
+        }
+        return vars;
+    }
 
     private static DeviceParameter Param(string parentName, string name, int subIndex, Func<int> get, Action<int> set,
         int defaultValue) => new()
@@ -125,5 +163,12 @@ public class CustomPdmSettings
         TempWarn is >= TempMin and <= TempMax && TempCrit is >= TempMin and <= TempMax &&
         TempCritHyst is >= HystMin and <= HystMax && TempCritSoonMargin is >= MarginMin and <= MarginMax &&
         CritExemptMask >= 0 && CritExemptMask <= CritExemptMaskMax &&
-        WakeInputMask >= 0 && WakeInputMask <= WakeInputMaskMax && WakeInputMaskBadBits(DeviceType, WakeInputMask) == 0;
+        WakeInputMask >= 0 && WakeInputMask <= WakeInputMaskMax && WakeInputMaskBadBits(DeviceType, WakeInputMask) == 0 &&
+        MasterRetryInput >= 0 && (VarMapSize == 0 || MasterRetryInput < VarMapSize) &&
+        OutputProtection.Count == NumOutputs && OutputProtection.All(o => o.IsValid()) &&
+        Tables.Count == NumTables && Tables.All(t => t.IsValid(VarMapSize));
+
+    // Reset-limit wording (docs/feature-parity.md row 29): our reset limit counts every trip, the first one included
+    public static string ResetLimitText(int limit) =>
+        $"{limit} {(limit == 1 ? "trip" : "trips")} in all (first try + {Math.Max(limit - 1, 0)} {(limit - 1 == 1 ? "retry" : "retries")})";
 }

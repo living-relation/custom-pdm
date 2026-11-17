@@ -60,6 +60,9 @@ Starter starter;
 #if NUM_KEYPADS > 0
 Keypad keypad[NUM_KEYPADS];
 #endif
+#if PRO_FEATURES
+LookupTable lookupTable[NUM_TABLES]; // custom-pdm (T1)
+#endif
 
 volatile DeviceState eState = DeviceState::Run;
 float fState; //For var map
@@ -424,6 +427,12 @@ void CyclicUpdate()
         mathBlock[i].Update();
     #endif
 
+    #if PRO_FEATURES
+    // custom-pdm (T1): after the math blocks (a table can read a math result), before conditions / outputs
+    for (uint8_t i = 0; i < NUM_TABLES; i++)
+        lookupTable[i].Update();
+    #endif
+
     #if NUM_CONDITIONS > 0    
     for (uint8_t i = 0; i < NUM_CONDITIONS; i++)
         condition[i].Update();
@@ -443,6 +452,20 @@ void CyclicUpdate()
     //=========================================================================
     // Outputs last, so they act on this cycle's inputs and logic
     //=========================================================================
+    #if PRO_FEATURES
+    // custom-pdm (P3, MoTeC Master Retry): on the rising edge of the master retry var (0x7F00 sub 6; var 0 = always
+    // false = off) every output in Overcurrent or Fault goes to Off with its trip count cleared, then follows its
+    // input again. Edge only: a var held high clears once, so a stuck input cannot keep retrying a short.
+    {
+        static bool bMasterRetryLast = false;
+        const bool bMasterRetry = *pVarMap[stConfig.stDevice.nMasterRetryInput] != 0;
+        if (bMasterRetry && !bMasterRetryLast)
+            for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+                pf[i].MasterRetry();
+        bMasterRetryLast = bMasterRetry;
+    }
+    #endif
+
     #if NUM_OUTPUTS > 0
     // Two passes so dual-channel DSEL settles once per pass instead of once per output
     for (uint8_t nPass = 0; nPass < 2; nPass++)
@@ -621,6 +644,14 @@ void InitVarMap()
         pVarMap[index++] = &digIn[i].fDuty;
         pVarMap[index++] = &digIn[i].fFreq;
     }
+
+    #if PRO_FEATURES
+    // custom-pdm: at the end, so every stock var index stays the same (VAR_MAP_PRO_VARS in port.h)
+    for (uint8_t i = 0; i < NUM_TABLES; i++)
+        pVarMap[index++] = &lookupTable[i].fVal;     // T1 table outputs
+    for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+        pVarMap[index++] = &pf[i].fUndercurrent;     // P2 undercurrent (open-load) flags
+    #endif
 
     //VarMap size must match the expected size
     if (index != VAR_MAP_SIZE)

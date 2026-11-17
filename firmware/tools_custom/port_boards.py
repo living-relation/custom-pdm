@@ -157,6 +157,16 @@ WAKE = '''// Wake-up (Dan B2): no input wakes by default (CAN and USB do); per-i
 // One wake source per EXTI line, so the firmware refuses a mask with both inputs of a pair or the USB one: %s.
 #define WAKE_INPUT_PARAM 1
 #define DEFAULT_WAKE_INPUT_MASK 0'''
+# Pro-PDM parity gaps (docs/feature-parity.md P1 P2 P3 T1; DECISIONS 2026-11-16 product goal): one build option, so
+# stock dingoFW boards stay byte-identical. New vars at the END of the var map (every existing var index unchanged).
+PRO = '''// Pro-PDM parity gaps (docs/feature-parity.md, core/custom_options.h PRO_FEATURES): overcurrent trip time and
+// open-load flag per output (block 0x7D00 + o), master retry input (0x7F00 sub 6), 4 lookup tables (0x7E00 + n).
+#define PRO_FEATURES 1
+#define NUM_TABLES 4
+#define VAR_MAP_PRO_VARS (NUM_TABLES + NUM_OUTPUTS) // var map end: table outputs 1-4, then undercurrent flag per output'''
+VARMAP_END = '    (NUM_KEYPADS * (KEYPAD_MAX_BUTTONS + KEYPAD_MAX_DIALS + KEYPAD_MAX_ANALOG_INPUTS)) \\\n'
+VARMAP_PRO = ('    (NUM_KEYPADS * (KEYPAD_MAX_BUTTONS + KEYPAD_MAX_DIALS + KEYPAD_MAX_ANALOG_INPUTS)) + \\\n'
+              '    VAR_MAP_PRO_VARS /* custom-pdm: PRO_FEATURES vars */ \\\n')
 def thermal(note, fan, out_limit):
     t = THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
     t = t.replace('@LIMIT_FAN@', fl(LIMIT_FAN)).replace('@OUT_LIMIT@', out_limit)
@@ -208,7 +218,8 @@ for pin, name, mode in [
 
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 7\n' + WAKE % 'DI1 (PA10) / DI3 (PC10) share EXTI 10, DI4 (PC11) shares EXTI 11 with USB D- (PA11)')
-p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % (f'(PDM_UNIT == 2 ? 0x{BASE_A2:03X} : 0x{BASE_A1:03X})') + '\n' + FAN_A)
+p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % (f'(PDM_UNIT == 2 ? 0x{BASE_A2:03X} : 0x{BASE_A1:03X})') + '\n' + FAN_A + '\n' + PRO)
+p = rep(p, VARMAP_END, VARMAP_PRO)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 p = rep(p, '#define NUM_TX_MSGS 37', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: + msg {STATUS_MSG}')
 p = rep(p, '#define DEVICE_TYPE 0', f'#define DEVICE_TYPE {TYPE_A} // custom-pdm board A (stock dingoPDM = 0)')
@@ -318,7 +329,8 @@ t = set_pin(t, 'B', 2, 'INPUT', 'PULLDOWN')
 p = (d/'port.h').read_text()
 p = p.replace('#define NUM_OUTPUTS 4', '#define NUM_OUTPUTS 8')
 p = p.replace('#define NUM_DIG_INPUTS 2', '#define NUM_DIG_INPUTS 10\n' + WAKE % 'DI1 (PA10) / DI9 (PC10) share EXTI 10, DI10 (PC11) shares EXTI 11 with USB D- (PA11)')
-p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % f'0x{BASE_B:03X}' + '\n' + FAN_B)
+p = rep(p, '#define DEFAULT_BASE_ID 0x0DE', FACTORY % f'0x{BASE_B:03X}' + '\n' + FAN_B + '\n' + PRO)
+p = rep(p, VARMAP_END, VARMAP_PRO)
 p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#define ANALOG_IN_DIVIDER 1.5f // input board 10k/20k: 0-5 V -> 0-3.33 V')
 # Max sends msgs 0-34; board B uses the v7 msg layout (0-36, copied below) plus our status msg
 p = rep(p, '#define NUM_TX_MSGS 35', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: v7 msgs 0-36 + msg {STATUS_MSG}')

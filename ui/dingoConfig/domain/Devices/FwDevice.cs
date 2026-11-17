@@ -394,6 +394,13 @@ public class FwDevice : IDeviceConfigurable
                 variable.Owner = DigitalInputs[i];
             VarMap.AddRange(vars);
         }
+
+        // custom-pdm: PRO_FEATURES vars at the very end (table outputs, undercurrent flags), types 14 / 15 only
+        if (CustomPdm != null)
+        {
+            VarMap.AddRange(CustomPdm.GetVarMap(ref index, Outputs));
+            CustomPdm.VarMapSize = VarMap.Count;
+        }
     }
 
     private void AddVars(IDeviceFunction function, ref int index)
