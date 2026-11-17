@@ -4090,6 +4090,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 40.64 38.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 40.64 38.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "376b7f75-d8c1-43c5-aba0-8d6d97003b0f")
 		)
@@ -4437,6 +4459,28 @@
 			)
 		)
 		(property "LCSC" "C45783"
+			(at 114.3 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 114.3 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A226MAQNNNE"
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4836,6 +4880,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 149.225 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 149.225 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "7c656aae-1be8-45f8-a6fb-e124f5dbaf5b")
 		)
@@ -5007,6 +5073,28 @@
 			)
 		)
 		(property "LCSC" "C15850"
+			(at 182.245 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 182.245 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KAYNNNE"
 			(at 182.245 26.035 0)
 			(hide yes)
 			(show_name no)
@@ -5349,6 +5437,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "OSRAM"
+			(at 199.39 45.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LG R971-KN-1-0-20-R18"
+			(at 199.39 45.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "31d984fc-cd73-4772-8f9f-8135a4f0595a")
 		)
@@ -5439,7 +5549,40 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
+			(at 199.39 28.575 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 199.39 28.575 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 199.39 28.575 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
 			(at 199.39 28.575 0)
 			(hide yes)
 			(show_name no)
@@ -5986,6 +6129,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "PSA"
+			(at 138.43 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "FS55X476K250LRG"
+			(at 138.43 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "313889fa-f2d7-46ae-97fe-98426441009b")
 		)
@@ -6168,7 +6333,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Traco"
+		(property "Manufacturer" "Traco Power"
 			(at 36.83 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -6455,6 +6620,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "PSA"
+			(at 133.35 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "FS55X476K250LRG"
+			(at 133.35 40.64 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "c46e5c57-01fa-4022-8a02-8e36465a3805")
 		)
@@ -6625,6 +6812,28 @@
 			)
 		)
 		(property "LCSC" "C179426"
+			(at 83.82 31.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 83.82 31.75 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "PMEG10010ELRX"
 			(at 83.82 31.75 0)
 			(hide yes)
 			(show_name no)

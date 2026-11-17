@@ -2105,6 +2105,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 17.145 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
+			(at 17.145 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "bf187f20-34c0-4c64-9c9c-d232c218fabe")
 		)
@@ -2198,6 +2220,28 @@
 			)
 		)
 		(property "LCSC" "C17414"
+			(at 24.765 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 24.765 26.035 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
 			(at 24.765 26.035 0)
 			(hide yes)
 			(show_name no)
@@ -2400,6 +2444,17 @@
 			)
 		)
 		(property "MPN" "MB85RC64TAPNF-G-AWERE2"
+			(at 38.735 68.58 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -2673,6 +2728,28 @@
 			)
 		)
 		(property "LCSC" "C129490"
+			(at 143.51 31.115 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Microchip"
+			(at 143.51 31.115 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "MCP9808T-E/MS"
 			(at 143.51 31.115 0)
 			(hide yes)
 			(show_name no)
@@ -2958,6 +3035,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 168.91 40.005 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL21B105KBFNNNE"
+			(at 168.91 40.005 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "e7e83712-6a17-46a0-86da-c470844f07e3")
 		)
@@ -3051,6 +3150,28 @@
 			)
 		)
 		(property "LCSC" "C49678"
+			(at 73.025 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 73.025 73.66 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
 			(at 73.025 73.66 0)
 			(hide yes)
 			(show_name no)
@@ -3316,6 +3437,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "OSRAM"
+			(at 109.855 29.21 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "LS R976-NR-1-0-20-R18"
+			(at 109.855 29.21 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "40b93b80-9680-4b0a-8a30-d06587286412")
 		)
@@ -3483,7 +3626,40 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
+			(at 109.855 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 109.855 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 109.855 22.86 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
 			(at 109.855 22.86 0)
 			(hide yes)
 			(show_name no)
