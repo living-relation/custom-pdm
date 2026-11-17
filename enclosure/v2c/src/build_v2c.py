@@ -47,12 +47,20 @@ IDENT = Location()
 def L(x=0.0, y=0.0, z=0.0, rx=0.0, ry=0.0, rz=0.0): return Location((x, y, z), (rx, ry, rz))
 
 # ---------------- part catalogue + placements (every part = its own file; Dan 2026-11-16) ----------------
+from OCP.TopLoc import TopLoc_Location
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+def bake(s):
+    """part shapes carry no TopLoc (a located shape becomes an un-named, inline sub-product in the XCAF STEP writer):
+    an identity location is dropped, a real one is baked into the geometry"""
+    loc = s.wrapped.Location()
+    if loc.IsIdentity(): return Shape.cast(s.wrapped.Located(TopLoc_Location()))
+    return Shape.cast(BRepBuilderAPI_Transform(s.wrapped.Located(TopLoc_Location()), loc.Transformation(), True).Shape())
 CAT = {}     # pn -> dict(shape (part's own frame), name, maker, desc, material, kind, source)
 ITEMS = {}   # item (BREP / render name) -> dict(pn, locs, color)
 def part(pn, shape, name, desc, material, kind, maker="custom-pdm", source=""):
     """kind: made | bought | bought-drawn (no maker CAD reachable: modelled from the maker's drawing) | board | harness"""
     if pn in CAT: return pn
-    CAT[pn] = dict(shape=shape, name=name, maker=maker, desc=desc, material=material, kind=kind, source=source)
+    CAT[pn] = dict(shape=bake(shape), name=name, maker=maker, desc=desc, material=material, kind=kind, source=source)
     return pn
 def item(nm, pn, locs, color):
     ITEMS[nm] = dict(pn=pn, locs=list(locs), color=color)
@@ -213,7 +221,8 @@ if VAR == "F1":
     while y + P["fin_t"] <= LY1 - fe + 1e-6:
         fins.append(box(LX0 + fe + 16, bay_x0, y, y + P["fin_t"], zf0, -pt)); y += P["fin_pitch"]
     finf = Compound(fins)
-    fan_y = [(LY0 + LY1) / 2 - 16, (LY0 + LY1) / 2 + 16]; fan_z = zf0 + 15.0
+    fan_y = [(LY0 + LY1) / 2 - 16, (LY0 + LY1) / 2 + 16]
+    fan_z = zf0 + 14.5   # v2c: 0.5 lower than v2b, so the upper M3 fan-screw heads (dk 5.5 at +12) clear the plate underside by 0.75 (head rule; was 0.25)
     wall_x = bay_x0 + 1.0                                         # 3 mm fan wall (part of the sink), fans bolt to its east face
     fwall = box(wall_x, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
     for fy in fan_y: fwall = fwall.cut(cyl(28.0, (wall_x - 1, fy, fan_z), 5.0, (1, 0, 0)))
@@ -624,6 +633,11 @@ assert wr.Transfer(doc, STEPControl_AsIs, "parts/"), "STEP transfer failed"
 AFILE = f"custom-pdm-enclosure-{REV}-{VAR}-assembly.step"
 assert wr.Write(AFILE) == IFSelect_RetDone, "STEP write failed"
 os.chdir(cwd)
+# OCC's multi-file writer puts most of the session's model into EVERY external file (about 140 MB each here), so the part
+# files are rewritten one by one from the part's own shape (same name, same frame); the assembly keeps its references.
+for pn, c in CAT.items():
+    s = c["shape"]; s.label = pn; s.color = Color(*next(it["color"] for it in ITEMS.values() if it["pn"] == pn))
+    export_step(s, os.path.join(XO, "parts", pn + ".stp"))
 DESC = {pn: full_desc(pn) for pn in CAT}; DESC[ASM] = ascii_(f"custom-pdm enclosure {REV} {VAR} assembly | external references to parts/*.stp | rev {REV}")
 def set_desc(path):
     t = open(path, encoding="latin-1").read()
@@ -645,6 +659,9 @@ with open(os.path.join(OUT, f"BOM-{REV}-{VAR}.csv"), "w", newline="") as fh:
     cw = csv.writer(fh); cw.writerow(["part_number", "qty", "name", "maker", "kind", "material", "description", "file", "model_source"])
     for pn in bom:
         c = CAT[pn]; cw.writerow([pn, qty[pn], c["name"], c["maker"], c["kind"], c["material"], c["desc"], f"parts/{pn}.stp", c["source"]])
+def mat4(loc):
+    t = loc.wrapped.Transformation()
+    return [round(t.Value(r, c), 9) for r in (1, 2, 3) for c in (1, 2, 3, 4)] + [0, 0, 0, 1]
 def loc_info(loc):
     p0 = Vertex(0, 0, 0).moved(loc).center(); p1 = Vertex(0, 0, 1).moved(loc).center(); a = p1 - p0
     return [round(p0.X, 4), round(p0.Y, 4), round(p0.Z, 4)], [round(a.X, 6), round(a.Y, 6), round(a.Z, 6)]
@@ -659,6 +676,7 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             colors={k: it["color"] for k, it in ITEMS.items()}, items={k: dict(pn=it["pn"], n=len(it["locs"])) for k, it in ITEMS.items()},
             parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn]) for pn, c in CAT.items()},
             assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l) in SCREWS],
+            placements={nm: dict(pn=it["pn"], m=[mat4(l) for l in it["locs"]]) for nm, it in ITEMS.items()},   # 4x4 row-major, mm (Fusion insert)
             n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT})
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
 print("done", VAR, len(ITEMS), "items", len(CAT), "part numbers", "overall(no plugs)", [round(v, 1) for v in meta["overall_no_plugs"]], "would-strip", dA, dB)

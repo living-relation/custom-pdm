@@ -1,6 +1,6 @@
-"""Clearance (near-miss) check for custom-pdm enclosure v2b (from Grok test2), complementing handbuilt-cad tools/checks/intf.py (which reports overlaps only):
+"""Clearance (near-miss) check for custom-pdm enclosure v2c, complementing handbuilt-cad tools/checks/intf.py (which reports overlaps only):
 every part pair, solid by solid, OCC BRepExtrema min distance + Boolean-common overlap volume. Parallel.
-Usage: $CAD_PY clearance_v2b.py F1|F2   (RUN_DIR from the environment)"""
+Usage: $CAD_PY clearance_v2c.py F1|F2   (RUN_DIR from the environment)"""
 import os, json, itertools, glob, sys
 from build123d import import_brep, Shape
 from multiprocessing import Pool

@@ -1,5 +1,5 @@
-"""Smooth-shaded renders for custom-pdm enclosure v2b (adapted from Grok's render_test2.py, same renderer and style).
-Usage: $CAD_PY render_v2b.py F1|F2 [views...]   (RUN_DIR and RENDER_DIR from the environment)
+"""Smooth-shaded renders for custom-pdm enclosure v2c (adapted from Grok's render_test2.py, same renderer and style).
+Usage: $CAD_PY render_v2c.py F1|F2 [views...]   (RUN_DIR and RENDER_DIR from the environment)
 Sections use tools/render/section.py cut_capped (closed, capped solids; open cuts are refused, AGENTS.md rule 15).
 Cap faces are drawn in section.CAP_COLOR. No mesh lines."""
 import os, json, glob, sys
@@ -68,7 +68,7 @@ def scene(shapes, cam, fn, title, parallel=False, zoom=1.0, size=(1800, 1150), o
     p.camera.zoom(zoom); p.add_text(title, font_size=11, color="black")
     p.enable_anti_aliasing("ssaa"); p.screenshot(os.path.join(RD, f"{VAR}-{fn}.png")); p.close(); print("wrote", fn, flush=True)
 lx0, lx1, ly0, ly1 = meta["footprint"]; cx, cy = (lx0 + lx1) / 2, (ly0 + ly1) / 2
-T = f"custom-pdm enclosure v2b-{VAR}"
+T = f"custom-pdm enclosure {meta.get('rev', 'v2b')}-{VAR}"
 if "iso" in which:
     scene(S, [(cx + 330, cy - 420, 330), (cx, cy, 10), (0, 0, 1)], "iso", T + "  iso (south-east)", zoom=1.25)
 if "iso_open" in which:
@@ -107,7 +107,7 @@ if "exploded" in which:
     scene(ex, [(cx + 380, cy - 480, 330), (cx, cy, 30), (0, 0, 1)], "exploded", T + "  exploded: lid + connectors up, deck + input boards, sink down", zoom=1.0)
 if "outstack" in which:                              # OUT1-4 riser / carrier stack, exploded upward (Dan d1a 2026-11-13)
     bx, by = 40.0, -33.0
-    keep = {"board-B": 0, "copper-risers-OUT1-4": 25, "carrier-G10-OUT1-4": 55, "standoffs-M3x8-MF-carrier": 0, "ring-lugs-OUT1-4": 85, "wires-OUT1-4-10AWG": 85}
+    keep = {"board-B": 0, "copper-risers-OUT1-4-low": 25, "copper-risers-OUT1-4-high": 25, "screws_ISO4762-M4x6": 25, "carrier-G10-OUT1-4": 55, "standoffs-M3x8-MF-carrier": 0, "ring-lugs-OUT1-4": 85, "wires-OUT1-4-10AWG": 85}
     ex = {k: (S[k].translate((0, 0, dz)) if dz else S[k]) for k, dz in keep.items() if k in S}
     ex["board-B"] = ex["board-B"].intersect(Compound.make_box(80, 70, 40).translate((bx - 40, by - 35, 0))) if False else ex["board-B"]
     scene(ex, [(bx - 160, by - 200, 210), (bx, by, 45), (0, 0, 1)], "outstack-exploded", T + "  OUT1-4 copper risers + G10 carrier + lugs, exploded up", zoom=1.6)

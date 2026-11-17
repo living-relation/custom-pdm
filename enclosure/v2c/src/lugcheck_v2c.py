@@ -24,8 +24,8 @@ def bb(s):
     b = s.bounding_box(); return (b.min.X, b.min.Y, b.min.Z), (b.max.X, b.max.Y, b.max.Z)
 lugs = B("ring-lugs-OUT1-4").solids()
 ris = [s for n in sorted(BR) if n.startswith("copper-risers-OUT1-4") for s in B(n).solids()]
-scr_names = [n for n in BR if n.lower().startswith("screws_")]
-scr = [(n, s) for n in scr_names for s in B(n).solids()]
+SOL = {n: B(n).solids() for n in BR}
+scr = [(n, s) for n in BR if n.lower().startswith("screws_") for s in SOL[n]]
 seats = meta["OUT_SEAT"]; names = list(seats.keys())
 def cxy(s):
     (x0, y0, z0), (x1, y1, z1) = bb(s); return ((x0 + x1) / 2, (y0 + y1) / 2, z1)
@@ -52,7 +52,7 @@ for k, v in res.items(): print(k, v)
 # ---- 2) head rule ----
 ROWS = [r for r in csv.DictReader(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "screw_dimensions.csv"))) if r["family"] == "SHCS ISO 4762"]
 METAL = ("copper", "ring-lugs", "screws_", "standoffs", "heat-sink", "heat-set", "panel-nuts", "panel-washers")
-metal = [(n, s) for n in BR if n.startswith(METAL) for s in B(n).solids()]
+metal = [(n, s) for n in BR if n.startswith(METAL) for s in SOL[n]]     # same solid objects as scr, so 'is' finds the screw itself
 def big(lo, hi):
     lo = [max(v, -1e3) for v in lo]; hi = [min(v, 1e3) for v in hi]
     return Solid.make_box(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2], Plane(origin=tuple(lo)))
