@@ -7,6 +7,23 @@
         <DashboardTab TDevice="TDevice" Device="Device" />
     </MudTabPanel>
 
+    @* custom-pdm (types 14 / 15, one-PDM editor g1): the settings are on the PDM page; the raw per-board pages moved to
+       PDM > Advanced (per board), where every change is checked first *@
+    @if (Device.CustomPdm != null)
+    {
+        <MudTabPanel Text="Configuration" Icon="@Icons.Material.Filled.Settings">
+            <MudAlert Severity="Severity.Info" Class="ma-4">
+                custom-pdm boards are set up as ONE PDM (A1, A2 and B) on the PDM page. The raw settings of this board are under
+                PDM &gt; Advanced (per board), where every change is checked before it is kept.
+            </MudAlert>
+            <MudStack Row="true" Spacing="2" Class="ma-4">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="pdm">PDM page</MudButton>
+                <MudButton Variant="Variant.Outlined" Href="pdm/advanced">Advanced (per board)</MudButton>
+            </MudStack>
+        </MudTabPanel>
+    }
+    else
+    {
     <MudTabPanel Text="Configuration" Icon="@Icons.Material.Filled.Settings">
         <ConfigurationTab TDevice="TDevice" Device="Device" />
     </MudTabPanel>
@@ -31,6 +48,7 @@
     <MudTabPanel @ref="_flowPanel" Text="Flow" Icon="@Icons.Material.Filled.DataExploration">
         <FlowEditorTab TDevice="TDevice" Device="Device" IsActive="@(_tabs?.ActivePanel == _flowPanel && _flowPanel is not null)" />
     </MudTabPanel>
+    }
 </MudTabs>
 
 @code {

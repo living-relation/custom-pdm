@@ -137,9 +137,12 @@
             </MudGrid>
             <MudGrid>
                 <MudItem xs="12" sm="4">
+                    @* custom-pdm: a board's base ID is a critical setting (p1 / p3): PDM page, Unlock *@
                     <MudTextField @bind-Value="_modifyDeviceBaseIdString"
                                      Label="Base ID"
                                      Required="true"
+                                     Disabled="@(_modifyDevice is domain.Devices.FwDevice { CustomPdm: not null })"
+                                     HelperText="@(_modifyDevice is domain.Devices.FwDevice { CustomPdm: not null } ? "custom-pdm board: change the base ID on the PDM page (PDM settings, Unlock)" : null)"
                                      Variant="Variant.Outlined" />
                 </MudItem>
             </MudGrid>

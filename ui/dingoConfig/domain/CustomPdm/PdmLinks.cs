@@ -16,13 +16,15 @@ namespace domain.CustomPdm;
 //     hold      = L, time-out off                            -> keeps its last state (off at power-up)
 //     on        = virtual input "LOST OR L"                  -> on 1 s after P's last frame
 //     condition = virtual input "(LOST AND C) OR L"          -> follows C (an input / condition of Q) at loss
-//   critical (on / condition only) = NOT ALIVE in place of LOST: acts from power-up, no wait for P's first frame.
+//   Every linked output stays off until boot is done and P's first frame has arrived (DECISIONS 2026-11-16: no
+//   "critical" start-up exception). A board read back with the dropped critical recipe (NOT ALIVE in place of LOST)
+//   shows it as an old recipe; Upgrade converts it.
 //   Shared by all on / condition links from P on Q (made with the first, freed with the last):
 //     ALIVE = CAN input on P's msg 37, bit 0, '>= 0' (true for every frame), time-out on (= the link time-out)
 //     SEEN  = the same with the time-out off (0 until P's first frame after Q powers up)
-//     LOST  = virtual input "SEEN AND NOT ALIVE", with a LOWER index than every non-critical link virtual input
-//             that uses it (virtual inputs run in index order: else a 2.2 ms drop at the time-out, s1 S7)
-//   Non-critical outputs stay off until P's first frame after power-up (SEEN = 0 -> LOST = 0): no start-up blip.
+//     LOST  = virtual input "SEEN AND NOT ALIVE", with a LOWER index than every link virtual input that uses it
+//             (virtual inputs run in index order: else a 2.2 ms drop at the time-out, s1 S7)
+//   Outputs stay off until P's first frame after power-up (SEEN = 0 -> LOST = 0): no start-up blip.
 // Cost on Q: per source board 2 CAN inputs + 1 virtual input (only while it has on / condition links); per link 1 CAN
 // input, + 1 virtual input for on / condition.
 // Ownership: links live only in the boards' params (no PC-only state), so they survive Read All, an app restart and a
@@ -42,7 +44,8 @@ public enum PdmVirtKind { Lost, On, Condition, OldOn }
 
 public record PdmSlotRole(PdmSlotKind Kind, PdmBoard Source, int Bit);
 
-public record PdmVirtRole(PdmVirtKind Kind, PdmBoard Source, int Slot, bool Critical, int Cond);
+// OldCritical: the dropped critical recipe (NOT ALIVE in place of LOST), read back from a board: offered for Upgrade
+public record PdmVirtRole(PdmVirtKind Kind, PdmBoard Source, int Slot, bool OldCritical, int Cond);
 
 // ALIVE / SEEN CAN inputs and the LOST virtual input on board Board for the links from Source
 public record PdmShared(PdmBoard Board, PdmBoard Source, int Alive, int Seen, int Lost)
@@ -52,22 +55,25 @@ public record PdmShared(PdmBoard Board, PdmBoard Source, int Alive, int Seen, in
 
 public record PdmCondChoice(int Var, string Text);
 
+// OldCritical: read back from a board written with the dropped "critical" recipe (NOT ALIVE in place of LOST, on
+// from power-up before the first frame; DECISIONS 2026-11-16: no critical start-up exception): an old recipe, Upgrade
+// converts it.
 public record PdmLink(PdmOutputRow Out, PdmInputRow In, PdmLinkLoss? Loss, int? Slot, int? Virt,
-    bool Critical = false, int Cond = 0, string? CondText = null, bool OldRecipe = false, PdmShared? Shared = null)
+    int Cond = 0, string? CondText = null, bool OldRecipe = false, PdmShared? Shared = null, bool OldCritical = false)
 {
     public bool CrossBoard => Slot != null;
 
-    public string LossText => (Loss, OldRecipe) switch
+    public string LossText => (Loss, OldRecipe, OldCritical) switch
     {
-        (PdmLinkLoss.On, true) => "on 1 s after the message stops (old recipe: on at power-up until the first frame)",
-        (PdmLinkLoss.Off, _) => "off 1 s after the message stops",
-        (PdmLinkLoss.Hold, _) => "keeps its last state (off at power-up)",
-        (PdmLinkLoss.On, _) => "on 1 s after the message stops" + CritText,
-        (PdmLinkLoss.Condition, _) => $"follows {CondText} 1 s after the message stops" + CritText,
+        (PdmLinkLoss.On, true, false) => "on 1 s after the message stops (old recipe: on at power-up until the first frame)",
+        (PdmLinkLoss.On, _, true) => "on 1 s after the message stops (old recipe: critical, on at power-up before the first frame)",
+        (PdmLinkLoss.Condition, _, true) => $"follows {CondText} 1 s after the message stops (old recipe: critical, acts at power-up before the first frame)",
+        (PdmLinkLoss.Off, _, _) => "off 1 s after the message stops",
+        (PdmLinkLoss.Hold, _, _) => "keeps its last state (off at power-up)",
+        (PdmLinkLoss.On, _, _) => "on 1 s after the message stops; off until the first frame",
+        (PdmLinkLoss.Condition, _, _) => $"follows {CondText} 1 s after the message stops; off until the first frame",
         _ => "same board: no CAN message"
     };
-
-    private string CritText => Critical ? "; critical: acts from power-up" : "; off until the first frame";
 
     public string SlotText => Slot is { } s
         ? $"{Out.Board} CAN input {s + 1}" + (Virt is { } k ? $" + virtual input {k + 1}" : "")
@@ -111,7 +117,7 @@ public static class PdmLinks
         _ => "Condition (follows a condition 1 s after it stops)"
     };
 
-    // on / condition use the shared ALIVE / SEEN / LOST (and only they can be critical)
+    // on / condition use the shared ALIVE / SEEN / LOST
     public static bool UsesShared(PdmLinkLoss l) => l is PdmLinkLoss.On or PdmLinkLoss.Condition;
 
     private static string Word(PdmLinkLoss l) => l.ToString().ToLowerInvariant();
@@ -229,7 +235,7 @@ public static class PdmLinks
             && RoleOfVar(v, q, vi.Var1) is { Kind: PdmSlotKind.Alive } ra && rs.Source.Role == ra.Source.Role)
             return new PdmVirtRole(PdmVirtKind.Lost, rs.Source, -1, false, 0);
         if (vi.Not1) return null;
-        // on: LOST OR L | condition: (LOST AND C) OR L | critical: NOT ALIVE in place of LOST
+        // on: LOST OR L | condition: (LOST AND C) OR L | old critical recipe (dropped): NOT ALIVE in place of LOST
         var three = vi.Var2 != 0;
         var ls = SlotOfVar(d, three ? vi.Var2 : vi.Var1);
         if (ls < 0 || RoleOfSlot(v, q, ls) is not { Kind: PdmSlotKind.Link } rl || !d.CanInputs[ls].TimeoutEnabled) return null;
@@ -266,7 +272,7 @@ public static class PdmLinks
                 var row = DigitalRow(v, src.Source.Role, src.Bit)!;
                 if (vr.Kind == PdmVirtKind.OldOn) return new PdmLink(o, row, PdmLinkLoss.On, vr.Slot, k, OldRecipe: true);
                 return new PdmLink(o, row, vr.Kind == PdmVirtKind.Condition ? PdmLinkLoss.Condition : PdmLinkLoss.On, vr.Slot, k,
-                    vr.Critical, vr.Cond, vr.Cond != 0 ? CondText(v, q, vr.Cond) : null, false, SharedOf(v, q, vr.Source));
+                    vr.Cond, vr.Cond != 0 ? CondText(v, q, vr.Cond) : null, vr.OldCritical, SharedOf(v, q, vr.Source), vr.OldCritical);
             }
             default:
                 return null;
@@ -326,6 +332,8 @@ public static class PdmLinks
                             : $"shared: {sh.Source.Role} seen (a message 37 heard since power-up), for {Users(sh)} on / condition link(s)", true)
                     : role is { Kind: PdmSlotKind.Alive or PdmSlotKind.Seen }
                         ? new PdmSlotUse(q.Role, s, false, true, $"shared {role.Kind.ToString().ToUpperInvariant()} for {role.Source.Role}, no link uses it (Remove unused)", true)
+                    : role != null && TriggerTerm(v, q, s) // editor1: a trigger term
+                        ? new PdmSlotUse(q.Role, s, false, true, $"link slot for {role.Source.Role} IN{role.Bit + 1}, used by a trigger (Triggers panel)")
                     : role != null
                         ? new PdmSlotUse(q.Role, s, false, true, $"link slot for {role.Source.Role} IN{role.Bit + 1}, no output uses it (Remove unused)")
                     : IsFanSlot(q, s) ? new PdmSlotUse(q.Role, s, false, false, "fan logic (A1 / B board temperature), reserved")
@@ -386,6 +394,26 @@ public static class PdmLinks
         (vi.Cond1, vi.Not2, vi.Var2, vi.Mode) = (c1, false, var2, InputMode.Momentary);
     }
 
+    // editor1 (one-PDM editor): a link-recipe CAN input that something other than a link virtual input reads, i.e. a
+    // term of a /pdm trigger (PdmTriggers): in use, never "Remove unused"
+    private static bool TriggerTerm(PdmView v, PdmBoard q, int s)
+    {
+        var d = q.Device;
+        var var = PdmFactoryDefaults.CanInState(d, s);
+        for (var k = 0; k < d.VirtualInputs.Count; k++)
+            if (d.VirtualInputs[k] is var vi && (vi.Var0 == var || vi.Var1 == var || vi.Var2 == var) && RoleOfVirt(v, q, k) == null)
+                return true;
+        return PdmEngine.IsRead(d, var, virtualInputs: false);
+    }
+
+    // editor1: the 'off' recipe slot (bit of P's msg 37, Equal 1, time-out on) for a trigger term from another board
+    internal static void MakeTermSlot(PdmView v, PdmBoard q, int s, PdmInputRow inRow, string tag)
+    {
+        var p = v.Boards.Single(b => b.Role == inRow.Board);
+        SetSlot(q.Device.CanInputs[s], $"{tag}: {inRow.Board} IN{inRow.BoardInput}", p.Device.BaseId + StatusOffset, inRow.BoardInput - 1,
+            Operator.Equal, 1.0, true);
+    }
+
     // all-or-nothing: the CAN inputs, virtual inputs and outputs of a board as they are now
     private static Action Snapshot(FwDevice d)
     {
@@ -411,11 +439,9 @@ public static class PdmLinks
         return null;
     }
 
-    private static string? BadMode(PdmView v, PdmBoard q, PdmInputRow inRow, PdmOutputRow o, PdmLinkLoss loss, bool critical, int cond)
+    private static string? BadMode(PdmView v, PdmBoard q, PdmInputRow inRow, PdmOutputRow o, PdmLinkLoss loss, int cond)
     {
         if (inRow.Board == q.Role) return null; // same board: no CAN message, no loss mode
-        if (critical && !UsesShared(loss))
-            return "Critical changes 'on' and 'condition' only: with 'off' or 'hold' the output is off before the first frame anyway.";
         if (loss == PdmLinkLoss.Condition && CondChoices(v, q).All(c => c.Var != cond))
             return $"Pick the condition for output {o.Number}: one of {q.Role}'s inputs or conditions.";
         return null;
@@ -433,7 +459,7 @@ public static class PdmLinks
     }
 
     // Writes the link (the output has no trigger now). null = made; else why not (the caller restores the board)
-    private static string? Make(PdmView v, PdmBoard q, PdmOutputRow o, PdmInputRow inRow, PdmLinkLoss loss, bool critical, int cond)
+    private static string? Make(PdmView v, PdmBoard q, PdmOutputRow o, PdmInputRow inRow, PdmLinkLoss loss, int cond)
     {
         var d = q.Device;
         if (inRow.Board == q.Role)
@@ -473,10 +499,10 @@ public static class PdmLinks
                 sh = new PdmShared(q, p, a, s0, l);
             }
             var lost = sh.Lost;
-            k = freeV.Where(x => critical || x > lost).Cast<int?>().FirstOrDefault();
+            k = freeV.Where(x => x > lost).Cast<int?>().FirstOrDefault();
             if (k == null)
-                return $"{q.Role} has no free virtual input after the shared '{p.Role} lost' (virtual input {lost + 1}), which a non-critical " +
-                       $"'{Word(loss)}' link must run after: free one above it, mark the output critical, or choose 'off' / 'hold'.";
+                return $"{q.Role} has no free virtual input after the shared '{p.Role} lost' (virtual input {lost + 1}), which a " +
+                       $"'{Word(loss)}' link must run after: free one above it, or choose 'off' / 'hold'.";
         }
 
         var s = free[0];
@@ -486,9 +512,9 @@ public static class PdmLinks
         if (k is { } kk)
         {
             var vi = d.VirtualInputs[kk];
-            var first = critical ? PdmFactoryDefaults.CanInState(d, sh!.Alive) : PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh!.Lost]);
-            if (loss == PdmLinkLoss.On) SetVirt(vi, name + " (on at loss)", critical, first, Conditional.Or, false, lvar);
-            else SetVirt(vi, name + " (condition at loss)", critical, first, Conditional.And, false, cond, Conditional.Or, lvar);
+            var lostVar = PdmFactoryDefaults.VarOf(d, d.VirtualInputs[sh!.Lost]);
+            if (loss == PdmLinkLoss.On) SetVirt(vi, name + " (on at loss)", false, lostVar, Conditional.Or, false, lvar);
+            else SetVirt(vi, name + " (condition at loss)", false, lostVar, Conditional.And, false, cond, Conditional.Or, lvar);
             o.Output.Input = PdmFactoryDefaults.VarOf(d, vi);
         }
         else o.Output.Input = lvar;
@@ -521,8 +547,7 @@ public static class PdmLinks
     // null = link made on the PC; else why not (nothing changed). An output that already has a trigger (Conflict) is
     // only replaced with overwrite (the UI asks "already assigned. Overwrite?" first); a trigger set elsewhere is only
     // unhooked from the output, the function behind it is never changed.
-    public static string? Add(PdmView v, int input, int output, PdmLinkLoss loss = DefaultLoss, bool critical = false, int cond = 0,
-        bool overwrite = false)
+    public static string? Add(PdmView v, int input, int output, PdmLinkLoss loss = DefaultLoss, int cond = 0, bool overwrite = false)
     {
         var inRow = v.Inputs.FirstOrDefault(r => r.Number == input && r.Digital != null);
         if (inRow == null) return $"Input {input} is not a digital input of this PDM (1-24, its board must be in the project).";
@@ -530,16 +555,17 @@ public static class PdmLinks
         if (o == null) return $"Output {output} is not in this PDM (1-24, its board must be in the project).";
         if (Unlinkable(o) is { } no) return no;
         var q = BoardOf(v, o.Device)!;
-        if (BadMode(v, q, inRow, o, loss, critical, cond) is { } bad) return bad;
+        if (BadMode(v, q, inRow, o, loss, cond) is { } bad) return bad;
         if (!overwrite && Conflict(v, output) is { } taken) return taken;
 
-        var restore = Snapshot(o.Device);
+        var restore = PdmSnapshot.Take([o.Device]); // editor1: every function (a trigger's conditions / timer / flasher too)
         if (LinkOf(v, o) is { } old) RemoveLink(old);
+        else if (o.Output.Input != 0) PdmTriggers.Release(v, o); // editor1: a /pdm trigger's own parts are freed, anything else only unhooked
         o.Output.Input = 0;
         FreeUnusedShared(v, q, KeepFor(q, inRow, loss)); // so a mode without them gets the lowest slots
-        if (Make(v, q, o, inRow, loss, critical, cond) is { } why)
+        if (Make(v, q, o, inRow, loss, cond) is { } why)
         {
-            restore();
+            restore.Restore();
             return why;
         }
         FreeUnusedShared(v, q);
@@ -557,18 +583,18 @@ public static class PdmLinks
     }
 
     // Change a link's source input and / or loss mode (re-made in place; it may move to a lower free slot)
-    public static string? Change(PdmView v, int output, int input, PdmLinkLoss loss, bool critical = false, int cond = 0)
+    public static string? Change(PdmView v, int output, int input, PdmLinkLoss loss, int cond = 0)
     {
         var o = v.Outputs.FirstOrDefault(r => r.Number == output);
         if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
         var inRow = v.Inputs.FirstOrDefault(r => r.Number == input && r.Digital != null);
         if (inRow == null) return $"Input {input} is not a digital input of this PDM (1-24, its board must be in the project).";
         var q = BoardOf(v, o.Device)!;
-        if (BadMode(v, q, inRow, o, loss, critical, cond) is { } bad) return bad;
+        if (BadMode(v, q, inRow, o, loss, cond) is { } bad) return bad;
         var restore = Snapshot(o.Device);
         RemoveLink(link);
         FreeUnusedShared(v, q, KeepFor(q, inRow, loss));
-        if (Make(v, q, o, inRow, loss, critical, cond) is { } why)
+        if (Make(v, q, o, inRow, loss, cond) is { } why)
         {
             restore();
             return why;
@@ -577,12 +603,12 @@ public static class PdmLinks
         return null;
     }
 
-    public static string? SetMode(PdmView v, int output, PdmLinkLoss loss, bool critical = false, int cond = 0)
+    public static string? SetMode(PdmView v, int output, PdmLinkLoss loss, int cond = 0)
     {
         var o = v.Outputs.FirstOrDefault(r => r.Number == output);
         if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
         if (!link.CrossBoard) return "A same-board link has no CAN message to lose.";
-        return Change(v, output, link.In.Number, loss, critical, cond);
+        return Change(v, output, link.In.Number, loss, cond);
     }
 
     // a new source input, the loss mode kept (a new cross-board link gets the default)
@@ -591,17 +617,18 @@ public static class PdmLinks
         var o = v.Outputs.FirstOrDefault(r => r.Number == output);
         if (o == null || LinkOf(v, o) is not { } link) return $"Output {output} has no link.";
         return link.Loss is { } l
-            ? Change(v, output, input, l, link.Critical, link.Cond)
+            ? Change(v, output, input, l, link.Cond)
             : Change(v, output, input, DefaultLoss);
     }
 
-    // Old B4 "on" links (on at power-up until the first frame) -> the w1 'on' recipe. Returns what could not be done
-    // (those links are kept as they were).
+    // Old B4 "on" links (on at power-up until the first frame) -> the w1 'on' recipe; old "critical" on / condition links
+    // (NOT ALIVE, on at power-up before the first frame) -> the same mode without it (off until the first frame).
+    // Returns what could not be done (those links are kept as they were).
     public static IReadOnlyList<string> Upgrade(PdmView v)
     {
         var fails = new List<string>();
         foreach (var l in OldLinks(v))
-            if (Change(v, l.Out.Number, l.In.Number, PdmLinkLoss.On) is { } why)
+            if (Change(v, l.Out.Number, l.In.Number, l.OldCritical ? l.Loss!.Value : PdmLinkLoss.On, l.Cond) is { } why)
                 fails.Add($"Output {l.Out.Number}: {why}");
         return fails;
     }
@@ -621,7 +648,7 @@ public static class PdmLinks
             var usedV = mine.Where(l => l.Virt != null).Select(l => l.Virt!.Value)
                 .Concat(mine.Where(l => l.Shared != null).Select(l => l.Shared!.Lost)).ToHashSet();
             for (var s = 0; s < d.CanInputs.Count; s++)
-                if (!usedS.Contains(s) && RoleOfSlot(v, q, s) != null)
+                if (!usedS.Contains(s) && RoleOfSlot(v, q, s) != null && !TriggerTerm(v, q, s)) // editor1: not a trigger term
                 {
                     var c = d.CanInputs[s];
                     resets.Add(() => Reset(c));
@@ -677,8 +704,10 @@ public static class PdmLinks
                     w.Add($"the condition {l.CondText} is not enabled");
                     break;
             }
-        if (l.OldRecipe) w.Add("old recipe: on at power-up until the first frame (Upgrade)");
-        if (l is { Shared: { } sh, Virt: { } k, Critical: false } && k < sh.Lost)
+        if (l.OldRecipe) w.Add(l.OldCritical
+            ? "old recipe: critical, on at power-up before the first frame (Upgrade: off until the first frame)"
+            : "old recipe: on at power-up until the first frame (Upgrade)");
+        if (l is { Shared: { } sh, Virt: { } k, OldCritical: false } && k < sh.Lost)
             w.Add($"virtual input {k + 1} runs before the shared '{sh.Source.Role} lost' (virtual input {sh.Lost + 1}): a short drop (about 2 ms) at the time-out");
         if (l is { Shared: { } sh2, Slot: { } s } && d.CanInputs[s].Timeout != d.CanInputs[sh2.Alive].Timeout)
             w.Add($"time-out {d.CanInputs[s].Timeout} ms differs from the shared '{sh2.Source.Role} alive' ({d.CanInputs[sh2.Alive].Timeout} ms): the output can blip at loss");
