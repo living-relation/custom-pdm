@@ -126,6 +126,24 @@ public class PdmAutoReadTests
         NoWriteNoBurn(pdm);
     }
 
+    // asked, then the edit is undone on the PC: nothing to keep any more, so the board is read without an answer
+    [Fact]
+    public void AnAskWhoseEditsAreGoneIsReadWithoutAsking()
+    {
+        var pdm = Auto();
+        pdm.Settle();
+        var o = pdm.Dev("A1").Outputs[5];
+        var was = o.ResetTime;
+        o.ResetTime = was + 100;
+        Reconnect(pdm, "A1");
+        pdm.Rounds(3);
+        Assert.Equal(["A1"], Asks(pdm));
+        o.ResetTime = was;
+        pdm.Settle();
+        Assert.Empty(Asks(pdm));
+        Assert.Equal([2, 1, 1], PdmOps.Roles.Select(r => Reads(pdm, r)));
+    }
+
     [Fact]
     public void AnEditUndoneIsNoEdit()
     {

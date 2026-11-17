@@ -203,11 +203,11 @@ public sealed class FakePdm
         }
     }
 
-    // rounds until no PDM run is busy (and none started in the last round), 10 min at most
+    // rounds until no PDM run is busy (and none started in the last round), 2 min at most
     public void Settle()
     {
         Rounds(1);
-        for (var i = 0; Service.Ops.Busy && i < 6000; i++) Rounds(1);
+        for (var i = 0; Service.Ops.Busy && i < 1200; i++) Rounds(1);
     }
 
     // time passes, but nothing the PC sent has reached a board yet
