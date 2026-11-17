@@ -545,6 +545,12 @@ r.W(0x1000, 5, 1); r.W(0x1000, 6, 5000); r.sw(1, 1); r.run(500); r.sw(1, 0); r.r
 amps(r, 0, 4.0); amps(r, 1, 4.0); r.sw(1, 1); r.run(10); both = (r.b.L.sim_out_state(0), r.b.L.sim_out_state(1), r.pin(0), r.pin(1)); r.sw(1, 0); r.run(50)
 check('P3: one rising edge clears every output: OUT1 in Overcurrent (5 s retry wait) and OUT2 in Fault both come back within 10 ms',
       st_wait == (OC_, FAULT_) and both == (ON_, ON_, 1, 1), (st_wait, both))
+# the trip count starts again: a stuck load gets its full set of tries after a master retry
+output(r, 2, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=1, reset_ms=300, reset_limit=3); amps(r, 2, 8.0)
+s_ = r.sample([2], 2000); first = len(on_spans(s_)); st1 = r.b.L.sim_out_state(2)
+r.sw(1, 1); s_ = r.sample([2], 2000); again = len(on_spans(s_)); r.sw(1, 0); r.run(50)
+check('P3: after a master retry the trip count starts again: a stuck 8 A load (Count mode, reset limit 3) gets 3 tries, Fault, master retry, 3 more tries, Fault',
+      (first, st1, again, r.b.L.sim_out_state(2)) == (3, FAULT_, 3, FAULT_), (first, st1, again))
 check('F12 (P3 part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
 # input cycled between trips resets the count (MoTeC: "count reset when the condition goes false then true")
 r = Rig(); v = r.v; switch(r, 0)

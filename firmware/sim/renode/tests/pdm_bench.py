@@ -312,7 +312,7 @@ class pdm_bench:
 
     # ------------------------------------------------------------------ P1 overcurrent trip time (factory 50 ms, core/param_defs.h DEFAULT_OUT_TRIP_TIME)
     def overcurrent_trip_time_rides_through_a_spike_and_trips_a_held_overload(s):
-        g = 5; k, o = s.OUT[g]; s._load(g, s.LIMIT[g] * 0.6)
+        g = 3; k, o = s.OUT[g]; s._load(g, s.LIMIT[g] * 0.6)     # A1 OUT3: ECU bit 3 (OUT5 carries the cross-board rule)
         trip = s._read1(BASE[k], 0x7D00 + o, 0)
         s._set_cmd([g]); s._run(1500)                          # past the 1 s inrush window
         on_before = g in s._pins_on()

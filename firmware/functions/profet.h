@@ -134,16 +134,12 @@ public:
 #if PRO_FEATURES
     // custom-pdm (P1 / P2): the output's extra protection settings (stConfig.stOutputExt[i])
     void SetConfigExt(Config_OutputExt *ext) { pExt = ext; }
-    // custom-pdm (P3): master retry. Overcurrent or Fault -> Off with the trip count cleared; the output then follows
-    // its input again (a load that is still shorted trips again).
+    // custom-pdm (P3): master retry. Overcurrent or Fault -> Off; the Off state clears the trip count (stock Update)
+    // and the output then follows its input again, from a new inrush window (a load that is still shorted trips again).
     void MasterRetry()
     {
         if (eState == ProfetState::Overcurrent || eState == ProfetState::Fault)
-        {
             eState = ProfetState::Off;
-            nOcCount = 0;
-            bOverLimit = false;
-        }
     }
     float fUndercurrent = 0; // custom-pdm (P2): var map, 1 = On and below the minimum current for the set time
 #endif
