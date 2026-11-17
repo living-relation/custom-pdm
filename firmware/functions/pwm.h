@@ -93,6 +93,8 @@ public:
 #if PWM_FREQ_INPUT
     // custom-pdm: a paired follower copies the primary's timer period (fixed or variable frequency)
     pwmcnt_t GetPeriod() { return m_pwm->period; }
+    // variable frequency below its minimum: the output is held low with the channel off (no pulses)
+    bool IsFreqOff() { return bFreqOff; }
     void OverridePeriod(pwmcnt_t nPeriod);
 #endif
 

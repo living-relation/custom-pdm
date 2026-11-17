@@ -72,6 +72,16 @@ void Profet::Update(bool bOutEnabled)
         break;
 
     case ProfetState::On:
+#if PWM_FREQ_INPUT
+        // custom-pdm: variable frequency below its minimum (engine stopped): channel off, IN held low. Duty 0 alone
+        // would leave IN high if the duty changed mid-period on a timer without compare preload.
+        if (pwm.IsEnabled() && pwm.IsFreqOff())
+        {
+            pwm.Off();
+            palClearLine(m_in);
+        }
+        else
+#endif
         if (pwm.IsEnabled())
             pwm.On();
         else
@@ -232,6 +242,15 @@ void Profet::FollowerUpdate()
     // Mirror primary state
     if (pPrimary->eState == ProfetState::On)
     {
+#if PWM_FREQ_INPUT
+        if (pPrimary->IsPwmEnabled() && pPrimary->pwm.IsFreqOff())
+        {
+            // custom-pdm: primary's variable frequency below its minimum: no pulses on the follower either
+            pwm.Off();
+            palClearLine(m_in);
+        }
+        else
+#endif
         if (pPrimary->IsPwmEnabled())
         {
             pwm.EnsureStarted();
