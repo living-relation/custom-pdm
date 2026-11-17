@@ -326,6 +326,8 @@ public static class PdmLinks
                             : $"shared: {sh.Source.Role} seen (a message 37 heard since power-up), for {Users(sh)} on / condition link(s)", true)
                     : role is { Kind: PdmSlotKind.Alive or PdmSlotKind.Seen }
                         ? new PdmSlotUse(q.Role, s, false, true, $"shared {role.Kind.ToString().ToUpperInvariant()} for {role.Source.Role}, no link uses it (Remove unused)", true)
+                    : role != null && TriggerTerm(v, q, s) // editor1: a trigger term
+                        ? new PdmSlotUse(q.Role, s, false, true, $"link slot for {role.Source.Role} IN{role.Bit + 1}, used by a trigger (Triggers panel)")
                     : role != null
                         ? new PdmSlotUse(q.Role, s, false, true, $"link slot for {role.Source.Role} IN{role.Bit + 1}, no output uses it (Remove unused)")
                     : IsFanSlot(q, s) ? new PdmSlotUse(q.Role, s, false, false, "fan logic (A1 / B board temperature), reserved")
@@ -384,6 +386,26 @@ public static class PdmLinks
     {
         (vi.Name, vi.Enabled, vi.Not0, vi.Var0, vi.Cond0, vi.Not1, vi.Var1) = (name, true, not0, var0, c0, not1, var1);
         (vi.Cond1, vi.Not2, vi.Var2, vi.Mode) = (c1, false, var2, InputMode.Momentary);
+    }
+
+    // editor1 (one-PDM editor): a link-recipe CAN input that something other than a link virtual input reads, i.e. a
+    // term of a /pdm trigger (PdmTriggers): in use, never "Remove unused"
+    private static bool TriggerTerm(PdmView v, PdmBoard q, int s)
+    {
+        var d = q.Device;
+        var var = PdmFactoryDefaults.CanInState(d, s);
+        for (var k = 0; k < d.VirtualInputs.Count; k++)
+            if (d.VirtualInputs[k] is var vi && (vi.Var0 == var || vi.Var1 == var || vi.Var2 == var) && RoleOfVirt(v, q, k) == null)
+                return true;
+        return PdmEngine.IsRead(d, var, virtualInputs: false);
+    }
+
+    // editor1: the 'off' recipe slot (bit of P's msg 37, Equal 1, time-out on) for a trigger term from another board
+    internal static void MakeTermSlot(PdmView v, PdmBoard q, int s, PdmInputRow inRow, string tag)
+    {
+        var p = v.Boards.Single(b => b.Role == inRow.Board);
+        SetSlot(q.Device.CanInputs[s], $"{tag}: {inRow.Board} IN{inRow.BoardInput}", p.Device.BaseId + StatusOffset, inRow.BoardInput - 1,
+            Operator.Equal, 1.0, true);
     }
 
     // all-or-nothing: the CAN inputs, virtual inputs and outputs of a board as they are now
@@ -533,13 +555,14 @@ public static class PdmLinks
         if (BadMode(v, q, inRow, o, loss, critical, cond) is { } bad) return bad;
         if (!overwrite && Conflict(v, output) is { } taken) return taken;
 
-        var restore = Snapshot(o.Device);
+        var restore = PdmSnapshot.Take([o.Device]); // editor1: every function (a trigger's conditions / timer / flasher too)
         if (LinkOf(v, o) is { } old) RemoveLink(old);
+        else if (o.Output.Input != 0) PdmTriggers.Release(v, o); // editor1: a /pdm trigger's own parts are freed, anything else only unhooked
         o.Output.Input = 0;
         FreeUnusedShared(v, q, KeepFor(q, inRow, loss)); // so a mode without them gets the lowest slots
         if (Make(v, q, o, inRow, loss, critical, cond) is { } why)
         {
-            restore();
+            restore.Restore();
             return why;
         }
         FreeUnusedShared(v, q);
@@ -621,7 +644,7 @@ public static class PdmLinks
             var usedV = mine.Where(l => l.Virt != null).Select(l => l.Virt!.Value)
                 .Concat(mine.Where(l => l.Shared != null).Select(l => l.Shared!.Lost)).ToHashSet();
             for (var s = 0; s < d.CanInputs.Count; s++)
-                if (!usedS.Contains(s) && RoleOfSlot(v, q, s) != null)
+                if (!usedS.Contains(s) && RoleOfSlot(v, q, s) != null && !TriggerTerm(v, q, s)) // editor1: not a trigger term
                 {
                     var c = d.CanInputs[s];
                     resets.Add(() => Reset(c));
