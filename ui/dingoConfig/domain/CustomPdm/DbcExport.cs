@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using domain.Devices;
 using domain.Enums;
 using domain.Models;
@@ -13,7 +14,8 @@ namespace domain.CustomPdm;
 // Source of truth: the cyclic signals the app itself decodes (FwDevice.GetCyclicSigs, from
 // web/Definitions/custompdm-*-signals.json), checked against the firmware TX code (firmware/boards/custompdm_*/msg.cpp)
 // by DbcExportTests. DBC-only presentation: names get the board prefix ("A1_Output1_Current"), msg 3 byte 7 is
-// written as its three flag bits, value tables for device state / board type / output state.
+// written as its three flag bits, value tables for device state / board type / output state, and (d2b) the PDM-wide
+// name of every output / input signal as the string attribute PdmName plus the signal comment.
 public record DbcBoard(string Node, FwDevice Device);
 
 public record DbcRepoBoard(string Node, int DeviceType, int BaseId);
@@ -32,19 +34,46 @@ public static class DbcExport
     // The files under firmware/dbc: one per board plus the whole PDM (= what the button gives for a default project)
     public static List<(string FileName, string Text)> RepoFiles(Func<int, FwDeviceDef?> defs, Func<int, CyclicSigsConfig?> sigs)
     {
-        var boards = RepoBoards.Select(b =>
-        {
-            var def = defs(b.DeviceType) ?? throw new InvalidOperationException($"no device type {b.DeviceType}");
-            var cfg = sigs(b.DeviceType) ?? throw new InvalidOperationException($"no cyclic signals for type {b.DeviceType}");
-            return (Repo: b, Board: new DbcBoard(b.Node, new FwDevice(b.Node, b.BaseId, def, cfg)));
-        }).ToList();
-        var files = boards.Select(x => (FileName(x.Repo), Build([x.Board]))).ToList();
-        files.Add((PdmFileName, Build(boards.Select(x => x.Board))));
+        var boards = RepoDbcBoards(defs, sigs);
+        var files = boards.Select((b, i) => (FileName(RepoBoards[i]), Build([b]))).ToList();
+        files.Add((PdmFileName, Build(boards)));
         return files;
     }
 
+    // The three boards of the PDM at their repo base IDs (also the input of ui/tools/CarCanDummy)
+    public static List<DbcBoard> RepoDbcBoards(Func<int, FwDeviceDef?> defs, Func<int, CyclicSigsConfig?> sigs) =>
+        RepoBoards.Select(b =>
+        {
+            var def = defs(b.DeviceType) ?? throw new InvalidOperationException($"no device type {b.DeviceType}");
+            var cfg = sigs(b.DeviceType) ?? throw new InvalidOperationException($"no cyclic signals for type {b.DeviceType}");
+            return new DbcBoard(b.Node, new FwDevice(b.Node, b.BaseId, def, cfg));
+        }).ToList();
+
+    // d2b (Dan, 2026-11-16): PdmName = the PDM-wide name ("PDM_Out17_Current"), numbered as PdmView numbers its rows.
+    // The signal itself keeps its per-board name: one DBC message cannot hold two signals with one name, and two
+    // signals on the same bits are refused by strict DBC tools, so the PDM-wide name is a string attribute (BA_ PdmName)
+    // and the start of the signal comment.
     public record Signal(string Name, int StartBit, int Length, bool IsSigned, double Factor, double Offset, string Unit,
-        string? Comment = null, string? ValueTable = null);
+        string? Comment = null, string? ValueTable = null, string? PdmName = null);
+
+    public const string PdmNameAttribute = "PdmName";
+
+    private static readonly Regex OutputName = new(@"^Output(\d+)_(\w+)$");
+    private static readonly Regex DigitalName = new(@"^DigitalInput(\d+)_(\w+)$");
+    private static readonly Regex AnalogName = new(@"^AnalogInput1_(\w+)$");
+
+    // The PDM-wide name of a board signal (name without the board prefix, "Output1_Current"), or null
+    public static string? PdmName(string node, string name)
+    {
+        var m = OutputName.Match(name);
+        if (m.Success)
+            return PdmView.OutputNumber(node, int.Parse(m.Groups[1].Value) - 1) is { } o ? $"PDM_Out{o}_{m.Groups[2].Value}" : null;
+        m = DigitalName.Match(name);
+        if (m.Success)
+            return PdmView.DigitalInputNumber(node, int.Parse(m.Groups[1].Value) - 1) is { } d ? $"PDM_In{d}_{m.Groups[2].Value}" : null;
+        m = AnalogName.Match(name);
+        return m.Success && PdmView.AnalogInputNumber(node) is { } a ? $"PDM_In{a}_{m.Groups[1].Value}" : null;
+    }
 
     public record Message(int Id, int MsgNumber, string Name, string Node, List<Signal> Signals);
 
@@ -87,7 +116,11 @@ public static class DbcExport
             {
                 var name = $"{board.Node}_{signals[i].Name}";
                 if (!used.Add(name)) { name += $"_M{msgNumber}"; used.Add(name); }
-                signals[i] = signals[i] with { Name = name };
+                var pdm = PdmName(board.Node, signals[i].Name);
+                if (pdm != null && !used.Add(pdm)) { pdm += $"_M{msgNumber}"; used.Add(pdm); }
+                var comment = pdm == null ? signals[i].Comment
+                    : $"PDM-wide name {pdm}" + (signals[i].Comment is { } c ? "; " + c : "");
+                signals[i] = signals[i] with { Name = name, PdmName = pdm, Comment = comment };
             }
             list.Add(new Message(group.Key, msgNumber, $"{board.Node}_Msg{msgNumber}", board.Node, signals));
         }
@@ -168,7 +201,8 @@ public static class DbcExport
         Line();
         Line();
         Line("CM_ \"custom-pdm status messages (firmware NUM_TX_MSGS 38, msg n = base ID + 2 + n, Intel byte order, 8 bytes). " +
-             "Generated by ui/tools/DbcGen and the /pdm Export DBC button from the same code (ui/dingoConfig/domain/CustomPdm/DbcExport.cs): do not edit.\";");
+             "Generated by ui/tools/DbcGen and the /pdm Export DBC button from the same code (ui/dingoConfig/domain/CustomPdm/DbcExport.cs): do not edit. " +
+             "Output and input signals also carry their PDM-wide name (outputs 1-24, inputs 1-27 as on the /pdm page) in the attribute " + PdmNameAttribute + " and in their comment.\";");
         foreach (var b in list)
             Line($"CM_ BU_ {b.Node} \"{(b.Device.DeviceTypeId == 15 ? "custom-pdm board B" : "custom-pdm board A")}, base ID 0x{b.Device.BaseId:X3}\";");
         foreach (var m in messages)
@@ -176,6 +210,14 @@ public static class DbcExport
         foreach (var m in messages)
         foreach (var s in m.Signals.Where(s => s.Comment != null))
             Line($"CM_ SG_ {m.Id} {s.Name} \"{s.Comment}\";");
+        if (messages.Any(m => m.Signals.Any(s => s.PdmName != null)))
+        {
+            Line($"BA_DEF_ SG_  \"{PdmNameAttribute}\" STRING ;");
+            Line($"BA_DEF_DEF_  \"{PdmNameAttribute}\" \"\";");
+            foreach (var m in messages)
+            foreach (var s in m.Signals.Where(s => s.PdmName != null))
+                Line($"BA_ \"{PdmNameAttribute}\" SG_ {m.Id} {s.Name} \"{s.PdmName}\";");
+        }
         foreach (var m in messages)
         foreach (var s in m.Signals.Where(s => s.ValueTable != null))
             Line($"VAL_ {m.Id} {s.Name} {s.ValueTable} ;");
