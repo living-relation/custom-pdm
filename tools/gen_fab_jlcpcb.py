@@ -152,8 +152,10 @@ def write_bom_cpl(board, out, tag):
     return len(rows), sum(len(v) for v in groups.values()), len(groups), [r for r in rows if r[5]]
 
 
-def geometry(board):
-    """Worst values straight from the copper (independent of DRC rules)."""
+def geometry(board, lim):
+    """Worst values straight from the copper (independent of DRC rules), and every hole pair under JLCPCB's limits
+    (KiCad DRC does not flag same-net holes that touch or overlap)."""
+    close = []
     tracks = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK"]
     vias = [v for v in board.GetTracks() if v.GetClass() == "PCB_VIA"]
     g = {}
@@ -200,9 +202,12 @@ def geometry(board):
                 key = "via-via" if a[3] == b[3] == "via" else "pad hole involved"
                 if gap < best[key][0]:
                     best[key] = (gap, f"{a[3]} {a[4]} / {b[3]} {b[4]}".strip())
+                if gap < (lim["via_h2h"] if key == "via-via" else lim["pad_h2h"]) - 1e-6:
+                    close.append(f"{a[3]} {a[4]} ({a[0]:.2f}, {a[1]:.2f}) / {b[3]} {b[4]} ({b[0]:.2f}, {b[1]:.2f}): "
+                                 f"{gap:.3f} mm".replace("  ", " "))
     g["hole-to-hole gap min (via-via)"] = best["via-via"]
     g["hole-to-hole gap min (pad holes, other footprints)"] = best["pad hole involved"]
-    return g, coloc
+    return g, coloc, sorted(close)
 
 
 def zone_check(path):
@@ -282,8 +287,11 @@ def notes(tag, layers, b, size, press):
          "| Thickness | 1.6 mm |",
          "| Surface finish | ENIG |",
          "| Copper weight | Dan's choice (not set by this script; the checks use JLCPCB's 1 oz limits) |",
-         "| Solder mask / silkscreen | green / white (JLCPCB default; the mask limits in the checks are the green ones) |",
+         "| Solder mask | green (Dan, DECISIONS 2026-11-17 a3a; the mask limits in the checks are the green ones) |",
+         "| Silkscreen | white |",
          "| Order number | JLCPCB default |",
+         "",
+         "Solder mask: green, silkscreen: white.",
          ""]
     if press:
         a += ["Order remark (paste into the PCB remark field):", "",
@@ -330,7 +338,7 @@ def main():
                 for p in sorted(glob.glob(os.path.join(gdir, "*"))):
                     z.write(p, os.path.basename(p))
             ncpl, nbom, nlines, rotated = write_bom_cpl(b, out, tag)
-            geo, coloc = geometry(b)
+            geo, coloc, close = geometry(b, JLC_LIMITS[n])
             drc, dru = jlc_drc(copy, stem, n, os.path.join(tmp, "d"))
             bb = b.GetBoardEdgesBoundingBox()
             press = sorted({fp.GetReference() for fp, k in parts(b) if k == "press-fit"}, key=nat)
@@ -343,6 +351,8 @@ def main():
                    + ("current" if zrel < 0.001 else "REFILL AND RE-SAVE THE PCB BEFORE ORDERING"),
                    "Drilled holes on the same spot (two vias / via on a pad): "
                    + (f"{len(coloc)}: " + "; ".join(coloc[:6]) if coloc else "none"),
+                   f"Hole pairs closer than JLCPCB's hole-to-hole limits (via-via {L['via_h2h']} mm, pad hole "
+                   f"{L['pad_h2h']} mm): " + (f"{len(close)}: " + "; ".join(close[:12]) if close else "none"),
                    f"Assembly: {nbom} parts in {nlines} BOM lines, {ncpl} placements; rotation offsets applied to: "
                    + (", ".join(sorted({f'{r[0]} +{r[5]}' for r in rotated}, key=nat)) or "none"), "",
                    "Worst values from the copper:"]
