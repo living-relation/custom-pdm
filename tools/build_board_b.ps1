@@ -63,7 +63,10 @@ try {
     if ((Test-Path $route) -and -not $NoRoute) { Run-Py9 $route $Pcb "$Out\board-b.net" }
 
     $tidy = Join-Path $Repo "tools\tidy_board_b.py"
-    if ((Test-Path $tidy) -and -not $NoRoute) { Run-Py9 $tidy $Pcb "$Out\board-b.net" (Join-Path $Repo "reference\dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb") }
+    # reference/ is git-ignored: a worktree has none, so fall back to the main checkout's (git common dir), read only
+    $Ref = Join-Path $Repo "reference"
+    if (-not (Test-Path $Ref)) { $Ref = Join-Path (Split-Path (git -C $Repo rev-parse --path-format=absolute --git-common-dir 2>$null) -Parent) "reference" }
+    if ((Test-Path $tidy) -and -not $NoRoute) { Run-Py9 $tidy $Pcb "$Out\board-b.net" (Join-Path $Ref "dingoPDM-Max\dingoPDM-Max\dingoPDM-Max.kicad_pcb") }
     Run-Py9 (Join-Path $Repo "tools\wirepads.py") pcb $Pcb J6         # a2b: Micro-Fit J6 -> wire pads, same 4 holes
     Run-Py9 (Join-Path $Repo "tools\pcb_board_power.py") $Pcb "$Out\board-b.net" B   # r2a / s4a / s6a / t1a: part fields, LED DNP
     Run-Py9 (Join-Path $Repo "tools\pcb_digikey.py") $Pcb "$Out\board-b.net"   # 2026-11-14: Digi-Key fields

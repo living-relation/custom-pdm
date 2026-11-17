@@ -160,7 +160,11 @@ def pcb(path, ref):
         nf.thisown = False
         fp.AddField(nf)
     print(f"{ref}: {old.GetFPID().GetUniStringLibId()} -> dingoPDM:{name}, {len(news)} pads in the same holes")
-    pcb_rework.remove_and_reload(b, [old], path)       # saves; same holes, so the zone fills stay valid
+    b = pcb_rework.remove_and_reload(b, [old], path)   # saves
+    # same numbered holes, but the old footprint's locating pegs / pad clearances are gone (board B J6 Micro-Fit):
+    # refill, else the saved fill is stale (fab hole check 2026-11-17: PF_OUT2 F.Cu changed 0.46 % on refill)
+    pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+    b.Save(path)
 
 
 if __name__ == "__main__":

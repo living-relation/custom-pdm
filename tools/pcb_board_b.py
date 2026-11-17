@@ -42,6 +42,16 @@ T_OLD = {1: (12.0, 4.75), 2: (-12.0, 4.75), 3: (12.0, -4.75), 4: (-12.0, -4.75)}
 J6_AT = (-1.5, -1.5)                         # pad 1; pads land at (+-1.5, +-1.5)
 OLD_ENDS = {"CAN_L": ((-2.22, -4.56), "F.Cu"), "CAN_H": ((2.22, -4.56), "F.Cu"),
             "INPUT1": ((2.22, 4.56), "In2.Cu"), "INPUT2": ((-2.22, 4.56), "In2.Cu")}
+# Wurth 74650074R land pattern (data sheet): 4 soldered pins on a 5.87 mm square, 1.85 mm plated hole, 3.2 mm solder pad
+# (3.1 mm paste, reflow only), 4.3 mm screw hole in the middle; the data sheet sets no via keep-out. No via in or at a
+# pin's solder pad (it would drain the paste-in-hole solder): via copper stays 0.25 mm outside the pad (a solder-mask web)
+# -> via centre >= 1.6 + 0.25 + 0.4 = 2.25 mm from the pin centre.
+PIN_OFF, PIN_KEEP, SCREW_KEEP = 5.87 / 2, 1.6 + 0.25 + 0.4, 2.15 + 0.65
+VIA_PITCH = 0.889                            # the stock stitching rows' pitch (35 mil): 0.49 mm between 0.4 mm holes
+
+
+def t_pins(x, y):
+    return [(x + sx * PIN_OFF, y + sy * PIN_OFF) for sx in (-1, 1) for sy in (-1, 1)]
 
 nl = netlist_pins.parse(NET)
 refs = json.load(open(REFS))
@@ -112,8 +122,21 @@ import math  # noqa: E402
 import re  # noqa: E402
 # stock stitching vias that would sit in a terminal's 4.3 mm screw hole
 holed = [t for t in b.GetTracks() if t.GetClass() == "PCB_VIA"
-         and any(math.hypot(um(t.GetPosition().x) - x, um(t.GetPosition().y) - y) < 2.15 + 0.65 for x, y in T_OLD.values())]
+         and any(math.hypot(um(t.GetPosition().x) - x, um(t.GetPosition().y) - y) < SCREW_KEEP for x, y in T_OLD.values())]
 print("vias under terminal screw holes removed:", len(holed))
+# ... and the ones in / at the terminals' four soldered pins (fab hole check 2026-11-17: 8 vias were drilled into the
+# 1.85 mm pin holes). They are put back in the same pour, clear of the pins, at the end (section 6): same via count.
+pinned, MOVE = [], {}
+for t in b.GetTracks():
+    if t.GetClass() != "PCB_VIA" or any(h.m_Uuid.AsString() == t.m_Uuid.AsString() for h in holed):
+        continue
+    for n, (x, y) in T_OLD.items():
+        if any(math.hypot(um(t.GetPosition().x) - px, um(t.GetPosition().y) - py) < PIN_KEEP for px, py in t_pins(x, y)):
+            pinned.append(t)
+            MOVE[n] = MOVE.get(n, 0) + 1
+            break
+print("vias in the terminal pin keep-out removed (re-placed in section 6):", MOVE, "| nets", sorted({t.GetNetname() for t in pinned}))
+holed += pinned
 legend = [d for d in b.GetDrawings() if d.GetClass() == "PCB_TEXT" and re.match(r"^\d+(/\d+)?-", d.GetText())]   # J4 pin legend
 print("removed:", sorted(f.GetReference() for f in gone), "| J4 legend texts:", len(legend), "| layer-joining test points -> vias:", [(um(x), um(y), n) for x, y, n in vias])
 b = pcb_rework.remove_and_reload(b, gone + legend + holed, PCB)
@@ -318,6 +341,81 @@ for k in range(4):
     add_zone("", ["B.Mask"], [(xa, ya), (xb, ya), (xb, yb), (xa, yb)], 0, zmask)
     ck(f"block {k} done")
 
+b.Save(PCB)
+b = pcbnew.LoadBoard(PCB)
+pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+
+
+# ---------------------------------------------------------------- 6. T1-T4 stitching vias back in their pour
+def replace_vias(tn, count):
+    """`count` vias of terminal tn's output net on the free spots of its pour nearest the switch's output pins:
+    the circle 0.15 mm around the via is filled on all four layers, no pad or other-net copper within 0.25 mm,
+    VIA_PITCH from every via, 0.45 mm hole to hole (JLCPCB pad hole), outside the pin / screw keep-outs and outside
+    every part's courtyard except the terminal's own (the stock rows already sat under it)."""
+    t = b.FindFootprintByReference(f"T{tn}")
+    net = next(p.GetNetname() for p in t.Pads() if p.GetNetname())
+    zone = next(z for z in b.Zones() if z.GetNetname() == net and not z.GetIsRuleArea())
+    cu = [l for l in zone.GetLayerSet().Seq() if pcbnew.IsCopperLayer(l)]
+    fills = [zone.GetFilledPolysList(l) for l in cu]
+    bb = zone.GetBoundingBox()
+    x0, y0, x1, y1 = um(bb.GetLeft()), um(bb.GetTop()), um(bb.GetRight()), um(bb.GetBottom())
+    near = lambda it: it.GetBoundingBox().Intersects(bb)
+    feed = [(um(p.GetPosition().x), um(p.GetPosition().y)) for f in b.GetFootprints() if f.GetReference().startswith("U")
+            for p in f.Pads() if p.GetNetname() == net]
+    if not feed:
+        raise SystemExit(f"T{tn}: no switch output pad on {net}")
+    pads = [p for f in b.GetFootprints() for p in f.Pads() if near(p)]
+    holes = [(um(p.GetPosition().x), um(p.GetPosition().y), um(min(p.GetDrillSize().x, p.GetDrillSize().y)) / 2)
+             for p in pads if p.GetDrillSize().x > 0]
+    other = [q for q in b.GetTracks() if q.GetClass() == "PCB_TRACK" and q.GetNetname() != net and near(q)]
+    yards = [f.GetCourtyard(l) for f in b.GetFootprints() if f.GetReference() != f"T{tn}"
+             for l in (pcbnew.F_CrtYd, pcbnew.B_CrtYd) if f.GetCourtyard(l).OutlineCount()]
+    vias = [(um(q.GetPosition().x), um(q.GetPosition().y)) for q in b.GetTracks() if q.GetClass() == "PCB_VIA"]
+    pins = t_pins(*T_OLD[tn])
+    cand = [(round(x0 + i * 0.127, 3), round(y0 + j * 0.127, 3)) for i in range(int((x1 - x0) / 0.127) + 1)
+            for j in range(int((y1 - y0) / 0.127) + 1)]
+    cand.sort(key=lambda c: (round(min(math.hypot(c[0] - fx, c[1] - fy) for fx, fy in feed), 3), c))
+    ring = [(0.55 * math.cos(math.radians(a)), 0.55 * math.sin(math.radians(a))) for a in range(0, 360, 30)] + [(0, 0)]
+    placed = []
+    for x, y in cand:
+        if len(placed) == count:
+            break
+        if any(math.hypot(x - px, y - py) < PIN_KEEP for px, py in pins) or math.hypot(x - T_OLD[tn][0], y - T_OLD[tn][1]) < SCREW_KEEP:
+            continue
+        if any(math.hypot(x - vx, y - vy) < VIA_PITCH for vx, vy in vias):
+            continue
+        if any(math.hypot(x - hx, y - hy) - hr - 0.2 < 0.45 for hx, hy, hr in holes):
+            continue
+        if not all(f.Contains(V(x + dx, y + dy)) for f in fills for dx, dy in ring):
+            continue
+        c = pcbnew.SHAPE_CIRCLE(V(x, y), mm(0.4))
+        if any(y_.Collide(c, 0) for y_ in yards):
+            continue
+        if any(p.IsOnLayer(l) and p.GetEffectiveShape(l).Collide(c, mm(0.25)) for p in pads for l in cu):
+            continue
+        if any(q.IsOnLayer(l) and q.GetEffectiveShape(l).Collide(c, mm(0.25)) for q in other for l in cu):
+            continue
+        v = pcbnew.PCB_VIA(b)
+        v.SetPosition(V(x, y)); v.SetWidth(pcbnew.F_Cu, mm(0.8)); v.SetDrill(mm(0.4)); v.SetNet(netinfo(net))
+        b.Add(v)
+        vias.append((x, y))
+        placed.append((x, y))
+    if len(placed) < count:
+        raise SystemExit(f"T{tn}: only {len(placed)} of {count} stitching vias found a free spot on {net}")
+    print(f"T{tn} {net}: {count} stitching vias re-placed at {placed}")
+
+
+for tn in sorted(MOVE):
+    replace_vias(tn, MOVE[tn])
+for f in b.GetFootprints():                     # nothing in any terminal pin keep-out (T1-T8)
+    if not f.GetReference().startswith("T"):
+        continue
+    for p in f.Pads():
+        if p.GetDrillSize().x <= 0 or not p.GetNumber():
+            continue
+        for q in b.GetTracks():
+            if q.GetClass() == "PCB_VIA" and math.hypot(um(q.GetPosition().x - p.GetPosition().x), um(q.GetPosition().y - p.GetPosition().y)) < PIN_KEEP:
+                raise SystemExit(f"via at ({um(q.GetPosition().x)}, {um(q.GetPosition().y)}) in the {f.GetReference()} pin keep-out")
 b.Save(PCB)
 b = pcbnew.LoadBoard(PCB)
 pcbnew.ZONE_FILLER(b).Fill(b.Zones())
