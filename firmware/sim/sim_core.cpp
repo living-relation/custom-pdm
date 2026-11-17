@@ -298,6 +298,15 @@ static uint64_t pwmNextUpdate(PWMDriver *p, uint64_t at)
 static void pwmCatchUp(PWMDriver *p, uint64_t at)
 {
     if (p->state != PWM_READY) return;
+    // The firmware wrote CNT (paired follower phase alignment, functions/profet.cpp): the counter runs on from that
+    // value, no update event, so the period grid moves and waiting preload values wait for the new next update event.
+    // A thread writes at nowUs and the scheduler calls this before any timer event after it.
+    if (p->tim->CNT != p->lastCnt)
+    {
+        p->t0 = nowUs - cntToUs(p, p->tim->CNT % p->actPer); p->lastCnt = p->tim->CNT;
+        if (p->pendPer) p->pendAt = pwmNextUpdate(p, nowUs);
+        if (p->pendCcr) p->ccrAt = pwmNextUpdate(p, nowUs);
+    }
     if (p->pendPer && at >= p->pendAt) { p->t0 = p->pendAt; p->actPer = p->pendPer; p->pendPer = 0; }
     if (p->pendCcr && at >= p->ccrAt) { p->actCcr = p->tim->CCR[0]; p->pendCcr = false; }
 }
@@ -306,13 +315,14 @@ static void pwmSync(PWMDriver *p)
     if (p->state != PWM_READY) return;
     pwmCatchUp(p, nowUs);
     uint64_t c = (nowUs - p->t0) * p->config->frequency / 1000000ULL;
-    p->tim->CNT = (uint32_t)(c % p->actPer);
+    p->tim->CNT = p->lastCnt = (uint32_t)(c % p->actPer);
 }
 msg_t pwmStart(PWMDriver *p, const PWMConfig *cfg)
 {
     // pwm_lld_start loads ARR / CCR with an update event (EGR.UG): the start values are in use at once
     p->tim = &p->simTim; p->config = cfg; p->period = cfg->period; p->state = PWM_READY; p->t0 = nowUs; p->enabled = 0;
     p->actPer = pwmTimerPeriod(p, cfg->period); p->pendPer = 0; p->tim->CCR[0] = 0; p->actCcr = 0; p->pendCcr = false;
+    p->tim->CNT = p->lastCnt = 0;
     p->periodicNotify = false; p->chNotify = 0; return MSG_OK;
 }
 void pwmChangePeriod(PWMDriver *p, pwmcnt_t period)

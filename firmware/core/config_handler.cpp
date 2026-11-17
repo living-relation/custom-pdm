@@ -183,7 +183,12 @@ void ApplyConfig(uint16_t nIndex)
     #endif
 
     #if NUM_OUTPUTS > 0
+#if PWM_FREQ_INPUT
+    // custom-pdm: the PWM frequency block 0x7C00 + output is part of the output config (Pwm::SetConfig resolves its input)
+    if ((nBaseIndex == Profet::nBaseIndex) || (nBaseIndex == OUTPUT_FREQ_BASE))
+#else
     if (nBaseIndex == Profet::nBaseIndex)
+#endif
     {
         for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
             pf[i].SetConfig(&stConfig.stOutput[i]);

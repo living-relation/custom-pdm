@@ -32,6 +32,11 @@ public class CustomPdmSettings
     [JsonPropertyName("tempCritSoonMargin")] public int TempCritSoonMargin { get; set; } = DefaultTempCritSoonMargin;
     [JsonPropertyName("wakeInputMask")] public int WakeInputMask { get; set; } = DefaultWakeInputMask;
 
+    // PWM frequency from a variable (tach-style output), one per output: firmware block 0x7C00 + output
+    // (core/param_defs.h OUTPUT_FREQ_PARAMS), listed right after the 0x7F00 block (param_registry.cpp stParams).
+    [JsonIgnore] public const int FreqBaseIndex = 0x7C00;
+    [JsonPropertyName("pwmFreqInputs")] public List<PwmFreqInput> PwmFreqInputs { get; set; } = [];
+
     // B3 (u2a): the PC values were set by "New PDM" (PdmFactoryDefaults) = our firmware's factory config, proven equal
     // against the sim. Not saved: a project loaded from a file counts as not read.
     [JsonIgnore] public bool FactoryNew { get; set; }
@@ -55,6 +60,8 @@ public class CustomPdmSettings
         DeviceType = def.DeviceType;
         NumOutputs = def.NumOutputs;
         NumDigitalInputs = def.NumDigitalInputs;
+        while (PwmFreqInputs.Count < NumOutputs) PwmFreqInputs.Add(new PwmFreqInput());
+        if (PwmFreqInputs.Count > NumOutputs) PwmFreqInputs.RemoveRange(NumOutputs, PwmFreqInputs.Count - NumOutputs);
     }
 
     public void ClearStatus()
@@ -71,7 +78,8 @@ public class CustomPdmSettings
         Param(parentName, "customPdm.tempCritHyst", 2, () => TempCritHyst, v => TempCritHyst = v, DefaultTempCritHyst),
         Param(parentName, "customPdm.critExemptMask", 3, () => CritExemptMask, v => CritExemptMask = v, DefaultCritExemptMask),
         Param(parentName, "customPdm.tempCritSoonMargin", 4, () => TempCritSoonMargin, v => TempCritSoonMargin = v, DefaultTempCritSoonMargin),
-        Param(parentName, "customPdm.wakeInputMask", 5, () => WakeInputMask, v => WakeInputMask = v, DefaultWakeInputMask)
+        Param(parentName, "customPdm.wakeInputMask", 5, () => WakeInputMask, v => WakeInputMask = v, DefaultWakeInputMask),
+        .. PwmFreqInputs.SelectMany((f, i) => f.GetParams(parentName, FreqBaseIndex + i, i + 1))
     ];
 
     private static DeviceParameter Param(string parentName, string name, int subIndex, Func<int> get, Action<int> set,
@@ -125,5 +133,6 @@ public class CustomPdmSettings
         TempWarn is >= TempMin and <= TempMax && TempCrit is >= TempMin and <= TempMax &&
         TempCritHyst is >= HystMin and <= HystMax && TempCritSoonMargin is >= MarginMin and <= MarginMax &&
         CritExemptMask >= 0 && CritExemptMask <= CritExemptMaskMax &&
-        WakeInputMask >= 0 && WakeInputMask <= WakeInputMaskMax && WakeInputMaskBadBits(DeviceType, WakeInputMask) == 0;
+        WakeInputMask >= 0 && WakeInputMask <= WakeInputMaskMax && WakeInputMaskBadBits(DeviceType, WakeInputMask) == 0 &&
+        PwmFreqInputs.TrueForAll(f => f.IsValid());
 }

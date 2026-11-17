@@ -20,6 +20,10 @@ const ParamInfo stParams[] = {
     #if WAKE_INPUT_PARAM
     DEVICE_WAKE_PARAMS(),
     #endif
+    #if PWM_FREQ_INPUT
+    // custom-pdm: PWM frequency from a variable (0x7C00 + output), right after the custom device block
+    ALL_OUTPUT_FREQ_PARAMS,
+    #endif
 
     // Outputs (0x1000+)
     #if NUM_OUTPUTS > 0

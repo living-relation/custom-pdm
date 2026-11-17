@@ -39,10 +39,11 @@
 
 #if THERMAL_LIMIT_PARAMS
 // custom-pdm: high byte = custom-pdm layout revision (counts up when our fields change), low byte = the upstream
-// version it extends (development 0x000A). 0x010A: thermal fields; 0x020A: + wake-input mask (B2). Upstream counts
-// up from 0x000A in the low byte, our older builds used 0x0106-0x0108 and 0x010A, so no stored config of another
-// layout can match it and such a FRAM falls back to the defaults.
-#define CONFIG_VERSION 0x020A //custom-pdm: upstream 0x000A + board temperature limits, critical-exempt outputs, critical-soon margin, wake-input mask in Config_Device
+// version it extends (development 0x000A). 0x010A: thermal fields; 0x020A: + wake-input mask (B2); 0x030A: taken by
+// feat/fw-gaps (output trip time / min current, table, master retry); 0x040A: + PWM frequency from a variable
+// (PWM_FREQ_INPUT, Config_PwmOutput). Upstream counts up from 0x000A in the low byte, our older builds used
+// 0x0106-0x0108 and 0x010A, so no stored config of another layout can match it and such a FRAM falls back to the defaults.
+#define CONFIG_VERSION 0x040A //custom-pdm: upstream 0x000A + board temperature limits, critical-exempt outputs, critical-soon margin, wake-input mask in Config_Device, PWM frequency input in Config_PwmOutput
 #else
 #define CONFIG_VERSION 0x000A //Increment when config structure changes
 #endif

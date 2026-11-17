@@ -194,7 +194,7 @@ struct PWMDriver
     // pendPer = a new period written while running, taken at the next update event pendAt (ARR preload, CR1.ARPE).
     // actCcr = channel 1 compare value in use; a CCR1 write is taken at the next update event ccrAt (CCMR1.OC1PE).
     SimTim simTim; uint64_t t0; bool periodicNotify; uint32_t chNotify; int num; uint32_t actPer; uint32_t pendPer; uint64_t pendAt;
-    uint32_t actCcr; bool pendCcr; uint64_t ccrAt;
+    uint32_t actCcr; bool pendCcr; uint64_t ccrAt; uint32_t lastCnt; // lastCnt: CNT as the sim last set it (a firmware write differs)
 };
 extern PWMDriver PWMD1, PWMD2, PWMD3, PWMD4, PWMD5, PWMD8, PWMD9, PWMD10, PWMD11, PWMD12, PWMD13, PWMD14;
 #define PWM_PERCENTAGE_TO_WIDTH(pwmp, percentage) ((pwmcnt_t)((((pwmcnt_t)(pwmp)->period) * (pwmcnt_t)(percentage)) / (pwmcnt_t)10000))

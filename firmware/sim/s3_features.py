@@ -540,7 +540,12 @@ r = Rig(); v = r.v; switch(r, 0)
 output(r, 0, v.can(0), limit=12.0, inrush=20.0); output(r, 1, v.FALSE, limit=12.0, inrush=20.0, primary=0)   # OUT2 follows OUT1
 amps(r, 0, 4.0); amps(r, 1, 4.0); r.run(100); off_ = (r.pin(0), r.pin(1))
 r.sw(0, 1); r.run(100); on_ = (r.pin(0), r.pin(1)); total = r.b.L.sim_out_current(0)
-pwm(r, 0, duty=40, freq=100); r.run(100); smp = r.sample([0, 1], 50, step=0.05); pd = (duty_freq(smp, 0), duty_freq(smp, 1))
+# PWM is set while the pair is on: the follower's timer is aligned only when it switches on (functions/profet.cpp
+# FollowerUpdate copies CNT on its off -> on edge), so record that phase, then switch off and on again
+pwm(r, 0, duty=40, freq=100); r.run(100); smp = r.sample([0, 1], 50, step=0.05)
+e0, e1 = edges(smp, 0), edges(smp, 1); info['pairing_pwm_set_while_on_phase_ms'] = round(e1[0][0] - e0[0][0], 2) if e0 and e1 else None
+r.sw(0, 0); r.run(50); r.sw(0, 1); r.run(100)
+smp = r.sample([0, 1], 50, step=0.05); pd = (duty_freq(smp, 0), duty_freq(smp, 1))
 e0, e1 = edges(smp, 0), edges(smp, 1); in_step = len(e0) == len(e1) > 4 and all(l0 == l1 and abs(t0 - t1) <= 0.11 for (t0, l0), (t1, l1) in zip(e0, e1))
 r.sw(0, 0); r.run(100); off2 = (r.pin(0), r.pin(1))
 check('pairing: OUT2 (primary = OUT1) switches with OUT1, both pins together; OUT1 reports the sum of both currents (4 + 4 A); PWM 40 % on both, edges within 0.1 ms',
@@ -654,7 +659,7 @@ if present:
     r.val16(0, 1000); r.run(100); r.b.watch(r.b.model['outputs'][0][0]); r.b.edges()
     for k in range(61): r.val16(0, 1000 + 100 * k); r.run(10)
     w = [(t / 1000.0, l) for t, i, l in r.b.edges()]; p = periods(w)
-    pers = [per for a, per, hi in p]
+    pers = [per for a, per, hi in p] or [0.0]
     ramp = dict(n=len(p), longest=max(pers), shortest=min(pers),
                 grew=[(round(p[i][0]), pers[i], pers[i + 1]) for i in range(len(pers) - 1) if pers[i + 1] > pers[i] + 0.002],
                 duty_bad=[(round(a), per, hi) for a, per, hi in p if hi is None or abs(hi / per - 0.5) > 0.01], steps=len(set(pers)))
@@ -664,7 +669,7 @@ info['tach_ramp'] = ramp
 # steady state: period spread at 6000 RPM over 1 s (timer-driven edges; jitter = spread of rise-to-rise times)
 jit = None
 if present:
-    r.val16(0, 6000); r.run(100); p = periods(wave(r, [0], 1000)[0]); pers = [per for a, per, hi in p]
+    r.val16(0, 6000); r.run(100); p = periods(wave(r, [0], 1000)[0]); pers = [per for a, per, hi in p] or [0.0]
     jit = (len(p), round((max(pers) - min(pers)) * 1000, 1))
 check('tach steady 6000 RPM (200 Hz) for 1 s: 199 or more periods, rise-to-rise spread under 2 us', jit is not None and jit[0] >= 199 and jit[1] < 2, jit)
 info['tach_jitter_us'] = jit

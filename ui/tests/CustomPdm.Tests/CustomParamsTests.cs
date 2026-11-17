@@ -20,8 +20,30 @@ public class CustomParamsTests
         // defaults: warn 55, critical 80, hysteresis 6, exempt mask 0 (A2 firmware: 2), margin 5, wake mask 0
         Assert.Equal([55, 80, 6, 0, 5, 0], block.Select(x => (int)x.DefaultValue));
         Assert.All(block, x => Assert.Equal((typeof(int), false), (x.ValueType, x.IsSignedInt)));
-        Assert.Equal(0x1000, p[16].Index);
         Assert.Equal(6, p.Count(x => x.Index == CustomPdmSettings.BaseIndex));
+        // then 0x7C00 + output sub 0-4 for the 8 outputs (OUTPUT_FREQ_PARAMS, PWM frequency from a variable), then 0x1000
+        var freq = p.Skip(16).Take(40).ToList();
+        Assert.Equal(Enumerable.Range(0, 8).SelectMany(o => Enumerable.Range(0, 5).Select(s => (0x7C00 + o, s))), freq.Select(x => (x.Index, x.SubIndex)));
+        Assert.Equal(0x1000, p[56].Index);
+    }
+
+    // firmware/core/param_defs.h OUTPUT_FREQ_PARAMS: Bool off, UInt16 input 0, Float factor 1.0, UInt16 16 / 1000 Hz
+    [Theory]
+    [InlineData(14)]
+    [InlineData(15)]
+    public void FreqInputBlockTypesAndDefaults(int type)
+    {
+        var dev = StockTests.MakeDevice(type);
+        var b = dev.Params.Where(x => x.Index == CustomPdmSettings.FreqBaseIndex + 3).ToList();
+        Assert.Equal(new[] { typeof(bool), typeof(int), typeof(double), typeof(int), typeof(int) }, b.Select(x => x.ValueType));
+        Assert.Equal(new object[] { false, 0, 1.0, 16, 1000 }, b.Select(x => x.DefaultValue));
+        Assert.All(b, x => Assert.False(x.IsModified));
+        var f = dev.CustomPdm!.PwmFreqInputs[3];
+        f.PulsesPerRev = 2; f.Enabled = true;                          // 4-cylinder tachometer
+        Assert.Equal(2.0 / 60.0, (double)b[2].GetValue(), 12);
+        Assert.True(dev.CustomPdm.IsValid());
+        f.MinHz = 15;                                                  // below the firmware minimum
+        Assert.False(dev.CustomPdm.IsValid());
     }
 
     [Theory]

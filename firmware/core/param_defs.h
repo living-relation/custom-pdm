@@ -180,6 +180,28 @@
 #endif
 
 //=============================================================================
+// custom-pdm: PWM frequency from a variable (tach-style output) - Base 0x7C00 + output
+// Own block (not output sub 18+, which upstream may take). Listed right after the 0x7F00 block in stParams
+// (param_registry.cpp), so dingoConfig adds it at the same place (CRC order). frequency Hz = input x factor;
+// below the minimum no pulses (output low), above the maximum held there. Limits: functions/pwm.h PWM_FREQ_MIN_HZ / MAX.
+// Duty: the output's normal PWM duty (fixed sub 12 or variable sub 10 / 11), so a tach is PWM on, fixed duty 50 %.
+//=============================================================================
+#if PWM_FREQ_INPUT
+#define OUTPUT_FREQ_PARAMS(i) \
+    {OUTPUT_FREQ_BASE + (i), 0, &stConfig.stOutput[i].stPwm.bVariableFreq, &stConfigTemp.stOutput[i].stPwm.bVariableFreq, ParamType::Bool,   0, 0, 1}, \
+    {OUTPUT_FREQ_BASE + (i), 1, &stConfig.stOutput[i].stPwm.nFreqInput,    &stConfigTemp.stOutput[i].stPwm.nFreqInput,    ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {OUTPUT_FREQ_BASE + (i), 2, &stConfig.stOutput[i].stPwm.fFreqFactor,   &stConfigTemp.stOutput[i].stPwm.fFreqFactor,   ParamType::Float,  F(1.0f), F(0.0f), F(1000.0f)}, \
+    {OUTPUT_FREQ_BASE + (i), 3, &stConfig.stOutput[i].stPwm.nFreqMin,      &stConfigTemp.stOutput[i].stPwm.nFreqMin,      ParamType::UInt16, PWM_FREQ_MIN_HZ, PWM_FREQ_MIN_HZ, PWM_FREQ_MAX_HZ}, \
+    {OUTPUT_FREQ_BASE + (i), 4, &stConfig.stOutput[i].stPwm.nFreqMax,      &stConfigTemp.stOutput[i].stPwm.nFreqMax,      ParamType::UInt16, PWM_FREQ_MAX_HZ, PWM_FREQ_MIN_HZ, PWM_FREQ_MAX_HZ}
+#if NUM_OUTPUTS != 8
+#error "PWM_FREQ_INPUT: ALL_OUTPUT_FREQ_PARAMS below lists 8 outputs"
+#endif
+#define ALL_OUTPUT_FREQ_PARAMS \
+    OUTPUT_FREQ_PARAMS(0), OUTPUT_FREQ_PARAMS(1), OUTPUT_FREQ_PARAMS(2), OUTPUT_FREQ_PARAMS(3), \
+    OUTPUT_FREQ_PARAMS(4), OUTPUT_FREQ_PARAMS(5), OUTPUT_FREQ_PARAMS(6), OUTPUT_FREQ_PARAMS(7)
+#endif
+
+//=============================================================================
 // Digital Input Parameters - Base 0x1200
 //=============================================================================
 #if NUM_DIG_INPUTS > 0

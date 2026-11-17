@@ -78,6 +78,9 @@ THERMAL = '''// Board temperature limits are config params (0x7F00 sub 0-2, core
 // (status / error LEDs: already off, stock States()). So the MCP9808 limits are not locked: SHDN cannot be set
 // while a lock bit is set (DS25095A Register 5-2).
 #define SLEEP_LOW_POWER 1
+// PWM frequency from a variable, e.g. a tachometer signal from the ECU's RPM on CAN (param block 0x7C00 + output,
+// functions/pwm.cpp UpdateVariableFrequency; 16-1000 Hz). Every output has its own timer on both boards (hw_devices.cpp).
+#define PWM_FREQ_INPUT 1
 // Fans (r7a): @FAN_NOTE@
 #define FAN_OUTPUT @FAN_OUTPUT@
 // Fan switching (Dan 2026-11-14, replaces r3c "always on"): OFF at power-up, ON when the hottest board reaches FAN_ON_C,

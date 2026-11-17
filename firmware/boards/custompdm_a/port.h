@@ -97,6 +97,9 @@
 // (status / error LEDs: already off, stock States()). So the MCP9808 limits are not locked: SHDN cannot be set
 // while a lock bit is set (DS25095A Register 5-2).
 #define SLEEP_LOW_POWER 1
+// PWM frequency from a variable, e.g. a tachometer signal from the ECU's RPM on CAN (param block 0x7C00 + output,
+// functions/pwm.cpp UpdateVariableFrequency; 16-1000 Hz). Every output has its own timer on both boards (hw_devices.cpp).
+#define PWM_FREQ_INPUT 1
 // Fans (r7a): board A unit 2 (A2) OUT2 (index 1) is wired inside the box to both fans; its X1 cavity T is spare.
 // A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)
 // and the east-most driver (U8). Other units: -1 = no fan output

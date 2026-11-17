@@ -167,7 +167,12 @@ void Profet::FollowerUpdate()
         if (pPrimary->IsPwmEnabled())
         {
             pwm.EnsureStarted();
+#if PWM_FREQ_INPUT
+            // custom-pdm: copy the primary's timer period, so a variable (tach) frequency is followed too
+            pwm.OverridePeriod(pPrimary->pwm.GetPeriod());
+#else
             pwm.OverrideFrequency(pPrimary->GetFrequency());
+#endif
             pwm.SetDutyCycle(pPrimary->GetDutyCycle());
             // Align follower timer phase to primary on first enable so both switches
             // transition simultaneously. Both timers share the same APB clock so
