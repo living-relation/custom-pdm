@@ -192,6 +192,24 @@ public sealed class FakePdm
         return refused;
     }
 
+    // p2a: n rounds of 100 ms (bus + Tick), whatever runs or starts by itself
+    public void Rounds(int n)
+    {
+        for (var i = 0; i < n; i++)
+        {
+            Pump();
+            Clock = Clock.AddMilliseconds(100);
+            Service.Tick(Clock);
+        }
+    }
+
+    // rounds until no PDM run is busy (and none started in the last round), 2 min at most
+    public void Settle()
+    {
+        Rounds(1);
+        for (var i = 0; Service.Ops.Busy && i < 1200; i++) Rounds(1);
+    }
+
     // time passes, but nothing the PC sent has reached a board yet
     public void TickOnly()
     {

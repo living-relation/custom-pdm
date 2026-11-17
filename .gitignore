@@ -40,3 +40,4 @@ firmware/.dep/
 # ui: .NET build output (dingoConfig and our tests)
 ui/**/[Bb]in/
 ui/**/[Oo]bj/
+TestResults/

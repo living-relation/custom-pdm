@@ -76,6 +76,7 @@ public class PdmOps(PdmOpsLinks links)
 
     public bool Busy { get; private set; }
     public PdmOpKind? LastOp { get; private set; }
+    public bool LastOnConnect { get; private set; } // the last run was a read on connect (PdmAutoRead)
 
     // One line per board (A1, A2, B) for the last operation
     public IReadOnlyList<PdmBoardResult> Results
@@ -113,17 +114,24 @@ public class PdmOps(PdmOpsLinks links)
         Busy ? BusyReason : BlockedReason(op, view, adapterConnected, links.IsConnected);
 
     // Starts the operation on the boards of this view. Returns why it was refused, or null when it started.
-    public string? Start(PdmOpKind op, PdmView view, bool adapterConnected, DateTime now)
+    // onConnect (p2a, PdmAutoRead): a Read All of just these roles, the boards that have just connected. The result
+    // lines of the other boards stay when the run before was a Read All too.
+    public string? Start(PdmOpKind op, PdmView view, bool adapterConnected, DateTime now,
+        IReadOnlyCollection<string>? onConnect = null)
     {
         lock (_lock)
         {
+            if (onConnect != null && op != PdmOpKind.ReadAll) throw new ArgumentException("only a Read All runs on connect");
             if (BlockedReason(op, view, adapterConnected) is { } blocked) return blocked;
 
             _steps.Clear();
-            _results.Clear();
-            var boards = Roles.Select(r => view.Boards.FirstOrDefault(b => b.Role == r)).ToList();
-            foreach (var role in Roles.Where(r => view.Boards.All(b => b.Role != r)))
-                _results[role] = new PdmBoardResult(role, PdmStepState.NotDone, "not in the project");
+            if (onConnect == null || LastOp != PdmOpKind.ReadAll) _results.Clear();
+            var boards = Roles.Select(r => view.Boards.FirstOrDefault(b => b.Role == r))
+                .Where(b => onConnect == null || (b != null && onConnect.Contains(b.Role))).ToList();
+            if (onConnect == null)
+                foreach (var role in Roles.Where(r => view.Boards.All(b => b.Role != r)))
+                    _results[role] = new PdmBoardResult(role, PdmStepState.NotDone, "not in the project");
+            LastOnConnect = onConnect != null;
 
             if (op == PdmOpKind.Burn)
                 _steps.AddRange(boards.Where(b => b != null).Select(b => new Step(b!.Role, b.Device, StepKind.Check)));
