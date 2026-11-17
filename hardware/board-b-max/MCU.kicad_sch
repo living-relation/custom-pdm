@@ -10970,7 +10970,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "0d43b2d2-e43e-442a-a03a-7876cd9a2428")
-		(property "Reference" "#PWR001"
+		(property "Reference" "#PWR008"
 			(at 189.23 63.5 0)
 			(hide yes)
 			(show_name no)
@@ -11031,7 +11031,7 @@
 		(instances
 			(project "dingoPDM-Max"
 				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
-					(reference "#PWR001")
+					(reference "#PWR008")
 					(unit 1)
 				)
 			)

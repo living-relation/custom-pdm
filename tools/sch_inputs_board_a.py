@@ -11,7 +11,7 @@ J6 pinout (to the input daughter board):
   10   +3V3 (pull-up supply for the input board DIP switches)
   11-12 GND
 """
-import re, uuid
+import os, re, sys, uuid
 
 KICAD10_SYM = r"C:\Users\danie\AppData\Local\Programs\KiCad\10.0\share\kicad\symbols\Connector_Generic.kicad_sym"
 LIB = "Connector_Generic:Conn_01x12"
@@ -237,7 +237,9 @@ t = t[:s] + b.replace("(dnp no)", "(dnp yes)", 1) + t[e:]
 wr(p, t)
 # ---------- all sheets: remove test point symbols ----------
 import glob
-removed = []
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sch_tp_orphans import remove_orphans, testpoint_pins  # noqa: E402
+removed, orphans = [], []
 for f in sorted(glob.glob("*.kicad_sch")):
     x = rd(f)
     out, pos, hit = [], 0, False
@@ -249,8 +251,12 @@ for f in sorted(glob.glob("*.kicad_sch")):
         pos, hit = e, True
     if hit:
         out.append(x[pos:])
-        wr(f, "".join(out))
+        # labels / power symbols that only touched a removed test point's pin (ERC: tools/sch_tp_orphans.py)
+        new, gone = remove_orphans("".join(out), set(testpoint_pins(x)))
+        orphans += [f"{f}: {g}" for g in gone]
+        wr(f, new)
 print("test points removed:", removed)
+print("test-point orphans removed:", orphans)
 
 # ---------- DingoPDM.kicad_sch: remove the DRT logo G1 (J6 sits where it was; Dan, 2026-11-09) ----------
 p = "DingoPDM.kicad_sch"

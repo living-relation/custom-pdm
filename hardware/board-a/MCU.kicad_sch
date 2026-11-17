@@ -5942,16 +5942,6 @@
 		)
 		(uuid "fda5979c-9fcd-4517-b942-76075bf0c2ab")
 	)
-	(label "CAN_TX"
-		(at 64.135 151.13 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0a6fc38f-f8bb-4374-9914-fb31e6e5f7b2")
-	)
 	(label "NRST"
 		(at 87.63 31.75 180)
 		(effects
@@ -6091,16 +6081,6 @@
 			(justify left bottom)
 		)
 		(uuid "f2869bdb-1f53-482e-927c-1a389317ae0e")
-	)
-	(label "CAN_RX"
-		(at 70.485 151.13 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fa10630f-3f4d-4942-afee-0717d0288c61")
 	)
 	(hierarchical_label "PF_DSEL7_8"
 		(shape output)

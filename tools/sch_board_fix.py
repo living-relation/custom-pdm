@@ -267,8 +267,11 @@ for f in glob.glob("*.kicad_sch"):
 
 
 def new_ref(prefix):
+    # KiCad compares the NUMBER of a reference, so #PWR01 and #PWR001 are the same reference (annotation error;
+    # board B had #PWR01 on the root sheet and got #PWR001 here until 2026-11-16): skip every number in use.
+    taken = {int(r[len(prefix):]) for r in used if r.startswith(prefix) and r[len(prefix):].isdigit()}
     n = 1
-    while f"{prefix}{n}" in used or f"{prefix}{n:03d}" in used:
+    while n in taken:
         n += 1
     r = f"{prefix}{n:03d}" if prefix == "#PWR" else f"{prefix}{n}"
     used.add(r)
