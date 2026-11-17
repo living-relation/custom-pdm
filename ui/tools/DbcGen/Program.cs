@@ -1,5 +1,6 @@
-// custom-pdm (route B phase B5): write the DBC files for the ECU into firmware/dbc, and (Dan, 2026-11-16: L2) clash-check
-// the DUMMY TEST COPY car-CAN ID table docs/car-can-dummy/can-id-table.dummy.md (hand made, only read).
+// custom-pdm (route B phase B5): write the DBC files for the ECU into firmware/dbc, and (Dan, 2026-11-16: L1a, L2, L3a)
+// the DUMMY TEST COPY car-CAN files into docs/car-can-dummy (Link receive JSON / .lcs, bus-load estimate; the ID table
+// there is hand made, only read and clash-checked).
 //   dotnet run --project ui/tools/DbcGen              write the files
 //   dotnet run --project ui/tools/DbcGen -- --check   exit 1 if a committed file differs from the generator or IDs clash
 // Same generator as the /pdm Export DBC button: ui/dingoConfig/domain/CustomPdm/DbcExport.cs.
@@ -42,4 +43,7 @@ foreach (var problem in CanIdTableDummy.Check(CanIdTableDummy.Parse(table)))
     Console.WriteLine($"ID TABLE  {problem}");
     bad++;
 }
+var boards = DbcExport.RepoDbcBoards(mgr.GetByDeviceType, mgr.GetDeviceCyclicSigsConfig);
+foreach (var (name, text) in DummyFiles.Generated(boards, table))
+    Emit(DummySources.Folder, name, text);
 return bad == 0 ? 0 : 1;
