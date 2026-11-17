@@ -1,6 +1,7 @@
 JLCPCB check: input-board (2 layers). Limits: JLCPCB capabilities page, 1-2 layer, 1 oz outer copper (read 2026-11-16).
 Zone fills: a refill (KiCad 9) changes the filled area by at most 0.000 % (-); current
 Drilled holes on the same spot (two vias / via on a pad): none
+Hole pairs closer than JLCPCB's hole-to-hole limits (via-via 0.2 mm, pad hole 0.45 mm): none
 Assembly: 48 parts in 9 BOM lines, 48 placements; rotation offsets applied to: D1 +180, D2 +180, D3 +180, D4 +180, D5 +180, D6 +180, D7 +180, D8 +180, D9 +180, J1 +180
 
 Worst values from the copper:
@@ -10,7 +11,7 @@ Worst values from the copper:
   via annular ring min                                   0.200 mm  (JLCPCB 0.05 mm)  ok  
   PTH pad annular ring min                               0.240 mm  (JLCPCB 0.18 mm)  ok  J2
   drill min                                              0.400 mm  (JLCPCB 0.15 mm)  ok  
-  hole-to-hole gap min (via-via)                        -0.200 mm  (JLCPCB 0.2 mm)  BELOW JLCPCB  via  / via
+  hole-to-hole gap min (via-via)                         0.400 mm  (JLCPCB 0.2 mm)  ok  via  / via
   hole-to-hole gap min (pad holes, other footprints)     0.939 mm  (JLCPCB 0.45 mm)  ok  via  / pad J2
 
 DRC with JLCPCB's limits as the only rules (count, worst actual, examples):

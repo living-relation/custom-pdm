@@ -154,6 +154,41 @@ for v in b.GetTracks():
         if k in seen or on_tht:                   # duplicate, or redundant inside a through-hole pad of its net
             dups.append(v)
         seen.add(k)
+# ---- merge near-duplicate vias: two router rounds can end a layer hop on vias a hair apart (fab hole check 2026-11-17:
+# two +3V3 pairs 0.2 / 0.3 mm apart, holes overlapping; KiCad DRC does not flag same-net holes). The second via goes,
+# the track ends on it move to the first one (the hop's tracks are collinear, so nothing else moves), and a track that
+# then has zero length or doubles another one goes too.
+gone = {v.m_Uuid.AsString() for v in dups}
+vias = [v for v in b.GetTracks() if v.GetClass() == "PCB_VIA" and v.m_Uuid.AsString() not in gone]
+for i, v in enumerate(vias):
+    if v.m_Uuid.AsString() in gone:
+        continue
+    for w in vias[i + 1:]:
+        if w.m_Uuid.AsString() in gone or w.GetNetname() != v.GetNetname():
+            continue
+        gap = math.hypot(tomm(w.GetPosition().x - v.GetPosition().x), tomm(w.GetPosition().y - v.GetPosition().y)) \
+            - tomm(v.GetDrillValue()) / 2 - tomm(w.GetDrillValue()) / 2
+        if gap >= 0.25:                            # the board's hole-to-hole rule (JLCPCB via to via: 0.2)
+            continue
+        p, q = v.GetPosition(), w.GetPosition()
+        for t in b.GetTracks():
+            if t.GetClass() == "PCB_TRACK" and t.GetNetname() == v.GetNetname():
+                if (t.GetStart().x, t.GetStart().y) == (q.x, q.y):
+                    t.SetStart(pcbnew.VECTOR2I(p.x, p.y))
+                if (t.GetEnd().x, t.GetEnd().y) == (q.x, q.y):
+                    t.SetEnd(pcbnew.VECTOR2I(p.x, p.y))
+        gone.add(w.m_Uuid.AsString())
+        dups.append(w)
+        print(f"merged {w.GetNetname()} via at ({tomm(q.x):.2f}, {tomm(q.y):.2f}) into ({tomm(p.x):.2f}, {tomm(p.y):.2f})")
+segs = {}
+for t in b.GetTracks():
+    if t.GetClass() != "PCB_TRACK":
+        continue
+    a, c = (t.GetStart().x, t.GetStart().y), (t.GetEnd().x, t.GetEnd().y)
+    k = (t.GetNetname(), t.GetLayer(), t.GetWidth()) + tuple(sorted((a, c)))
+    if a == c or k in segs:
+        dups.append(t)
+    segs[k] = t
 if dups:
     print("removing duplicate vias:", len(dups))
     b = RW.remove_and_reload(b, dups, OUT)
