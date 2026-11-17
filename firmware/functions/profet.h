@@ -24,6 +24,22 @@ struct Config_Output{
   Config_PwmOutput stPwm;
 };
 
+#if PRO_FEATURES
+// custom-pdm (docs/feature-parity.md P1 / P2): per-output protection extras, block 0x7D00 + output (core/param_defs.h)
+struct Config_OutputExt{
+  uint16_t nTripTime;       //ms above the current limit (after the inrush window) before a trip; 0 = trip on one sample
+  uint16_t nMinCurrentTime; //ms below fMinCurrent while On before the undercurrent (open-load) flag sets
+  float fMinCurrent;        //A; 0 = no undercurrent check
+};
+
+// IS reading at (or within 1 %) of the 12-bit ADC full scale (4095): the PROFET fault current IIS(FAULT), 4.4 mA min
+// (BTS7008-2EPA P_9.6.1.1, same family for BTS70012-1ESP / BTS7004-1EPP) x the 1.2 kOhm sense resistor = 5.3 V, above
+// VDDA, or a load current the ADC cannot measure (BTS7008 16.4 A, BTS7004 55 A, BTS70012 96 A). Either way it is a
+// hard overcurrent: after the inrush window it trips at once, without the trip time (P1). It does not latch at
+// once: a real inrush above the measurable range reads the same (see docs/feature-parity.md "Found").
+#define PROFET_IS_FULL_SCALE 4054
+#endif
+
 //=============================================================================
 // PWM read delay = timer count from PWM going high till ready to read ADC
 //=============================================================================
@@ -115,6 +131,22 @@ public:
     }
 
     void Update(bool bOutEnabled);
+#if PRO_FEATURES
+    // custom-pdm (P1 / P2): the output's extra protection settings (stConfig.stOutputExt[i])
+    void SetConfigExt(Config_OutputExt *ext) { pExt = ext; }
+    // custom-pdm (P3): master retry. Overcurrent or Fault -> Off with the trip count cleared; the output then follows
+    // its input again (a load that is still shorted trips again).
+    void MasterRetry()
+    {
+        if (eState == ProfetState::Overcurrent || eState == ProfetState::Fault)
+        {
+            eState = ProfetState::Off;
+            nOcCount = 0;
+            bOverLimit = false;
+        }
+    }
+    float fUndercurrent = 0; // custom-pdm (P2): var map, 1 = On and below the minimum current for the set time
+#endif
 #if SLEEP_LOW_POWER
     // custom-pdm: IN, DEN (and DSEL on dual parts) low just before STOP mode, so the PROFET goes to sleep / OFF mode
     void Sleep();
@@ -199,5 +231,16 @@ private:
     void FollowerUpdate();
     void MeasureCurrent();
     void CalculateCurrent();
+
+#if PRO_FEATURES
+    // custom-pdm (P1 / P2)
+    Config_OutputExt *pExt = nullptr;
+    bool bOverLimit = false;      // above the current limit since nOverLimitStart
+    uint32_t nOverLimitStart = 0;
+    bool bUnderLimit = false;     // On and below the minimum current since nUnderLimitStart
+    uint32_t nUnderLimitStart = 0;
+    bool TripTimeExpired();
+    void UpdateUndercurrent();
+#endif
 };
 #endif
