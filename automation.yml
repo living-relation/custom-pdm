@@ -47,6 +47,17 @@ automations:
     run_cmd: powershell -File tools/build_board_b.ps1
     check_cmd: python tools/check_board_b.py <netlist>
     owner: claude
+  - id: fab-jlcpcb
+    script: tools/gen_fab_jlcpcb.py
+    trigger: manual
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
+    writes: ["hardware/fab/*/gerber/*", "hardware/fab/*/*.csv", "hardware/fab/*/fab-notes.md", "hardware/fab/*/jlcpcb-drc.txt"]   # plus hardware/fab/*/*-gerber.zip (git-ignored)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/gen_fab_jlcpcb.py [A] [B] [IN]'   # KiCad 9 python + kicad-cli 10
+    check_cmd: git diff --exit-code hardware/fab   # a re-run on unchanged boards writes identical files
+    owner: claude
   - id: connector-maps
     script: tools/gen_connector_maps.py
     trigger: manual

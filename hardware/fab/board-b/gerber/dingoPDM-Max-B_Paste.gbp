@@ -1,0 +1,13 @@
+%TF.GenerationSoftware,KiCad,Pcbnew,10.0.7*%
+%TF.ProjectId,dingoPDM-Max,64696e67-6f50-4444-9d2d-4d61782e6b69,v1.2*%
+%TF.SameCoordinates,Original*%
+%TF.FileFunction,Paste,Bot*%
+%TF.FilePolarity,Positive*%
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+G04 APERTURE END LIST*
+M02*
