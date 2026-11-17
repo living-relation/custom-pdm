@@ -20,8 +20,14 @@ const ParamInfo stParams[] = {
     #if WAKE_INPUT_PARAM
     DEVICE_WAKE_PARAMS(),
     #endif
+    #if PRO_FEATURES
+    // custom-pdm: master retry (0x7F00 sub 6), output extras (0x7D00+), tables (0x7E00+)
+    DEVICE_PRO_PARAMS(),
+    ALL_OUTPUT_EXT_PARAMS,
+    ALL_TABLE_PARAMS,
+    #endif
     #if PWM_FREQ_INPUT
-    // custom-pdm: PWM frequency from a variable (0x7C00 + output), right after the custom device block
+    // custom-pdm: PWM frequency from a variable (0x7C00 + output), after the PRO_FEATURES blocks
     ALL_OUTPUT_FREQ_PARAMS,
     #endif
 
@@ -99,6 +105,9 @@ const ParamInfo stParams[] = {
 };
 
 const uint16_t NUM_PARAMS = sizeof(stParams) / sizeof(stParams[0]);
+#if PRO_FEATURES
+static_assert(NUM_OUTPUTS == 8 && NUM_TABLES == 4, "custom-pdm: ALL_OUTPUT_EXT_PARAMS / ALL_TABLE_PARAMS list 8 outputs, 4 tables");
+#endif
 
 //=============================================================================
 // WriteAll received-param tracking (full WriteAll only, see param_registry.h)

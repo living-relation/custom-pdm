@@ -66,6 +66,9 @@ extern Digital_Output digOut[NUM_DIG_OUTPUTS];
 #if NUM_ANALOG_INPUTS > 0
 extern Analog_Input analogIn[NUM_ANALOG_INPUTS];
 #endif
+#if PRO_FEATURES
+extern LookupTable lookupTable[NUM_TABLES]; // custom-pdm (T1)
+#endif
 
 static MUTEX_DECL(configMutex);
 
@@ -113,6 +116,9 @@ void ApplyAllConfig()
     #endif
     #if NUM_ANALOG_INPUTS > 0
     ApplyConfig(Analog_Input::nBaseIndex);
+    #endif
+    #if PRO_FEATURES
+    ApplyConfig(LookupTable::nBaseIndex); // custom-pdm (T1)
     #endif
 }
 
@@ -192,6 +198,11 @@ void ApplyConfig(uint16_t nIndex)
     {
         for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
             pf[i].SetConfig(&stConfig.stOutput[i]);
+        #if PRO_FEATURES
+        // custom-pdm (P1 / P2): block 0x7D00 + i is read through this pointer, so its writes need no apply step
+        for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
+            pf[i].SetConfigExt(&stConfig.stOutputExt[i]);
+        #endif
 
         // Clear all pairing pointers before linking
         for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
@@ -263,6 +274,15 @@ void ApplyConfig(uint16_t nIndex)
     {
         for (uint8_t i = 0; i < NUM_ANALOG_INPUTS; i++)
             analogIn[i].SetConfig(&stConfig.stAnalogInput[i]);
+    }
+    #endif
+
+    #if PRO_FEATURES
+    // custom-pdm (T1): the input var pointer is resolved here
+    if (nBaseIndex == LookupTable::nBaseIndex)
+    {
+        for (uint8_t i = 0; i < NUM_TABLES; i++)
+            lookupTable[i].SetConfig(&stConfig.stTable[i]);
     }
     #endif
 }

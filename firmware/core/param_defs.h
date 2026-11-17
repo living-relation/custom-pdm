@@ -155,6 +155,54 @@
 #endif
 
 //=============================================================================
+// custom-pdm (PRO_FEATURES, docs/feature-parity.md P1 P2 P3 T1). Custom blocks upstream does not use.
+//   0x7F00 sub 6       master retry input (var index, 0 = off; P3)
+//   0x7D00 + o sub 0-2 output o: trip time ms (P1), min current A, min-current time ms (P2)
+//   0x7E00 + n sub 0-18 table n: enable, input var, points, x[0..7], y[0..7] (T1)
+// Registered right after the 0x7F00 block (param_registry.cpp), so dingoConfig lists them in the same CRC order.
+//=============================================================================
+#define MASTER_RETRY_SUB 6
+#define OUTPUT_EXT_PARAM_BASE 0x7D00
+#define TABLE_PARAM_BASE 0x7E00
+#if PRO_FEATURES
+// P1 factory trip time (DECISIONS 2026-11-16 default, docs/feature-parity.md P1): 50 ms. ECUMaster / Link / MoTeC
+// publish no default (their manuals were read: none given). 50 ms is below the shortest opening time an ISO 8820-3
+// 3-40 A blade fuse may have at 350 % of its rating (80 ms; 150 ms at 200 %; Littelfuse ATO data sheet), so with the
+// limit = the output rating the PDM still opens before the fuse it replaces would, and it rides through spikes and
+// single noisy samples shorter than 50 ms (a motor / pump step, one 2 ms sample). 0 = stock (one sample).
+#ifndef DEFAULT_OUT_TRIP_TIME
+#define DEFAULT_OUT_TRIP_TIME(i) 50
+#endif
+// P2: off by default (min current 0 A = no check); flag time 500 ms (proposal). The time counts only while the
+// output is On, so a flasher's off phase never counts as open load.
+#ifndef DEFAULT_OUT_MIN_CURRENT_TIME
+#define DEFAULT_OUT_MIN_CURRENT_TIME(i) 500
+#endif
+#define DEVICE_PRO_PARAMS() \
+    {THERMAL_PARAM_BASE, MASTER_RETRY_SUB, &stConfig.stDevice.nMasterRetryInput, &stConfigTemp.stDevice.nMasterRetryInput, ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}
+#define OUTPUT_EXT_PARAMS(i) \
+    {OUTPUT_EXT_PARAM_BASE + (i), 0, &stConfig.stOutputExt[i].nTripTime,       &stConfigTemp.stOutputExt[i].nTripTime,       ParamType::UInt16, DEFAULT_OUT_TRIP_TIME(i), 0, 10000}, \
+    {OUTPUT_EXT_PARAM_BASE + (i), 1, &stConfig.stOutputExt[i].fMinCurrent,     &stConfigTemp.stOutputExt[i].fMinCurrent,     ParamType::Float,  F(0.0f), F(0.0f), F(100.0f)}, \
+    {OUTPUT_EXT_PARAM_BASE + (i), 2, &stConfig.stOutputExt[i].nMinCurrentTime, &stConfigTemp.stOutputExt[i].nMinCurrentTime, ParamType::UInt16, DEFAULT_OUT_MIN_CURRENT_TIME(i), 0, 60000}
+#define TABLE_XY_PARAM(i, sub, arr, k) \
+    {TABLE_PARAM_BASE + (i), sub, &stConfig.stTable[i].arr[k], &stConfigTemp.stTable[i].arr[k], ParamType::Float, F(0.0f), F(-1e9f), F(1e9f)}
+#define TABLE_PARAMS(i) \
+    {TABLE_PARAM_BASE + (i), 0, &stConfig.stTable[i].bEnabled, &stConfigTemp.stTable[i].bEnabled, ParamType::Bool,   0, 0, 1}, \
+    {TABLE_PARAM_BASE + (i), 1, &stConfig.stTable[i].nInput,   &stConfigTemp.stTable[i].nInput,   ParamType::UInt16, 0, 0, VAR_MAP_SIZE - 1}, \
+    {TABLE_PARAM_BASE + (i), 2, &stConfig.stTable[i].nPoints,  &stConfigTemp.stTable[i].nPoints,  ParamType::UInt8,  0, 0, TABLE_MAX_POINTS}, \
+    TABLE_XY_PARAM(i, 3, fX, 0), TABLE_XY_PARAM(i, 4, fX, 1), TABLE_XY_PARAM(i, 5, fX, 2), TABLE_XY_PARAM(i, 6, fX, 3), \
+    TABLE_XY_PARAM(i, 7, fX, 4), TABLE_XY_PARAM(i, 8, fX, 5), TABLE_XY_PARAM(i, 9, fX, 6), TABLE_XY_PARAM(i, 10, fX, 7), \
+    TABLE_XY_PARAM(i, 11, fY, 0), TABLE_XY_PARAM(i, 12, fY, 1), TABLE_XY_PARAM(i, 13, fY, 2), TABLE_XY_PARAM(i, 14, fY, 3), \
+    TABLE_XY_PARAM(i, 15, fY, 4), TABLE_XY_PARAM(i, 16, fY, 5), TABLE_XY_PARAM(i, 17, fY, 6), TABLE_XY_PARAM(i, 18, fY, 7)
+// Both custom boards have 8 outputs and 4 tables (static_assert in param_registry.cpp)
+#define ALL_OUTPUT_EXT_PARAMS \
+    OUTPUT_EXT_PARAMS(0), OUTPUT_EXT_PARAMS(1), OUTPUT_EXT_PARAMS(2), OUTPUT_EXT_PARAMS(3), \
+    OUTPUT_EXT_PARAMS(4), OUTPUT_EXT_PARAMS(5), OUTPUT_EXT_PARAMS(6), OUTPUT_EXT_PARAMS(7)
+#define ALL_TABLE_PARAMS \
+    TABLE_PARAMS(0), TABLE_PARAMS(1), TABLE_PARAMS(2), TABLE_PARAMS(3)
+#endif
+
+//=============================================================================
 // Output Parameters - Base 0x1000
 //=============================================================================
 #if NUM_OUTPUTS > 0
@@ -181,7 +229,7 @@
 
 //=============================================================================
 // custom-pdm: PWM frequency from a variable (tach-style output) - Base 0x7C00 + output
-// Own block (not output sub 18+, which upstream may take). Listed right after the 0x7F00 block in stParams
+// Own block (not output sub 18+, which upstream may take). Listed after the PRO_FEATURES blocks (0x7F00 sub 6, 0x7D00, 0x7E00) in stParams
 // (param_registry.cpp), so dingoConfig adds it at the same place (CRC order). frequency Hz = input x factor;
 // below the minimum no pulses (output low), above the maximum held there. Limits: functions/pwm.h PWM_FREQ_MIN_HZ / MAX.
 // Duty: the output's normal PWM duty (fixed sub 12 or variable sub 10 / 11), so a tach is PWM on, fixed duty 50 %.

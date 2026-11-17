@@ -73,6 +73,9 @@ Board Restarts While The ECU Is Talking: Outputs Come Back, Saved Config Survive
 Overcurrent: Three Tries One Second Apart, Then Fault Until A Power Cycle
     Overcurrent Retries Three Times Then Latches Fault
 
+Overcurrent Trip Time 50 ms: A 20 ms 10 A Spike Rides Through, 10 A Held Trips 50 ms Later, Retried 1 s Later
+    Overcurrent Trip Time Rides Through A Spike And Trips A Held Overload
+
 Board Temperature From The I2C Sensor Reaches The Status Frame And The Over-temperature State
     Board Temperature Reaches The Status Frame
 

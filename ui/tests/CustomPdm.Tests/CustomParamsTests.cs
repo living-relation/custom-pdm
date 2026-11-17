@@ -13,18 +13,28 @@ public class CustomParamsTests
     public void BlockFollowsDeviceBlockInFirmwareOrder(int type)
     {
         var p = StockTests.MakeDevice(type).Params;
-        // device block 0x0000 sub 0-9, then 0x7F00 sub 0-5 (param_registry.cpp stParams), then outputs 0x1000
+        // device block 0x0000 sub 0-9, then 0x7F00 sub 0-6, 0x7D00 + o sub 0-2, 0x7E00 + n sub 0-18
+        // (param_registry.cpp stParams: thermal, wake, PRO_FEATURES), then outputs 0x1000
         Assert.Equal(Enumerable.Range(0, 10).Select(s => (0x0000, s)), p.Take(10).Select(x => (x.Index, x.SubIndex)));
-        var block = p.Skip(10).Take(6).ToList();
-        Assert.Equal(Enumerable.Range(0, 6).Select(s => (0x7F00, s)), block.Select(x => (x.Index, x.SubIndex)));
-        // defaults: warn 55, critical 80, hysteresis 6, exempt mask 0 (A2 firmware: 2), margin 5, wake mask 0
-        Assert.Equal([55, 80, 6, 0, 5, 0], block.Select(x => (int)x.DefaultValue));
+        var block = p.Skip(10).Take(7).ToList();
+        Assert.Equal(Enumerable.Range(0, 7).Select(s => (0x7F00, s)), block.Select(x => (x.Index, x.SubIndex)));
+        // defaults: warn 55, critical 80, hysteresis 6, exempt mask 0 (A2 firmware: 2), margin 5, wake mask 0, master retry 0 (off)
+        Assert.Equal([55, 80, 6, 0, 5, 0, 0], block.Select(x => (int)x.DefaultValue));
         Assert.All(block, x => Assert.Equal((typeof(int), false), (x.ValueType, x.IsSignedInt)));
-        Assert.Equal(6, p.Count(x => x.Index == CustomPdmSettings.BaseIndex));
+        var ext = p.Skip(17).Take(24).ToList();
+        Assert.Equal(Enumerable.Range(0, 8).SelectMany(o => Enumerable.Range(0, 3).Select(s => (0x7D00 + o, s))), ext.Select(x => (x.Index, x.SubIndex)));
+        Assert.Equal(Enumerable.Repeat(new object[] { 50, 0.0, 500 }, 8).SelectMany(x => x), ext.Select(x => x.DefaultValue));
+        Assert.Equal(Enumerable.Repeat(new[] { typeof(int), typeof(double), typeof(int) }, 8).SelectMany(x => x), ext.Select(x => x.ValueType));
+        var tab = p.Skip(41).Take(76).ToList();
+        Assert.Equal(Enumerable.Range(0, 4).SelectMany(n => Enumerable.Range(0, 19).Select(s => (0x7E00 + n, s))), tab.Select(x => (x.Index, x.SubIndex)));
+        Assert.All(tab.Where(x => x.SubIndex == 0), x => Assert.Equal((typeof(bool), (object)false), (x.ValueType, x.DefaultValue)));
+        Assert.All(tab.Where(x => x.SubIndex is 1 or 2), x => Assert.Equal((typeof(int), (object)0), (x.ValueType, x.DefaultValue)));
+        Assert.All(tab.Where(x => x.SubIndex >= 3), x => Assert.Equal((typeof(double), (object)0.0), (x.ValueType, x.DefaultValue)));
         // then 0x7C00 + output sub 0-4 for the 8 outputs (OUTPUT_FREQ_PARAMS, PWM frequency from a variable), then 0x1000
-        var freq = p.Skip(16).Take(40).ToList();
+        var freq = p.Skip(117).Take(40).ToList();
         Assert.Equal(Enumerable.Range(0, 8).SelectMany(o => Enumerable.Range(0, 5).Select(s => (0x7C00 + o, s))), freq.Select(x => (x.Index, x.SubIndex)));
-        Assert.Equal(0x1000, p[56].Index);
+        Assert.Equal(0x1000, p[157].Index);
+        Assert.Equal(7, p.Count(x => x.Index == CustomPdmSettings.BaseIndex));
     }
 
     // firmware/core/param_defs.h OUTPUT_FREQ_PARAMS: Bool off, UInt16 input 0, Float factor 1.0, UInt16 16 / 1000 Hz
@@ -56,6 +66,8 @@ public class CustomParamsTests
         var dev = StockTests.MakeDevice(type);
         Assert.Null(dev.CustomPdm);
         Assert.DoesNotContain(dev.Params, x => x.Index == CustomPdmSettings.BaseIndex);
+        Assert.DoesNotContain(dev.Params, x => (x.Index & 0xFF00) is CustomPdmSettings.OutputExtBaseIndex or CustomPdmSettings.TableBaseIndex);
+        Assert.DoesNotContain(dev.VarMap, v => v.PropertyName == "Undercurrent" || v.GetName().StartsWith("Table "));
         Assert.DoesNotContain("customPdm", JsonSerializer.Serialize(dev));
     }
 
