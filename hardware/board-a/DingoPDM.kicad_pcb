@@ -358,6 +358,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "16be2083-d27c-4d7c-a47f-175f12965679")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fb215340-c522-4158-9d37-be053b480af4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54b02a/00000000-0000-0000-0000-00005f5a40c0/00000000-0000-0000-0000-00005ecb4c77")
 		(sheetname "/HighCurrentDrivers/sheet5F5A40B9/")
@@ -568,6 +592,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4f990dc2-b993-4f89-866f-10940ea0ac2d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ed751b37-0c22-4faa-9a4a-5ebc302ba5e2")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -803,6 +851,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "bb436cd7-af60-47ee-bbef-0d6e85dd7bd0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0d711af7-f5b3-4fc3-91b5-84ed6ed808ed")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1115,6 +1175,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Abracon"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e48ab01f-33d4-4ec3-92a9-0e6e74b318d8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "ABM3-8.000MHZ-D2Y-T"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "664cf64e-36f4-4cca-8105-d1e903d34cc6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "Crystal*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f4e276a")
 		(sheetname "/MCU/")
@@ -1409,7 +1493,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "399-C0805C473K5RACTUCT-ND"
 			(at 9.144 17.272 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1450,6 +1534,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "331c2482-a5bd-42e7-9421-44e2d22dc632")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3d6c4e2d-5911-407d-9419-d2c023ca81c5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1671,6 +1767,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f2ebd03-ef46-4f70-9db8-0bee1ac79844")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805GRNPO0BN221"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25b3846b-fd71-4452-8606-b5a7732fb88e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae1d0")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -1881,6 +2001,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "240173ad-b093-4c9c-9cc5-8c341ef61b2c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805GRNPO0BN221"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c412ab2-a5ac-4be0-b641-62530064f349")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -2099,6 +2243,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3102c6ff-39d8-4ed3-a1e5-80e365658248")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "29db695c-6078-44f2-83b2-4c4f1e953293")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-0000605f89a8/00000000-0000-0000-0000-0000606082cb")
 		(sheetname "/DigitalInputs/")
@@ -2307,6 +2475,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0b907565-ca46-443b-a836-3bd6b6c70868")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "7461084"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "57659706-f0db-4923-9f22-df11a3c9b3b7")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -2566,6 +2758,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4879bae7-0ef6-442e-b32c-ae05b263e42c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "30865864-a54f-422f-8115-c348e5734e03")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae211")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -2780,6 +2996,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d79757b0-aea7-4df8-b997-4e90a0c575b3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "420bf405-4fa0-4e49-9a82-1cd8e8d8f80d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae217")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -2982,7 +3222,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2933520"
+		(property "LCSC" "C17379"
 			(at -19.304 19.304 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -2994,7 +3234,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "FOJAN"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3006,11 +3246,23 @@
 				)
 			)
 		)
-		(property "MPN" "FRC0805J122"
+		(property "MPN" "0805W8F1201T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "eb608f09-30a5-4511-bd3d-5cbc34e9d902")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "14570e54-97ad-42d0-a451-702679afc05a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3232,6 +3484,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FOJAN"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ae6fddf3-3d44-46ae-befe-59676e94a8df")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FRC1206J470 TS"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fccd3a16-a716-45f1-9bdd-5e7ad2d7c5b6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae1ac")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -3442,6 +3718,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f64f6875-d490-4585-bca8-f2a78a3e21f5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "db52fd79-5001-4141-9325-7177aa54482c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -3660,6 +3960,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d73345d0-a549-465b-9ab2-69430194fc7b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "131c8957-81f2-4322-b91d-3144bc07228d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae1ca")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -3870,6 +4194,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "da4f755b-c10a-4120-85a7-3fad0e3fda7c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fcddace7-7d22-472e-823a-660d3f89ac2c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -4469,6 +4817,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c46695e0-431a-4c02-8aeb-35764e51e935")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4b59608d-7e8e-4c67-ad8e-fe3a97db6d49")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f75d23a")
 		(sheetname "/MCU/")
@@ -4679,6 +5051,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Microchip"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "93e4248c-046c-408a-8711-49190d692d0b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "MCP9808T-E/MS"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "351db85b-bce9-4bae-9a47-80f35d709d80")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -4988,6 +5384,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "08bb3172-ae65-42f3-94fb-18a009203f7a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "19437cb6-9684-4f15-a1a4-3b6baf070559")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f5a32b6")
 		(sheetname "/")
@@ -5198,6 +5618,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cd9f0de6-4604-4742-bdba-8adff66e195d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a7f2adf4-2b98-4d3c-8f21-6c1c52b916db")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -5486,6 +5930,42 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7c858fb4-abbe-44a2-9e6e-6eaf72d93fa8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "RT0805DRD0747KL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5da7064c-7dd2-4e6e-9963-0909ef0be3c2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "UNI-ROYAL 0805W8F4702T5E (1 %, LCSC C17713, basic)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a1eea3e7-7553-452a-856e-3f826bf7680b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5a2652")
 		(sheetname "/")
@@ -5700,6 +6180,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d660b822-7fbd-498a-9c2a-7697210daa59")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ce9f6ac3-ee86-496b-b54a-34228a93c16d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5a2a39")
 		(sheetname "/")
@@ -5910,6 +6414,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "06db60b7-d45c-4cb8-8a01-80731a987675")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "480eff05-2824-4dee-a63b-b3091fd3c410")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -6144,6 +6672,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "46385373-7a00-4fb1-9cfb-2f67df0ba42b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "Infineon BTS7008-2EPA (same chip, LCSC C534830)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a0665e3-ac77-401b-a31c-8989cb7613ea")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6492,7 +7032,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "399-C0805C473K5RACTUCT-ND"
 			(at 19.812 6.604 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6533,6 +7073,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cf41ccff-7fce-4ed6-abfb-c4c40f679b27")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "becbc3b6-330a-481b-8f6c-d2024394957e")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6750,6 +7302,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bc57ca22-8d76-4ba9-9cbb-3d1daab2b8b7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51fb7e6c-1ff6-4a32-9a68-f993ed5f0bdc")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -7080,6 +7656,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Murata"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "44f1c7f1-9043-4369-970a-e719cabf9c7b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BLM21PG221SN1D"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e1136214-0f68-4637-a602-a94300fa5637")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f4fd861")
 		(sheetname "/MCU/")
@@ -7290,6 +7890,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "84642b89-8f73-4421-a006-e3840f3cfd3a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cea42f84-7e54-4585-9bb6-ffab99279898")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -7620,6 +8244,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9962da35-cf83-4b44-ba94-38b018f8f97d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dea9d1e5-d3f4-4d87-919e-632b72980d38")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-0000605f89a8/00000000-0000-0000-0000-0000606083df")
 		(sheetname "/DigitalInputs/")
@@ -7851,6 +8499,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6e18072f-4b97-4864-a9b1-2381f091da13")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "STMicroelectronics STM32F446RET6 (s9a; LCSC C69336)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "14b17ba5-31fe-46f3-ba09-13ebd595c029")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9008,6 +9668,18 @@
 				)
 			)
 		)
+		(property "Alternates" "Infineon BTS7008-2EPA (same chip, LCSC C534830)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a33db00-ca29-4ce4-acd0-b1f107e27ed5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae18d")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
 		(sheetfile "BTS7008_2EPA.kicad_sch")
@@ -9373,6 +10045,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b6816d64-fd60-48b9-ab6c-6f548d4431c6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21B103KBANNNC"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "69428685-f312-4d06-990d-567c01977a14")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-0000605f89a8/00000000-0000-0000-0000-0000606082fd")
 		(sheetname "/DigitalInputs/")
@@ -9587,6 +10283,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28b25587-7c72-44db-9258-23372fb0c238")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba973624-171f-4948-b2bb-e6d749cd3826")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54b02a/00000000-0000-0000-0000-00005f5a40c0/00000000-0000-0000-0000-00005ecb4ce4")
 		(sheetname "/HighCurrentDrivers/sheet5F5A40B9/")
@@ -9797,6 +10517,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1eddf5e0-c34a-4bd2-ba4c-be981d16f845")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21B105KBFNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ccf0813d-570b-4eb5-a894-d65dd0f2eb6b")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -10498,6 +11242,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ad21fffb-1b80-40f0-b320-2d9cfffd85f7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4f50a5e9-24dd-4945-96b8-3fda00d8679f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54b02a/00000000-0000-0000-0000-00005f5a40c6/00000000-0000-0000-0000-00005ecb4c77")
 		(sheetname "/HighCurrentDrivers/sheet5F5A40BA/")
@@ -10708,6 +11476,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ff17580a-78e4-48e2-b4ef-ce9ca20da969")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "57be91e9-2ac2-4869-9e77-805d7715acd5")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -11164,6 +11956,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "08693360-dfd0-4f0e-8f78-873fef80737a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21A226MAQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "18796154-4978-48de-b779-5f0ae5817ff0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f5cf2eb/00000000-0000-0000-0000-00005f5ca7f8")
 		(sheetname "/Power/")
@@ -11374,6 +12190,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a0f81b84-7a46-4765-80b4-bc670f942136")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "69135be8-d72a-4c89-b5be-ca8f92ef870c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -11592,6 +12432,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c78d0074-a62a-47a8-b4f3-0b6077c68ebc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21A106KAYNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5fd93e4e-3be4-4c69-a2bd-f48d668fe8e0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f5cf2eb/00000000-0000-0000-0000-00005f5d14cf")
 		(sheetname "/Power/")
@@ -11802,6 +12666,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1491e225-9139-437c-ab1c-918943aa9c50")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805CG270J500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4ad469f0-82a5-44b4-b70d-6e8920730809")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -12020,6 +12908,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "12cd6386-108f-490b-a1ef-1eb9c151ea00")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805CG270J500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0499d874-ab50-4d26-9f42-9802e0c3f37c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f4e6f93")
 		(sheetname "/MCU/")
@@ -12230,6 +13142,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "OSRAM"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df4eca30-9542-4112-8643-cee829145d6c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LG R971-KN-1-0-20-R18"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5c23ab3f-bf13-4689-9b1f-551380c51e04")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -12464,6 +13400,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "DOWO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7151f97c-5f93-47df-be7c-b32495ddff9e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "NUP2105LT1G"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7092672b-ca5a-4633-8db2-02d3279a81f6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi NUP2105LT1G (DK NUP2105LT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1236a1fb-5e23-4129-b55d-af97f4f3722a")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -12790,6 +13762,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "OSRAM"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1b5d93bc-6765-49c3-bc27-c638a2587336")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LS R976-NR-1-0-20-R18"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ece95cd2-8c6e-4d09-a6c7-ba5ce06dd248")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f5b7065/00000000-0000-0000-0000-00005fab3628")
 		(sheetname "/I2C/")
@@ -13022,6 +14018,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "50d4d74c-0ed5-4932-9826-e55761685d5d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "622228df-d7d2-4c5c-9790-6e8be6ebd2f5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5e54a935-a241-4914-ad3c-e1deecd20822")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -13279,6 +14311,42 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "83a5ed4f-679c-48a8-adfd-862b7b984052")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25284afb-e37c-40c6-8567-f4f937cf2c3a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9a86d5d7-d2d9-4a27-86ed-e607c73fee3e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/00000000-0000-0000-0000-0000605f89a8/00000000-0000-0000-0000-0000606082de")
 		(sheetname "/DigitalInputs/")
@@ -13532,6 +14600,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6c56d2ed-586d-43f9-8fef-16538ce9d0ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cbf7ccd5-89c4-4472-8a68-8af8652e8907")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5b7065/00000000-0000-0000-0000-00005f5cc799")
 		(sheetname "/I2C/")
@@ -13746,6 +14838,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a7e26b87-2e85-4c16-a8e0-e70ff1930a0a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a78e77cf-00d6-4d8a-b3e2-f4dafc0107e6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5b7065/00000000-0000-0000-0000-00005f5cce4a")
 		(sheetname "/I2C/")
@@ -13948,7 +15064,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at -54.61 39.37 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -13956,6 +15072,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f39f783-6061-4228-b952-014c53d31de4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "196033f9-1d43-4de9-a491-f395158a12fb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "47fe5308-72b9-4916-859b-35758085873c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -14174,6 +15326,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a3a496fb-6fa9-4a2e-837c-e6c8d4674244")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fd95ba5f-ba0f-4750-95fc-2b77aa4716e8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f75f0a9")
 		(sheetname "/MCU/")
@@ -14384,6 +15560,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "37a8ec4f-b24a-4859-b560-794ee5d5749e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "525b5ae2-ee90-49ff-a9d9-efd76349ab4c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -14602,6 +15802,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2a6cbdb3-b9c4-4739-93f1-8922ffff806c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "24226a92-e380-48c8-81fb-567e504c6316")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae193")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -14804,7 +16028,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2933520"
+		(property "LCSC" "C17379"
 			(at -19.05 -19.05 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -14816,7 +16040,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "FOJAN"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -14828,11 +16052,23 @@
 				)
 			)
 		)
-		(property "MPN" "FRC0805J122"
+		(property "MPN" "0805W8F1201T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "80a32293-ffbf-4b7d-8ab4-c047fca9706b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4545fb6-3db2-4840-b4db-7514491d4bdf")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15065,6 +16301,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0076649e-3bf4-42dc-b84c-a3f56bc4827b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "949f23a1-b76e-497c-8225-861d430bb5f0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1a0")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -15286,6 +16546,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c2961545-d827-4786-b354-100f2753105f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c368ce10-b2e4-4e3d-8f50-696103ac174b")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -15576,6 +16860,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "70f10d14-b221-43d0-9b97-ef1e41a92353")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21A475KAQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f012754-fbef-4382-bf36-30a89c93f395")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f763335")
 		(sheetname "/MCU/")
@@ -15806,6 +17114,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "f448ded1-9167-456a-a25f-65d330aef401")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "Infineon BTS7008-2EPA (same chip, LCSC C534830)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cb09c3d2-a712-4eb9-9777-717b109418df")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16178,6 +17498,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28d9bf2e-a2d7-4557-8b24-9f93966d9dc2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b0043422-e56d-4957-91ec-9b1e1274df15")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/00000000-0000-0000-0000-00005f5a9675/00000000-0000-0000-0000-00005f5ae1e2")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9674/")
@@ -16460,6 +17804,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "OSRAM"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4accc6f-bd57-4b9d-ad7e-5df986aa26ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LG R971-KN-1-0-20-R18"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2fdb0280-be04-4d9a-b53b-8cdd7d9953e8")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -16976,6 +18344,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "GCT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d273316b-0d1c-4f1c-a493-3c4d8233ee00")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "USB4085-GF-A"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d20bf0c6-470b-486a-a916-d84ac977e4f5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "USB*C*Receptacle*")
 		(path "/00000000-0000-0000-0000-00005f5b308f/ae662588-96ef-4236-9453-cbd4f6dc0355")
 		(sheetname "/Connectors/")
@@ -17464,6 +18856,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "86839d81-479e-4f4f-b2db-b1f52e6574a6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a9c41c9-bc58-4156-b709-a49952735b6e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae199")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -17674,6 +19090,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a83e7ff1-8ab5-4b02-8392-c2a0f1ce1402")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ce0f51f9-4bcd-4da3-8475-5552f2557de3")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -17891,7 +19331,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2933520"
+		(property "LCSC" "C17379"
 			(at -6.096 32.512 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17903,7 +19343,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "FOJAN"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17915,11 +19355,23 @@
 				)
 			)
 		)
-		(property "MPN" "FRC0805J122"
+		(property "MPN" "0805W8F1201T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "26dccd39-d7c2-4245-927a-b30af18dc1cd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "62de9013-fc4f-4c97-8dd1-b2f74884c357")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18141,6 +19593,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b3c31669-916a-4204-9825-4a3bb902dc44")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c5c717bc-f319-413a-976b-a15162c88ef9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1ca")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -18333,6 +19809,54 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ecd91d53-68c6-467f-9524-1538f2de55fe")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "JST"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "00b79a70-6714-44f4-9c5d-cf2c24e54e4b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "SM12B-GHS-TB(LF)(SN)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7dabf0ac-ee93-4acc-ba56-76a1b76c1aab")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C265421"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "544bd0d7-536f-41c3-a798-abadba99695b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "455-1574-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "343c1723-7eaf-4763-8b6d-b6b9650d83f1")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18836,6 +20360,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "828ac60e-4f2f-4cfd-b769-ca9d0371ccde")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1001T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "338b8f06-ac23-4ec3-94e5-2893b0259e2e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f83dcc9")
 		(sheetname "/MCU/")
@@ -19066,6 +20614,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "83410a64-f40e-46e7-8f59-78875760b856")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "Infineon BTS7008-2EPA (same chip, LCSC C534830)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "054048bb-d66a-49cf-ab30-42d514be353b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19426,7 +20986,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2933520"
+		(property "LCSC" "C17379"
 			(at -10.16 -27.94 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -19438,7 +20998,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "FOJAN"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -19450,11 +21010,23 @@
 				)
 			)
 		)
-		(property "MPN" "FRC0805J122"
+		(property "MPN" "0805W8F1201T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b7e9b505-3dc8-4e5a-ae66-cb7849a2d34a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3d4ba74a-8193-4d35-85e7-bc960afb8904")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19687,6 +21259,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FOJAN"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a3387ea7-3707-4004-a420-b04f065c05a6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FRC1206J470 TS"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "13a7522f-f1b2-470f-88d7-cb429d680cd9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1ac")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -19912,6 +21508,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "74abab87-75f1-4282-802f-fe4cf2f98624")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d7a6a5b5-2301-42f5-b606-4292875f43f6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5b308f/ab77937b-3ccf-4841-b0e6-278f4af8adb4")
 		(sheetname "/Connectors/")
@@ -20125,7 +21745,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -20133,6 +21753,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f850dc20-6650-412e-a0c4-80d41a60b874")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8d404590-87f0-4f2c-82b2-5509d6846fef")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df3ad41b-e089-4e97-af05-09b44257921b")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -20362,6 +22018,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Viking"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "27fe1b32-2fbf-46cc-b0d2-b10786787bbb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "ARG05FTC5101"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "681fb433-7e33-47a9-a1a9-3b96327938c6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5b308f/b8ac8e97-545d-4b3e-83b6-2d6924dacb9b")
 		(sheetname "/Connectors/")
@@ -20583,6 +22263,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "65e7c3bb-dc4d-4c19-8167-06f282584063")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67fca481-7d8a-42be-92c2-c52424cb19cd")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -20816,7 +22520,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Traco"
+		(property "Manufacturer" "Traco Power"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -21005,6 +22709,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b39178fd-c6a7-4a87-853b-fbdc773e3482")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a0efb32c-ca4c-4b1f-bc83-687c7f85c285")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -21219,6 +22947,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d77628b2-1007-4335-a005-3296ce4ba611")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "edc6f5ae-4862-41d6-b1ae-39c7c4894d1f")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -21707,6 +23459,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "38d90396-9a2a-4afd-9dc0-c8ece0b14917")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805GRNPO0BN221"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6c841997-838e-4600-b412-7d71303c6b51")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1d0")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -21932,6 +23708,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cc9f1ad8-4124-46a5-9575-a84781815fb4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21B105KBFNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba0ed800-6b70-4b43-ac58-2261c709845d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f5b7065/00000000-0000-0000-0000-00005f7040ea")
 		(sheetname "/I2C/")
@@ -22142,6 +23942,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "168f6c59-9610-4ea2-9de1-42c1ca3d3d20")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "72f79b09-f120-419f-8f7a-c687539c3d5a")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -22432,6 +24256,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FOJAN"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b19d781d-cfe0-4ce2-a457-8928bf119247")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FRC1206J470 TS"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e3e35445-27bd-4dd3-8f58-59eb07ac5d03")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/6c861cb0-b3f7-459d-89db-6f4078568950/00000000-0000-0000-0000-00005f5ae1ac")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9676/")
@@ -22653,6 +24501,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "74fed468-7b59-40c6-a2dc-8ed7cf9e8a41")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9813ccab-c6c5-4bb3-92c2-a05bce16953f")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -22882,6 +24754,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e588c04c-9b96-414c-bacf-64d68146ea48")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d348f604-ec2a-45c7-af53-96d147927fc4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f5137e6")
 		(sheetname "/MCU/")
@@ -23092,6 +24988,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "OSRAM"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "66e39c82-fa32-4b9b-9b4d-86a070c118b3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "LS R976-NR-1-0-20-R18"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8237b154-3b7b-440e-98f0-3d5e16968c91")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -23343,6 +25263,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "559b3a30-b5d1-40f9-90cf-37b400794674")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4e30270a-e8af-4ad7-a234-d5764edb909f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae211")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -23545,7 +25489,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23553,6 +25497,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "298affcc-5880-4714-a739-32a187c4275c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9be83880-4739-4af6-8835-bd1acb51e14b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "42532c0f-0631-47d4-83d3-5220bb25fe51")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -23758,7 +25738,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "399-C0805C473K5RACTUCT-ND"
 			(at 17.018 -8.89 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23799,6 +25779,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "32914f95-4e54-4df0-9686-ef11d0daaec6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4286d59e-8a0a-4732-804d-1ff478b1fc14")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24364,6 +26356,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "819a4786-201f-40be-9ece-3409764deef6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "adf62b9c-48ac-4829-9d09-6e9feab7fa01")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54b02a/00000000-0000-0000-0000-00005f5a40c6/00000000-0000-0000-0000-00005ecb4c71")
 		(sheetname "/HighCurrentDrivers/sheet5F5A40BA/")
@@ -24775,6 +26791,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25df52d6-a9e2-491c-acf0-887995a60938")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c3593868-697a-4f7b-9272-f4293368df08")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1e2")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -25057,6 +27097,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0b330d57-b11e-47bc-a78e-50b96c370917")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PMEG10010ELRX"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "87627417-e728-434d-8709-41b020d453cb")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -25357,6 +27421,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3ad92fae-bfb6-4697-8e40-ecfac684d284")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "768f0356-57ec-4303-85c1-91b02be527cd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/6c861cb0-b3f7-459d-89db-6f4078568950/00000000-0000-0000-0000-00005f5ae1a0")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9676/")
@@ -25578,6 +27666,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "68eee88b-fd13-4b77-a71e-51a872d84d9c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c7d7ccef-af1f-4e3c-ba00-304d19ff047c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -25807,6 +27919,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b0d2dfe8-9161-4383-8c7a-176c74377ac0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "26d892c2-f095-411f-974a-91f8de556287")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae193")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -26009,7 +28145,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at -59.182 27.0764 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -26017,6 +28153,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1ec45a29-d715-4cb8-a60a-4325f6fc8251")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "376804ea-ad99-4fcc-95d2-f1018bc9d8e2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "231a3a9e-efcc-4c1d-9474-db574858aba9")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -26235,6 +28407,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "34027d24-539c-424e-8ee2-24273a5dadb9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7ba8128a-bc3b-4c8e-a778-d23767097196")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/6c861cb0-b3f7-459d-89db-6f4078568950/00000000-0000-0000-0000-00005f5ae199")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9676/")
@@ -26436,7 +28632,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "399-C0805C473K5RACTUCT-ND"
 			(at 25.974 -0.066 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -26477,6 +28673,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e13ede01-d465-499a-bcf2-a96caf9d42cd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "561d2eeb-bf45-4456-afd2-fdaa0b0dea1a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -26705,6 +28913,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "330403b2-8fc5-4898-9510-bf49f3e86800")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805GRNPO0BN221"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8308eb9e-c5fe-4481-9281-7d31dfa0210a")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -27046,6 +29278,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a85d4a08-288d-4e67-b3e6-175a8b9e6e54")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "49bc86b3-41c9-4242-9626-74630ca653cc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae1dc")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -27209,7 +29465,7 @@
 				)
 			)
 		)
-		(property "Value" "SMCJ20CA"
+		(property "Value" "5.0SMDJ24CA"
 			(at -0.04 4.07 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -27245,7 +29501,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "SMCJ20CABCT-ND"
+		(property "Digi-Key_PN" "F5634CT-ND"
 			(at -64.241 -3.069 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -27257,7 +29513,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C152086"
+		(property "LCSC" "C284111"
 			(at -64.241 -3.069 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -27269,7 +29525,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "BORN"
+		(property "Manufacturer" "DOWO"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -27281,11 +29537,23 @@
 				)
 			)
 		)
-		(property "MPN" "SMCJ20CA"
+		(property "MPN" "5.0SMDJ24CA"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "be1ff733-cb91-4a46-bff1-cc73300492a2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "Littelfuse 5.0SMDJ24CA (DK F5634CT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "85485aa0-992d-4426-bd87-929bfa56e86e")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -27991,6 +30259,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nidec Components"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fb30fb2c-9244-4e98-bfee-17be7fcecc14")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CJS-1200TB1"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d1fef9db-bf3c-448e-a7cf-e8bc0c7661fc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/00000000-0000-0000-0000-00005f4db108/1924adfe-920c-4f5b-a4d9-f3ece097521f")
 		(sheetname "/MCU/")
 		(sheetfile "MCU.kicad_sch")
@@ -28257,6 +30549,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1f497931-ce0b-4f91-95c6-e24a2949c200")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "38a5790f-d5e8-4773-b79f-e1b56bc08979")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/532636e0-7580-4f89-82c2-f1aa289a8eb6")
 		(sheetname "/MedCurrentDrivers/")
@@ -28470,7 +30786,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -28478,6 +30794,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fbedf7d6-282f-4c35-ac8e-6b918ea6f58f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "257c4f51-af23-4c97-aaf3-4275584d72f9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6fbf7e08-5c36-463f-ac60-a33133adfd44")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -29068,7 +31420,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29076,6 +31428,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71ab799b-c8a8-4367-9aab-4c786aed690e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ec7cd3a8-27c4-423d-9424-3746e9e3d9e3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e2a6cfb9-1e7b-4837-bc45-69a33790590b")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -29293,7 +31681,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29301,6 +31689,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0a805125-eb6b-408f-95c8-530e0ebcc7b7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e4a368fa-ea37-47c8-8aec-b814f77c6b5f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "da2aa221-2b1d-46b9-aa09-08e8187b2f1a")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -29530,6 +31954,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "acea769e-d808-454b-bbf7-bf1087b443df")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9e19c0b2-82a8-46a1-b551-2553425f525c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/6c861cb0-b3f7-459d-89db-6f4078568950/00000000-0000-0000-0000-00005f5ae1ca")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9676/")
@@ -29751,6 +32199,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b3570dfd-1492-40ce-84ec-208349d3c2b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0dbb53f4-6fab-4daa-b7eb-0bbe79631823")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -29980,6 +32452,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ff61408e-a428-4285-8a4f-fe606c453b31")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "34188af3-71b6-4744-8f88-c68dd122faa0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54bf48/79a0dd8b-9c30-4339-961b-e86bb429e783/00000000-0000-0000-0000-00005f5ae217")
 		(sheetname "/MedCurrentDrivers/Sheet5F5A9675/")
@@ -30194,6 +32690,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f9f1744e-78e8-492c-9d4f-1cdfc0b28da7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9b05960f-7538-450a-adca-2ffe8861c86e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/00000000-0000-0000-0000-00005f75f314")
 		(sheetname "/MCU/")
@@ -30404,6 +32924,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "PSA"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "46a81d3f-0052-4f40-a529-3f2cd10d0b8f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FS55X476K250LRG"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f2076d18-e1a8-4d39-afa7-b636f5caafad")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -30633,6 +33177,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "PSA"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "79a98d03-d626-4c66-8f5a-1efbc3ebf95e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FS55X476K250LRG"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "66c90d3f-a212-41d9-a630-1298f7d79bf6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "CP_*")
 		(path "/00000000-0000-0000-0000-00005f5cf2eb/06629598-a7da-476a-b4a7-6e6b30b6d4ae")
 		(sheetname "/Power/")
@@ -30858,6 +33426,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "237103a4-18e9-46ee-bc3c-2211ea3dced7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "32dc61c5-334b-449d-8333-76fe267ad7b8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f54b02a/00000000-0000-0000-0000-00005f5a40c0/00000000-0000-0000-0000-00005ecb4c71")
 		(sheetname "/HighCurrentDrivers/sheet5F5A40B9/")
@@ -31060,7 +33652,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -31068,6 +33660,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b3b2377-b2ee-40e4-8295-5d2e158babcf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7aeafa72-c4e6-4506-8cca-200f3111f142")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fdcb93ec-c9ec-49a8-949a-4109a9ca1e8d")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -31293,6 +33921,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FOJAN"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "952a3648-78c0-4f9a-ae35-2fb2f6e7e9dc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "FRC1206J470 TS"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba9aa7d4-83f0-4309-a251-02a6e2850cfe")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -31611,7 +34263,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C229076"
+		(property "LCSC" "C17437"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -31619,6 +34271,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c58f6322-269b-4ea0-ba63-9238587b0741")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1200T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "719507c4-dbd0-4f9b-8119-2df7607d5594")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "65520fe2-d16b-4231-9e80-a4484b046d25")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -31822,7 +34510,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "311-120CRCT-ND"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -31863,6 +34551,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c190e0f2-3c71-4a48-9fea-6dec1a391fdc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9b781aec-2120-4966-9f02-98158f7bedbd")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -32030,6 +34730,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "abbddf02-4112-434d-91ca-3e970acc376a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8fc7d109-06e4-4e57-87a4-038c722971cc")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -32259,6 +34983,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Viking"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f38b714-5922-41dc-89a9-b8dc87789c3c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "ARG05FTC5101"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "62556b0f-87c5-4dbe-bad2-cfee25242659")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f5b308f/1c93f8ed-0a41-4222-ad79-c217f69c3030")
 		(sheetname "/Connectors/")
@@ -32478,6 +35226,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Wurth Elektronik"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "04bf9e6e-c47a-4550-a562-a95f502725d7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "7461084"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6df16a8a-f7ee-47ed-80f8-0ef6a1956f33")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -32737,6 +35509,30 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0850393b-89e2-4f99-9855-398a1d707f9d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "CL21A475KAQNNNE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8225d069-c510-4966-8fc0-24c468148f54")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f4db108/c6ff408a-76ef-4e43-9619-757aee3ec8f9")
 		(sheetname "/MCU/")
@@ -32958,6 +35754,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67961e36-9472-4041-9c35-6d7d6368fdec")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "PMEG10010ELRX"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f00829a3-b174-49f0-8074-a44120b8324c")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -33505,6 +36325,30 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6a56951-9fbc-449a-aab0-e7c70415637d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0805W8F1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ecef690e-4255-4b11-b54f-83d6a1e9aa0f")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)

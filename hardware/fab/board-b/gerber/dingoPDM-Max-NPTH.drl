@@ -1,0 +1,27 @@
+M48
+; FORMAT={-:-/ absolute / metric / decimal}
+; #@! TF.GenerationSoftware,Kicad,Pcbnew,10.0.7
+; #@! TF.FileFunction,NonPlated,1,4,NPTH
+FMAT,2
+METRIC
+; #@! TA.AperFunction,NonPlated,NPTH,ComponentDrill
+T1C0.991
+; #@! TA.AperFunction,NonPlated,NPTH,ComponentDrill
+T2C4.300
+%
+G90
+G05
+T1
+X-7.493Y-35.052
+X-6.477Y-29.972
+X-5.461Y-35.052
+T2
+X-12.0Y4.75
+X-12.0Y-4.75
+X12.0Y4.75
+X12.0Y-4.75
+X68.394Y23.584
+X68.394Y0.294
+X68.394Y-22.996
+X68.394Y-46.286
+M30

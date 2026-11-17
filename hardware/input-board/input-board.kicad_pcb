@@ -166,6 +166,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5050cd7e-3006-4b4f-88d0-be2988299b16")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c804348-b495-44e0-bcec-d51089dbf569")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "663ba5aa-b94f-4b43-8a7c-ff3c1cdc30c7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f6f53333-71e1-46b2-90e8-731b548dcafe")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e87d80bc-eba6-4277-ba53-48038acf7b53")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/1544564f-84e3-50e7-a967-28e96d4acd93")
 		(attr smd)
 		(fp_line
@@ -515,6 +575,54 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c9d9fb81-41f2-4a98-91fa-640865747810")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Omron"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40232424-c45e-4f70-bb41-d9f200de5743")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "A6S-8104-H"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "56557fdd-6950-491d-9585-dde5f1916619")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C231310"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f80a5c1-2efc-4d8c-a7cd-77249686a4a3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "39-A6S-8104-H-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b35ab993-7f71-42fc-b068-c43936908901")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1126,6 +1234,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d167e33c-3925-402c-ba48-dbbb27ddd554")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "da07c389-7edc-4f06-811b-527708dfdaed")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f56fd36a-14a9-4730-9fc2-7a8fe67ca618")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8e5cf3c0-36b6-48c9-a217-67351ed72939")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "95c5eb30-00fc-432b-8edc-a432b2465654")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/1949794e-4f39-5439-8e57-bc000688108f")
 		(attr smd)
 		(fp_line
@@ -1262,6 +1430,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "104e526c-fd88-4260-8dae-dfca4bf2e7cb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "23aab1eb-2558-4304-9ea7-cc3e8293ce89")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "80de896d-fdd4-44df-934d-f67eac4fb614")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "084c7830-8d57-4ec0-90dd-2fd6f2741e5d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e9835fa3-f21f-441a-a959-6c381e77eb70")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/04109db4-8183-525e-baf8-d3b8c0fafb4b")
 		(attr smd)
 		(fp_line
@@ -1391,6 +1619,54 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "647d0833-f704-4a0b-800c-3fa0efb3edce")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "JST"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2a424e08-2d8a-4f7f-96d6-8edf2773943e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "SM12B-GHS-TB(LF)(SN)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e046828c-32c2-4a46-b690-0f5e38b5b2f9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C265421"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2e0c4991-09dd-435a-b40b-b2c426e1c4ec")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "455-1574-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "feabe7cb-f5b0-4e47-8ae2-0db0cc650ead")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1866,6 +2142,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "411916a4-d9ae-4d08-ac9d-83e705d069ab")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40e2c76b-f007-440f-8605-0cce708bc39e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "eeb6a5d0-bd42-43cd-a842-3a2f1c943155")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3e7c255a-e7d7-478c-ab8c-c17e866603be")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "60a633bd-d95d-4b4a-a162-2b919a04737a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/f1334609-29c7-5af1-9b63-94a336eded30")
 		(attr smd)
 		(fp_line
@@ -2222,6 +2558,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b5d84e09-6ad3-432c-999c-1df2d716d7fb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b5c1cfd1-dc00-4fed-9e30-9689b36c26f0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ac6bf568-880e-46bc-b96a-e167e4a2669d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "039dc5f8-0148-4b70-bde1-7c50d22eefeb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a13270bf-97c7-4d89-810b-6ecf7f99fd1e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/b747e570-6402-5046-bf60-9c0d094b190e")
 		(attr smd)
 		(fp_line
@@ -2351,6 +2747,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "193d08d1-49da-4142-baa4-18d5f664eabf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "05b0b306-6612-4cbd-87f8-45df46edb736")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "817e6742-917b-4086-8d40-d2111ddc31c0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4d7dd76-6377-4ad0-8ff1-1f58ce87d455")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dcde53d4-8550-4d16-a25d-878163680cdd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "19a4943c-6705-4bfa-9a07-753169e8b694")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2494,6 +2950,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a2c3a36e-7aa0-4241-a67b-6ba3297469b5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7b7829fe-2ff8-4838-a882-58e5c86416f0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1288178c-f4f1-493c-a367-3da465c2a95a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4f182d49-89e4-4a54-9dc2-9e96bbef2115")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea80790d-b8c7-48d3-ac4f-1ea60ca0d9ad")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/2dae4e41-43e4-5f01-94d8-5e6257461d32")
 		(attr smd)
 		(fp_line
@@ -2623,6 +3139,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e07e0d20-debc-4dbf-8bb8-8ce2047c2cdc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c56227ac-e011-409e-b4bd-369e4ffa7b34")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "83258ed8-422a-465b-a57b-3d3a0dc51c92")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "64e53446-22e0-438d-acaf-a39429e275bd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "73b5d9e9-4e44-4aa5-8ea4-22b680d2e3f5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b2511106-231d-418c-bdd1-394285a50bef")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2766,6 +3342,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6159f67e-77ea-48e7-8845-66f5374c1a40")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "71c2219e-5936-4102-ae23-d5f9ed675e77")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9dc6d36c-437b-4b76-b102-5d58d06222c8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "17e84459-139d-4495-b79a-433e1c2f64a6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cc72ba8c-60a7-4648-9dfe-9120910961c7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/281b48d8-4ebe-5032-8dc7-25e441e50bf2")
 		(attr smd)
 		(fp_line
@@ -2895,6 +3531,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "1a1c4fcb-9ff9-497a-8c63-e5f86831baa8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "657e30ec-6ab2-4700-9325-e0ca78e4513f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "df31f214-e70b-4403-8d26-6318a7de4742")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0ae2286d-ec7b-46eb-bdf1-0f29231bd781")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "54d90d4a-7160-471d-8b44-81c98ed3e5ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "10f28a8d-56cb-45b2-9ff3-a8d1a2791c8c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3038,6 +3734,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "88ae591d-5a07-44e6-a676-a1deb1fa6629")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "21f3eae1-eebe-47fe-a2bc-669f65ff9dbc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a447c082-9a3b-4cf6-b74b-69b152f20f65")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9984c1df-dac2-49db-b42f-5456c06a0d82")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "69fd7133-25d7-4139-8023-f7228f18fc5a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/43fc9176-798b-52d5-81b6-fc518eca0c78")
 		(attr smd)
 		(fp_line
@@ -3167,6 +3923,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "47594af1-1b0c-4b56-a68c-97494d805cd1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a4355b5f-1691-4bb3-92eb-f6e5452e6feb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e1dea6d4-c5a4-462d-b417-6125c0a82657")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28436481-386f-4d1b-96d5-3c077a32b92f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8c7c1d70-e8f5-4c66-a486-d4ae7b90d12b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b88500de-4f44-4e5a-a1e0-4c8742146d57")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3530,6 +4346,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e859e273-53d9-4174-a3d2-8b234667ee39")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a20f3f1b-f623-45a1-8a18-920a632ee641")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "432df4b1-c796-45fe-a15a-f6a6b42d83ff")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dc675594-7580-4a70-99a9-1a439ad922b5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "62998b56-8086-4dce-a904-8ad7749067dc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/c3f621fe-ee2c-5426-845c-b4a4987edf48")
 		(attr smd)
 		(fp_line
@@ -3879,6 +4755,54 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "34efb902-eb17-4ada-854b-819cc7b044b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Molex"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "309e3f52-6b9e-40c6-9efa-750bd07c08ae")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0430451200"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1090ccac-84e9-4202-acc3-c8366f5de1d1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C277636"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a9dc5c49-a0da-46b1-b7af-5248b7ea7567")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "WM1818-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f908f992-d760-45d5-92b2-82ffbd2d9a4e")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4307,6 +5231,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "898169a4-c409-449c-83e7-80f2a3876718")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ff8832f0-de47-4a8c-9f5f-e9de2176f593")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a1f3e56f-d809-44a7-9fef-9d5b410531d5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "22b762d2-4583-41bb-8175-85cd7fea2ef5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7ce50c13-f5f0-40d3-b5a0-568c7ae043c3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/57747da3-f03c-59d6-942a-95e17dd5cc06")
 		(attr smd)
 		(fp_line
@@ -4436,6 +5420,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "79760903-2c6c-444a-8888-10f180ff39e2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e3e5f73b-8c54-456e-84e3-13f926e83a76")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e23d2c17-464e-4d5e-9a42-007d8ef8517a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9ae56eb5-7959-47c4-be40-90747c6b1578")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "58be43ff-6562-4cb8-aa97-130925fcc924")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2e9c6d77-4167-495b-8729-78f7e3342ee7")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4579,6 +5623,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ee74b4d7-229a-4261-945a-013e5124b0d6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "24db3a94-4c2e-4684-96cb-35bbc4c302a0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dff81bfb-a4ac-47e5-a276-b59e42d21d0a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e755dc91-f57f-442d-913b-cbc2e17e7b7c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3d2f5f15-24ad-4270-ab73-a6cd24895c2f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/eb073f69-2f01-5128-9e90-e74a1a6a0a09")
 		(attr smd)
 		(fp_line
@@ -4708,6 +5812,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "717bb092-f265-4719-99f7-619fb89bd7bb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a97485f6-b0b6-4585-8f4b-725b35872cb4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "52e84149-c630-4311-9805-fdc5788ecc8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5c6f843b-e54f-43d7-aea5-3c5da9a29b00")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2a99ce24-7005-4f94-b72d-66c1d4093a9a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f9c5a3a6-a07b-41de-98ff-68cdd377191a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4851,6 +6015,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8e079477-12b3-4d2d-897e-88e65c15bcad")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "be049e6b-ea42-4791-8eaa-56c8e1d8520c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "79b224e9-3623-4bf6-a03b-42a628f462be")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "163e9d07-7451-411b-a7cb-60f90f88febd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2ec1b1cf-eb34-42b4-8ef3-c2c5df75ccdb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/2a429b36-5cc8-515b-9b08-90e6e7f0bd9e")
 		(attr smd)
 		(fp_line
@@ -4980,6 +6204,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ca39db4d-3efe-4e94-85a4-526a1fa65d99")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "55699cee-edd2-4f1d-a429-d069ab33842f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ca792d89-1324-4991-9e14-2bbf7ebd1784")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "19d131f8-a8ce-4a57-a1da-ab9f786bebbd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "09422521-6216-4eeb-81df-df980c0abee9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e37614d8-bbdb-4073-a014-4fc9f7bd48d8")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5123,6 +6407,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e699cf93-e82e-4aa2-89a7-e11a766df556")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "25556f04-b2ac-4e07-b541-201b2464a35e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aa829083-477a-4e58-9747-742b2a453a2b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6d11a0d5-0aff-4730-884f-74033529c98b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6c9f1df-a3a0-442c-8211-a8738ea29409")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/b62a4297-381f-52a9-aef5-a299740b7cfb")
 		(attr smd)
 		(fp_line
@@ -5252,6 +6596,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3ac8346b-cdf6-4a35-a500-6fdf6bd30caa")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5de34080-7643-4111-a15c-4e23d2caac86")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9f4ae254-e21e-4093-b7a1-be17a7beddff")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cfff9c0d-885b-4284-9a02-c13c1d3186f9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a9377b9c-26e2-41bf-99c3-46714ac44ff0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b98550df-4f32-447a-9497-17cd23673bc1")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5395,6 +6799,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0fb0e0bd-1f52-4305-961a-e344c1069d6d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF2002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "930016bb-802d-487f-b3eb-43488caea4ec")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C4184"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b0fa0624-1b20-408f-88a6-2a76005e4eec")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-20.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "822b0945-663c-4447-b95f-ce6e3ec3fdf8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0720KL (DK 311-20.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aaa7f6d8-0aa9-4fae-8f72-c464f62ce140")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/0ca47093-5163-5619-9547-5fbdbbf366fd")
 		(attr smd)
 		(fp_line
@@ -5524,6 +6988,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b7bf2020-1dbd-42d0-9229-dc1960cf1192")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "61eb7fa2-d4dd-482d-843e-46d6da8e4bb8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "632f4905-1d68-4095-bca1-881cc0719703")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c2bf5ab1-f033-44c3-946a-7a182b582071")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7d9f3772-5866-4d7e-bb3c-9cd18df7ac81")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fda31254-2b59-4d32-a56d-7d2217636129")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5880,6 +7404,54 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "338f256f-5954-4c9d-af06-728f0f30c4ec")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Omron"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "117d3aba-8a38-486f-a9aa-ddb6ac351a76")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "A6S-8104-H"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5f1bbe9a-bcc7-4e7b-84a7-29cd86c39a8c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C231310"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2ac4036a-8c77-4851-b7ab-ccf3c0b96d40")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "39-A6S-8104-H-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "79944bbf-1796-4cb7-b7ae-1756369e87e5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6491,6 +8063,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "630e8713-5439-4b00-8912-7e74b90a78e7")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d49268e7-b48b-45a8-a6cf-fbba0c36c9b3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4c767bcd-adfc-45d9-a569-220e0d046228")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4eb4d58-241a-46eb-9e1d-c259e66b16d3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b281257b-440d-4ab9-95b3-89aad0af9ec0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/72245f07-d98c-5b63-ba7e-b6eaf7e6ec74")
 		(attr smd)
 		(fp_line
@@ -6847,6 +8479,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8683e88f-e312-401b-82fa-d960e2e6854b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67fee0b1-7206-4f66-a9eb-4a53f25f88a4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2ec5a3b4-3fce-4d6e-9183-2883a01a1518")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d35543a2-6307-4c68-8473-4a2e8c1cdf7b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5e528717-1d9d-452c-a076-11199b0d5947")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/fb1f8dba-373b-5b0e-8c2d-528d35de104d")
 		(attr smd)
 		(fp_line
@@ -6976,6 +8668,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "48f25a15-4310-4cb1-9577-0f566a22fa33")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ba8805bf-c20b-4afe-a8e6-e6816ceca45e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7e17eba0-3952-4515-9ad3-0b40768ebb27")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d5bd40e7-0519-4bfd-b289-ec655c4510cf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f09539f3-5198-4fcf-b7b9-54a678da56eb")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea5c5980-e557-4726-9eb8-2ccc974007bf")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7119,6 +8871,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6d971a1c-6dd2-4241-9bc1-faf003609b69")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a45b9eac-ff73-4203-8a49-e79ee399c529")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f0973b61-507b-47f5-8df5-87e94d236d9e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4bb9e45-997a-40fc-ba09-51a34c75db2b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a72f186d-b012-4638-98db-90046279e638")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/4f060450-9bdc-5481-8604-24d98e70cacc")
 		(attr smd)
 		(fp_line
@@ -7248,6 +9060,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "73efdbec-d1fc-4880-b3e1-48b91bdfedc9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9de9a190-7110-4d26-98a4-ccd06f050521")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1803b063-22b4-4d8a-8627-da61725db708")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9d5759b1-ae6e-4af2-bd47-e1ecc0becc7c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "67d6762c-8c2e-4055-8bda-2c4f5db3997d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2c15401c-5e71-406f-8403-592a8f4c38ee")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7611,6 +9483,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "52c217be-dcb1-494a-b091-7b03071d86ce")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0383da6d-dff5-4706-8a37-0134c51382e0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6b029b42-6af6-4f14-9277-5adb7f2b6473")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b1e6101-4001-4dc6-b56c-30d21a8fda62")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f5dfe8ea-8b6a-4f01-9434-1542bfe039ab")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/6399b134-be05-5698-baaf-4878920c72e6")
 		(attr smd)
 		(fp_line
@@ -7967,6 +9899,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f65335e4-9217-4c16-9d97-d78640fa1285")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "05d29fc3-33ef-4496-9033-9d81ac96a77f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6441d503-02cb-408f-a3f2-e54c7e24144c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a62d15c0-f15c-442d-a683-1c9821daac88")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "abb9c89e-600f-4bff-a89f-b7323b7381ac")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/55e199e4-2a50-58f1-9ee8-b50199b57883")
 		(attr smd)
 		(fp_line
@@ -8103,6 +10095,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b119f048-3279-480a-bdec-bd6475ee4102")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c19f0639-cd98-4688-94fc-f63a96b6f11c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9c06b6ad-a878-4204-a2c9-a8146345e6ac")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "386696f8-9238-4d77-9b57-e127ddffc57a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "50aa8750-4a5e-4fe3-b17f-e2cbce3d0563")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/fcbc2ae0-d119-5078-bc78-7ce9d73c4735")
 		(attr smd)
 		(fp_line
@@ -8232,6 +10284,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b166dbf6-4ee7-49d9-9dfd-3c3e499e24c4")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f88288f6-d74b-4c6e-93e7-7ae6976060fc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "BAT54S,215"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fa398d47-2ae8-44de-9e38-39c0c66da6bd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C47546"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5f9904ce-8785-4911-b70a-01848013a053")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "BAT54SLT1GOSCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3123d624-1bbb-464b-aafe-7b7c652dbd3d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cc7c6182-1f38-4e26-85b5-84f9065b78fc")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8595,6 +10707,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a004e41e-b02f-406a-9ba0-af011484aadf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e86848f6-2c96-4e7a-985c-6ff0c5c561b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "644de70a-c05a-4f4d-80d5-026b23f6fdf3")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f1ae0b9-b82d-4902-8f67-a0bfa4d5342e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6156d2c5-b584-47e2-b25e-fb7327424104")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/b48c59c9-749f-51ba-88a5-71c109f20723")
 		(attr smd)
 		(fp_line
@@ -8724,6 +10896,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "dc31ee9d-9a2c-44ea-a99b-f99b4d59d7c9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "01e76102-1a0a-4cae-aecd-947553d4c5e9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "58adca69-117d-47b5-96c3-e9918bdbb7d6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f4843f2c-eb08-478d-a8c5-938397c5c95e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6f146c5b-3c62-46c3-b7a0-335175a79847")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea14ca66-1286-465f-8a02-facc1dc0dadd")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8964,6 +11196,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cfd5b9db-a99a-4384-bd67-c450cdf2da04")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a63ed40a-9946-4e6b-bb04-e00618beb748")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1d960db6-5ac9-40ee-ac1f-8b1af41db999")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "81d8611f-fa4d-467b-9bd8-42aae9fede23")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "24e02a8a-20a9-40a1-88e8-54d313fed25d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/6960ee57-27cc-5537-89a6-b193640ca5b9")
 		(attr smd)
 		(fp_line
@@ -9093,6 +11385,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "dff4e726-ed6e-43b6-a600-015825997e35")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b44edeea-35ba-4d0b-bede-274512d8115f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7f3beea8-b6bd-473e-8b05-95a22f4c1286")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3bc5d342-5712-4090-9416-f20364f0dc6e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1993c124-f3ca-4d51-9979-e529de3e83a5")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "63ad0dbe-7ca1-4349-86c0-32d1a5eeb78e")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9236,6 +11588,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e500051c-5de8-4779-aade-da9f1505850f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40678340-31ba-4502-bd0d-00b6480da41b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8128fbe3-42fb-491a-b17e-267274dd5bdf")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e6b9aef3-2f6d-49aa-ba0f-2a1f140020c2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5d320e1a-54ac-45ec-a487-c1d206ef3390")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/040bffc3-9715-592e-9f8d-46ed35a5824a")
 		(attr smd)
 		(fp_line
@@ -9365,6 +11777,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d6d8d2ec-883a-4176-9724-ce8e00bbed1b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51d4645a-a758-4ef1-a36c-d3dd3100193d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "671235de-2f6a-4184-9822-ef4fa3364f0d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a85ff089-f05e-427f-bf90-e553bf45488d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "434a3b57-a396-45d6-9986-4e5ccd323f4f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a0ac849-a1d5-44d6-8c0f-1ce8dc1c6d43")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9508,6 +11980,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7905f6ea-9cb3-4684-a1a8-f978b04bc947")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8e8a640b-7f72-402f-88a5-62142d688382")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "81d009db-1375-404b-8f7e-302a46813f54")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ea5da39e-9b9c-4d97-a033-839766bd5745")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "23f81de9-dee6-45be-ac5c-105dc21047d1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/e2568a06-9dd6-5b30-988d-e51b4f2603c1")
 		(attr smd)
 		(fp_line
@@ -9637,6 +12169,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "998fbdff-8367-427f-95a7-a68564954d1e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9b7f4f02-4698-4390-bd76-b549bd5d8eab")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "ec405536-5d55-4e69-bd60-ba4de7c82644")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "60188f70-b8bf-4241-b4f2-24b43ce3be3d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2ae7e773-8f1c-4f88-bd62-b124eedf1f24")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cfb1ebbe-106d-47b7-91c2-5a34e0a98350")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9780,6 +12372,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4b3943ab-aeb8-45ab-9a3d-fbecb7483030")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF1002T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6b880f72-04c4-4243-8f53-7d306905073d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25804"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a549bc5c-b4bd-4cd8-84fe-62ba0aba6100")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-10.0KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b29c1496-837f-4fb3-b334-e54876760cc8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c4cee063-39ab-41e4-b03a-3dcc3368a3e1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/1082b854-05af-5969-bb6e-a46fe40f3751")
 		(attr smd)
 		(fp_line
@@ -9916,6 +12568,66 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b19f6090-aafe-4e95-9328-4fa4b305beac")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4e79be18-f94e-44a9-94bb-22bfa664dce8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fe49d2b8-fe12-407a-b1f2-44377c35f45c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "51b47c10-cd21-417a-b808-16d56bd2b209")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4ba88a73-99c8-4a81-a140-dbd5e4fabeea")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/9026d1c8-c293-5892-8d6b-a8a19186d2eb")
 		(attr smd)
 		(fp_line
@@ -10045,6 +12757,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "35520175-d98a-4b01-9f7d-142b9b99e6dd")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "FH (Guangdong Fenghua)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "289351f9-c033-4784-a65e-818d1ce402f8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603B103K500NT"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4f188514-c077-484c-9c8f-cfc7af595742")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C57112"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "cac2e7b7-1d77-4052-83ec-ea643d35ca03")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-1085-1-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e32818b0-45f0-4153-bb19-f690e54c8f18")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e8bec63e-9e4d-4a53-8818-886eda9ca0e5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10278,6 +13050,66 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "58de03ce-c860-4a56-8a2a-8b0ad57e318b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "afc75515-41eb-4071-8c43-e8544a17d1e6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0603WAF4701T5E"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "81379754-d9ad-4333-ad5a-e315f7c29e45")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C23162"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f6c5168e-6059-4227-b012-4d37e4259dd8")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "311-4.70KHRCT-ND"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e9985b68-bb32-4f68-9c5d-bea0798123ba")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c58b17a9-0e76-4ae7-a99d-ebec49350db1")
 			(effects
 				(font
 					(size 1.27 1.27)
