@@ -1,0 +1,50 @@
+@using domain.CustomPdm
+
+@* custom-pdm one-PDM editor (DECISIONS 2026-11-16 p1 / p3): a critical setting changes only here: Unlock opens this,
+   the new value is typed twice, Change applies it. Logic: domain/CustomPdm/PdmCritical.cs. *@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6"><MudIcon Icon="@Icons.Material.Filled.LockOpen" Class="mr-2" />Unlock: @Item.Label</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">Critical setting: @Item.Risk.</MudAlert>
+        <MudText Typo="Typo.body2" Class="mb-2">Now: <b>@Item.Current</b></MudText>
+        <MudTextField T="string" @bind-Value="_value" Label="@($"New value ({Item.Hint})")" Variant="Variant.Outlined"
+                      Immediate="true" id="critical-new" />
+        <MudTextField T="string" @bind-Value="_again" Label="Type it again to confirm" Variant="Variant.Outlined"
+                      Immediate="true" Class="mt-2" id="critical-again" />
+        @if (_value != "" && Problem is { } why)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2">@why</MudText>
+        }
+        else if (_value != "" && _again != "" && !Same)
+        {
+            <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2">The two values differ.</MudText>
+        }
+        @if (_value != "" && Problem == null && Notes != null)
+        {
+            @foreach (var n in Notes(_value))
+            {
+                <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-1">@n</MudText>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => MudDialog.Cancel())">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" Disabled="@(_value == "" || Problem != null || !Same)"
+                   OnClick="@(() => MudDialog.Close(DialogResult.Ok(_value.Trim())))">Change</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter, EditorRequired] public PdmCriticalItem Item { get; set; } = null!;
+    // why the typed value cannot be used (null = it can)
+    [Parameter, EditorRequired] public Func<string, string?> Check { get; set; } = null!;
+    // extra warnings for a valid value (e.g. base ID: CAN inputs that listen to the old block)
+    [Parameter] public Func<string, IReadOnlyList<string>>? Notes { get; set; }
+
+    private string _value = "", _again = "";
+    private string? Problem => Check(_value);
+    private bool Same => PdmCritical.Normal(_value) == PdmCritical.Normal(_again);
+}

@@ -1,0 +1,150 @@
+@page "/pdm/advanced"
+@using System.Net
+@using application.Services
+@using domain.CustomPdm
+@using web.Components.Devices.FwDevice.Tabs
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+@inject IDialogService DialogService
+@implements IDisposable
+
+@* custom-pdm one-PDM editor, phase 1 (DECISIONS 2026-11-16 g1): the stock per-board configuration pages of the
+   custom-pdm boards (types 14 / 15) live here, behind the PDM page; the board's own device page shows only its
+   status. Every edit made here is checked by the conflict engine (domain/CustomPdm/PdmEngine.cs CheckEdit) before it
+   is kept: replacing something already assigned asks "X is already assigned to Y. Overwrite?" (Cancel = no change),
+   critical settings (base ID, CAN bit rate, critical temperature, kept-on outputs) are refused (PDM page: Unlock).
+   The edit check runs every 150 ms on the PC values (the stock grids write them directly). *@
+<PageTitle>PDM - Advanced (per board)</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+        <MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Filled.ArrowBack" Href="pdm">PDM page</MudButton>
+        <MudText Typo="Typo.h5">Advanced (per board)</MudText>
+    </MudStack>
+    <MudAlert Severity="Severity.Warning" Class="mb-3" id="advanced-banner">
+        The raw settings of ONE board, as stock dingoConfig shows them. The PDM page is the normal way to set up the PDM (A1, A2 and B
+        as one). Every change here is checked first: if it would replace something already assigned (an output trigger, a link, the fan
+        logic), you are asked "Overwrite?"; Cancel puts the old value back. Critical settings (base ID, CAN bit rate, critical
+        temperature, outputs kept on at critical temperature) change only on the PDM page (Unlock). Write All / Burn on the PDM page
+        send these changes to the boards.
+    </MudAlert>
+    @if (_view.Boards.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">No custom-pdm boards in the project.</MudAlert>
+    }
+    else
+    {
+        var board = _view.Boards.FirstOrDefault(b => b.Role == _role) ?? _view.Boards[0];
+        var dev = board.Device;
+        var model = PdmModel.Build(_view);
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+            <MudText Typo="Typo.body1">Board:</MudText>
+            @foreach (var b in _view.Boards)
+            {
+                var role = b.Role;
+                <MudButton Size="Size.Small" Variant="@(role == board.Role ? Variant.Filled : Variant.Outlined)" Color="Color.Primary"
+                           id="@($"advanced-board-{role}")" OnClick="@(() => _role = role)">@role (0x@(b.Device.BaseId.ToString("X3")))</MudButton>
+            }
+            @if (Pdm.Ops.Busy)
+            {
+                <MudText Typo="Typo.body2" Color="Color.Info">A PDM run is active: changes are not checked until it ends.</MudText>
+            }
+        </MudStack>
+        @if (model.Problems.Count > 0)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="advanced-checks">
+                <b>Checks (whole PDM, @model.Problems.Count):</b>
+                @foreach (var p in model.Problems)
+                {
+                    <div>@p.Text</div>
+                }
+            </MudAlert>
+        }
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" KeepPanelsAlive="false" @key="dev.Guid">
+            <MudTabPanel Text="Configuration" Icon="@Icons.Material.Filled.Settings">
+                <ConfigurationTab TDevice="domain.Devices.FwDevice" Device="dev" />
+            </MudTabPanel>
+            @for (var i = 0; i < dev.Keypads.Count; i++)
+            {
+                if (!dev.Keypads[i].Enabled) continue;
+                var index = i;
+                <MudTabPanel Text="@($"Keypad {i + 1}")" Icon="@Icons.Material.Filled.WbTwilight">
+                    <KeypadConfigTab TDevice="domain.Devices.FwDevice" Device="dev" Keypad="dev.Keypads[index]" />
+                </MudTabPanel>
+            }
+        </MudTabs>
+    }
+</MudContainer>
+
+@code {
+    private PdmView _view = new();
+    private string _role = "A1";
+    private PdmSnapshot? _snap;
+    private bool _asking;
+    private Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        _view = Pdm.BuildView();
+        _snap = PdmSnapshot.Take(_view);
+        _timer = new Timer(_ => InvokeAsync(Tick), null, TimeSpan.FromMilliseconds(150), TimeSpan.FromMilliseconds(150));
+    }
+
+    private async Task Tick()
+    {
+        if (_asking) return;
+        var fresh = Pdm.BuildView();
+        if (!fresh.SameBoards(_view))
+        {
+            _view = fresh;
+            _snap = PdmSnapshot.Take(_view);
+        }
+        if (Pdm.Ops.Busy || _snap == null)
+        {
+            _snap = PdmSnapshot.Take(_view); // Read All / Write All change the PC values: not an edit
+            StateHasChanged();
+            return;
+        }
+        var check = PdmEngine.CheckEdit(_view, _snap);
+        if (check.Clean)
+        {
+            if (_snap.Changed().Count > 0) _snap = PdmSnapshot.Take(_view);
+            StateHasChanged();
+            return;
+        }
+        if (check.Critical.Count > 0)
+        {
+            _snap.Restore();
+            Notification.NewError("Not changed: critical settings change only on the PDM page (PDM settings, Unlock): " + string.Join("; ", check.Critical));
+            StateHasChanged();
+            return;
+        }
+        _asking = true;
+        try
+        {
+            var lines = check.Assigned.Select(WebUtility.HtmlEncode).ToList();
+            if (check.NewProblems.Count > 0)
+                lines.Add((check.Assigned.Count > 0 ? "It would also: " : "This change would: ") + string.Join(" ", check.NewProblems.Select(p => WebUtility.HtmlEncode(p.Text))));
+            var yes = await DialogService.ShowMessageBox(check.Assigned.Count > 0 ? "Already assigned" : "Check this change",
+                new MarkupString(string.Join("<br/>", lines) + "<br/><br/>Overwrite?"), yesText: "Overwrite", cancelText: "Cancel");
+            if (yes == true)
+            {
+                _snap = PdmSnapshot.Take(_view);
+                Notification.NewWarning("Changed on the PC (Advanced). Write All on the PDM page sends it to the boards.");
+            }
+            else
+            {
+                _snap.Restore();
+                Notification.NewInfo("Cancelled: nothing changed.");
+            }
+        }
+        finally
+        {
+            _asking = false;
+        }
+        StateHasChanged();
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

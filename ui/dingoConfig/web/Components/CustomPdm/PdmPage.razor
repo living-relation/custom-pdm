@@ -76,6 +76,11 @@
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Save"
                            Disabled="@(burnBlocked != null)" OnClick="@(() => Start(PdmOpKind.Burn))">Burn</MudButton>
                 <DbcExportButton View="@_view" />
+                @* editor1 (g1): the raw per-board pages, not the normal way in *@
+                <MudSpacer />
+                <MudTooltip Text="Raw settings of one board (stock pages). Every change there is checked first; critical settings stay locked.">
+                    <MudButton Variant="Variant.Text" Size="Size.Small" StartIcon="@Icons.Material.Filled.Tune" Href="pdm/advanced" id="pdm-advanced">Advanced (per board)</MudButton>
+                </MudTooltip>
                 @if (busy)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
@@ -134,6 +139,7 @@
         </MudPaper>
 
         <PdmSettingsPanel View="@_view" />
+        <PdmTriggersPanel View="@_view" />
         <PdmLinksPanel View="@_view" />
 
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
