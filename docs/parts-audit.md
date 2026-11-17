@@ -183,7 +183,7 @@ Per PDM = 2 x A + 1 x B.
 | OKI-78SR-5/1.5-W36H-C | Murata, same | 1 | 1 | 3 | C266374: **0** | P1, C1: alternative to U1 |
 | TSR 1-2450 | Traco, same | 1 | 1 | 3 | C6886877: **0** | P1, C1: alternative to U1 |
 | 8 MHz crystal 5032 | Abracon ABM3-8.000MHZ-D2Y-T | 1 | 1 | 3 | C144380: 5,267, 0.56 | 18 pF load, matches the "CL=18pF" note |
-| SMCJ20CA (TVS) | BORN SMCJ20CA | 1 | 1 | 3 | C152086: 3,725, 0.20 | P12 |
+| SMCJ20CA (TVS; **5.0SMDJ24CA since 2026-11-16**, section 13.3) | BORN SMCJ20CA | 1 | 1 | 3 | C152086: 3,725, 0.20 | P12 |
 | NUP2105LT1G (CAN protection) | DOWO "NUP2105LT1G" | 1 | 1 | 3 | C2976509: 32,220, 0.05 | P12 |
 | Schottky, SOD-123 | Nexperia PMEG10010ELRX (100 V, 1 A) | 3 | 3 | 9 | C179426: 4,080, 0.14 | reverse-battery, 5 V and USB diodes |
 | BYG23M (flyback) | Vishay BYG23M-E3/TR | 0 | 8 | 8 | C141573: 19,145, 0.18 | one per board B output |
@@ -290,7 +290,7 @@ Missing from v4 completely: 6 x LM324, 3 x crystal, 3 x USB-C socket, 3 x BOOT s
 
 - Digi-Key: no page could be read by my tools, so none of the Digi-Key numbers in the schematics was resolved to a maker part (2026-11-14: the PR #23 / #24 parts and BTS7004-1EPP were looked up, see `tools/sch_digikey.py`; the older inherited numbers are still unchecked). Digi-Key stock for BTS70012 is from Octopart.
 - The three 5 V converters' ratings from their makers' data sheets (CUI site refused the download).
-- TVS SMCJ20CA breakdown and clamp values from a maker data sheet (only the LCSC listing and the schematic note), and whether a 32 to 33 V clamp is acceptable for switches with a 28 V maximum (Infineon load-dump rating not read).
+- ~~TVS SMCJ20CA breakdown and clamp values from a maker data sheet, and whether a 32 to 33 V clamp is acceptable for switches with a 28 V maximum.~~ Answered 2026-11-16: section 13.3 (D2 is now 5.0SMDJ24CA).
 - Derating of both Wuerth terminals above 20 C.
 - XUMA1 against XUMA2 for BTS70012; lifecycle status from Infineon, NXP (PCA82C250) and Wuerth pages beyond what distributors show.
 - Pinout of TJA1051T/3 (C3; MCP2562FD done in section 9). Whether PB8 (CAN RX) is 5 V tolerant.
@@ -418,3 +418,113 @@ Stock and price (2026-11-10 to 11):
 - Mouser search pages (`https://www.mouser.com/c/?q=<part>`), Octopart search pages (`https://octopart.com/search?q=<part>`).
 
 Repo: schematics under `hardware/`, firmware files named in C2, `docs/box-connectors.md`, `docs/enclosure-layout.md`, `docs/custom-pdm-bom-v4.xlsx`; Dan's on-hand list `st185-link-ecu-config/docs/sourcing/te-on-hand-bom.csv`.
+
+## 13. PCB order prep (2026-11-16, branch `feat/pcb-order-prep`)
+
+Fab and assembler: JLCPCB with LCSC parts, PCBWay as the fallback (DECISIONS 2026-11-11, 2026-11-16 f1). Fab outputs and how to upload them: `hardware/fab/README.md`.
+
+### 13.1 Order fields
+
+`tools/sch_bom_fields.py` (schematic, A | B | IN) and `tools/pcb_bom_fields.py` (PCB) are the last stage of all three board builds. One table sets Manufacturer, MPN, LCSC, Digi-Key_PN and Alternates on every fitted part; a placed part with no row stops the script. Fields only (each changed file equals the old one once those property blocks are removed), PCBs stay KiCad 9.
+
+| Board | Fitted parts | MPN before -> after | LCSC before -> after | Digi-Key before -> after |
+|---|---|---|---|---|
+| A | 123 | 23 -> 123 | 122 -> 123 | 117 -> 123 |
+| B | 188 | 36 -> 188 | 179 -> 180 | 170 -> 188 |
+| Input | 48 | 0 -> 48 | 0 -> 48 | 0 -> 48 |
+
+Not counted as parts: holes, logos, solder jumpers, wire pads (A J3, B J6), Tag-Connect pads. B T1-T8 (Wurth 74650074R) have no LCSC / JLCPCB listing: JLCPCB global sourcing (Digi-Key 732-74650074RCT-ND).
+Digi-Key numbers that were already in the schematics are kept (inherited from stock dingoPDM, not re-checked); several name another maker than the MPN (same value / package): the LCSC column is what JLCPCB fits.
+
+Changed for design need and cost (same footprint, no copper change):
+- 120R (A 8, B 12, incl. the CAN terminators): YAGEO AC0805JR-07120RL (5 %, extended) -> UNI-ROYAL 0805W8F1200T5E (1 %, JLCPCB basic, LCSC C17437).
+- 1.2k current-sense resistors (P10): FOJAN FRC0805J122 (5 %, extended) -> UNI-ROYAL 0805W8F1201T5E (1 %, basic, LCSC C17379). The Digi-Key column already named a 1 % part (YAGEO RC0805FR-071K2L, 311-1.20KCRCT-ND).
+- D2 TVS: section 13.3.
+
+Footprint checks (MPN package against the footprint): every part matches its footprint's package and pin count (LCSC package field 2026-11-16; ICs, connectors and switches by maker part). One loose fit, inherited from stock dingoPDM: PMEG10010ELRX (A D15 / D19, B D3 / D6) is SOD123W on a `D_SOD-123` land: lead tips 1.65-1.85 mm and lead inner ends 1.05-1.55 mm from the centre (Nexperia PMEG10010ELR, SOD123W outline: HE 3.3-3.7, Lp 0.3-0.6 mm) against pads at 1.2-2.1 mm, so every lead overlaps its pad by 0.3 mm or more.
+
+### 13.2 Parts against JLCPCB (stock read 2026-11-16 on jlcpcb.com part pages; LCSC stock in `docs/parts-audit.csv`)
+
+Per PDM = 2 x A + 1 x B + 3 x input board. "short" = JLCPCB stock below one PDM's need. Rule (Dan 2026-11-14): the design part stays; the assembler buys it (JLCPCB global sourcing) or fits the approved alternate.
+
+| Maker MPN | LCSC | JLCPCB type | JLCPCB stock | Per PDM | Boards | Approved alternates |
+|---|---|---|---|---|---|---|
+| YAGEO CC0805KRX7R9BB104 | C49678 | basic | 23699183 | 52 | A B | - |
+| Nexperia PDZ3.3B,115 | C426855 | ext | 5561 | 19 | A B | - |
+| YAGEO RT0805DRD0747KL | C327035 | ext | 52 | 3 | A B | UNI-ROYAL 0805W8F4702T5E (1 %, LCSC C17713, basic) |
+| UNI-ROYAL 0805W8F4701T5E | C17673 | basic | 4625794 | 92 | A B | - |
+| Murata GRM21BR6YA106KE43L | C162422 | ext | 14573 | 3 | A B | - |
+| Samsung Electro-Mechanics CL21A226MAQNNNE | C45783 | basic | 3907161 | 3 | A B | - |
+| Samsung Electro-Mechanics CL21A106KAYNNNE | C15850 | basic | 8829911 | 3 | A B | - |
+| PSA FS55X476K250LRG | C22388555 | ext | 4752 | 6 | A B | - |
+| DOWO 5.0SMDJ24CA | C284111 | ext | 4224 | 3 | A B | Littelfuse 5.0SMDJ24CA (DK F5634CT-ND) |
+| Nexperia PMEG2010AEH,115 | C110921 | ext | 10670 | 3 | A B | - |
+| Nexperia PMEG10010ELRX | C179426 | ext | 33245 | 6 | A B | - |
+| Texas Instruments TLV1117LV33DCYR | C15578 | ext | 498 | 3 | A B | - |
+| Traco Power TSR 1-2450 | C6886877 | ext | 40 | 3 | A B | - |
+| Wurth Elektronik 7461084 | C6828431 | ext | 0 **short** | 6 | A B | - |
+| GCT USB4085-GF-A | C7095263 | ext | 4146 | 3 | A B | - |
+| Viking ARG05FTC5101 | C218638 | ext | 12131 | 6 | A B | - |
+| UNI-ROYAL 0805W8F1002T5E | C17414 | basic | 47179913 | 13 | A B | - |
+| FH (Guangdong Fenghua) 0805CG270J500NT | C1808 | ext | 46803 | 6 | A B | - |
+| Samsung Electro-Mechanics CL21A475KAQNNNE | C1779 | basic | 2084257 | 6 | A B | - |
+| Samsung Electro-Mechanics CL21B105KBFNNNE | C28323 | basic | 4246729 | 6 | A B | - |
+| DOWO NUP2105LT1G | C2976509 | ext | 27272 | 3 | A B | onsemi NUP2105LT1G (DK NUP2105LT1GOSCT-ND) |
+| OSRAM LS R976-NR-1-0-20-R18 | C2899997 | ext | 12692 | 6 | A B | - |
+| OSRAM LG R971-KN-1-0-20-R18 | C2899888 | ext | 2625 | 3 | A B | - |
+| Murata BLM21PG221SN1D | C85840 | ext | 26736 | 3 | A B | - |
+| JST SM12B-GHS-TB(LF)(SN) | C265421 | ext | 34539 | 5 | A IN | - |
+| UNI-ROYAL 0805W8F1001T5E | C17513 | basic | 39261625 | 3 | A B | - |
+| UNI-ROYAL 0805W8F1200T5E | C17437 | basic | 969818 | 28 | A B | YAGEO RC0805FR-07120RL (DK 311-120CRCT-ND) |
+| Nidec Components CJS-1200TB1 | C2921631 | ext | 0 **short** | 3 | A B | - |
+| Microchip MCP2562FD-E/SN | C124016 | ext | 792 | 3 | A B | - |
+| STMicroelectronics STM32F446RET7 | C1343794 | ext | 0 **short** | 3 | A B | STMicroelectronics STM32F446RET6 (s9a; LCSC C69336) |
+| Abracon ABM3-8.000MHZ-D2Y-T | C144380 | ext | 5015 | 3 | A B | - |
+| RAMXEED (Fujitsu) MB85RC64TAPNF-G-AWERE2 | C43379785 | ext | 468 | 3 | A B | RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser) |
+| Microchip MCP9808T-E/MS | C129490 | ext | 503 | 3 | A B | - |
+| Samsung Electro-Mechanics CL21B103KBANNNC | C1710 | basic | 2133107 | 14 | A B | - |
+| Nexperia BAT54S,215 | C47546 | ext | 238920 | 33 | A B IN | onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND) |
+| Texas Instruments LM2902PWR | C46864 | ext | 89645 | 6 | A B | - |
+| KEMET C0805C473K5RAC7800 | C3879816 | ext | 7957 | 16 | A B | KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND) |
+| YAGEO CC0805GRNPO0BN221 | C576920 | ext | 3366 | 16 | A B | - |
+| UNI-ROYAL 0805W8F1201T5E | C17379 | basic | 1366298 | 16 | A B | YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND) |
+| FOJAN FRC1206J470 TS | C2907508 | ext | 648789 | 16 | A B | - |
+| Infineon BTS70082EPAXUMA1 | C2150060 | ext | 0 **short** | 8 | A | Infineon BTS7008-2EPA (same chip, LCSC C534830) |
+| JST BM12B-GHS-TBT | C20089173 | ext | 0 **short** | 1 | B | - |
+| Wurth Elektronik 74650074R | - | - | - **not listed** | 8 | B | - |
+| Vishay BYG23M-E3/TR | C141573 | ext | 18867 | 8 | B | - |
+| Infineon BTS70041EPPXUMA1 | C534825 | ext | 20949 | 4 | B | - |
+| Infineon BTS700121ESPXUMA1 | C3232444 | ext | 23 | 4 | B | Infineon BTS700121ESPXUMA2 (DK 448-BTS700121ESPXUMA2CT-ND) |
+| FH (Guangdong Fenghua) 0603B103K500NT | C57112 | basic | 5007514 | 27 | IN | YAGEO CC0603KRX7R9BB103 (DK 311-1085-1-ND) |
+| Molex 0430451200 | C277636 | ext | 1279 | 3 | IN | - |
+| UNI-ROYAL 0603WAF4701T5E | C23162 | basic | 14571731 | 24 | IN | YAGEO RC0603FR-074K7L (DK 311-4.70KHRCT-ND) |
+| UNI-ROYAL 0603WAF1002T5E | C25804 | basic | 41630755 | 51 | IN | YAGEO RC0603FR-0710KL (DK 311-10.0KHRCT-ND) |
+| UNI-ROYAL 0603WAF2002T5E | C4184 | basic | 4459627 | 3 | IN | YAGEO RC0603FR-0720KL (DK 311-20.0KHRCT-ND) |
+| Omron A6S-8104-H | C231310 | ext | 20 | 6 | IN | - |
+
+### 13.3 TVS D2 (A and B): SMCJ20CA -> 5.0SMDJ24CA (default, DECISIONS 2026-11-16 rule: research, decide with sources)
+
+D2 sits straight across the +12 V feed (terminal J1, every PROFET VS pin) to GND on both main boards. The open question was: the old part clamps at 32-33 V and the switches' maximum is 28 V. Answer: 28 V is the wrong limit, and the old part has a worse problem.
+
+Limits (Infineon BTS7008-2EPA, BTS7004-1EPP, BTS70012-1ESP data sheets, Table 3 and the suggested-components table):
+- VS 28 V is the supply-voltage maximum (P_4.1.0.1). For transients the rating is VBAT(LD) = 35 V, "suppressed load dump acc. to ISO 16750-2 (2010), Ri = 2 ohm" (P_4.1.0.3), the same on all three switches. Outputs keep working up to VBAT(LD) (BTS7008-2EPA 8.4.2).
+- Infineon's own suggested circuit uses "DZ2: 33 V TVS diode" on VS (protection at overvoltage and at loss of battery with an inductive load).
+- VBAT(SC) 0-24 V (short-circuit protection proven up to 24 V); -VBAT(REV) 16 V for 2 min.
+
+Car side (12 V system; Analog Devices articles on ISO 16750-2 / ISO 7637-2, Nexperia IAN50007):
+- Jump start: 24 V for 60 s. Suppressed load dump (Test B, central suppression assumed): clamped at 35 V, Ri 0.5-4 ohm, td 40-400 ms. A TVS with its breakdown below 35 V "may be forced to absorb the alternator's energy" (ADI).
+- ISO 7637-2 pulse 2a: +112 V, Ri 2 ohm, 50 us; pulse 1: -150 V, Ri 10 ohm, 2 ms.
+
+The two parts (maker data; estimate: clamp = VBR max + Rd x I, Rd from the data-sheet VC / IPP point; worst current from VBR min; pulse power for long pulses scaled as 1 / sqrt(t) from the 10/1000 us rating, the usual TVS curve shape; rectangular pulse, so on the safe side):
+
+| Case | SMCJ20CA (BORN, LCSC C152086) | 5.0SMDJ24CA (DOWO C284111 = Littelfuse 5.0SMDJ24CA) |
+|---|---|---|
+| Ratings | VRWM 20 V, VBR 22.2-24.5 V, VC 32.4 V at 46.3 A, 1500 W 10/1000 us (BORN data sheet) | VRWM 24 V, VBR 26.7-29.5 V, IR 5 uA, VC 38.9 V at 129 A, 5000 W 10/1000 us, DO-214AB (Littelfuse 5.0SMDJ data sheet v.4; DOWO listing at JLCPCB: same values) |
+| Jump start 24 V, 60 s | 24 V is inside its breakdown band: it conducts the battery's current for a minute: **fails** (a TVS usually fails short, here across the feed) | below VRWM: leakage only (5 uA): **pass** |
+| Suppressed load dump 35 V, Ri 2 ohm, 400 ms | about 5.9 A at 23 V = 137 W against about 75 W allowed at 400 ms: **fails** | about 4.0 A at 27 V = 108 W against about 250 W: **pass** (Ri 1 ohm: 212 W, pass). At Ri 0.5 ohm and 400 ms (about 400 W) it would not survive |
+| Pulse 2a (+112 V, 2 ohm) | about 46 A, clamp about 32.5 V | about 46 A, clamp about 32.9 V (35 V reached only at about 75 A) |
+| Against the switches' 35 V | below 35 V | below 35 V |
+
+Decision: D2 = 5.0SMDJ24CA on A and B (same DO-214AB footprint, no copper change). MPN = DOWO 5.0SMDJ24CA (LCSC C284111, JLCPCB extended, 4,224 in stock; the LCSC column is the fitted part, C6c); approved alternate Littelfuse 5.0SMDJ24CA (Digi-Key F5634CT-ND). Rest of the +12 V rail at up to 35 V: TSR 1-2450 input 6.5-36 V (LCSC listing), C3 35 V, 47 nF / 100 nF 50 V: all within rating. Unchanged and not covered by the switch data sheets either way: pulse 1 drives VS to about -30 V (old part about -26 V) for about 2 ms against the -16 V / 2 min reverse rating.
+
+Sources: Infineon BTS7008-2EPA / BTS7004-1EPP / BTS70012-1ESP data sheets (links in section 12); Littelfuse 5.0SMDJ data sheet (https://littelfuse.com/~/media/electronics/datasheets/tvs_diodes/littelfuse_tvs_diode_5_0smdj_datasheet.pdf.pdf); BORN SMCJ data sheet (LCSC C152086); JLCPCB part page C284111; Digi-Key 5.0SMDJ24CA (https://www.digikey.com/en/products/detail/littelfuse-inc/5-0SMDJ24CA/3307005); Analog Devices "Low quiescent current surge stopper ... ISO 7637-2 and ISO 16750-2" (https://www.analog.com/en/resources/technical-articles/low-quiescent-current-surge-stopper-robust-automotive-supply-protection.html) and "LTspice: models of ISO 7637-2 & ISO 16750-2 transients" (https://www.analog.com/en/resources/technical-articles/ltspice-models-of-iso-7637-2-iso-16750-2-transients.html); Nexperia IAN50007 (https://www.nexperia.com/applications/interactive-app-notes/IAN50007_Conducted_battery_line_transients).

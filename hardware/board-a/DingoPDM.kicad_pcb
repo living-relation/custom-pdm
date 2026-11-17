@@ -29465,7 +29465,7 @@
 				)
 			)
 		)
-		(property "Value" "SMCJ20CA"
+		(property "Value" "5.0SMDJ24CA"
 			(at -0.04 4.07 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -29501,7 +29501,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "SMCJ20CABCT-ND"
+		(property "Digi-Key_PN" "F5634CT-ND"
 			(at -64.241 -3.069 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29513,7 +29513,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C152086"
+		(property "LCSC" "C284111"
 			(at -64.241 -3.069 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29525,7 +29525,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "BORN"
+		(property "Manufacturer" "DOWO"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29537,11 +29537,23 @@
 				)
 			)
 		)
-		(property "MPN" "SMCJ20CA"
+		(property "MPN" "5.0SMDJ24CA"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "be1ff733-cb91-4a46-bff1-cc73300492a2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "Littelfuse 5.0SMDJ24CA (DK F5634CT-ND)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "85485aa0-992d-4426-bd87-929bfa56e86e")
 			(effects
 				(font
 					(size 1.27 1.27)

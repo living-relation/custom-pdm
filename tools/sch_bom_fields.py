@@ -41,7 +41,12 @@ PARTS = [
     ("C22388555", "PSA", "FS55X476K250LRG", "C22388555", KEEP, "", None),                     # 47uF 25V X7R 2220
     # ---- diodes, LEDs, ferrite
     ("C426855", "Nexperia", "PDZ3.3B,115", "C426855", KEEP, "", None),                        # 3.3 V zener SOD-323
-    ("C152086", "BORN", "SMCJ20CA", "C152086", KEEP, "", None),                               # TVS D2 (see section 13)
+    # TVS D2 across the +12 V feed: was BORN SMCJ20CA (LCSC C152086, 20 V stand-off: conducts at a 24 V jump start
+    # and absorbs a 35 V suppressed load dump it cannot survive). 24 V stand-off, 5 kW, same DO-214AB footprint;
+    # clamps fast ISO 7637-2 pulses under the switches' 35 V load-dump rating. Reasoning + sources:
+    # docs/parts-audit.md section 13.
+    ("C152086", "DOWO", "5.0SMDJ24CA", "C284111", "F5634CT-ND",
+     "Littelfuse 5.0SMDJ24CA (DK F5634CT-ND)", "5.0SMDJ24CA"),
     ("C2976509", "DOWO", "NUP2105LT1G", "C2976509", KEEP, "onsemi NUP2105LT1G (DK NUP2105LT1GOSCT-ND)", None),
     ("C2899997", "OSRAM", "LS R976-NR-1-0-20-R18", "C2899997", KEEP, "", None),               # red LED 0805
     ("C2899888", "OSRAM", "LG R971-KN-1-0-20-R18", "C2899888", KEEP, "", None),               # green LED 0805
