@@ -37,7 +37,15 @@
 // custom-pdm: THERMAL_LIMIT_PARAMS / SLEEP_LOW_POWER / WAKE_INPUT_PARAM (off unless a board's port.h sets them)
 #include "custom_options.h"
 
-#if THERMAL_LIMIT_PARAMS
+#if PRO_FEATURES
+#include "lookup_table.h" // custom-pdm (T1)
+#endif
+
+#if PRO_FEATURES
+// custom-pdm: 0x030A = 0x020A + master retry input (Config_Device), output protection extras (Config_OutputExt) and
+// lookup tables (Config_Table), all at the end of their structs. A FRAM holding 0x020A falls back to the defaults.
+#define CONFIG_VERSION 0x030A //custom-pdm: + P1 trip time, P2 min current, P3 master retry, T1 tables
+#elif THERMAL_LIMIT_PARAMS
 // custom-pdm: high byte = custom-pdm layout revision (counts up when our fields change), low byte = the upstream
 // version it extends (development 0x000A). 0x010A: thermal fields; 0x020A: + wake-input mask (B2). Upstream counts
 // up from 0x000A in the low byte, our older builds used 0x0106-0x0108 and 0x010A, so no stored config of another
@@ -70,6 +78,9 @@ struct Config_Device{
   #endif
   #if WAKE_INPUT_PARAM
   uint16_t nWakeInputMask; //bit i = digital input i may wake the device from sleep (Dan B2; default none, CAN and USB only)
+  #endif
+  #if PRO_FEATURES
+  uint16_t nMasterRetryInput; //custom-pdm (P3): var index; its rising edge clears Overcurrent / Fault on every output (0 = off)
   #endif
 };
 
@@ -109,7 +120,16 @@ struct DeviceConfig{
   #if NUM_ANALOG_INPUTS > 0
   Config_AnalogInput stAnalogInput[NUM_ANALOG_INPUTS];
   #endif
+  #if PRO_FEATURES
+  Config_OutputExt stOutputExt[NUM_OUTPUTS]; //custom-pdm (P1 / P2): block 0x7D00 + output
+  Config_Table stTable[NUM_TABLES];          //custom-pdm (T1): block 0x7E00 + table
+  #endif
 };
+
+#if PRO_FEATURES
+// custom-pdm: config + its CRC (config_ext.cpp) must fit the board's MB85RC64 FRAM (64 Kbit = 8192 bytes)
+static_assert(sizeof(DeviceConfig) + sizeof(uint32_t) <= 8192, "config does not fit the 8 KB FRAM");
+#endif
 
 extern DeviceConfig stConfig;
 extern DeviceConfig stConfigTemp; // Used for staging new config before applying

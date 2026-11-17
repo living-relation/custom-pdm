@@ -162,6 +162,24 @@
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
+                    @* custom-pdm P3 (0x7F00 sub 6) *@
+                    <MudItem>
+                        <MudCard Elevation="4" Style="height: 100%">
+                            <MudCardContent>
+                                <MudText Typo="Typo.body1">Master Retry</MudText>
+                                <MudText Typo="Typo.caption">On the rising edge of this input every output in Overcurrent or Fault is cleared and follows its input again. None = off.</MudText>
+                                <MudStack Row="true">
+                                    <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                                   Color="Color.Primary"
+                                                   Size="Size.Small"
+                                                   Style="max-width: 20px"
+                                                   OnClick="@(() => OpenVariableSelectorAsync(["bool"], v => cpdm.MasterRetryInput = v))">
+                                    </MudIconButton>
+                                    <MudText>@GetSelectedVarText(cpdm.MasterRetryInput)</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
                 }
                 @if (Device.Keypads.Count > 0)
                 {
@@ -207,6 +225,88 @@
                 @if (_outputsPwmExpanded)
                 {
                     <OutputsPwmGrid Outputs="Device.Outputs" Device="Device"/>
+                }
+            </MudExpansionPanel>
+
+            @* custom-pdm P1 / P2: block 0x7D00 + output, device types 14 / 15 only *@
+            @if (Device.CustomPdm is { } cpro)
+            {
+                <MudExpansionPanel Text="@($"Output Protection: Trip Time, Open Load ({Device.Outputs.Count})")">
+                    <MudText Typo="Typo.caption">
+                        Trip time: how long the current may stay above the current limit (after the inrush time) before the output trips; above the inrush limit it trips at once. 0 = on the first sample.
+                        Open load: while the output is on, a current below Min current for Min current time sets the output's Undercurrent flag (a var for logic, keypad LEDs, CAN); the output keeps running. Min current 0 = off.
+                        Retries: the reset limit counts every trip, so @CustomPdmSettings.ResetLimitText(3).
+                    </MudText>
+                    <MudSimpleTable Dense="true" Style="max-width: 760px">
+                        <thead><tr><th>Output</th><th>Trip time (ms)</th><th>Min current (A)</th><th>Min current time (ms)</th><th>Reset limit</th></tr></thead>
+                        <tbody>
+                        @for (var i = 0; i < cpro.OutputProtection.Count && i < Device.Outputs.Count; i++)
+                        {
+                            var op = cpro.OutputProtection[i];
+                            var output = Device.Outputs[i];
+                            <tr>
+                                <td>@output.Name</td>
+                                <td><MudNumericField T="int" @bind-Value="op.TripTime" Min="0" Max="OutputProtection.TripTimeMax" Variant="Variant.Outlined" Margin="Margin.Dense"/></td>
+                                <td><MudNumericField T="double" @bind-Value="op.MinCurrent" Min="0" Max="OutputProtection.MinCurrentMax" Step="0.1" Variant="Variant.Outlined" Margin="Margin.Dense"/></td>
+                                <td><MudNumericField T="int" @bind-Value="op.MinCurrentTime" Min="0" Max="OutputProtection.MinCurrentTimeMax" Variant="Variant.Outlined" Margin="Margin.Dense"/></td>
+                                <td><MudText Typo="Typo.body2">@CustomPdmSettings.ResetLimitText(output.ResetCountLimit)</MudText></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudExpansionPanel>
+            }
+        }
+
+        @* custom-pdm T1: lookup tables, block 0x7E00 + table, device types 14 / 15 only *@
+        @if (Device.CustomPdm is { } ctab)
+        {
+            <MudExpansionPanel Text="@($"Lookup Tables ({ctab.Tables.Count})")">
+                <MudText Typo="Typo.caption">
+                    Output = straight line between points, held at the first / last Y outside the X range. 2 to 8 points, X rising; otherwise the table outputs 0. Table outputs are vars ("Table n").
+                </MudText>
+                @for (var n = 0; n < ctab.Tables.Count; n++)
+                {
+                    var t = ctab.Tables[n];
+                    var label = $"Table {n + 1}";
+                    <MudPaper Class="pa-2 my-2" Elevation="2">
+                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                            <MudSwitch @bind-Value="t.Enabled" Color="Color.Success" Label="@label"/>
+                            <MudText Typo="Typo.body2">Input</MudText>
+                            <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Style="max-width: 20px"
+                                           OnClick="@(() => OpenVariableSelectorAsync(["bool", "int", "float"], v => t.Input = v))">
+                            </MudIconButton>
+                            <MudText>@GetSelectedVarText(t.Input)</MudText>
+                            <MudNumericField T="int" @bind-Value="t.Points" Label="Points" Min="0" Max="LookupTable.MaxPoints" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px"/>
+                            @if (t.Warning is { } w)
+                            {
+                                <MudText Typo="Typo.body2" Color="Color.Warning">@w</MudText>
+                            }
+                        </MudStack>
+                        <MudSimpleTable Dense="true">
+                            <tbody>
+                            <tr>
+                                <th>X</th>
+                                @for (var i = 0; i < LookupTable.MaxPoints; i++)
+                                {
+                                    var k = i;
+                                    <td><MudNumericField T="double" Value="t.X[k]" ValueChanged="@((double v) => t.X[k] = v)" Disabled="@(k >= t.Points)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px"/></td>
+                                }
+                            </tr>
+                            <tr>
+                                <th>Y</th>
+                                @for (var i = 0; i < LookupTable.MaxPoints; i++)
+                                {
+                                    var k = i;
+                                    <td><MudNumericField T="double" Value="t.Y[k]" ValueChanged="@((double v) => t.Y[k] = v)" Disabled="@(k >= t.Points)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px"/></td>
+                                }
+                            </tr>
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudPaper>
                 }
             </MudExpansionPanel>
         }
