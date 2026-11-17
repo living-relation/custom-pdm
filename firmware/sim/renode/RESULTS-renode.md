@@ -47,6 +47,8 @@ Update 2026-11-14 (branch `feat/fw-wake` @ 54ea06a, wake-up set as a config sett
 
 One-line mutations, each a full bench run on a mutated `git archive` copy, both RED with only the targeted test failing: R1 board A factory wake mask 0x73 (test 29 fails: A1 / A2 read 115); R2 the WriteParam check removed (test 30 fails: every mask is answered and taken, no warning). Stock dingopdm_v7 .bin byte-identical to a fresh build of pristine `14084e9` (md5 fbe414ba); bench `fw` rebuilt with `--build` afterwards.
 
+Update 2026-11-16 (branch `feat/w1-link-loss-verify`, Dan w1): **31 of 31 pass** (425 s suite). New test 31 (key on: board B power-cycled with input 3 held high from 10 ms, input enabled and saved first): its first msg 37 after the reset must show the input. RED on the ELFs without the fix (6783773): first msg 37 at 620 ms reads 0x0000, because the first cyclic round is built in InitCan before the device thread reads any input. With the fix (msg 37 skips that round): first msg 37 at 722 ms reads 0x0004. The output side (start-up wait, loss settings, critical outputs) is checked in the host sim (`s1` S7, stock params only).
+
 Numbering below is the old 18-test list (the new test 5 shifts the later ones by one; 19-21 run before the manual ID test).
 
 ## What each test showed
