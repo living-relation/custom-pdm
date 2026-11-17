@@ -28,6 +28,10 @@ public static class PdmFactoryDefaults
 
     public static int BaseFor(string role) => Boards.Single(b => b.Role == role).BaseId;
 
+    // Factory current limit of output i (0-based) = its rating (Dan w3a; port_boards.py LIMIT_*), the fan output 1 A.
+    // Inrush limits are the stock 50 A (the PC default too), the fan 2 A.
+    public static double CurrentLimit(string role, int i) => role == "A2" && i == FanOutput ? FanCurrentLimit : PdmView.Rating(role, i);
+
     // Slot layout of port_boards.py: SHED_COND0 = NUM_CONDITIONS - 4, SHED_VIRT0 = NUM_VIRT_INPUTS - 2,
     // FAN_COND0 = SHED_COND0 - 2, FAN_VIRT0 = SHED_VIRT0 - 3
     public static int ShedCond0(FwDevice d) => d.Conditions.Count - 4;
@@ -52,6 +56,7 @@ public static class PdmFactoryDefaults
         d.BaseId = BaseFor(role);
         d.BitRate = CanBitRate.BitRate1000K;                       // DEFAULT_CAN_BITRATE
         foreach (var o in d.Outputs) o.ResetMode = ResetMode.Count; // DEFAULT_RESET_MODE
+        for (var i = 0; i < d.Outputs.Count; i++) d.Outputs[i].CurrentLimit = CurrentLimit(role, i); // DEFAULT_OUT_CURRENT_LIMIT
         foreach (var a in d.AnalogInputs)
         {
             a.Switch.Threshold = AnalogSwitchThreshold;

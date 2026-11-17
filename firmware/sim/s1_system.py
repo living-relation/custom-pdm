@@ -228,6 +228,13 @@ b5.add(t5, *f5.values()); fan_boot = []
 for _ in range(300): b5.run_for(5); fan_boot.append(a2f.level(FAN_IN))          # every 5 ms from power-up, all boards at 30 C
 lim = {k: {n: t5.read(BASE[k], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
 check('thermal: factory defaults on every board (param block 0x7F00): warn 55, critical 80, recovery 6, critical-soon margin 5 deg C', all(v == ps.TEMP_DEFAULT for v in lim.values()), lim)
+# w3a: factory current limit = each output's rating (docs/box-connectors.md), the fan output 1 A; inrush limits unchanged
+want_lim = {'A1': [7.5] * 8, 'A2': [7.5, 1.0] + [7.5] * 6, 'B': [31.0] * 4 + [15.0] * 4}
+want_inr = {'A1': [50.0] * 8, 'A2': [50.0, 2.0] + [50.0] * 6, 'B': [50.0] * 8}
+def amps(u): return None if u is None else round(struct.unpack('<f', struct.pack('<I', u))[0], 3)
+got = {k: ([amps(t5.read(BASE[k], 0x1000 + o, 2)) for o in range(8)], [amps(t5.read(BASE[k], 0x1000 + o, 3)) for o in range(8)]) for k in f5}
+check('factory current limits = each output\'s rating (w3a): A1 / A2 OUT1-8 7.5 A (fan A2 OUT2 1 A), B OUT1-4 31 A, OUT5-8 15 A; inrush limits 50 A (fan 2 A)',
+      all(got[k] == (want_lim[k], want_inr[k]) for k in f5), got)
 def pins_high(b): return [i for i, o in enumerate(b.model['outputs']) if b.level(o[0])]
 fan_seen = []; t_ = b5.now
 while b5.now < t_ + 10_000_000: b5.run_for(500); fan_seen.append(tuple(tuple(pins_high(f5[k])) for k in ('A1', 'A2', 'B')))

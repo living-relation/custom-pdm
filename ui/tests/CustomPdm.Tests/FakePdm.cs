@@ -30,7 +30,9 @@ public sealed class FakeBoard
         BaseId = baseId;
         var model = StockTests.MakeDevice(type, baseId);
         model.BitRate = CanBitRate.BitRate1000K;       // not the PC default, as our factory config
-        model.Outputs[0].CurrentLimit = 7.5;
+        var role = PdmFactoryDefaults.Boards.Single(b => b.BaseId == baseId).Role;
+        for (var i = 0; i < model.Outputs.Count; i++)  // our factory limits = ratings (w3a), not the PC's 20 A
+            model.Outputs[i].CurrentLimit = PdmFactoryDefaults.CurrentLimit(role, i);
         foreach (var p in model.Params)
         {
             _order.Add((p.Index, p.SubIndex));

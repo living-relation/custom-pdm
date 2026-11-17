@@ -91,6 +91,8 @@ public class PdmView
         return view;
     }
 
+    // also our firmware's factory current limit (PdmFactoryDefaults.CurrentLimit, w3a)
+    public static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
     // The PDM-wide numbers (also used for the DBC PDM-wide names, d2b): board output i (0-based) of a role, board
     // digital input i, the role's analog input; null when the role has no such row.
     public static int? OutputNumber(string role, int i) =>
@@ -102,7 +104,6 @@ public class PdmView
 
     public static int? AnalogInputNumber(string role) => role switch { "A1" => 25, "A2" => 26, "B" => 27, _ => null };
 
-    private static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
 
     private static string OutputConnector(string role, int i) => role switch
     {

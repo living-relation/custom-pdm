@@ -68,6 +68,25 @@ public class PdmB3LiveSimTests(ITestOutputHelper output)
         }
     }
 
+    // w3a + the UI check rule: fresh boards hold each output's rating as their current limit (the fan 1 A), so after a
+    // Read All into hand-added devices (stock PC defaults, 20 A) /pdm shows no "above rating" warning
+    [SimFact]
+    public void FreshBoardsReadShowNoRatingWarning()
+    {
+        using var bus = new SimBus();
+        var rig = PdmLiveSimTests.Boot(bus);
+        var svc = Service(rig);
+        Assert.Equal(20, svc.BuildView().OverRating.Count); // before the read: 20 A on the 7.5 A and 15 A outputs
+        Assert.Null(Run(rig, svc, PdmOpKind.ReadAll));
+        Assert.Equal(AllOk, States(svc));
+        var view = svc.BuildView();
+        double[] want = [.. Enumerable.Repeat(7.5, 9), 1.0, .. Enumerable.Repeat(7.5, 6), 31.0, 31.0, 31.0, 31.0, 15.0, 15.0, 15.0, 15.0];
+        Assert.Equal(want, view.Outputs.Select(o => o.Output.CurrentLimit));
+        Assert.All(view.Outputs, o => Assert.Equal(o.Number == 10 ? 2.0 : 50.0, o.Output.InrushCurrentLimit));
+        Assert.Empty(view.OverRating);
+        Assert.All(view.Outputs, o => Assert.Null(o.RatingWarning));
+    }
+
     // The /pdm flow on a New PDM project: shared temp limits + fan thresholds, Write All with no Read All, then a
     // fresh PC (as after an app restart) reads the same values back from all three boards
     [SimFact]

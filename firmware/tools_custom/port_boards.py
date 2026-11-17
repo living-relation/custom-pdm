@@ -14,6 +14,12 @@ CYCLIC_TX_OFFSET = 2          # core/device_config.h
 TYPE_A, TYPE_B = 14, 15
 STATUS_MSG = 37               # custom-pdm status frame: first free cyclic msg after upstream's 0-36
 NUM_TX = STATUS_MSG + 1
+# Factory output current limit = each output's rating (Dan w3a, 2026-11-16; ratings: docs/box-connectors.md), amps:
+# board A OUT1-8, board B OUT1-4 (studs, BTS70012), board B OUT5-8 (BTS7004), the fan output A2 OUT2 (two Sunon
+# MF30101V1 = 0.13 A max). Inrush limits stay 50 A (fan 2 A): above every rating; during the inrush time (1 s) only the
+# inrush limit is checked, after it only the current limit (functions/profet.cpp), so neither needs the other.
+LIMIT_A, LIMIT_B_STUD, LIMIT_B, LIMIT_FAN = 7.5, 31.0, 15.0, 1.0
+fl = lambda v: f'F({v:.1f}f)'
 
 def rep(s, old, new, n=1):
     assert s.count(old) == n, (old, s.count(old))
@@ -84,7 +90,8 @@ THERMAL = '''// Board temperature limits are config params (0x7F00 sub 0-2, core
 #define DEFAULT_CRIT_EXEMPT_MASK (FAN_OUTPUT >= 0 ? (1U << (FAN_OUTPUT & 15)) : 0U)
 #define DEFAULT_OUT_ENABLED(i) ((int)(i) == FAN_OUTPUT ? 1 : 0)
 #define DEFAULT_OUT_INPUT(i) ((int)(i) == FAN_OUTPUT ? VAR_VIRT(FAN_VIRT0 + 2) : 0) // the fan latch virtual input
-#define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(1.0f) : F(20.0f)) // two Sunon MF30101V1 = 0.13 A max
+// Factory current limit = the output's rating (w3a, port_boards.py LIMIT_*); the fan output 1 A
+#define DEFAULT_OUT_CURRENT_LIMIT(i) ((int)(i) == FAN_OUTPUT ? @LIMIT_FAN@ : @OUT_LIMIT@)
 #define DEFAULT_OUT_INRUSH_LIMIT(i) ((int)(i) == FAN_OUTPUT ? F(2.0f) : F(50.0f))
 // Load-shed example (r5a), NOT active: conditions 29-32 and virtual inputs 15-16 (1-based) come prefilled but
 // disabled. Level l (0 sheds first): latch VI = (temp >= SHED_ON_C OR itself) AND NOT (temp <= SHED_OFF_C).
@@ -150,16 +157,18 @@ WAKE = '''// Wake-up (Dan B2): no input wakes by default (CAN and USB do); per-i
 // One wake source per EXTI line, so the firmware refuses a mask with both inputs of a pair or the USB one: %s.
 #define WAKE_INPUT_PARAM 1
 #define DEFAULT_WAKE_INPUT_MASK 0'''
-def thermal(note, fan):
+def thermal(note, fan, out_limit):
     t = THERMAL.replace('@FAN_NOTE@', note).replace('@FAN_OUTPUT@', fan)
+    t = t.replace('@LIMIT_FAN@', fl(LIMIT_FAN)).replace('@OUT_LIMIT@', out_limit)
     for k, v in {'@FAN_MSG0_B@': BASE_B + CYCLIC_TX_OFFSET, '@FAN_MSG0_A1@': BASE_A1 + CYCLIC_TX_OFFSET,
                  '@BASE_B@': BASE_B, '@BASE_A1@': BASE_A1}.items():
         t = t.replace(k, f'0x{v:03X}')
     return t
 FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is wired inside the box to both fans; its X1 cavity T is spare.\n'
                 '// A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)\n'
-                '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)')
-FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1')
+                '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)', fl(LIMIT_A))
+FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1',
+                f'((int)(i) < 4 ? {fl(LIMIT_B_STUD)} : {fl(LIMIT_B)})')
 COMMON = [('LED_ERROR','C0'),('LED_STATUS','C1'),('BATT_SENSE','A3'),('USB_VBUS','A9'),
           ('CAN_STANDBY','C12'),('I2C1_SCL','B6'),('I2C1_SDA','B7'),('CAN_RX','B8'),('CAN_TX','B9'),
           ('USB_DM','A11'),('USB_DP','A12'),('SWDIO','A13'),('SWCLK','A14')]
