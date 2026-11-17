@@ -94,7 +94,8 @@ public class PdmView
         return view;
     }
 
-    private static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
+    // also our firmware's factory current limit (PdmFactoryDefaults.CurrentLimit, w3a)
+    public static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
 
     private static string OutputConnector(string role, int i) => role switch
     {

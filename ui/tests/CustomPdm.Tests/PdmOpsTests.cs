@@ -280,7 +280,7 @@ public class PdmOpsTests
         Assert.All(pdm.Boards.Values, b => Assert.Equal(0, b.Count(MessageCommand.BurnParams)));
 
         // value put back: the same button works, no read or write needed in between
-        pdm.Dev("A2").Outputs[4].CurrentLimit = 20.0;
+        pdm.Dev("A2").Outputs[4].CurrentLimit = 7.5;   // the board's factory value (its rating, w3a)
         Assert.Null(pdm.Run(PdmOpKind.Burn));
         Assert.Equal([Ok, Ok, Ok], pdm.States);
         Assert.Equal([1, 1, 1], pdm.Boards.Values.Select(b => b.Burns));

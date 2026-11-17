@@ -37,6 +37,13 @@ public class PdmLinkedTests
         Assert.Equal([0, 2, 0], v.Boards.Select(b => b.Device.CustomPdm!.CritExemptMask));
         Assert.All(v.Boards, b => Assert.Equal(new PdmTempLimits(55, 80, 6, 5), PdmTempLimits.Of(b.Device)));
         Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.FactoryNew));
+        // w3a: current limit = each output's rating (A2 OUT2, the fan: 1 A); inrush limits stay 50 A (fan 2 A)
+        Assert.Equal([7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5], Dev(v, "A1").Outputs.Select(o => o.CurrentLimit));
+        Assert.Equal([7.5, 1.0, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5], Dev(v, "A2").Outputs.Select(o => o.CurrentLimit));
+        Assert.Equal([31.0, 31.0, 31.0, 31.0, 15.0, 15.0, 15.0, 15.0], Dev(v, "B").Outputs.Select(o => o.CurrentLimit));
+        Assert.Equal(24, v.Outputs.Count);
+        Assert.All(v.Outputs, o => Assert.Equal(o.Number == 10 ? 2.0 : 50.0, o.Output.InrushCurrentLimit));
+        Assert.Empty(v.OverRating); // /pdm shows no "above rating" warning for a New PDM
 
         var a2 = Dev(v, "A2");
         var fan = a2.Outputs[1];
@@ -76,6 +83,11 @@ public class PdmLinkedTests
         Assert.Equal(PdmFactoryDefaults.FanOnC, Num("FAN_ON_C"));
         Assert.Equal(PdmFactoryDefaults.FanOffC, Num("FAN_OFF_C"));
         Assert.Equal(PdmFactoryDefaults.FanCanIn0, int.Parse(Regex.Match(py, @"#define FAN_CANIN0 (\d+)").Groups[1].Value));
+        // w3a current limits: board A, board B OUT1-4, board B OUT5-8, the fan
+        var lim = Regex.Match(py, @"LIMIT_A, LIMIT_B_STUD, LIMIT_B, LIMIT_FAN = ([0-9.]+), ([0-9.]+), ([0-9.]+), ([0-9.]+)");
+        Assert.True(lim.Success);
+        Assert.Equal(Enumerable.Range(1, 4).Select(i => double.Parse(lim.Groups[i].Value, CultureInfo.InvariantCulture)),
+            new[] { PdmFactoryDefaults.CurrentLimit("A1", 0), PdmFactoryDefaults.CurrentLimit("B", 0), PdmFactoryDefaults.CurrentLimit("B", 4), PdmFactoryDefaults.FanCurrentLimit });
     }
 
     [Fact]
