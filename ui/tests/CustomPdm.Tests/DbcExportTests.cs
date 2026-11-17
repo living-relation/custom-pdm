@@ -106,6 +106,77 @@ public class DbcExportTests(ITestOutputHelper output)
         Assert.Equal("custom-pdm B", parsed.Single(p => p.Name == "B_PdmType").ValueTable![15]);
     }
 
+    // d2b: every output / input signal carries its PDM-wide name, numbered exactly as the /pdm page (PdmView) numbers
+    // its rows (outputs 1-24, digital inputs 1-24, analog inputs 25-27); board-level signals get none
+    [Fact]
+    public void PdmWideNamesFollowPdmView()
+    {
+        var view = PdmView.Build(DbcExport.RepoBoards.Select(b => StockTests.MakeDevice(b.DeviceType, b.BaseId)).ToList());
+        var sigs = view.Boards.Select(b => new DbcBoard(b.Role, b.Device)).SelectMany(DbcExport.Messages)
+            .SelectMany(m => m.Signals).ToDictionary(s => s.Name);
+        Assert.Equal(24, view.Outputs.Count);
+        Assert.Equal(27, view.Inputs.Count);
+        foreach (var o in view.Outputs)
+        foreach (var what in new[] { "Current", "State", "ResetCount", "DutyCycle" })
+            Assert.Equal($"PDM_Out{o.Number}_{what}", sigs[$"{o.Board}_Output{o.BoardOutput}_{what}"].PdmName);
+        foreach (var i in view.Inputs)
+        {
+            if (i.Kind == "Analog")
+            {
+                Assert.Equal($"PDM_In{i.Number}_Millivolts", sigs[$"{i.Board}_AnalogInput1_Millivolts"].PdmName);
+                continue;
+            }
+            if (i.BoardInput <= 8)   // msg 0 byte 0 holds digital inputs 1-8 of the board, so msg 37 gets the _M37 names
+            {
+                Assert.Equal($"PDM_In{i.Number}_State", sigs[$"{i.Board}_DigitalInput{i.BoardInput}_State"].PdmName);
+                Assert.Equal($"PDM_In{i.Number}_State_M37", sigs[$"{i.Board}_DigitalInput{i.BoardInput}_State_M37"].PdmName);
+            }
+            else                     // B inputs 9-10: only in msg 37
+                Assert.Equal($"PDM_In{i.Number}_State", sigs[$"{i.Board}_DigitalInput{i.BoardInput}_State"].PdmName);
+            if (i.BoardInput <= 6)   // DI PWM msgs 34-36: inputs 1-6
+                Assert.Equal($"PDM_In{i.Number}_Frequency", sigs[$"{i.Board}_DigitalInput{i.BoardInput}_Frequency"].PdmName);
+        }
+        Assert.Equal("PDM_Out17_Current", sigs["B_Output1_Current"].PdmName);
+        Assert.Equal("PDM_In8_State", sigs["A2_DigitalInput1_State"].PdmName);
+        foreach (var s in new[] { "A1_BoardTemp", "A2_DeviceState", "B_TotalCurrent", "B_Timer1_Output", "A1_ThermalCritical", "B_DieTemp" })
+            Assert.Null(sigs[s].PdmName);
+        // unknown role (not a PDM board): no PDM-wide names at all
+        Assert.Null(DbcExport.PdmName("X", "Output1_Current"));
+        Assert.Null(DbcExport.PdmName("A1", "Output9_Current"));
+        Assert.Null(DbcExport.PdmName("A1", "DigitalInput8_State"));
+    }
+
+    // d2b in the files: one attribute definition, one BA_ PdmName per output / input signal, each naming a real signal of
+    // that message, PDM names unique and DBC identifiers, the signal comment starting with the same name
+    [Fact]
+    public void PdmNameAttributeInEveryFile()
+    {
+        var perBoard = new Dictionary<string, int> { ["A1"] = 32 + 7 + 7 + 12 + 2, ["A2"] = 32 + 7 + 7 + 12 + 2, ["B"] = 32 + 8 + 10 + 12 + 2 };
+        foreach (var (name, text) in Generated())
+        {
+            var parsed = Parse(text);
+            var lines = text.Split('\n');
+            Assert.Single(lines, l => l == $"BA_DEF_ SG_  \"{DbcExport.PdmNameAttribute}\" STRING ;");
+            Assert.Single(lines, l => l == $"BA_DEF_DEF_  \"{DbcExport.PdmNameAttribute}\" \"\";");
+            var ba = lines.Where(l => l.StartsWith("BA_ ")).Select(l => System.Text.RegularExpressions.Regex.Match(l,
+                $@"^BA_ ""{DbcExport.PdmNameAttribute}"" SG_ (\d+) (\w+) ""(PDM_(Out|In)\d+_\w+)"";$")).ToList();
+            Assert.All(ba, m => Assert.True(m.Success));
+            foreach (var m in ba)
+            {
+                Assert.Single(parsed, p => p.Id == int.Parse(m.Groups[1].Value) && p.Name == m.Groups[2].Value);
+                Assert.Contains($"CM_ SG_ {m.Groups[1].Value} {m.Groups[2].Value} \"PDM-wide name {m.Groups[3].Value}", text);
+            }
+            var pdm = ba.Select(m => m.Groups[3].Value).ToList();
+            Assert.Equal(pdm.Count, pdm.Distinct().Count());
+            var boards = DbcExport.RepoBoards.Where(b => name == DbcExport.PdmFileName || name == DbcExport.FileName(b));
+            Assert.Equal(boards.Sum(b => perBoard[b.Node]), pdm.Count);
+            // BA_DEF_ comes after the comments and before the value tables (DBC section order)
+            Assert.True(Array.FindLastIndex(lines, l => l.StartsWith("CM_")) < Array.FindIndex(lines, l => l.StartsWith("BA_DEF_ ")));
+            Assert.True(Array.FindLastIndex(lines, l => l.StartsWith("BA_ ")) < Array.FindIndex(lines, l => l.StartsWith("VAL_ ")));
+            output.WriteLine($"{name}: {pdm.Count} PDM-wide names");
+        }
+    }
+
     // Two boards on the same base ID would give one CAN ID twice: refused, not written
     [Fact]
     public void OverlappingBaseIdsRefused()

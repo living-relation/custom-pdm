@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- custom-pdm: DUMMY TEST COPY generators for the car CAN bus (Dan, 2026-11-16: L1a Link receive files, L2 ID table
+       clash check, L3a bus load). Everything it writes is a dummy test copy under docs/car-can-dummy/, never a source
+       of truth; the real sources are in the read-only st185-link-ecu-config repo. Run by ui/tools/DbcGen. Not upstream. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\dingoConfig\domain\domain.csproj" />
+  </ItemGroup>
+
+</Project>
