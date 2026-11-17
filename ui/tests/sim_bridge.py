@@ -16,6 +16,11 @@ stdio commands (one per line, every reply ends with a line "OK"):
   AN <board> <volts>          analog input wire voltage
   LINK <board> <on|off>       CAN wires of one board (off = silent: it neither hears nor sends; it keeps running)
   PIN <board> <o>             output o (0-based): prints "P 1" when its PROFET IN pin is high, else "P 0"
+  RESTART <board> ...         power-cycle boards at the bus time (config kept: FRAM; wires and LINK state kept);
+                              prints "T0 <bus ms>"
+  TRACE <ms> <step> <ids|-> <board>:<o> ...   run <ms> in <step> ms steps; prints "E <board>:<o> <bus ms> <0|1>" at
+                              the start and at every change of those output pins, then "FRAME <id> <first ms> <last ms>
+                              <count>" for each listed ID (hex, comma separated) seen
   QUIT
 """
 import os, sys, time, socket, select
@@ -65,6 +70,30 @@ def stdio(so):
             boards[a[1]].connected = a[2].lower() == 'on'
         elif c == 'PIN':   # B4: ground truth of an output, its PROFET IN pin (as s1_system.py pins_on)
             b = boards[a[1]]; sys.stdout.write(f'P {int(bool(b.level(b.model["outputs"][int(a[2])][0])))}\n')
+        elif c == 'RESTART':   # w1: power-cycle boards (config kept: FRAM; wires, input DIPs and CAN wires kept)
+            for k in a[1:]:
+                old = boards[k]; m, u = BOARDS[k]
+                nb = ps.Board(m, k, so, fram=old.fram(), unit=u); nb.t0 = bus.now; nb.connected = old.connected
+                for i, w in old.wire.items(): nb.set_input(i, w, old.dip.get(i))
+                bus.nodes[bus.nodes.index(old)] = nb; boards[k] = nb
+            sys.stdout.write(f'T0 {bus.now / 1000}\n')
+        elif c == 'TRACE':   # w1: TRACE <ms> <step ms> <ids hex,..|-> <board>:<o> ...
+            ms, step = float(a[1]), float(a[2]); ids = [] if a[3] == '-' else [int(x, 16) for x in a[3].split(',')]
+            pins = [(p, boards[p.split(':')[0]], int(p.split(':')[1])) for p in a[4:]]; seen = {}; last = {}
+            def w(f):
+                if f.id in ids: r = seen.setdefault(f.id, [f.t, f.t, 0]); r[1] = f.t; r[2] += 1
+            bus.watch.append(w); end = bus.now + int(ms * 1000)
+            try:
+                while True:
+                    for key, bd, o in pins:
+                        lv = int(bool(bd.level(bd.model['outputs'][o][0])))
+                        if last.get(key) != lv: last[key] = lv; sys.stdout.write(f'E {key} {bus.now / 1000} {lv}\n')
+                    if bus.now >= end: break
+                    bus.run(min(end, bus.now + int(step * 1000)))
+            finally:
+                bus.watch.remove(w); out.clear()
+            for i in ids:
+                if i in seen: sys.stdout.write(f'FRAME {i:X} {seen[i][0] / 1000} {seen[i][1] / 1000} {seen[i][2]}\n')
         else:
             sys.stdout.write(f'ERR {raw.strip()}\n')
         sys.stdout.write('OK\n'); sys.stdout.flush()

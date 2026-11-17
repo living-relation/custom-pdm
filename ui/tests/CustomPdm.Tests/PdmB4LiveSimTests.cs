@@ -155,7 +155,7 @@ public class PdmB4LiveSimTests(ITestOutputHelper output)
         // slot exhaustion: B's free slots taken by hand on the PC -> a new link is refused, nothing is sent
         var sent = pc2.Sent.Count;
         foreach (var c in pc2.B.CanInputs.Where(c => !c.Enabled && c.Id == 0)) (c.Enabled, c.Id) = (true, 0x7F0);
-        Assert.Equal("B has no free CAN input: all 32 are used (3 by links, the rest by the fan logic or set by hand).",
+        Assert.Equal("B has too few free CAN inputs: this link needs 1, 0 free (5 used by links, the rest by the fan logic or set by hand).",
             PdmLinks.Add(v2, 4, 17));
         pc2.Step(200);
         Assert.Equal(sent, pc2.Sent.Count);
