@@ -30,8 +30,30 @@ public class CustomParamsTests
         Assert.All(tab.Where(x => x.SubIndex == 0), x => Assert.Equal((typeof(bool), (object)false), (x.ValueType, x.DefaultValue)));
         Assert.All(tab.Where(x => x.SubIndex is 1 or 2), x => Assert.Equal((typeof(int), (object)0), (x.ValueType, x.DefaultValue)));
         Assert.All(tab.Where(x => x.SubIndex >= 3), x => Assert.Equal((typeof(double), (object)0.0), (x.ValueType, x.DefaultValue)));
-        Assert.Equal(0x1000, p[117].Index);
+        // then 0x7C00 + output sub 0-4 for the 8 outputs (OUTPUT_FREQ_PARAMS, PWM frequency from a variable), then 0x1000
+        var freq = p.Skip(117).Take(40).ToList();
+        Assert.Equal(Enumerable.Range(0, 8).SelectMany(o => Enumerable.Range(0, 5).Select(s => (0x7C00 + o, s))), freq.Select(x => (x.Index, x.SubIndex)));
+        Assert.Equal(0x1000, p[157].Index);
         Assert.Equal(7, p.Count(x => x.Index == CustomPdmSettings.BaseIndex));
+    }
+
+    // firmware/core/param_defs.h OUTPUT_FREQ_PARAMS: Bool off, UInt16 input 0, Float factor 1.0, UInt16 16 / 1000 Hz
+    [Theory]
+    [InlineData(14)]
+    [InlineData(15)]
+    public void FreqInputBlockTypesAndDefaults(int type)
+    {
+        var dev = StockTests.MakeDevice(type);
+        var b = dev.Params.Where(x => x.Index == CustomPdmSettings.FreqBaseIndex + 3).ToList();
+        Assert.Equal(new[] { typeof(bool), typeof(int), typeof(double), typeof(int), typeof(int) }, b.Select(x => x.ValueType));
+        Assert.Equal(new object[] { false, 0, 1.0, 16, 1000 }, b.Select(x => x.DefaultValue));
+        Assert.All(b, x => Assert.False(x.IsModified));
+        var f = dev.CustomPdm!.PwmFreqInputs[3];
+        f.PulsesPerRev = 2; f.Enabled = true;                          // 4-cylinder tachometer
+        Assert.Equal(2.0 / 60.0, (double)b[2].GetValue(), 12);
+        Assert.True(dev.CustomPdm.IsValid());
+        f.MinHz = 15;                                                  // below the firmware minimum
+        Assert.False(dev.CustomPdm.IsValid());
     }
 
     [Theory]

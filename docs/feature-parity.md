@@ -67,8 +67,9 @@ Counts per board (A and B): 16 virtual inputs (VI, 3 terms each), 32 conditions,
 | 41 | Live diagnostics on CAN | yes | yes (M p.21, 50-57) | IO Status (L) | **yes**: 38 status frames (state, current, trip count, duty, inputs, temperatures, flags) | S0, S1 | none |
 | 42 | PID control | yes (E p.109) | n/f | PID page (L) | **no** | none | not needed: the ECU closes loops (fan, boost); not proposed |
 | 43 | Password / config lock | n/f | yes (M p.2, 31) | n/f | **no** | none | not proposed |
+| 44 | Tach / frequency output from a channel (e.g. a tachometer from ECU RPM on CAN) | n/f | n/f | n/f (Link ECUs: Tacho aux output, 1 pulse per ignition event, 50 % duty, forums.linkecu.com topic 10557; Haltech: pulses per cycle = cylinders, support.haltech.com "tachometer"; Adaptronic: 4 cyl = 2 / rev, 8 cyl = 4) | **yes** (custom option `PWM_FREQ_INPUT`): block 0x7C00 + output, f = input x factor (pulses per rev / 60), 16-1000 Hz, off below the minimum; 12 V high-side square wave | S3 F16 (12 checks), Renode "Tach Output" | job tach |
 
-Counts (43 rows): **yes 29**, **partly 10**, **no 4**. Rows 14, 20, 28, 31 were "no" and are built (below); the 4 "no"
+Counts (44 rows): **yes 30**, **partly 10**, **no 4**. Rows 14, 20, 28, 31 were "no" and are built (below); the 4 "no"
 left are out of scope (35 H-bridge, 39 logging, 42 PID, 43 password).
 
 ## Found while testing
@@ -94,6 +95,8 @@ left are out of scope (35 H-bridge, 39 logging, 42 PID, 43 password).
 - Reset limit wording, see row 29.
 - CAN output scaling follows the DBC rule raw = (value - offset) / factor (factor 0.1 sends amps x 10).
 - One CAN transmit time-out is counted when a keypad is enabled (start-up burst of keypad frames); none after.
+- Stock fixed PWM frequency below 16 Hz (output sub 13 allows 0-400) is wrong on the 16-bit timers (board A: every output but OUT3 on TIM5; RM0390: TIM3/4/9-14 are 16-bit): ARR keeps the low 16 bits of 1 MHz / f - 1, so 10 Hz runs ARR 34463 (29 Hz) with CCR 50000 above it and the output just stays on (S3 F16 info, host sim and Renode). Not changed (stock code); `PWM_FREQ_INPUT` limits its own range to 16-1000 Hz. dingoConfig should not offer 1-15 Hz.
+- Paired outputs: the follower copies the primary's timer count only on its own off -> on edge (`Profet::FollowerUpdate`). PWM switched on while the pair is already on leaves the two timers out of phase (2.65 ms at 100 Hz in S3 F13) until the next off / on. S3 F13 now sets PWM before switching on; earlier it passed only because the old host sim reset the timer phase on every period write (real timers do not: ARR / CCR are preloaded, now modelled in `sim_core.cpp`).
 - `AGENTS.md` asked for `s1` "65 of 65"; it is 66 since PR #89 (fixed in this PR).
 
 ## Built (custom option PRO_FEATURES, job fwgaps)
