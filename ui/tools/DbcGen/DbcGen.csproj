@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\dingoConfig\domain\domain.csproj" />
     <ProjectReference Include="..\..\dingoConfig\application\application.csproj" />
+    <ProjectReference Include="..\CarCanDummy\CarCanDummy.csproj" />
   </ItemGroup>
 
   <!-- FwDeviceDefManager reads Definitions/ next to the running assembly, as the app does -->

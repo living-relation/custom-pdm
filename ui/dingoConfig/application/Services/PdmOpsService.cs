@@ -18,6 +18,32 @@ public class PdmOpsService : IDisposable
     // false in tests: they call Tick themselves with the sim clock
     public bool AutoTick { get; set; } = true;
 
+    // p2a: read a board when it connects, ask first when the PC holds unsaved edits for it (PdmAutoRead). On in the
+    // app (web/Program.cs); off by default so the older tests drive every run themselves. With AutoTick the 10 Hz
+    // timer then runs all the time, not only during a run.
+    public PdmAutoRead AutoReader { get; } = new();
+    public Func<bool> AdapterConnected { get; set; } = () => true;
+
+    public bool AutoRead
+    {
+        get;
+        set
+        {
+            field = value;
+            if (value && AutoTick) EnsureTimer();
+        }
+    }
+
+    public IReadOnlyList<PdmBoard> ConnectAsks() => AutoReader.Asks(BuildView());
+    public IReadOnlyList<PdmBoard> ConnectWaiting() => AutoReader.Waiting(BuildView());
+    public void AnswerConnect(FwDevice dev, PdmConnectAnswer answer) => AutoReader.Answer(dev, answer);
+
+    private void EnsureTimer()
+    {
+        lock (_timerLock)
+            _timer ??= new Timer(_ => Tick(), null, 100, 100);
+    }
+
     public PdmOpsService(DeviceManager deviceManager) : this(deviceManager, null) { }
 
     public PdmOpsService(DeviceManager deviceManager, Func<FwDevice, bool>? isConnected)
@@ -46,9 +72,7 @@ public class PdmOpsService : IDisposable
     public string? Start(PdmOpKind op, bool adapterConnected, DateTime? now = null)
     {
         var refused = Ops.Start(op, BuildView(), adapterConnected, now ?? DateTime.UtcNow);
-        if (refused == null && AutoTick)
-            lock (_timerLock)
-                _timer ??= new Timer(_ => Tick(), null, 100, 100);
+        if (refused == null && AutoTick) EnsureTimer();
         return refused;
     }
 
@@ -107,14 +131,29 @@ public class PdmOpsService : IDisposable
     {
         try { _deviceManager.GetDevicesByType<FwDevice>(); }
         catch (InvalidOperationException) { /* device list changed on another thread: next tick */ }
-        Ops.Tick(now ?? DateTime.UtcNow);
-        if (Ops.Busy) return;
+        var clock = now ?? DateTime.UtcNow;
+        Ops.Tick(clock);
+        if (AutoRead) StepAutoRead(clock);
+        if (Ops.Busy || AutoRead) return;
         lock (_timerLock)
         {
-            if (Ops.Busy) return;
+            if (Ops.Busy || AutoRead) return;
             _timer?.Dispose();
             _timer = null;
         }
+    }
+
+    // After Ops.Tick, so a run that just ended lets the waiting boards go
+    private void StepAutoRead(DateTime now)
+    {
+        try
+        {
+            var view = BuildView();
+            var roles = AutoReader.Step(view, _isConnected, Ops.Busy);
+            if (roles.Count > 0 && Ops.Start(PdmOpKind.ReadAll, view, AdapterConnected(), now, roles) == null)
+                AutoReader.Started(view, roles);
+        }
+        catch (InvalidOperationException) { /* device list changed on another thread: next tick */ }
     }
 
     public void Dispose()

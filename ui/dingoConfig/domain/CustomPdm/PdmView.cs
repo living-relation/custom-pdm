@@ -70,23 +70,20 @@ public class PdmView
         foreach (var board in view.Boards)
         {
             var dev = board.Device;
-            var outBase = board.Role switch { "A1" => 0, "A2" => 8, _ => 16 };
-            for (var i = 0; i < dev.Outputs.Count && i < 8; i++)
-                view.Outputs.Add(new PdmOutputRow(outBase + i + 1, board.Role, i + 1, Rating(board.Role, i),
+            for (var i = 0; i < dev.Outputs.Count && OutputNumber(board.Role, i) is { } n; i++)
+                view.Outputs.Add(new PdmOutputRow(n, board.Role, i + 1, Rating(board.Role, i),
                     OutputConnector(board.Role, i), dev, dev.Outputs[i]));
 
-            var inBase = board.Role switch { "A1" => 0, "A2" => 7, _ => 14 };
-            var maxIn = board.Role == "B" ? 10 : 7;
-            for (var i = 0; i < dev.DigitalInputs.Count && i < maxIn; i++)
-                view.Inputs.Add(new PdmInputRow(inBase + i + 1, board.Role, "Digital", i + 1,
+            for (var i = 0; i < dev.DigitalInputs.Count && DigitalInputNumber(board.Role, i) is { } n; i++)
+                view.Inputs.Add(new PdmInputRow(n, board.Role, "Digital", i + 1,
                     $"X2-{DigitalCavity(board.Role, i)}", dev, dev.DigitalInputs[i], null));
         }
 
         // analog inputs after the 24 digital ones: 25 (A1), 26 (A2), 27 (B)
         foreach (var board in view.Boards)
         {
-            if (board.Device.AnalogInputs.Count == 0) continue;
-            var (n, cav) = board.Role switch { "A1" => (25, 14), "A2" => (26, 22), _ => (27, 33) };
+            if (board.Device.AnalogInputs.Count == 0 || AnalogInputNumber(board.Role) is not { } n) continue;
+            var cav = board.Role switch { "A1" => 14, "A2" => 22, _ => 33 };
             view.Inputs.Add(new PdmInputRow(n, board.Role, "Analog", 1, $"X2-{cav}", board.Device, null,
                 board.Device.AnalogInputs[0]));
         }
@@ -96,6 +93,17 @@ public class PdmView
 
     // also our firmware's factory current limit (PdmFactoryDefaults.CurrentLimit, w3a)
     public static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
+    // The PDM-wide numbers (also used for the DBC PDM-wide names, d2b): board output i (0-based) of a role, board
+    // digital input i, the role's analog input; null when the role has no such row.
+    public static int? OutputNumber(string role, int i) =>
+        i is >= 0 and < 8 && role is "A1" or "A2" or "B" ? role switch { "A1" => 0, "A2" => 8, _ => 16 } + i + 1 : null;
+
+    public static int? DigitalInputNumber(string role, int i) =>
+        role is "A1" or "A2" or "B" && i >= 0 && i < (role == "B" ? 10 : 7)
+            ? role switch { "A1" => 0, "A2" => 7, _ => 14 } + i + 1 : null;
+
+    public static int? AnalogInputNumber(string role) => role switch { "A1" => 25, "A2" => 26, "B" => 27, _ => null };
+
 
     private static string OutputConnector(string role, int i) => role switch
     {

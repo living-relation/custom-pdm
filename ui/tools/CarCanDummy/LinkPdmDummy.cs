@@ -1,0 +1,156 @@
+using System.Globalization;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using domain.CustomPdm;
+
+namespace CarCanDummy;
+
+// L1a (Dan, 2026-11-16): the PDM status signals the Link ECU could receive, written in the two forms st185 uses for
+// its ECU CAN config (DUMMY TEST COPIES, docs/car-can-dummy/):
+//   - JSON master form like st185 link_g4x_can_setup.json / switchboard_frames.json "ecu_receive": scale / offset in
+//     PCLink ENCODE form, raw = value * scale + offset;
+//   - .lcs XML like st185 link_g4x_can_setup.lcs: Direction="Receive" channels on CANModule 1 (CAN1, the one car bus),
+//     scale / offset in DECODE form, value = raw * Scale + Offset; bit fields StartBit = byte * 8 + bit.
+// Source: DbcExport.Messages (the same signals as firmware/dbc), so the files follow the DBC. Unlike st185's own frames
+// (BigEndian) the PDM sends Intel byte order (firmware msg.cpp data16), so every field is ByteOrder="LittleEndian" and a
+// multi-byte StartBit is the DBC Intel start bit (lowest bit of the first byte). Not verified: that PCLink takes
+// LittleEndian / receive channels from an .lcs import (st185's own .lcs says its schema is unconfirmed), and how many
+// CAN receive channels a G4X XtremeX can hold.
+public record LinkChannel(int FrameId, string Board, int MsgNumber, string Name, string DbcSignal, int StartBit, int Length,
+    bool Signed, double Factor, double Offset, string Unit);
+
+public static class LinkPdmDummy
+{
+    public const string JsonFile = "link_pdm_receive.dummy.json";
+    public const string LcsFile = "link_pdm_receive.dummy.lcs";
+    public const int CycleMs = 100;                // firmware core/device_config.h CAN_TX_CYCLIC_MSG_DELAY
+    public const int TimeoutMs = 4 * CycleMs;      // st185 CAN-BUS-MASTER-DESIGN.md section 6: time-out = 4 x the cycle
+    public const int TimeoutValue = 0;             // as st185's CSB3 receive: every channel reads 0 on time-out
+    public const int CanModule = 1;                // st185 .lcs CANModule Index="1" (CAN1)
+    public const string ByteOrder = "LittleEndian";
+
+    // Chosen: per board msg 0 device state + board temperature, msgs 1-2 output currents, msg 3 output states + the
+    // three thermal flags, msg 37 all digital input states. Not chosen: totals, battery, reset counts, wiper / flasher,
+    // optional msgs 4-36 (sent only when the matching function is enabled).
+    public static readonly int[] Msgs = [0, 1, 2, 3, 37];
+
+    public static bool Chosen(int msg, string stem) => msg switch
+    {
+        0 => stem is "DeviceState" or "BoardTemp",
+        1 or 2 => stem.StartsWith("Output") && stem.EndsWith("_Current"),
+        3 => (stem.StartsWith("Output") && stem.EndsWith("_State")) || stem.StartsWith("Thermal"),
+        37 => stem.StartsWith("DigitalInput") && stem.Contains("_State"),
+        _ => false
+    };
+
+    public static List<LinkChannel> Channels(IEnumerable<DbcBoard> boards) =>
+        boards.SelectMany(b => DbcExport.Messages(b)
+            .Where(m => Msgs.Contains(m.MsgNumber))
+            .SelectMany(m => m.Signals
+                .Where(s => Chosen(m.MsgNumber, s.Name[(b.Node.Length + 1)..]))
+                .Select(s => new LinkChannel(m.Id, b.Node, m.MsgNumber, LinkName(s.PdmName ?? s.Name), s.Name, s.StartBit,
+                    s.Length, s.IsSigned, s.Factor, s.Offset, s.Unit))))
+            .ToList();
+
+    // The DBC name without its "_M37" message suffix: only msg 37 carries input states here, so the names stay unique
+    // ("PDM_In3_State"); the exact DBC signal is kept in the JSON field dbc_signal.
+    public static string LinkName(string dbcName) => System.Text.RegularExpressions.Regex.Replace(dbcName, @"_M\d+$", "");
+
+    public static string FrameName(LinkChannel c) => $"PDM {c.Board} msg {c.MsgNumber}";
+
+    public static string RealSource =>
+        $"{DummySources.Repo}/{DummySources.LinkJson}, {DummySources.LinkLcs} and {DummySources.Switchboard} (format only); " +
+        "PDM values from firmware/dbc/custompdm_PDM.dbc";
+
+    private static readonly JsonSerializerOptions Js = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    private static string Q(string s) => JsonSerializer.Serialize(s, Js);
+    public static string Num(double v) => Math.Round(v, 6).ToString("0.######", CultureInfo.InvariantCulture);
+
+    // Encode form (st185 JSON): raw = value * scale + offset, i.e. scale = 1 / factor, offset = -offset / factor
+    public static (double Scale, double Offset) Encode(LinkChannel c) => (1.0 / c.Factor, -c.Offset / c.Factor + 0.0);
+
+    public static string Json(IEnumerable<DbcBoard> boards)
+    {
+        var ch = Channels(boards);
+        var sb = new StringBuilder();
+        void L(string s) => sb.Append(s).Append('\n');
+        L("{\"_banner\": " + Q(DummySources.Banner(RealSource)) + ",");
+        L("  \"_comment\": " + Q("custom-pdm status frames the Link G4X could RECEIVE (L1a, Dan 2026-11-16). Generated by " +
+          "ui/tools/DbcGen from ui/dingoConfig/domain/CustomPdm/DbcExport.cs (same signals as firmware/dbc): do not edit. " +
+          "SCALE CONVENTION as st185 link_g4x_can_setup.json: ENCODE, raw = value * scale + offset; the .lcs beside it " +
+          "states the same fields in DECODE form. PDM frames are Intel byte order (LittleEndian), unlike st185's BigEndian " +
+          "frames. Fields: byte + length (bytes) when byte aligned, else byte + bit + bits (bit 0 = LSB of that byte). " +
+          "Not verified: PCLink receive channel count and LittleEndian .lcs import.") + ",");
+        L("  \"scale_convention\": \"encode: raw = value * scale + offset\",");
+        L("  \"bit_rate_bps\": 1000000,");
+        L($"  \"can_module\": {CanModule},");
+        L($"  \"byte_order\": {Q(ByteOrder)},");
+        L("  \"pdm_to_ecu\": {");
+        L("    \"ecu_receives\": true,");
+        L($"    \"timeout_ms\": {TimeoutMs},");
+        L($"    \"timeout_value\": {TimeoutValue},");
+        L("    \"frames\": [");
+        var frames = ch.GroupBy(c => c.FrameId).OrderBy(g => g.Key).ToList();
+        for (var f = 0; f < frames.Count; f++)
+        {
+            var g = frames[f].ToList();
+            L($"      {{ \"id\": \"0x{g[0].FrameId:X3}\", \"name\": {Q(FrameName(g[0]))}, \"dlc\": 8, \"cycle_ms\": {CycleMs},");
+            L("        \"channels\": [");
+            for (var i = 0; i < g.Count; i++)
+            {
+                var c = g[i];
+                var (sc, of) = Encode(c);
+                var where = c.StartBit % 8 == 0 && c.Length % 8 == 0
+                    ? $"\"byte\": {c.StartBit / 8}, \"length\": {c.Length / 8}"
+                    : $"\"byte\": {c.StartBit / 8}, \"bit\": {c.StartBit % 8}, \"bits\": {c.Length}";
+                L($"          {{ {where}, \"name\": {Q(c.Name)}, \"dbc_signal\": {Q(c.DbcSignal)}, " +
+                  $"\"scale\": {Num(sc)}, \"offset\": {Num(of)}, \"unit\": {Q(c.Unit)}" + (c.Signed ? ", \"signed\": true" : "") +
+                  " }" + (i < g.Count - 1 ? "," : ""));
+            }
+            L("        ] }" + (f < frames.Count - 1 ? "," : ""));
+        }
+        L("    ]");
+        L("  }");
+        L("}");
+        return sb.ToString();
+    }
+
+    public static string Lcs(IEnumerable<DbcBoard> boards)
+    {
+        var ch = Channels(boards);
+        var sb = new StringBuilder();
+        void L(string s) => sb.Append(s).Append('\n');
+        L("<!-- " + DummySources.Banner(RealSource) + " -->");
+        L("<!-- custom-pdm status frames as Link G4X RECEIVE channels (L1a). Generated by ui/tools/DbcGen from");
+        L("     ui/dingoConfig/domain/CustomPdm/DbcExport.cs (same signals as firmware/dbc): do not edit.");
+        L("     JSON master form beside it: " + JsonFile + " (ENCODE form). SCALE CONVENTION here, as st185's .lcs:");
+        L("     DECODE, value = raw x Scale + Offset. PDM frames are Intel byte order: ByteOrder=\"LittleEndian\",");
+        L("     StartBit = DBC Intel start bit (byte x 8 + bit, bit 0 = LSB). Timeout " + TimeoutMs + " ms (4 x the " + CycleMs + " ms cycle,");
+        L("     st185 master design section 6), every channel reads " + TimeoutValue + " on time-out.");
+        L("     Not verified: PCLink import of receive channels / LittleEndian from an .lcs; receive channel count. -->");
+        L("<LinkCANSetup Version=\"1\">");
+        L($"  <CANModule Index=\"{CanModule}\">");
+        L("    <!-- CAN1, 1 Mbit/s: the one car bus (st185 CAN-BUS-MASTER-DESIGN.md) -->");
+        string? board = null;
+        foreach (var g in ch.GroupBy(c => c.FrameId).OrderBy(g => g.Key))
+        {
+            var first = g.First();
+            if (first.Board != board)
+            {
+                board = first.Board;
+                L("");
+                L($"    <!-- PDM board {board} (base 0x{first.FrameId - DbcExport.CyclicTxOffset:X3}) -->");
+            }
+            L($"    <Channel ID=\"0x{first.FrameId:X3}\" Name=\"{FrameName(first)}\" Direction=\"Receive\" Type=\"Custom\" DLC=\"8\" Timeout=\"{TimeoutMs}\">");
+            foreach (var c in g)
+                L($"      <Parameter Name=\"{c.Name}\" StartBit=\"{c.StartBit}\" Length=\"{c.Length}\" Scale=\"{Num(c.Factor)}\" " +
+                  $"Offset=\"{Num(c.Offset)}\" ByteOrder=\"{ByteOrder}\"" + (c.Signed ? " Signed=\"true\"" : "") + " />");
+            L("    </Channel>");
+        }
+        L("");
+        L("  </CANModule>");
+        L("</LinkCANSetup>");
+        return sb.ToString();
+    }
+}
