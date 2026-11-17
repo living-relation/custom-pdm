@@ -497,3 +497,57 @@ class pdm_bench:
         while s._ecun(f'Count {mid:#x}') == n0 and t < 2000: s._run(2); t += 2
         d = bytes.fromhex(s._ecu(f'Last {mid:#x}')); s._input('B', 2, False); s._run(300)
         s._check(ok and t < 2000 and (d[0] >> 2) & 1 == 1, f'saved {ok}; first msg 37 {t} ms after the reset (2 ms steps): {d.hex()} (bit 2 = B input 3, held high from 10 ms)')
+
+    # ------------------------------------------------------------------ tach-style output (PWM frequency from a CAN value)
+    # The real firmware's timer interrupts drive the PROFET IN pin; the PDM_ADC edge probe samples it every 10 us of
+    # virtual time. Board A1 OUT7 (TIM12, 16-bit) at 2 pulses / rev: RPM from the ECU node on 0x4F2 bytes 0-1 every 10 ms.
+    def _probe(s, k, o, ms, step_us=10):
+        pin = s.model[k]['outputs'][o][0]
+        s._x(f'sysbus.adc1 ProbeStart "{pin}" {step_us}', MACH[k]); s._run(ms); s._x('sysbus.adc1 ProbeStop', MACH[k])
+        txt = s._x('sysbus.adc1 ProbeEdges', MACH[k]).strip().strip('"')
+        return [(int(a) / 1000.0, int(b)) for a, b in (e.split(':') for e in txt.split(';') if ':' in e)]
+    @staticmethod
+    def _periods(ed):
+        rises = [t for t, l in ed if l == 1]; out = []
+        for a, b in zip(rises, rises[1:]):
+            f = [t for t, l in ed if l == 0 and a < t < b]
+            out.append((a, b - a, (f[0] - a) if f else None))
+        return out
+    def _hz(s, ed):
+        p = s._periods(ed)
+        if len(p) < 2 or any(x[2] is None for x in p): return None, None, None
+        per = [x[1] for x in p]
+        return (round(1000.0 * len(p) / sum(per), 2), round(100.0 * sum(x[2] for x in p) / sum(per), 1), round((max(per) - min(per)) * 1000))
+
+    def tach_output_follows_can_rpm(s):
+        k, o, slot, rid = 'A1', 6, 20, 0x4F2; b = BASE[k]; TACH = 0x7C00 + o
+        old_in = s._read1(b, 0x1000 + o, 1)
+        s._ecu(f'SetPeriodic {rid:#x} "0000000000000000" 10000')
+        rpm = lambda x: s._ecu(f'SetPeriodicData {rid:#x} "{struct.pack("<H", x).hex()}000000000000"')
+        ok = all(s._write1(b, 0x1300 + slot, sub, v) is not None for sub, v in
+                 [(4, rid), (5, 0), (6, 16), (7, s.ps.f32(1.0)), (11, 2), (12, s.ps.f32(-1e9)), (1, 0), (0, 1)])
+        ok = ok and all(s._write1(b, 0x1000 + o, sub, v) is not None for sub, v in [(1, 1), (12, 50), (13, 100), (10, 0), (8, 1), (0, 1)])
+        ok = ok and all(s._write1(b, TACH, sub, v) is not None for sub, v in
+                        [(1, s._var(k, 'canin', slot) + 1), (2, s.ps.f32(2.0 / 60.0)), (0, 1)])
+        got = {}
+        for x in (600, 3000, 6000):
+            rpm(x); s._run(150); got[x] = s._hz(s._probe(k, o, 300 if x > 600 else 400))
+        rpm(0); s._run(150); stopped = (len(s._probe(k, o, 200)), s._pin(k, s.model[k]['outputs'][o][0]))
+        # step 3000 -> 6000 RPM with the probe running: first 5 ms period after the new value, every period 10 or 5 ms
+        rpm(3000); s._run(200)
+        pin = s.model[k]['outputs'][o][0]; s._x(f'sysbus.adc1 ProbeStart "{pin}" 10', MACH[k]); s._run(30); rpm(6000); s._run(80)
+        s._x('sysbus.adc1 ProbeStop', MACH[k]); txt = s._x('sysbus.adc1 ProbeEdges', MACH[k]).strip().strip('"')
+        ed = [(int(a) / 1000.0, int(c)) for a, c in (e.split(':') for e in txt.split(';') if ':' in e)]
+        p = s._periods(ed); first = next((a for a, per, hi in p if a > 30 and abs(per - 5.0) <= 0.05), None)
+        step = (round(first - 30, 2) if first else None, sorted(set(round(per, 2) for a, per, hi in p)))
+        # stock fixed 10 Hz on this 16-bit timer (found, not fixed): ARR = 99999 keeps its low 16 bits, CCR 50000 above it
+        s._write1(b, TACH, 0, 0); s._write1(b, 0x1000 + o, 13, 10); s._run(300); stock10 = (len(s._probe(k, o, 400)), s._pin(k, pin))
+        for sub, v in [(13, 100), (8, 0), (1, old_in if old_in is not None else 0)]: s._write1(b, 0x1000 + o, sub, v)
+        s._write1(b, 0x1300 + slot, 0, 0); s._ecu(f'RemovePeriodic {rid:#x}'); s._run(200)
+        logger.info(f'tach (Hz, duty %, period spread us) {got}; RPM 0 (edges, pin) {stopped}; step {step}; stock fixed 10 Hz (edges, pin) {stock10}', also_console=True)
+        s._check(ok, 'parameter writes (CAN input, output PWM, tach block 0x7C00) not all acknowledged')
+        s._check(all(got[x][0] is not None and abs(got[x][0] - x / 30.0) <= x / 30.0 * 0.003 and abs(got[x][1] - 50) <= 1.0 and got[x][2] <= 25 for x in got),
+                 f'(Hz, duty %, spread us) at 600 / 3000 / 6000 RPM, want 20 / 100 / 200 Hz within 0.3 %, 50 +-1 %, spread <= 25 us (10 us probe): {got}')
+        s._check(stopped == (0, False), f'RPM 0: edges, pin high {stopped}')
+        s._check(step[0] is not None and step[0] <= 23 and all(abs(x - 10) <= 0.03 or abs(x - 5) <= 0.03 for x in step[1]),
+                 f'step 3000 -> 6000 RPM: first 5 ms period {step[0]} ms after the new value (budget 23 ms), periods seen {step[1]}')
