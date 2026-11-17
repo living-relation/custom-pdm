@@ -1654,6 +1654,17 @@
 				)
 			)
 		)
+		(property "Alternates" "Infineon BTS7008-2EPA (same chip, LCSC C534830)"
+			(at 118.11 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "62729cfb-92ed-4eed-aa42-860fc4c9dafa")
 		)
@@ -1806,6 +1817,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 92.71 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 92.71 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "73c689f5-e1a9-4306-9dcd-b26acc68c79a")
 		)
@@ -1909,6 +1942,28 @@
 			)
 		)
 		(property "LCSC" "C17673"
+			(at 92.71 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 92.71 95.25 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
 			(at 92.71 95.25 0)
 			(hide yes)
 			(show_name no)
@@ -2034,6 +2089,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 158.75 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
+			(at 158.75 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "51f51c16-a4cc-4f00-819c-e11dc7d1d113")
 		)
@@ -2127,7 +2204,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "TBD"
+		(property "Digi-Key_PN" "399-C0805C473K5RACTUCT-ND"
 			(at 146.05 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -2161,6 +2238,17 @@
 			)
 		)
 		(property "MPN" "C0805C473K5RAC7800"
+			(at 146.05 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND)"
 			(at 146.05 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -2274,6 +2362,28 @@
 			)
 		)
 		(property "LCSC" "C2907508"
+			(at 152.4 80.01 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "FOJAN"
+			(at 152.4 80.01 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "FRC1206J470 TS"
 			(at 152.4 80.01 0)
 			(hide yes)
 			(show_name no)
@@ -2486,6 +2596,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 175.26 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 175.26 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "2bb85131-3472-4640-b1c3-7376f220155e")
 		)
@@ -2601,6 +2733,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 181.61 115.57 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805GRNPO0BN221"
+			(at 181.61 115.57 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "056550e6-30de-447c-b434-6a1af8aad43e")
 		)
@@ -2705,7 +2859,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C2933520"
+		(property "LCSC" "C17379"
 			(at 147.32 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -2716,7 +2870,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "FOJAN"
+		(property "Manufacturer" "UNI-ROYAL"
 			(at 147.32 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -2727,7 +2881,18 @@
 				)
 			)
 		)
-		(property "MPN" "FRC0805J122"
+		(property "MPN" "0805W8F1201T5E"
+			(at 147.32 115.57 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND)"
 			(at 147.32 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -2851,6 +3016,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 154.94 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 154.94 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "aff2c545-6a33-4368-92e6-37c5e103c939")
 		)
@@ -2956,6 +3143,28 @@
 			)
 		)
 		(property "LCSC" "C426855"
+			(at 162.56 115.57 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Nexperia"
+			(at 162.56 115.57 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
 			(at 162.56 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -3346,6 +3555,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 102.87 100.33 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
+			(at 102.87 100.33 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "42dec3c5-7837-4c08-90a0-128aa1ce2eb6")
 		)
@@ -3449,6 +3680,28 @@
 			)
 		)
 		(property "LCSC" "C17673"
+			(at 102.87 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 102.87 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
 			(at 102.87 102.87 0)
 			(hide yes)
 			(show_name no)

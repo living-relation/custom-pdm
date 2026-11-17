@@ -32,7 +32,8 @@ class V:
         s.di0 = 5; s.an0 = s.di0 + n_di; s.can0 = s.an0 + 4; s.vi0 = s.can0 + 2 * 32; s.out0 = s.vi0 + 16
         s.fl0 = s.out0 + 4 * n_out; s.cond0 = s.fl0 + 4; s.cnt0 = s.cond0 + 32; s.wip0 = s.cnt0 + 4
         s.kp0 = s.wip0 + 6; s.tm0 = s.kp0 + 2 * (20 + 2 + 4); s.math0 = s.tm0 + 2 * 8; s.dipwm0 = s.math0 + 8
-        s.size = s.dipwm0 + 2 * n_di
+        s.tab0 = s.dipwm0 + 2 * n_di; s.uc0 = s.tab0 + 4         # PRO_FEATURES (port.h VAR_MAP_PRO_VARS): 4 table outputs, then 1 undercurrent flag per output
+        s.size = s.uc0 + n_out
     def di(s, i): return s.di0 + i
     def an_mv(s): return s.an0 + 1
     def an_rot(s): return s.an0 + 2
@@ -52,6 +53,8 @@ class V:
     def math(s, k): return s.math0 + k
     def di_duty(s, i): return s.dipwm0 + 2 * i
     def di_freq(s, i): return s.dipwm0 + 2 * i + 1
+    def tab(s, n): return s.tab0 + n                  # T1 table n output
+    def uc(s, o): return s.uc0 + o                    # P2 undercurrent (open-load) flag of output o
 
 class Rig:
     """One board A1 + PC tool + ECU stand-in on a 1 Mbit/s bus."""
@@ -98,7 +101,11 @@ def flasher(r, k, var, on_ms, off_ms, single=0):
     for sub, val in [(1, var), (2, on_ms), (3, off_ms), (4, single), (0, 1)]: r.W(0x1700 + k, sub, val)
 def math(r, k, op, a, b=0, const=0.0, factor=1.0, offset=0.0):
     for sub, val in [(1, op), (2, a), (3, b), (4, float(const)), (5, float(factor)), (6, float(offset)), (0, 1)]: r.W(0x1C00 + k, sub, val)
-def output(r, o, var, limit=7.5, inrush=15.0, inrush_ms=None, reset_mode=None, reset_ms=None, reset_limit=None, primary=None):
+def output(r, o, var, limit=7.5, inrush=15.0, inrush_ms=None, reset_mode=None, reset_ms=None, reset_limit=None, primary=None,
+           trip_ms=None, min_a=None, min_ms=None):
+    # custom block 0x7D00 + o (PRO_FEATURES): sub 0 trip time ms (P1), 1 min current A, 2 min-current time ms (P2)
+    for sub, val in [(0, trip_ms), (1, None if min_a is None else float(min_a)), (2, min_ms)]:
+        if val is not None: r.W(0x7D00 + o, sub, val)
     subs = [(1, var), (2, float(limit)), (3, float(inrush))]
     if inrush_ms is not None: subs.append((4, inrush_ms))
     if reset_mode is not None: subs.append((5, reset_mode))
@@ -309,20 +316,49 @@ for t in (70, 85, 90, 96, 110):
 check('fan PWM from coolant temperature (linear, math blocks): 70 C -> 20 % (floor), 85 -> 25 %, 90 -> 50 %, 96 -> 80 %, 110 -> 100 % (always on); 200 Hz',
       all(abs(fan[t][0] - d) <= 1.5 and abs(fan[t][1] - 200) <= 2 for t, d in [(70, 20), (85, 25), (90, 50), (96, 80)]) and fan[110] == (None, None) and r.pin(0) == 1, fan)
 info['fan_linear_duty'] = fan
-# vendor 1D table (ECUMaster 2D table p. 111, a 5-point curve): 80 C 0 %, 85 C 30 %, 90 C 40 %, 95 C 70 %, 100 C 100 %, linear between
-# proposal T1 (docs/feature-parity.md): custom table block 0x7E00 + n: sub 0 enable, 1 input var, 2 points, 3..10 x[0..7], 11..18 y[0..7]
-tab_ok = r.tool.read(r.base, 0x7E00, 0) is not None
-if tab_ok:
-    xs, ys = [80, 85, 90, 95, 100], [0, 30, 40, 70, 100]
-    for sub, val in [(1, A_), (2, 5)] + [(3 + i, float(x)) for i, x in enumerate(xs)] + [(11 + i, float(y)) for i, y in enumerate(ys)] + [(0, 1)]: r.W(0x7E00, sub, val)
-    var_tab = v.size                                       # proposal: the 4 table outputs appended at the end of the var map
-    pwm(r, 0, var=var_tab, denom=1, freq=200)
-    tab = {}
-    for t in (82.5, 92.5, 97):
-        r.val16(0, t); r.run(60); tab[t] = duty_freq(r.sample([0], 30, step=0.05))[0]
-    tab_ok = all(abs((tab[t] or 0) - d) <= 1.5 for t, d in [(82.5, 15), (92.5, 55), (97, 82)])
-check('gap T1: 1D lookup table (5 points, interpolated) drives the fan duty: 82.5 C -> 15 %, 92.5 C -> 55 %, 97 C -> 82 %', tab_ok,
-      'no table block 0x7E00 in this firmware', xfail=True)
+# T1 (docs/feature-parity.md): vendor 1D table (ECUMaster 2D table p. 111). Custom block 0x7E00 + n: sub 0 enable,
+# 1 input var, 2 points, 3..10 x[0..7], 11..18 y[0..7]; output var = v.tab(n) (end of the var map)
+def table(r, n, var, xs, ys, enable=1, points=None):
+    for sub, val in ([(1, var), (2, len(xs) if points is None else points)] + [(3 + i, float(x)) for i, x in enumerate(xs)]
+                     + [(11 + i, float(y)) for i, y in enumerate(ys)] + [(0, enable)]):
+        r.W(0x7E00 + n, sub, val)
+def tab_at(r, n, xs_):
+    """table n output for each coolant temperature in xs_ (CAN input 10, 0.1 C per count, signed)"""
+    out = {}
+    for t in xs_:
+        r.val16(4, round(t * 10), signed=True); r.run(20); out[t] = round(r.var(v.tab(n)), 2)
+    return out
+dflt = [r.tool.read(r.base, 0x7E00 + n, s_) for n in range(4) for s_ in range(19)]
+check('T1 factory default: the 4 tables are empty (every sub of 0x7E00-0x7E03 reads 0) and their outputs read 0',
+      dflt == [0] * 76 and [r.var(v.tab(n)) for n in range(4)] == [0, 0, 0, 0], [d for d in dflt if d])
+value(r, 10, 4, factor=0.1, signed=1); T_ = v.canval(10)  # coolant temperature, 0.1 C per count, bytes 4-5 of 0x4F1
+table(r, 0, T_, [80, 85, 90, 95, 100], [0, 30, 40, 70, 100])   # 80 C 0 %, 85 C 30 %, 90 C 40 %, 95 C 70 %, 100 C 100 %
+pwm(r, 0, var=v.tab(0), denom=1, freq=200)
+tab = {}
+for t in (82.5, 92.5, 97):
+    r.val16(4, round(t * 10)); r.run(60); tab[t] = duty_freq(r.sample([0], 30, step=0.05))[0]
+check('T1: 1D lookup table (5 points, interpolated) drives the fan duty: 82.5 C -> 15 %, 92.5 C -> 55 %, 97 C -> 82 % (200 Hz PWM)',
+      all(abs((tab[t] or 0) - d) <= 1.5 for t, d in [(82.5, 15), (92.5, 55), (97, 82)]), tab)
+got = tab_at(r, 0, (81, 85, 87.5, 99.9))
+check('T1: linear interpolation between points (81 C -> 6, 85 -> 30 on a point, 87.5 -> 35, 99.9 -> 99.4)', got == {81: 6, 85: 30, 87.5: 35, 99.9: 99.4}, got)
+table(r, 1, T_, [0, 50, 100], [20, 60, 10])                 # 3 points, a falling segment, first y not 0
+got = tab_at(r, 1, (-10, 0, 25, 75, 100, 150))
+check('T1: held at the end values outside the x range (-10 C -> 20 = y1, 150 C -> 10 = y3); rising and falling segments (25 -> 40, 75 -> 35)',
+      got == {-10: 20, 0: 20, 25: 40, 75: 35, 100: 10, 150: 10}, got)
+table(r, 3, T_, [0, 10, 20, 30, 40, 50, 60, 70], [0, 1, 4, 9, 16, 25, 36, 49])   # all 8 points
+got = tab_at(r, 3, (5, 65, 70, 80))
+check('T1: an 8-point table (x 0-70, y = x^2 / 100): 5 -> 0.5, 65 -> 42.5, 70 -> 49, 80 -> 49 (held)', got == {5: 0.5, 65: 42.5, 70: 49, 80: 49}, got)
+table(r, 2, T_, [10, 5, 20], [1, 2, 3]); r.val16(4, 125); r.run(20); uns = r.var(v.tab(2))
+for sub, val in [(3 + 1, 10.0)]: r.W(0x7E02, sub, val)    # x2 = x1: not rising either
+r.run(20); same = r.var(v.tab(2)); r.W(0x7E02, 4, 15.0); r.run(20); fixed = round(r.var(v.tab(2)), 2)
+check('T1: an unsorted table (x 10, 5, 20) or one with two equal x gives 0 (safe, like a disabled math block); once x rises (10, 15, 20) the same table works (12.5 C -> 1.5)',
+      uns == 0 and same == 0 and fixed == 1.5, (uns, same, fixed))
+r.W(0x7E02, 2, 1); r.run(20); one = r.var(v.tab(2)); r.W(0x7E02, 2, 0); r.run(20); zero = r.var(v.tab(2))
+nine = r.tool.write(r.base, 0x7E02, 2, 9); r.W(0x7E02, 2, 3); r.W(0x7E02, 0, 0); r.run(20); off_ = r.var(v.tab(2)); r.W(0x7E02, 0, 1); r.run(20); on_ = r.var(v.tab(2))
+check('T1: 1 or 0 points (empty) give 0; 9 points is refused (no write reply); a disabled table gives 0, enabled again it works',
+      one == 0 and zero == 0 and nine is None and r.tool.read(r.base, 0x7E02, 2) == 3 and off_ == 0 and round(on_, 2) == 1.5, (one, zero, nine, off_, on_))
+cond(r, 0, v.tab(0), GE, 50); r.val16(4, 940); r.run(20); hi = r.var(v.cond(0)); r.val16(4, 900); r.run(20); lo = r.var(v.cond(0))
+check('T1: a table output is a normal var: a condition on it (table 1 >= 50) is true at 94 C (64) and false at 90 C (40)', hi == 1 and lo == 0, (hi, lo))
 check('F6: no CAN overruns / time-outs, no fatal error', r.ok_bus())
 
 # ====================================================================== F7 PWM outputs: duty, frequency, soft start, variable duty
@@ -484,19 +520,38 @@ r.sw(0, 0); r.run(100)
 # a load stuck at 8 A: trips when the inrush window ends, retries every 1000 ms, latches Fault after the 3rd trip (reset limit 3)
 amps(r, 0, 8.0); r.sw(0, 1); s_ = r.sample([0], 5000, vars=[v.can(0)]); sp = on_spans(s_)
 t0_ = edges(s_, 1)[0][0]; sp = [(round(a - t0_), round(b - t0_) if b else None) for a, b in sp]
-check('stuck 8 A load (limit 5 A, inrush 10 A / 300 ms, retry 1000 ms after each trip, reset limit 3): 3 on spans of 300 ms (-4..+6), 1000 ms apart (+0..6), then Fault',
-      len(sp) == 3 and sp[0][0] <= 4 and all(b is not None and 296 <= b - a <= 306 for a, b in sp)
+check('stuck 8 A load (limit 5 A, inrush 10 A / 300 ms, factory trip time 50 ms, retry 1000 ms after each trip, reset limit 3): 3 on spans of 350 ms (-4..+6), 1000 ms apart (+0..6), then Fault',
+      len(sp) == 3 and sp[0][0] <= 4 and all(b is not None and 346 <= b - a <= 356 for a, b in sp)
       and all(1000 <= sp[i + 1][0] - sp[i][1] <= 1006 for i in range(2)) and r.b.L.sim_out_state(0) == FAULT_, sp)
 info['retry_spans_ms'] = sp
 info['note_reset_limit'] = 'reset limit 3 = 3 trips in all (first try + 2 retries); MoTeC "Number of Retries 3" = 3 retries after the first trip'
 r.sw(0, 0); r.run(200); r.sw(0, 1); r.run(200); still = r.b.L.sim_out_state(0)
-check('Fault stays latched when the input is cycled (stock: needs a power cycle; see gap P3 for a master retry)', still == FAULT_ and r.pin(0) == 0, still)
-# gap P3: a master-retry input clears latched Faults without a power cycle (MoTeC Master Retry; Link: until a setting changes)
-p3 = r.tool.read(r.base, 0x7F00, 6) is not None
-if p3:
-    switch(r, 1); r.W(0x7F00, 6, v.can(1)); amps(r, 0, 4.0); r.sw(1, 1); r.run(100); r.sw(1, 0); r.run(400); p3 = r.pin(0) == 1
-check('gap P3: master retry input (0x7F00 sub 6 = CAN switch) clears the latched Fault; the output comes back with a good load', p3,
-      'no param 0x7F00 sub 6 in this firmware', xfail=True)
+check('Fault stays latched when the input is cycled (no master retry set: needs a power cycle)', still == FAULT_ and r.pin(0) == 0, still)
+# P3 master retry (MoTeC Master Retry; Link: until a setting changes): 0x7F00 sub 6 = var index, 0 = off (factory)
+check('P3 factory default: master retry off (0x7F00 sub 6 = 0)', r.tool.read(r.base, 0x7F00, 6) == 0, r.tool.read(r.base, 0x7F00, 6))
+r.W(0x7F00, 6, v.can(1)); amps(r, 0, 4.0); r.run(100); still2 = r.b.L.sim_out_state(0)
+r.sw(1, 1); r.run(20); back = (r.pin(0), r.b.L.sim_out_state(0)); r.sw(1, 0); r.run(400)
+check('P3: setting the master retry var does not clear by itself; its rising edge (CAN switch) clears the latched Fault and the output comes back with a good load within 20 ms',
+      still2 == FAULT_ and back == (1, ON_) and r.pin(0) == 1, (still2, back))
+# held high: one clear per rising edge, a shorted load is not retried again and again
+r.W(0x1000, 5, 0); amps(r, 0, 8.0); r.run(600); latched = r.b.L.sim_out_state(0)
+r.sw(1, 1); s_ = r.sample([0], 2000); held = len(on_spans(s_)); st_held = r.b.L.sim_out_state(0)
+r.sw(1, 0); r.run(50); r.sw(1, 1); s_ = r.sample([0], 1000); again = len(on_spans(s_)); r.sw(1, 0); r.run(50)
+check('P3: with a shorted load (reset mode None) holding the master retry var high gives exactly one more try (Fault again after it, no more tries for 2 s); a new press gives one more',
+      latched == FAULT_ and held == 1 and st_held == FAULT_ and again == 1 and r.b.L.sim_out_state(0) == FAULT_, (latched, held, st_held, again))
+# Overcurrent (waiting for its retry) is cleared too, and every output is cleared at once
+output(r, 1, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0); amps(r, 1, 8.0); r.run(400)
+r.W(0x1000, 5, 1); r.W(0x1000, 6, 5000); r.sw(1, 1); r.run(500); r.sw(1, 0); r.run(50); st_wait = (r.b.L.sim_out_state(0), r.b.L.sim_out_state(1))
+amps(r, 0, 4.0); amps(r, 1, 4.0); r.sw(1, 1); r.run(10); both = (r.b.L.sim_out_state(0), r.b.L.sim_out_state(1), r.pin(0), r.pin(1)); r.sw(1, 0); r.run(50)
+check('P3: one rising edge clears every output: OUT1 in Overcurrent (5 s retry wait) and OUT2 in Fault both come back within 10 ms',
+      st_wait == (OC_, FAULT_) and both == (ON_, ON_, 1, 1), (st_wait, both))
+# the trip count starts again: a stuck load gets its full set of tries after a master retry
+output(r, 2, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=1, reset_ms=300, reset_limit=3); amps(r, 2, 8.0)
+s_ = r.sample([2], 2000); first = len(on_spans(s_)); st1 = r.b.L.sim_out_state(2)
+r.sw(1, 1); s_ = r.sample([2], 2000); again = len(on_spans(s_)); r.sw(1, 0); r.run(50)
+check('P3: after a master retry the trip count starts again: a stuck 8 A load (Count mode, reset limit 3) gets 3 tries, Fault, master retry, 3 more tries, Fault',
+      (first, st1, again, r.b.L.sim_out_state(2)) == (3, FAULT_, 3, FAULT_), (first, st1, again))
+check('F12 (P3 part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
 # input cycled between trips resets the count (MoTeC: "count reset when the condition goes false then true")
 r = Rig(); v = r.v; switch(r, 0)
 output(r, 0, v.can(0), limit=5.0, inrush=10.0, inrush_ms=300, reset_mode=1, reset_ms=1000, reset_limit=3)
@@ -513,26 +568,72 @@ check('endless retry (reset time 500 ms): 5 or more tries in 3 s with an 8 A loa
 r = Rig(); v = r.v; switch(r, 0)
 output(r, 0, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=1, reset_ms=300, reset_limit=2)
 r.b.set_load(0, r.b.vbat / 2.0, fault=1); r.sw(0, 1); s_ = r.sample([0], 1500); sp = on_spans(s_)
-check('driver fault (IS at its clamp, about 16 A read): cut at once (no inrush allowance above 10 A), retried per the reset settings, then Fault',
-      len(sp) == 2 and all(b is not None and b - a <= 4 for a, b in sp) and r.b.L.sim_out_state(0) == FAULT_, sp)
-# gap P1: trip delay / I2t: a 20 ms spike to 8 A on a 5 A output after the inrush window is tolerated (Link: Trip Time; MoTeC: filtered load)
-r = Rig(); v = r.v; switch(r, 0)
-output(r, 0, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0)
-p1 = r.tool.read(r.base, 0x7D00, 0) is not None
-if p1: r.W(0x7D00, 0, 50)                                  # proposal: custom output block 0x7D00 + o, sub 0 = trip time 50 ms
+check('driver fault (IS at its clamp, about 16 A read): cut at once (no inrush allowance above 10 A), retried per the reset settings with IN low 300 ms between tries '
+      '(>= the PROFET de-latch time tDELAY(CR) 100 ms max, BTS7008-2EPA P_8.6.1.6, so each try starts with the PROFET counter reset), then Fault',
+      len(sp) == 2 and all(b is not None and b - a <= 4 for a, b in sp) and 100 <= sp[1][0] - sp[0][1] and r.b.L.sim_out_state(0) == FAULT_, sp)
+dflt = [r.tool.read(r.base, 0x1000 + o, 6) for o in range(1, 8)]
+check('factory reset time 1000 ms (OUT2-8 here, 0x1000 + o sub 6) >= the PROFET de-latch time tDELAY(CR) 100 ms max: firmware retries are real retries',
+      dflt == [1000] * 7, dflt)
+# P1 (Link Trip Time, MoTeC filtered load): custom block 0x7D00 + o sub 0, factory 50 ms (core/param_defs.h DEFAULT_OUT_TRIP_TIME)
+r = Rig(); v = r.v
+for k in range(4): switch(r, k)
+dflt = [r.tool.read(r.base, 0x7D00 + o, 0) for o in range(8)]
+check('P1 factory default: trip time 50 ms on every output (0x7D00 + o sub 0)', dflt == [50] * 8, dflt)
+output(r, 0, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0)                  # factory trip time 50 ms
 amps(r, 0, 3.0); r.sw(0, 1); r.run(500); amps(r, 0, 8.0); r.run(20); amps(r, 0, 3.0); r.run(200); spike_ok = r.pin(0) == 1
-info['spike_20ms_trips_today'] = not spike_ok
-amps(r, 0, 8.0); r.run(200); long_trip = r.pin(0) == 0
-check('gap P1: overcurrent trip time 50 ms (0x7D00 sub 0): a 20 ms spike to 8 A on a 5 A output is ridden through, 8 A for 200 ms still trips',
-      p1 and spike_ok and long_trip, f'spike tolerated: {spike_ok}', xfail=True)
-# gap P2: open load / undercurrent (ECUMaster: Min current -> UNDERCURRENT status, output keeps running)
-r = Rig(); v = r.v; output(r, 0, v.TRUE, limit=5.0)
-p2 = r.tool.read(r.base, 0x7D00, 1) is not None
-if p2:
-    r.W(0x7D00, 1, 0.5); amps(r, 0, 0); r.run(500)       # proposal: min current 0.5 A; flag = var v.size + 4 + o (after the 4 table outputs)
-    p2 = r.var(v.size + 4) == 1 and r.pin(0) == 1
-check('gap P2: open-load / undercurrent flag (min current 0x7D00 sub 1): output on with no load sets the flag and keeps running', p2,
-      'no param 0x7D00 sub 1 in this firmware', xfail=True)
+check('P1: a 20 ms spike to 8 A on a 5 A output (trip time 50 ms, after the inrush window) is ridden through', spike_ok, r.b.L.sim_out_state(0))
+for _ in range(5): amps(r, 0, 8.0); r.run(40); amps(r, 0, 3.0); r.run(10)
+check('P1: five 40 ms spikes 10 ms apart do not add up to a trip (the trip-time clock restarts each time the current is back under the limit)',
+      r.pin(0) == 1 and r.b.L.sim_out_state(0) == ON_, r.b.L.sim_out_state(0))
+amps(r, 0, 8.0); s_ = r.sample([0], 120); e = edges(s_)
+check('P1: 8 A held on a 5 A output trips 50 ms (+0..6: first sample, 1 ms clock, IN low one cycle later) after the step, then Fault (reset mode None)',
+      len(e) == 1 and 50 <= e[0][0] <= 56 and r.b.L.sim_out_state(0) == FAULT_, e)
+info['trip_50ms_at'] = e
+output(r, 1, v.can(1), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+amps(r, 1, 3.0); r.sw(1, 1); r.run(500); amps(r, 1, 12.0); s_ = r.sample([1], 50); e = edges(s_)
+check('P1: above the inrush limit (12 A on a 5 A / 10 A output, trip time 1000 ms) it trips at once (within 4 ms)', len(e) == 1 and e[0][0] <= 4, e)
+output(r, 2, v.can(2), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0, trip_ms=0)
+amps(r, 2, 3.0); r.sw(2, 1); r.run(500); amps(r, 2, 6.0); s_ = r.sample([2], 50); e = edges(s_)
+check('P1: trip time 0 = stock behaviour: 6 A on a 5 A output trips on the first sample (within 4 ms)', len(e) == 1 and e[0][0] <= 4, e)
+output(r, 3, v.can(3), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+amps(r, 3, 3.0); r.sw(3, 1); r.run(500); amps(r, 3, 8.0); s_ = r.sample([3], 1100); e = edges(s_)
+check('P1: trip time 1000 ms: 8 A held trips 1000 ms (+0..6) after the step', len(e) == 1 and 1000 <= e[0][0] <= 1006, e)
+check('F12 (P1 part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# PROFET fault while the trip time runs: IS at the ADC full scale is a hard overcurrent (functions/profet.h PROFET_IS_FULL_SCALE)
+r = Rig(); v = r.v; switch(r, 0); switch(r, 1)
+output(r, 0, v.can(0), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)   # factory-like 50 A inrush limit: above the 16.4 A full-scale reading of board A
+amps(r, 0, 3.0); r.sw(0, 1); r.run(500); r.b.set_load(0, r.b.vbat / 3.0, fault=1); s_ = r.sample([0], 50); e = edges(s_)
+check('PROFET fault after the inrush window (IS at full scale = 16.4 A read, inrush limit 50 A, trip time 1000 ms): cut at once (within 4 ms), not after the trip time',
+      len(e) == 1 and e[0][0] <= 4 and r.b.L.sim_out_state(0) == FAULT_, e)
+output(r, 1, v.can(1), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+r.b.set_load(1, r.b.vbat / 3.0, fault=1); r.sw(1, 1); s_ = r.sample([1], 300, vars=[v.can(1)]); e = lag(s_, 0, 1)
+check('PROFET fault from switch-on with the inrush limit (50 A) above the full-scale reading: no firmware cut inside the 100 ms inrush window (the PROFET protects itself), cut at its end (100-106 ms) without the trip time',
+      e is not None and [l for _, l in e] == [1, 0] and e[0][0] <= 4 and 100 <= e[1][0] <= 106, e)
+check('F12 (PROFET fault part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# P2 open load / undercurrent (ECUMaster PMU Min current -> UNDERCURRENT, output keeps running): 0x7D00 + o sub 1 A, sub 2 ms
+r = Rig(); v = r.v; switch(r, 0); switch(r, 1)
+dflt = [(r.tool.read(r.base, 0x7D00 + o, 1), r.tool.read(r.base, 0x7D00 + o, 2)) for o in range(8)]
+check('P2 factory default: off on every output (min current 0 A), flag time 500 ms', dflt == [(0, 500)] * 8, dflt)
+output(r, 0, v.can(0), limit=5.0, min_a=0.5)                                 # lamp: min 0.5 A, factory 500 ms
+output(r, 1, v.uc(0), limit=5.0)                                             # lamp-out warning light = OUT1's flag
+output(r, 2, v.can(0), limit=5.0)                                            # min current off (factory): no flag
+amps(r, 0, 0); amps(r, 1, 1.0); amps(r, 2, 0); r.sw(0, 0); r.run(1000); off_flag = (r.var(v.uc(0)), r.pin(1))
+check('P2: no flag while the output is off (open load, 1 s)', off_flag == (0, 0), off_flag)
+r.sw(0, 1); s_ = r.sample([0, 1], 700, vars=[v.can(0), v.uc(0)]); e = lag(s_, 3, 2)
+check('P2: open load (no current, min 0.5 A): the flag sets 500 ms (+0..6) after the output switched on; the output keeps running; a warning-light output driven by the flag var comes on with it',
+      e is not None and len(e) == 1 and 500 <= e[0][0] <= 506 and all(lv[0] for t, lv in s_[10:])
+      and len(edges(s_, 1)) == 1 and 0 <= edges(s_, 1)[0][0] - edges(s_, 3)[0][0] <= 6, (e, edges(s_, 1)))
+check('P2: an output with min current 0 (factory) never flags (open load, on 700 ms)', r.var(v.uc(2)) == 0 and r.pin(2) == 1, r.var(v.uc(2)))
+before = r.var(v.uc(0)); amps(r, 0, 2.0); s_ = r.sample([1], 20, vars=[v.uc(0)]); t_clear = next((t for t, lv in s_ if lv[1] == 0), None)
+check('P2: the flag clears as soon as the current is back (2 A, within 4 ms), and the warning light goes off',
+      before == 1 and t_clear is not None and t_clear <= 4 and not any(lv[1] for t, lv in s_ if t > t_clear) and r.pin(1) == 0, (before, t_clear))
+amps(r, 0, 0.3); s_ = r.sample([1], 300, vars=[v.uc(0)]); amps(r, 0, 2.0); s_ += r.sample([1], 400, vars=[v.uc(0)])
+check('P2: a 300 ms dip to 0.3 A (below the 0.5 A minimum, above the 0.2 A noise floor) does not set the flag (time 500 ms)', not any(lv[1] for t, lv in s_), edges(s_, 1))
+amps(r, 0, 0.3); r.run(600); on_ = r.var(v.uc(0)); r.sw(0, 0); r.run(30); cleared = r.var(v.uc(0))
+check('P2: 0.3 A for 600 ms sets the flag; switching the output off clears it', on_ == 1 and cleared == 0, (on_, cleared))
+r.W(0x7D00, 2, 100); r.sw(0, 1); s_ = r.sample([0], 300, vars=[v.can(0), v.uc(0)]); e = lag(s_, 2, 1)
+check('P2: flag time 100 ms (0x7D00 sub 2): the flag sets 100 ms (+0..6) after switch-on', e is not None and len(e) == 1 and 100 <= e[0][0] <= 106, e)
+check('F12 (P2 part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
 
 # ====================================================================== F13 output pairing (two channels as one load)
 print('--- F13 output pairing')
@@ -540,7 +641,12 @@ r = Rig(); v = r.v; switch(r, 0)
 output(r, 0, v.can(0), limit=12.0, inrush=20.0); output(r, 1, v.FALSE, limit=12.0, inrush=20.0, primary=0)   # OUT2 follows OUT1
 amps(r, 0, 4.0); amps(r, 1, 4.0); r.run(100); off_ = (r.pin(0), r.pin(1))
 r.sw(0, 1); r.run(100); on_ = (r.pin(0), r.pin(1)); total = r.b.L.sim_out_current(0)
-pwm(r, 0, duty=40, freq=100); r.run(100); smp = r.sample([0, 1], 50, step=0.05); pd = (duty_freq(smp, 0), duty_freq(smp, 1))
+# PWM is set while the pair is on: the follower's timer is aligned only when it switches on (functions/profet.cpp
+# FollowerUpdate copies CNT on its off -> on edge), so record that phase, then switch off and on again
+pwm(r, 0, duty=40, freq=100); r.run(100); smp = r.sample([0, 1], 50, step=0.05)
+e0, e1 = edges(smp, 0), edges(smp, 1); info['pairing_pwm_set_while_on_phase_ms'] = round(e1[0][0] - e0[0][0], 2) if e0 and e1 else None
+r.sw(0, 0); r.run(50); r.sw(0, 1); r.run(100)
+smp = r.sample([0, 1], 50, step=0.05); pd = (duty_freq(smp, 0), duty_freq(smp, 1))
 e0, e1 = edges(smp, 0), edges(smp, 1); in_step = len(e0) == len(e1) > 4 and all(l0 == l1 and abs(t0 - t1) <= 0.11 for (t0, l0), (t1, l1) in zip(e0, e1))
 r.sw(0, 0); r.run(100); off2 = (r.pin(0), r.pin(1))
 check('pairing: OUT2 (primary = OUT1) switches with OUT1, both pins together; OUT1 reports the sum of both currents (4 + 4 A); PWM 40 % on both, edges within 0.1 ms',
@@ -570,6 +676,122 @@ r = Rig(); v = r.v; switch(r, 0)
 r.W(0x0000, 8, v.can(0)); r.run(200); awake = not r.b.flags()['asleep']
 r.sw(0, 1); r.run(300)
 check('force-sleep input (0x0000 sub 8 = a CAN bit, e.g. ignition off from the ECU): board stays awake while 0, sleeps once it is 1', awake and r.b.flags()['asleep'], r.b.flags())
+
+# ====================================================================== F16 tach-style output: frequency follows a CAN value
+print('--- F16 tach output (frequency from a CAN value)')
+# Vendors: Link "Tacho" aux output (multiplier 1 = 1 pulse per ignition event, 50 % duty), Haltech tachometer output
+# (pulses per engine cycle = cylinders), Adaptronic (4 cyl = 2 pulses / rev, 8 cyl = 4); sources in docs/feature-parity.md.
+# Here the ECU sends RPM on CAN and the PDM makes a 50 % square wave of RPM x pulses per rev / 60 Hz on a PROFET output.
+TACH = 0x7C00   # custom block 0x7C00 + output (core/param_defs.h OUTPUT_FREQ_PARAMS): sub 0 on, 1 input var, 2 factor
+                # (Hz per input unit = pulses per rev / 60 for RPM), 3 minimum Hz (below: no pulses, output low), 4 maximum Hz
+def tach(r, o, ppr, fmin=None, fmax=None, var=None):
+    r.W(TACH + o, 1, r.v.canval(8) if var is None else var); r.W(TACH + o, 2, float(ppr / 60.0))
+    if fmin is not None: r.W(TACH + o, 3, fmin)
+    if fmax is not None: r.W(TACH + o, 4, fmax)
+    r.W(TACH + o, 0, 1)
+def wave(r, outs, ms):
+    """Edges of the output pins over the next ms: one [(t_ms, level)] list per output (sim pin log, exact to 1 us)."""
+    r.b.watch(*[r.b.model['outputs'][o][0] for o in outs]); r.run(ms); e = r.b.edges()
+    return [[(t / 1000.0, l) for t, i, l in e if i == k] for k in range(len(outs))]
+def periods(ed):
+    """[(rise t_ms, period ms, high ms)] for each full period (rise to rise) in an edge list."""
+    rises = [t for t, l in ed if l == 1]; out = []
+    for a, b in zip(rises, rises[1:]):
+        f = [t for t, l in ed if l == 0 and a < t < b]
+        out.append((a, round(b - a, 4), round(f[0] - a, 4) if f else None))
+    return out
+def hz(ed):
+    """(frequency Hz, duty %) over the full periods of an edge list, or (None, None) with under 2 periods."""
+    p = periods(ed)
+    if len(p) < 2 or any(x[2] is None for x in p): return None, None
+    return round(1000.0 * len(p) / sum(x[1] for x in p), 2), round(100.0 * sum(x[2] for x in p) / sum(x[1] for x in p), 2)
+def near(f, want, pct): return f is not None and abs(f - want) <= want * pct / 100.0
+r = Rig(); v = r.v; value(r, 8, 0)                         # RPM: bytes 0-1 of 0x4F1, unsigned, x1 (ECU stand-in, every 10 ms)
+for o in (0, 1): output(r, o, v.TRUE); pwm(r, o, duty=50, freq=100)
+present = r.tool.read(r.base, TACH, 0) is not None
+dflt = tuple(r.tool.read(r.base, TACH, s) for s in range(5)) if present else None
+check('tach params 0x7C00 + output: defaults off, input 0, factor 1.0 Hz per unit, minimum 16 Hz, maximum 1000 Hz',
+      dflt == (0, 0, ps.f32(1.0), 16, 1000), dflt if present else 'no param block 0x7C00 in this firmware')
+refused = present and all(r.tool.write(r.base, TACH, s, val) is None for s, val in [(3, 15), (4, 1001), (2, ps.f32(-1.0))])
+check('tach params refuse a minimum below 16 Hz (16-bit timer at 1 MHz: 65536 counts = 15.3 Hz), a maximum above 1000 Hz, a negative factor',
+      refused)
+got4 = {}; got8 = {}
+if present:
+    tach(r, 0, 2); tach(r, 1, 4)                           # OUT1: 4-cylinder tach (2 pulses / rev); OUT2: 8-cylinder (4 pulses / rev)
+    for rpm in (600, 3000, 6000, 7500, 9000):
+        r.val16(0, rpm); r.run(80); w = wave(r, [0, 1], 320)
+        got4[rpm] = hz(w[0]); got8[rpm] = hz(w[1])
+ok4 = present and all(near(got4[x][0], x * 2 / 60, 0.2) and abs(got4[x][1] - 50) <= 0.5 for x in got4)
+ok8 = present and all(near(got8[x][0], min(x * 4 / 60, 1000), 0.2) and abs(got8[x][1] - 50) <= 0.5 for x in got8)
+check('tach 4 cylinder (2 pulses / rev, 50 % duty) from CAN RPM: 600 -> 20 Hz, 3000 -> 100, 6000 -> 200, 7500 -> 250, 9000 -> 300 Hz (within 0.2 %, duty 50 +-0.5 %)',
+      ok4, got4)
+check('tach 8 cylinder (4 pulses / rev) on a second output at the same time, own timer: 600 -> 40 Hz ... 7500 -> 500, 9000 -> 600 Hz (above the 400 Hz fixed-frequency limit)',
+      ok8, got8)
+info['tach_4cyl_hz_duty'] = got4; info['tach_8cyl_hz_duty'] = got8
+# engine stopped / below the minimum: no pulses, output low (a gauge reads 0); pulses come back with RPM
+off = None
+if present:
+    seq = []
+    for rpm in (0, 400, 600):                              # 0 Hz, 13.3 Hz (below 16), 20 Hz
+        r.val16(0, rpm); r.run(80); w = wave(r, [0], 300)[0]; seq.append((rpm, len(w), r.pin(0), hz(w)[0]))
+    off = seq
+check('tach below its minimum (16 Hz): RPM 0 and 400 (13.3 Hz) give no pulses and a low output; 600 RPM gives 20 Hz again',
+      off is not None and off[0][1:3] == (0, 0) and off[1][1:3] == (0, 0) and near(off[2][3], 20, 0.2), off)
+# clamp at the maximum
+clamp = None
+if present:
+    r.W(TACH, 4, 250); r.val16(0, 9000); r.run(80); clamp = hz(wave(r, [0], 100)[0]); r.W(TACH, 4, 1000)
+check('tach maximum (sub 4 = 250 Hz): 9000 RPM (300 Hz) is held at 250 Hz', clamp is not None and near(clamp[0], 250, 0.2), clamp)
+# step response: 3000 -> 6000 RPM (100 -> 200 Hz). Budget: ECU frame period 10 ms + one 2 ms logic cycle + the running
+# 10 ms period (the timer takes a new period at its next update event) + 1 ms = 23 ms; no runt or missed pulse
+step = None
+if present:
+    r.val16(0, 3000); r.run(100); t_set = r.bus.now / 1000.0; r.val16(0, 6000); w = wave(r, [0], 60)[0]
+    p = periods(w); first = next((a for a, per, hi in p if abs(per - 5.0) <= 0.05), None)
+    step = (round(first - t_set, 2) if first else None, sorted(set(round(per, 3) for a, per, hi in p)),
+            all(hi is not None and abs(hi / per - 0.5) <= 0.01 for a, per, hi in p))
+check('tach step 3000 -> 6000 RPM: first 200 Hz period starts within 23 ms of the new CAN value; every period is 10 or 5 ms, all 50 % (no runt, no missed pulse)',
+      step is not None and step[0] is not None and step[0] <= 23 and set(step[1]) <= {10.0, 5.0} and step[2], step)
+info['tach_step_latency_ms'] = step[0] if step else None
+# ramp 1000 -> 7000 RPM in 600 ms (ECU value every 10 ms): frequency tracks, every period between the ramp's end
+# periods and never longer than the one before (no missed pulse), each high time 50 % of its period
+ramp = None
+if present:
+    r.val16(0, 1000); r.run(100); r.b.watch(r.b.model['outputs'][0][0]); r.b.edges()
+    for k in range(61): r.val16(0, 1000 + 100 * k); r.run(10)
+    w = [(t / 1000.0, l) for t, i, l in r.b.edges()]; p = periods(w)
+    pers = [per for a, per, hi in p] or [0.0]
+    ramp = dict(n=len(p), longest=max(pers), shortest=min(pers),
+                grew=[(round(p[i][0]), pers[i], pers[i + 1]) for i in range(len(pers) - 1) if pers[i + 1] > pers[i] + 0.002],
+                duty_bad=[(round(a), per, hi) for a, per, hi in p if hi is None or abs(hi / per - 0.5) > 0.01], steps=len(set(pers)))
+check('tach ramp 1000 -> 7000 RPM in 600 ms (CAN value every 10 ms): periods stay within 30 .. 4.29 ms, never grow (no missed pulse), all 50 %, 30 or more frequency steps',
+      ramp is not None and ramp['longest'] <= 30.0 * 1.001 and ramp['shortest'] >= 60000 / 7000 / 2 * 0.999 and not ramp['grew'] and not ramp['duty_bad'] and ramp['steps'] >= 30, ramp)
+info['tach_ramp'] = ramp
+# steady state: period spread at 6000 RPM over 1 s (timer-driven edges; jitter = spread of rise-to-rise times)
+jit = None
+if present:
+    r.val16(0, 6000); r.run(100); p = periods(wave(r, [0], 1000)[0]); pers = [per for a, per, hi in p] or [0.0]
+    jit = (len(p), round((max(pers) - min(pers)) * 1000, 1))
+check('tach steady 6000 RPM (200 Hz) for 1 s: 199 or more periods, rise-to-rise spread under 2 us', jit is not None and jit[0] >= 199 and jit[1] < 2, jit)
+info['tach_jitter_us'] = jit
+# off again (sub 0 = 0): back to the fixed 100 Hz of the stock PWM settings
+back = None
+if present:
+    r.W(TACH, 0, 0); r.run(100); back = hz(wave(r, [0], 100)[0])
+check('tach off (sub 0 = 0): the output is back on its fixed PWM frequency (100 Hz, 50 %)', back is not None and near(back[0], 100, 0.2) and abs(back[1] - 50) <= 0.5, back)
+check('F16: no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# paired output follows the tach frequency of its primary (custom: the follower copies the primary's timer period)
+r = Rig(); v = r.v; value(r, 8, 0); pair = None
+output(r, 0, v.TRUE); pwm(r, 0, duty=50, freq=100); output(r, 2, v.FALSE, primary=0)
+if present:
+    tach(r, 0, 2); r.val16(0, 4500); r.run(100); w = wave(r, [0, 2], 200); pair = (hz(w[0]), hz(w[1]))
+check('tach on a paired output (OUT3 follows OUT1): both pins 150 Hz at 4500 RPM, 50 %', pair is not None and all(x[0] is not None and near(x[0], 150, 0.2) and abs(x[1] - 50) <= 0.5 for x in pair), pair)
+# found while testing (stock dingoFW, not changed): a fixed PWM frequency below 16 Hz on a 16-bit timer is wrong.
+# ARR keeps the low 16 bits of 1 MHz / f - 1 (RM0390 TIM3/4/9-14 are 16-bit); TIM5 (OUT3 on board A) is 32-bit.
+# At 10 Hz: ARR = 99999 -> 34463 (29 Hz) and CCR 50000 is above it, so OUT2 (TIM4) stays on with no pulses.
+r = Rig(); v = r.v
+for o in (1, 2): output(r, o, v.TRUE); pwm(r, o, duty=50, freq=10)
+r.run(300); w = wave(r, [1, 2], 600); info['stock_fixed_10hz_out2_tim4_16bit_vs_out3_tim5_32bit'] = (hz(w[0]), r.pin(1), hz(w[1]))
 
 # ====================================================================== summary
 cnt = {t: sum(1 for x in res if x[1] == t) for t in ('PASS', 'FAIL', 'XFAIL', 'XPASS')}

@@ -5,6 +5,7 @@
 @inject PdmOpsService Pdm
 @inject ICommsAdapterManager AdapterManager
 @inject NotificationService Notification
+@inject IDialogService DialogService
 
 @* custom-pdm route B, phase B3 (docs/ui-route-b-plan.md): settings set ONCE for the PDM (domain/CustomPdm/PdmLinked.cs).
    Temperature limits and fan thresholds are PC edits: they reach the boards with the Write All above, and stay
@@ -30,8 +31,13 @@
                         }
                         <MudNumericField T="int" Value="_warn" ValueChanged="@(v => { _warn = v; _tempDirty = true; })" Label="Warn (°C)"
                                          Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
-                        <MudNumericField T="int" Value="_crit" ValueChanged="@(v => { _crit = v; _tempDirty = true; })" Label="Critical, all outputs off (°C)"
-                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        @* editor1 (p1 / p3): critical, locked; changes only through Unlock *@
+                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                            <MudTextField T="string" Value="@($"{_crit}")" Label="Critical, all outputs off (°C), locked" ReadOnly="true"
+                                          Variant="Variant.Outlined" Style="max-width: 220px" id="crit-temp" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@busy" id="unlock-crit-temp"
+                                       OnClick="@(() => Unlock(PdmCriticalKind.CritTemp, ""))">Unlock</MudButton>
+                        </MudStack>
                         <MudNumericField T="int" Value="_hyst" ValueChanged="@(v => { _hyst = v; _tempDirty = true; })" Label="Recovery below critical (°C)"
                                          Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
                         <MudNumericField T="int" Value="_margin" ValueChanged="@(v => { _margin = v; _tempDirty = true; })" Label="Critical-soon margin (°C, 0 = off)"
@@ -107,37 +113,17 @@
                 <MudCard Elevation="2" Style="height: 100%">
                     <MudCardContent>
                         <MudText Typo="Typo.body1">Base IDs (one board uses base to base + 0x@((PdmLinked.BlockSize - 1).ToString("X2")))</MudText>
+                        @* editor1 (p1 / p3): base IDs are critical: read-only, Unlock + type the new one twice + Change, then Move *@
                         @foreach (var board in View.Boards)
                         {
                             var role = board.Role;
                             var cur = board.Device.BaseId;
-                            var typed = _newBase.GetValueOrDefault(role, "");
-                            var parsed = ParseHex(typed);
-                            var why = parsed is { } nb && nb != cur ? PdmLinked.BaseIdProblem(View, role, nb) : null;
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
-                                <MudText Typo="Typo.body2" Style="min-width: 150px">@role 0x@(cur.ToString("X3"))-0x@((cur + PdmLinked.BlockSize - 1).ToString("X3"))</MudText>
-                                <MudTextField T="string" Value="@typed" ValueChanged="@(v => _newBase[role] = v)" Label="New base (hex)"
-                                              Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 130px" Disabled="@busy"
-                                              Immediate="true" />
-                                <MudButton Variant="Variant.Outlined" Size="Size.Small"
-                                           Disabled="@(busy || parsed == null || parsed == cur || why != null)"
-                                           OnClick="@(() => Move(role, parsed!.Value))">Move</MudButton>
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                                <MudText Typo="Typo.body2" Style="min-width: 150px" id="@($"base-{role}")">@role 0x@(cur.ToString("X3"))-0x@((cur + PdmLinked.BlockSize - 1).ToString("X3"))</MudText>
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@busy" id="@($"unlock-base-{role}")"
+                                           OnClick="@(() => Unlock(PdmCriticalKind.BaseId, role))">Unlock to move</MudButton>
                             </MudStack>
-                            @if (typed != "" && parsed == null)
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Error">Type a hex ID, e.g. 600 or 0x600.</MudText>
-                            }
-                            else if (why != null)
-                            {
-                                <MudText Typo="Typo.body2" Color="Color.Error">@why</MudText>
-                            }
-                            else if (parsed is { } ok && ok != cur)
-                            {
-                                @foreach (var w in PdmLinked.BaseIdWarnings(View, role, ok))
-                                {
-                                    <MudText Typo="Typo.body2" Color="Color.Warning">@w</MudText>
-                                }
-                            }
                         }
                         <MudText Typo="Typo.caption" Style="display: block; max-width: 420px" Class="mt-2">
                             Move is not a Write All value: it sends ONE message to the board now (as Modify on the Devices
@@ -150,6 +136,29 @@
                         {
                             <MudAlert Severity="Severity.Info" Dense="true" Class="mt-1">@string.Join("; ", _moveDone). Next: Write All, then Burn.</MudAlert>
                         }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            @* ---- editor1 (p1 / p3): the other critical settings, one value for the PDM, locked ---- *@
+            <MudItem>
+                <MudCard Elevation="2" Style="height: 100%">
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1">Critical settings (locked)</MudText>
+                        @foreach (var item in PdmCritical.Items(View).Where(i => i.Kind is PdmCriticalKind.BitRate or PdmCriticalKind.KeptOn))
+                        {
+                            var kind = item.Kind;
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
+                                <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                                <MudText Typo="Typo.body2" Style="min-width: 260px" id="@($"critical-{kind}")">@item.Label: <b>@item.Current</b></MudText>
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@busy" id="@($"unlock-{kind}")"
+                                           OnClick="@(() => Unlock(kind, ""))">Unlock</MudButton>
+                            </MudStack>
+                        }
+                        <MudText Typo="Typo.caption" Style="display: block; max-width: 420px" Class="mt-2">
+                            Set on the PC for A1, A2 and B: Write All sends them, Burn keeps them. A new CAN bit rate needs the ECU, the
+                            dash and this PC's adapter on the same rate.
+                        </MudText>
                     </MudCardContent>
                 </MudCard>
             </MudItem>
@@ -174,8 +183,11 @@
     // Until the user types, the fields follow the PC values (they change with Read All / New PDM / the board pages)
     protected override void OnParametersSet()
     {
-        if (!_tempDirty && View.Boards.FirstOrDefault() is { } first && PdmTempLimits.Of(first.Device) is { } t)
-            (_warn, _crit, _hyst, _margin) = (t.Warn, t.Crit, t.Hyst, t.Margin);
+        if (View.Boards.FirstOrDefault() is { } first && PdmTempLimits.Of(first.Device) is { } t)
+        {
+            _crit = t.Crit; // editor1: locked, always the PC value (Unlock changes it)
+            if (!_tempDirty) (_warn, _hyst, _margin) = (t.Warn, t.Hyst, t.Margin);
+        }
         var a2 = View.Boards.FirstOrDefault(b => b.Role == "A2")?.Device;
         if (!_fanDirty && a2 != null && PdmLinked.FanLayoutProblem(a2) == null)
         {
@@ -225,5 +237,29 @@
         s = s.Trim();
         if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) s = s[2..];
         return s.Length is > 0 and <= 3 && int.TryParse(s, System.Globalization.NumberStyles.HexNumber, null, out var v) ? v : null;
+    }
+
+    // editor1 (p1 / p3): Unlock + type the new value twice + Change (PdmCriticalDialog); domain/CustomPdm/PdmCritical.cs
+    private async Task Unlock(PdmCriticalKind kind, string role)
+    {
+        var item = PdmCritical.Items(View).Single(i => i.Kind == kind && i.Board == role);
+        var parameters = new DialogParameters<PdmCriticalDialog>
+        {
+            { x => x.Item, item },
+            { x => x.Check, (Func<string, string?>)(s => PdmCritical.Problem(View, kind, role, s)) },
+            { x => x.Notes, kind == PdmCriticalKind.BaseId
+                ? (Func<string, IReadOnlyList<string>>)(s => ParseHex(s) is { } nb ? PdmLinked.BaseIdWarnings(View, role, nb) : [])
+                : null }
+        };
+        var dialog = await DialogService.ShowAsync<PdmCriticalDialog>($"Unlock {item.Label}", parameters);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false, Data: string typed }) return;
+        if (kind == PdmCriticalKind.BaseId)
+        {
+            Move(role, ParseHex(typed)!.Value);
+            return;
+        }
+        if (PdmCritical.Apply(View, kind, typed) is { } why) { Notification.NewError($"{item.Label} not changed: {why}"); return; }
+        Notification.NewWarning($"{item.Label}: {PdmCritical.Items(View).Single(i => i.Kind == kind).Current} on the PC for A1, A2 and B. Write All sends it, Burn keeps it.");
     }
 }

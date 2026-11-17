@@ -33,6 +33,11 @@ void Pwm::Update()
     }
 
     UpdateFrequency();
+#if PWM_FREQ_INPUT
+    // custom-pdm: variable frequency below its minimum = no pulses (output low)
+    if (bFreqOff)
+        nDutyCycle = 0;
+#endif
     
     bLastChannelEnabled = bChannelEnabled;
 }
@@ -84,6 +89,15 @@ void Pwm::UpdateFrequency()
     if (m_pwmCh != PwmChannel::Ch1 || m_pwm->state != PWM_READY)
         return;
 
+#if PWM_FREQ_INPUT
+    if (pConfig->bVariableFreq)
+    {
+        UpdateVariableFrequency();
+        return;
+    }
+    bFreqOff = false;
+#endif
+
     // Frequency within range and
     // (Frequency setting has changed or
     // PWM driver frequency != Frequency setting)
@@ -96,6 +110,48 @@ void Pwm::UpdateFrequency()
 
     nLastFreq = pConfig->nFreq;
 }
+
+#if PWM_FREQ_INPUT
+void Pwm::UpdateVariableFrequency()
+{
+    // custom-pdm: frequency = input x factor, e.g. engine RPM x pulses per rev / 60 for a tachometer.
+    // NaN or below the minimum (engine stopped, signal lost): no pulses, see Update()
+    float fFreq = (*pFreqInput) * pConfig->fFreqFactor;
+    if (!(fFreq >= pConfig->nFreqMin))
+    {
+        bFreqOff = true;
+        return;
+    }
+    bFreqOff = false;
+    if (fFreq > pConfig->nFreqMax)
+        fFreq = pConfig->nFreqMax;
+
+    // Timer counts per period, rounded: 1 us steps at 1 MHz (0.1 % at 1000 Hz); at most 62500 (16 Hz), fits 16 bits
+    pwmcnt_t nPeriod = (pwmcnt_t)((float)m_pwmCfg->frequency / fFreq + 0.5f);
+    pwmcnt_t nOldPeriod = m_pwm->period;
+    if (nPeriod == nOldPeriod)
+        return;
+
+    // ARR and CCR1 are both preloaded (ChibiOS pwm_lld_start sets CR1.ARPE and CCMR1.OC1PE): the timer takes them at
+    // its next update event, so the running period is never cut short. The duty is written for the new period here
+    // (On() would only do it next cycle), in the order that keeps the compare value inside whichever period runs if the
+    // update event falls between the two writes: shorter period = compare value first, longer period = period first.
+    uint8_t nCh = static_cast<uint8_t>(m_pwmCh);
+    bool bOn = (m_pwm->enabled & (1 << nCh)) != 0;
+    pwmcnt_t nWidth = (pwmcnt_t)(((uint32_t)nPeriod * nDutyCycle * 100U) / 10000U); // PWM_PERCENTAGE_TO_WIDTH
+    if (bOn && (nPeriod < nOldPeriod))
+        pwmEnableChannel(m_pwm, nCh, nWidth);
+    pwmChangePeriod(m_pwm, nPeriod);
+    if (bOn && (nPeriod > nOldPeriod))
+        pwmEnableChannel(m_pwm, nCh, nWidth);
+}
+
+void Pwm::OverridePeriod(pwmcnt_t nPeriod)
+{
+    if (m_pwmCh == PwmChannel::Ch1 && m_pwm->state == PWM_READY && nPeriod > 0 && m_pwm->period != nPeriod)
+        pwmChangePeriod(m_pwm, nPeriod);
+}
+#endif
 
 msg_t Pwm::Init()
 {

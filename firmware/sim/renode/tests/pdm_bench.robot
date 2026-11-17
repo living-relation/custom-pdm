@@ -73,6 +73,9 @@ Board Restarts While The ECU Is Talking: Outputs Come Back, Saved Config Survive
 Overcurrent: Three Tries One Second Apart, Then Fault Until A Power Cycle
     Overcurrent Retries Three Times Then Latches Fault
 
+Overcurrent Trip Time 50 ms: A 20 ms 10 A Spike Rides Through, 10 A Held Trips 50 ms Later, Retried 1 s Later
+    Overcurrent Trip Time Rides Through A Spike And Trips A Held Overload
+
 Board Temperature From The I2C Sensor Reaches The Status Frame And The Over-temperature State
     Board Temperature Reaches The Status Frame
 
@@ -108,3 +111,6 @@ Wake-up Set: A Mask With Both Inputs Of A Shared Line Or The USB D- Line Is Refu
 
 Key On: Board B's First Status Msg 37 After A Power Cycle Carries Its Real Inputs (First Cyclic Round Skipped)
     First Status Msg After A Power Cycle Carries The Real Inputs
+
+Tach Output: A1 OUT7 Frequency Follows CAN RPM At 2 Pulses Per Rev (20 / 100 / 200 Hz, 50 %), Off At 0 RPM, Step Within 23 ms On The Real Timers
+    Tach Output Follows Can Rpm

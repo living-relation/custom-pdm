@@ -1791,6 +1791,39 @@
 				)
 			)
 		)
+		(property "Manufacturer" "YAGEO"
+			(at 84.455 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "RT0805DRD0747KL"
+			(at 84.455 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "UNI-ROYAL 0805W8F4702T5E (1 %, LCSC C17713, basic)"
+			(at 84.455 106.68 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "022d214a-a584-48ea-b647-d8e5deb28f45")
 		)
@@ -1884,6 +1917,28 @@
 			)
 		)
 		(property "LCSC" "C17673"
+			(at 84.455 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL"
+			(at 84.455 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "0805W8F4701T5E"
 			(at 84.455 119.38 0)
 			(hide yes)
 			(show_name no)
@@ -1997,6 +2052,28 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Nexperia"
+			(at 103.505 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "PDZ3.3B,115"
+			(at 103.505 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "fae5100d-318e-4938-956c-5a656927196f")
 		)
@@ -2090,6 +2167,28 @@
 			)
 		)
 		(property "LCSC" "C49678"
+			(at 93.345 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 93.345 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CC0805KRX7R9BB104"
 			(at 93.345 119.38 0)
 			(hide yes)
 			(show_name no)

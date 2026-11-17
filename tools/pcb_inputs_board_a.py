@@ -215,6 +215,10 @@ def via_near(net, x, y, max_r=4.0):
         cy = f.GetCourtyard(pcbnew.F_CrtYd)
         if cy.OutlineCount():
             yards.append(cy)
+    # obstacles() skips the net's own copper, so a spot could land on one of its OWN vias (fab hole check 2026-11-17:
+    # J6.12's via overlapped a stock GND via, holes 0.2 mm apart). Such a spot ends the stub on that via instead.
+    own = [q for q in b.GetTracks() if q.GetClass() == "PCB_VIA" and q.GetNetname() == net]
+    reuse = None
     for k in range(6, int(max_r * 10) + 1):              # rings 0.6 .. max_r mm
         r = k / 10
         for a in range(0, 360, 15):
@@ -225,6 +229,15 @@ def via_near(net, x, y, max_r=4.0):
                 continue
             if clear(obs, pcbnew.SHAPE_CIRCLE(V(vx, vy), mm(R.VIA_D) // 2), COPPER) and \
                     holes_clear(obs, V(vx, vy), mm(R.VIA_DRILL) // 2):
+                mine = [q for q in own if math.hypot(tomm(q.GetPosition().x) - vx, tomm(q.GetPosition().y) - vy)
+                        - tomm(q.GetDrillValue()) / 2 - R.VIA_DRILL / 2 < 0.25 + 0.01]
+                if mine:
+                    q = mine[0]
+                    qx, qy = tomm(q.GetPosition().x), tomm(q.GetPosition().y)
+                    if clear(obs, pcbnew.SHAPE_SEGMENT(V(x, y), V(qx, qy), tw), [pcbnew.F_Cu]):
+                        best, reuse = (qx, qy), q
+                        break
+                    continue
                 best = (vx, vy)
                 break
         if best:
@@ -234,9 +247,12 @@ def via_near(net, x, y, max_r=4.0):
     trk = pcbnew.PCB_TRACK(b)
     trk.SetStart(V(x, y)); trk.SetEnd(V(*best)); trk.SetWidth(tw); trk.SetLayer(pcbnew.F_Cu); trk.SetNet(netinfo(net))
     b.Add(trk)
-    v = pcbnew.PCB_VIA(b)
-    v.SetPosition(V(*best)); v.SetWidth(mm(R.VIA_D)); v.SetDrill(mm(R.VIA_DRILL)); v.SetNet(netinfo(net))
-    b.Add(v)
+    if reuse is None:
+        v = pcbnew.PCB_VIA(b)
+        v.SetPosition(V(*best)); v.SetWidth(mm(R.VIA_D)); v.SetDrill(mm(R.VIA_DRILL)); v.SetNet(netinfo(net))
+        b.Add(v)
+    else:
+        print(f"  {net} stub ends on the existing via at ({best[0]:.2f}, {best[1]:.2f})")
     R.refresh()
     return best
 

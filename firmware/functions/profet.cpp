@@ -14,6 +14,10 @@ void Profet::Update(bool bOutEnabled)
         eState = ProfetState::Off;
         fCurrent = 0;
         fOutput = 0;
+#if PRO_FEATURES
+        bOverLimit = false; // custom-pdm (P1 / P2)
+        UpdateUndercurrent();
+#endif
         return;
     }
 
@@ -68,6 +72,16 @@ void Profet::Update(bool bOutEnabled)
         break;
 
     case ProfetState::On:
+#if PWM_FREQ_INPUT
+        // custom-pdm: variable frequency below its minimum (engine stopped): channel off, IN held low. Duty 0 alone
+        // would leave IN high if the duty changed mid-period on a timer without compare preload.
+        if (pwm.IsEnabled() && pwm.IsFreqOff())
+        {
+            pwm.Off();
+            palClearLine(m_in);
+        }
+        else
+#endif
         if (pwm.IsEnabled())
             pwm.On();
         else
@@ -79,8 +93,18 @@ void Profet::Update(bool bOutEnabled)
             eState = ProfetState::Off;
         }
 
+#if PRO_FEATURES
+        // custom-pdm (P1): the trip-time clock runs only while above the current limit after the inrush window
+        if (!(fCurrent > pConfig->fCurrentLimit) || bInRushActive)
+            bOverLimit = false;
+#endif
+
         // Overcurrent
-        if (fCurrent > pConfig->fCurrentLimit && !bInRushActive)
+        if (fCurrent > pConfig->fCurrentLimit && !bInRushActive
+#if PRO_FEATURES
+            && TripTimeExpired() // custom-pdm (P1)
+#endif
+            )
         {
             nOcTriggerTime = SYS_TIME;
             nOcCount++;
@@ -138,10 +162,64 @@ void Profet::Update(bool bOutEnabled)
     fOvercurrent = eState == ProfetState::Overcurrent ? 1 : 0;
     fFault = eState == ProfetState::Fault ? 1 : 0;
 
+#if PRO_FEATURES
+    // custom-pdm (P1 / P2)
+    if (eState != ProfetState::On)
+        bOverLimit = false;
+    UpdateUndercurrent();
+#endif
+
 #ifdef LINE_E2
     palClearLine(LINE_E2);
 #endif
 }
+
+#if PRO_FEATURES
+// custom-pdm (P1, docs/feature-parity.md): called while above the current limit after the inrush window. True = trip
+// now: trip time 0 (stock behaviour, one sample), above the inrush limit or IS at the ADC full scale (hard
+// overcurrent / PROFET fault signal, PROFET_IS_FULL_SCALE), or above the limit for the whole trip time.
+bool Profet::TripTimeExpired()
+{
+    if (pExt == nullptr || pExt->nTripTime == 0)
+        return true;
+
+    if (fCurrent > pConfig->fInrushLimit || nIS >= PROFET_IS_FULL_SCALE)
+        return true;
+
+    if (!bOverLimit)
+    {
+        bOverLimit = true;
+        nOverLimitStart = SYS_TIME;
+    }
+
+    return (uint32_t)(SYS_TIME - nOverLimitStart) >= pExt->nTripTime;
+}
+
+// custom-pdm (P2, ECUMaster PMU "Min current" -> UNDERCURRENT): while the output is On (and its PWM duty is not 0),
+// a current below fMinCurrent for nMinCurrentTime sets fUndercurrent; the output keeps running. The flag clears at
+// once when the current is back at or above the minimum, or the output is not On.
+void Profet::UpdateUndercurrent()
+{
+    const bool bWatch = (pExt != nullptr) && (pExt->fMinCurrent > 0) && (eState == ProfetState::On) &&
+                        !(pwm.IsEnabled() && pwm.GetDutyCycle() == 0);
+
+    if (bWatch && fCurrent < pExt->fMinCurrent)
+    {
+        if (!bUnderLimit)
+        {
+            bUnderLimit = true;
+            nUnderLimitStart = SYS_TIME;
+        }
+        if ((uint32_t)(SYS_TIME - nUnderLimitStart) >= pExt->nMinCurrentTime)
+            fUndercurrent = 1;
+    }
+    else
+    {
+        bUnderLimit = false;
+        fUndercurrent = 0;
+    }
+}
+#endif
 
 void Profet::FollowerUpdate()
 {
@@ -164,10 +242,24 @@ void Profet::FollowerUpdate()
     // Mirror primary state
     if (pPrimary->eState == ProfetState::On)
     {
+#if PWM_FREQ_INPUT
+        if (pPrimary->IsPwmEnabled() && pPrimary->pwm.IsFreqOff())
+        {
+            // custom-pdm: primary's variable frequency below its minimum: no pulses on the follower either
+            pwm.Off();
+            palClearLine(m_in);
+        }
+        else
+#endif
         if (pPrimary->IsPwmEnabled())
         {
             pwm.EnsureStarted();
+#if PWM_FREQ_INPUT
+            // custom-pdm: copy the primary's timer period, so a variable (tach) frequency is followed too
+            pwm.OverridePeriod(pPrimary->pwm.GetPeriod());
+#else
             pwm.OverrideFrequency(pPrimary->GetFrequency());
+#endif
             pwm.SetDutyCycle(pPrimary->GetDutyCycle());
             // Align follower timer phase to primary on first enable so both switches
             // transition simultaneously. Both timers share the same APB clock so

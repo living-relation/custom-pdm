@@ -131,7 +131,8 @@ class pdm_bench:
 
     def fresh_boards_wrote_default_config_to_fram(s):
         w = {k: s._fram_written(k) for k in BASE}; s.fram_w = w
-        s._check(all(4000 < v < 5000 for v in w.values()), f'FRAM bytes written at first start {w}')
+        # config + CRC: about 5.2 kB since PRO_FEATURES (s0 prints the exact size), must fit the 8 KB FRAM
+        s._check(all(5000 < v <= 8192 for v in w.values()), f'FRAM bytes written at first start {w}')
 
     def power_cycle_keeps_ids_and_config(s):
         s._power_cycle(*BASE)
@@ -309,6 +310,22 @@ class pdm_bench:
         s._check(final == 3 and 2 in states and still == 3 and pin_after == 0, f'status states seen {states}, final {final} (3 = Fault), with a normal load still {still}, pin {pin_after}')
         s._check(g in p and again == 1, f'after a power cycle: pins {p}, state {again}')
 
+    # ------------------------------------------------------------------ P1 overcurrent trip time (factory 50 ms, core/param_defs.h DEFAULT_OUT_TRIP_TIME)
+    def overcurrent_trip_time_rides_through_a_spike_and_trips_a_held_overload(s):
+        g = 3; k, o = s.OUT[g]; s._load(g, s.LIMIT[g] * 0.6)     # A1 OUT3: ECU bit 3 (OUT5 carries the cross-board rule)
+        trip = s._read1(BASE[k], 0x7D00 + o, 0)
+        s._set_cmd([g]); s._run(1500)                          # past the 1 s inrush window
+        on_before = g in s._pins_on()
+        s._load(g, 10.0); s._run(20); s._load(g, s.LIMIT[g] * 0.6); s._run(200)
+        after_spike = g in s._pins_on()
+        s._load(g, 10.0); t = 0
+        while g in s._pins_on() and t < 200: s._run(2); t += 2
+        tripped_at = t; st = s._status(k, (3,)).out_state(o)
+        s._load(g, s.LIMIT[g] * 0.6); s._run(1300); back = g in s._pins_on()
+        s._set_cmd([]); s._run(300)
+        s._check(trip == 50 and on_before and after_spike, f'trip time {trip} ms; on before {on_before}; still on after a 20 ms 10 A spike {after_spike}')
+        s._check(50 <= tripped_at <= 60 and back, f'10 A held: IN low after {tripped_at} ms (want 50-60, 2 ms steps); retried and on again 1 s later {back}; state seen {st}')
+
     # ------------------------------------------------------------------ temperature sensor (I2C)
     def board_temperature_reaches_the_status_frame(s):
         k = 'A2'; st = s._status(k, (0,)); t30 = struct.unpack('<H', st.m[0][6:8])[0]; run_state = st.dev_state()
@@ -480,3 +497,61 @@ class pdm_bench:
         while s._ecun(f'Count {mid:#x}') == n0 and t < 2000: s._run(2); t += 2
         d = bytes.fromhex(s._ecu(f'Last {mid:#x}')); s._input('B', 2, False); s._run(300)
         s._check(ok and t < 2000 and (d[0] >> 2) & 1 == 1, f'saved {ok}; first msg 37 {t} ms after the reset (2 ms steps): {d.hex()} (bit 2 = B input 3, held high from 10 ms)')
+
+    # ------------------------------------------------------------------ tach-style output (PWM frequency from a CAN value)
+    # The real firmware's timer interrupts drive the PROFET IN pin; the PDM_ADC edge probe samples it every 5 us of
+    # virtual time. Renode delivers interrupts at its global quantum (default 100 us: seen as 80-190 us period spread),
+    # so the test runs at a 10 us quantum and puts the default back. Board A1 OUT7 (TIM12, 16-bit) at 2 pulses / rev: RPM from the ECU node on 0x4F2 bytes 0-1 every 10 ms.
+    def _probe(s, k, o, ms, step_us=5):
+        pin = s.model[k]['outputs'][o][0]
+        s._x(f'sysbus.adc1 ProbeStart "{pin}" {step_us}', MACH[k]); s._run(ms); s._x('sysbus.adc1 ProbeStop', MACH[k])
+        txt = s._x('sysbus.adc1 ProbeEdges', MACH[k]).strip().strip('"')
+        return [(int(a) / 1000.0, int(b)) for a, b in (e.split(':') for e in txt.split(';') if ':' in e)]
+    @staticmethod
+    def _periods(ed):
+        rises = [t for t, l in ed if l == 1]; out = []
+        for a, b in zip(rises, rises[1:]):
+            f = [t for t, l in ed if l == 0 and a < t < b]
+            out.append((a, b - a, (f[0] - a) if f else None))
+        return out
+    def _hz(s, ed):
+        p = s._periods(ed)
+        if len(p) < 2 or any(x[2] is None for x in p): return None, None, None
+        per = [x[1] for x in p]
+        return (round(1000.0 * len(p) / sum(per), 2), round(100.0 * sum(x[2] for x in p) / sum(per), 1), round((max(per) - min(per)) * 1000))
+
+    def tach_output_follows_can_rpm(s):
+        k, o, slot, rid = 'A1', 6, 20, 0x4F2; b = BASE[k]; TACH = 0x7C00 + o
+        s._x('emulation SetGlobalQuantum "0.00001"'); old_in = s._read1(b, 0x1000 + o, 1)
+        s._ecu(f'SetPeriodic {rid:#x} "0000000000000000" 10000')
+        rpm = lambda x: s._ecu(f'SetPeriodicData {rid:#x} "{struct.pack("<H", x).hex()}000000000000"')
+        ok = all(s._write1(b, 0x1300 + slot, sub, v) is not None for sub, v in
+                 [(4, rid), (5, 0), (6, 16), (7, s.ps.f32(1.0)), (11, 2), (12, s.ps.f32(-1e9)), (1, 0), (0, 1)])
+        ok = ok and all(s._write1(b, 0x1000 + o, sub, v) is not None for sub, v in [(1, 1), (12, 50), (13, 100), (10, 0), (8, 1), (0, 1)])
+        ok = ok and all(s._write1(b, TACH, sub, v) is not None for sub, v in
+                        [(1, s._var(k, 'canin', slot) + 1), (2, s.ps.f32(2.0 / 60.0)), (0, 1)])
+        got = {}
+        for x in (600, 3000, 6000):
+            rpm(x); s._run(150); got[x] = s._hz(s._probe(k, o, 300 if x > 600 else 400))
+        # engine stops (RPM 0) at 5 different points of the 200 Hz period: no pulses and IN low every time
+        stopped = []
+        for d in (0, 1, 2, 3, 4):
+            rpm(6000); s._run(100 + d); rpm(0); s._run(150); stopped.append((len(s._probe(k, o, 100)), s._pin(k, s.model[k]['outputs'][o][0])))
+        # step 3000 -> 6000 RPM with the probe running: first 5 ms period after the new value, every period 10 or 5 ms
+        rpm(3000); s._run(200)
+        pin = s.model[k]['outputs'][o][0]; s._x(f'sysbus.adc1 ProbeStart "{pin}" 5', MACH[k]); s._run(30); rpm(6000); s._run(80)
+        s._x('sysbus.adc1 ProbeStop', MACH[k]); txt = s._x('sysbus.adc1 ProbeEdges', MACH[k]).strip().strip('"')
+        ed = [(int(a) / 1000.0, int(c)) for a, c in (e.split(':') for e in txt.split(';') if ':' in e)]
+        p = s._periods(ed); first = next((a for a, per, hi in p if a > 30 and abs(per - 5.0) <= 0.05), None)
+        step = (round(first - 30, 2) if first else None, sorted(set(round(per, 2) for a, per, hi in p)))
+        # stock fixed 10 Hz on this 16-bit timer (found, not fixed): ARR = 99999 keeps its low 16 bits, CCR 50000 above it
+        s._write1(b, TACH, 0, 0); s._write1(b, 0x1000 + o, 13, 10); s._run(300); stock10 = (len(s._probe(k, o, 400)), s._pin(k, pin))
+        for sub, v in [(13, 100), (8, 0), (1, old_in if old_in is not None else 0)]: s._write1(b, 0x1000 + o, sub, v)
+        s._write1(b, 0x1300 + slot, 0, 0); s._ecu(f'RemovePeriodic {rid:#x}'); s._run(200); s._x('emulation SetGlobalQuantum "0.0001"')
+        logger.info(f'tach (Hz, duty %, period spread us) {got}; RPM 0 (edges, pin) {stopped}; step {step}; stock fixed 10 Hz (edges, pin) {stock10}', also_console=True)
+        s._check(ok, 'parameter writes (CAN input, output PWM, tach block 0x7C00) not all acknowledged')
+        s._check(all(got[x][0] is not None and abs(got[x][0] - x / 30.0) <= x / 30.0 * 0.003 and abs(got[x][1] - 50) <= 1.0 and got[x][2] <= 40 for x in got),
+                 f'(Hz, duty %, spread us) at 600 / 3000 / 6000 RPM, want 20 / 100 / 200 Hz within 0.3 %, 50 +-1 %, spread <= 40 us (5 us probe, 10 us quantum): {got}')
+        s._check(all(x == (0, False) for x in stopped), f'RPM 0 five times: (edges, pin high) {stopped}')
+        s._check(step[0] is not None and step[0] <= 23 and all(abs(x - 10) <= 0.03 or abs(x - 5) <= 0.03 for x in step[1]),
+                 f'step 3000 -> 6000 RPM: first 5 ms period {step[0]} ms after the new value (budget 23 ms), periods seen {step[1]}')

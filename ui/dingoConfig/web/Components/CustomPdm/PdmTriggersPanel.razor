@@ -1,0 +1,283 @@
+@using application.Services
+@using domain.CustomPdm
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+@inject IDialogService DialogService
+
+@* custom-pdm one-PDM editor, phase 1 (domain/CustomPdm/PdmTriggers.cs, PdmEngine.cs): what switches each of the 24
+   outputs, in words, and an editor per output. The editor writes the needed functions on the OUTPUT's board through
+   the conflict engine; an input of another board comes in over CAN by itself. PC edits only: Write All sends them,
+   Burn keeps them. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel @bind-Expanded="_open">
+        <TitleContent>
+            <MudText Typo="Typo.h6">Output triggers (what switches each output)</MudText>
+        </TitleContent>
+        <ChildContent>
+            @{
+                var busy = Pdm.Ops.Busy;
+                var m = PdmModel.Build(View);
+            }
+            @if (m.Problems.Count > 0)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="pdm-checks">
+                    <b>Checks (@m.Problems.Count):</b>
+                    @foreach (var p in m.Problems)
+                    {
+                        <div>@p.Text</div>
+                    }
+                </MudAlert>
+            }
+            <MudText Typo="Typo.caption" Style="display: block" Class="mb-2" id="pdm-use">
+                @foreach (var b in View.Boards)
+                {
+                    var u = m.Use(b.Role);
+                    <div>@b.Role: @string.Join("; ", new[] { domain.CustomPdm.PdmResKind.CanInput, domain.CustomPdm.PdmResKind.VirtualInput, domain.CustomPdm.PdmResKind.Condition, domain.CustomPdm.PdmResKind.Timer, domain.CustomPdm.PdmResKind.Flasher }.Select(k => u.Of(k).Text))</div>
+                }
+            </MudText>
+            <MudSimpleTable Dense="true" Hover="true" Striped="true" Class="mb-2" id="pdm-triggers">
+                <thead>
+                    <tr><th>#</th><th>Board</th><th>Name</th><th>Switched by</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in m.Triggers)
+                    {
+                        var o = t.Out;
+                        var no = PdmTriggers.Unsettable(o);
+                        <tr id="@($"trigger-row-{o.Number}")">
+                            <td>@o.Number</td>
+                            <td>@o.Board OUT@(o.BoardOutput)</td>
+                            <td>@o.Output.Name</td>
+                            <td>
+                                @if (t.Kind == PdmTriggerKind.None)
+                                {
+                                    <span style="opacity: 0.6">none</span>
+                                }
+                                else
+                                {
+                                    <span id="@($"trigger-words-{o.Number}")">@t.Words</span>
+                                }
+                            </td>
+                            <td>
+                                @if (no == null)
+                                {
+                                    <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@busy" id="@($"trigger-edit-{o.Number}")"
+                                               OnClick="@(() => StartEdit(m, t))">Edit</MudButton>
+                                }
+                                else
+                                {
+                                    <MudTooltip Text="@no"><MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" /></MudTooltip>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </MudSimpleTable>
+
+            @if (_edit is { } row)
+            {
+                var spec = Spec();
+                var why = spec == null ? "Pick the signals." : PdmTriggers.Problem(m, row, spec);
+                <MudPaper Outlined="true" Class="pa-3 mb-2" id="trigger-editor">
+                    <MudText Typo="Typo.subtitle1">Output @row.Number (@row.Board OUT@(row.BoardOutput)) @row.Output.Name</MudText>
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
+                        <MudSelect T="string" @bind-Value="_kind" Label="Switched by" Variant="Variant.Outlined" Dense="true" Style="min-width: 260px" id="trigger-kind">
+                            <MudSelectItem T="string" Value="@("none")">nothing (off)</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("input")">one input</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("and")">all of (AND)</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("or")">any of (OR)</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("nor")">none of (NOR)</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("level")">a value above / below a level</MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+
+                    @if (_kind is "input" or "and" or "or" or "nor")
+                    {
+                        var n = _kind == "input" ? 1 : _termCount;
+                        var choices = TermChoices(m, row.Board);
+                        @for (var i = 0; i < n; i++)
+                        {
+                            var k = i;
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-2">
+                                <MudSelect T="string" Value="@_terms[k]" ValueChanged="@(v => _terms[k] = v)" Label="@($"Signal {k + 1}")"
+                                           Variant="Variant.Outlined" Dense="true" Style="min-width: 320px" id="@($"trigger-term-{k}")">
+                                    @foreach (var (key, text) in choices)
+                                    {
+                                        <MudSelectItem T="string" Value="@key">@text</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudCheckBox T="bool" Value="@_nots[k]" ValueChanged="@(v => _nots[k] = v)" Label="NOT (when off)" Dense="true" id="@($"trigger-not-{k}")" />
+                            </MudStack>
+                        }
+                        @if (_kind != "input")
+                        {
+                            <MudStack Row="true" Spacing="1" Class="mt-1">
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@(_termCount >= 3)" OnClick="@(() => _termCount++)">Add a signal</MudButton>
+                                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="@(_termCount <= 2)" OnClick="@(() => _termCount--)">Remove the last</MudButton>
+                            </MudStack>
+                        }
+                    }
+                    else if (_kind == "level")
+                    {
+                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
+                            <MudSelect T="int" @bind-Value="_levelVar" Label="Value" Variant="Variant.Outlined" Dense="true" Style="min-width: 300px" id="trigger-level-var">
+                                @foreach (var c in PdmTriggers.ValueChoices(m, row.Board))
+                                {
+                                    <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect T="bool" @bind-Value="_above" Label="On when" Variant="Variant.Outlined" Dense="true" Style="min-width: 160px" id="trigger-level-dir">
+                                <MudSelectItem T="bool" Value="true">at or above</MudSelectItem>
+                                <MudSelectItem T="bool" Value="false">at or below</MudSelectItem>
+                            </MudSelect>
+                            <MudNumericField T="double" @bind-Value="_on" Label="On at" Variant="Variant.Outlined" Style="max-width: 140px" id="trigger-level-on" />
+                            <MudNumericField T="double" @bind-Value="_off" Label="@(_above ? "Off at or below" : "Off at or above")" Variant="Variant.Outlined" Style="max-width: 160px" id="trigger-level-off" />
+                        </MudStack>
+                    }
+
+                    @if (_kind != "none")
+                    {
+                        <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
+                            <MudSelect T="PdmTimerKind" @bind-Value="_timer" Label="Timer" Variant="Variant.Outlined" Dense="true" Style="min-width: 220px" id="trigger-timer">
+                                <MudSelectItem T="PdmTimerKind" Value="PdmTimerKind.None">no timer</MudSelectItem>
+                                <MudSelectItem T="PdmTimerKind" Value="PdmTimerKind.OnDelay">on-delay (switch on later)</MudSelectItem>
+                                <MudSelectItem T="PdmTimerKind" Value="PdmTimerKind.OffDelay">off-delay (stay on longer)</MudSelectItem>
+                                <MudSelectItem T="PdmTimerKind" Value="PdmTimerKind.Pulse">pulse (on for a time)</MudSelectItem>
+                            </MudSelect>
+                            @if (_timer != PdmTimerKind.None)
+                            {
+                                <MudNumericField T="int" @bind-Value="_timerMs" Label="Time (ms)" Variant="Variant.Outlined" Style="max-width: 140px" id="trigger-timer-ms" />
+                            }
+                            <MudCheckBox T="bool" @bind-Value="_flash" Label="Flash" Dense="true" id="trigger-flash" />
+                            @if (_flash)
+                            {
+                                <MudNumericField T="int" @bind-Value="_flashOn" Label="On (ms)" Variant="Variant.Outlined" Style="max-width: 120px" id="trigger-flash-on" />
+                                <MudNumericField T="int" @bind-Value="_flashOff" Label="Off (ms)" Variant="Variant.Outlined" Style="max-width: 120px" id="trigger-flash-off" />
+                            }
+                        </MudStack>
+                    }
+
+                    @if (spec != null && why == null)
+                    {
+                        <MudText Typo="Typo.body2" Class="mt-2" id="trigger-preview">
+                            Will be: <b>@PdmTriggers.Words(m, row.Board, spec)</b>.
+                            Uses on @row.Board: @PdmTriggers.CostText(PdmTriggers.Cost(View, row.Board, spec)).
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Color="Color.Error" Class="mt-2">@why</MudText>
+                    }
+                    <MudStack Row="true" Spacing="2" Class="mt-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Disabled="@(busy || spec == null || why != null)"
+                                   OnClick="@(() => Apply(row, spec!))" id="trigger-apply">Apply</MudButton>
+                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _edit = null)" id="trigger-cancel">Cancel</MudButton>
+                    </MudStack>
+                </MudPaper>
+            }
+            <MudText Typo="Typo.caption" Style="display: block">
+                An input of another board reaches the output's board over CAN by itself (off 1 s after that board's message stops; other
+                behaviours at loss: Links panel below). Changes are on the PC: Write All sends them to the boards, Burn keeps them.
+            </MudText>
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open = true;
+    private PdmOutputRow? _edit;
+    private string _kind = "input";
+    private int _termCount = 2;
+    private readonly string[] _terms = ["", "", ""];
+    private readonly bool[] _nots = [false, false, false];
+    private int _levelVar;
+    private bool _above = true;
+    private double _on, _off;
+    private PdmTimerKind _timer;
+    private int _timerMs = 1000;
+    private bool _flash;
+    private int _flashOn = 500, _flashOff = 500;
+
+    // the 24 digital inputs (any board) and the on / off signals of the output's board
+    private List<(string Key, string Text)> TermChoices(PdmModel m, string role) =>
+        View.Inputs.Where(r => r.Digital != null)
+            .Select(r => ($"i:{r.Number}", $"IN{r.Number} ({r.Board} IN{r.BoardInput}{(r.Board == role ? "" : ", over CAN")}){(r.Name.StartsWith("digitalInput") ? "" : " " + r.Name)}"))
+            .Concat(PdmTriggers.SignalChoices(m, role).Select(c => ($"v:{c.Var}", c.Text)))
+            .ToList();
+
+    private static string Key(PdmTerm t) => t.Input > 0 ? $"i:{t.Input}" : $"v:{t.Var}";
+
+    private static PdmTerm? Term(string key, bool not) =>
+        key.Length > 2 && int.TryParse(key[2..], out var n)
+            ? key[0] == 'i' ? PdmTerm.In(n, not) : PdmTerm.Of(n, not)
+            : null;
+
+    private void StartEdit(PdmModel m, PdmTrigger t)
+    {
+        _edit = t.Out;
+        var s = t.Spec ?? PdmTriggerSpec.None;
+        _kind = s.Kind switch
+        {
+            PdmTriggerKind.Input => "input",
+            PdmTriggerKind.Logic => s.Op.ToString().ToLowerInvariant(),
+            PdmTriggerKind.Threshold => "level",
+            _ => t.Kind == PdmTriggerKind.None ? "input" : "input"
+        };
+        _termCount = Math.Max(2, s.Terms.Count);
+        for (var i = 0; i < 3; i++)
+        {
+            _terms[i] = i < s.Terms.Count ? Key(s.Terms[i]) : "";
+            _nots[i] = i < s.Terms.Count && s.Terms[i].Not;
+        }
+        var vals = PdmTriggers.ValueChoices(m, t.Out.Board);
+        (_levelVar, _above, _on, _off) = s.Threshold is { } th ? (th.Var, th.Above, th.On, th.Off) : (vals.FirstOrDefault()?.Var ?? 0, true, 0, 0);
+        (_timer, _timerMs) = (s.Timer, s.Timer == PdmTimerKind.None ? 1000 : s.TimerMs);
+        (_flash, _flashOn, _flashOff) = (s.Flash, s.FlashOnMs, s.FlashOffMs);
+    }
+
+    private PdmTriggerSpec? Spec()
+    {
+        PdmTriggerSpec? core;
+        switch (_kind)
+        {
+            case "none":
+                return PdmTriggerSpec.None;
+            case "level":
+                core = PdmTriggerSpec.Level(new PdmThreshold(_levelVar, _above, _on, _off));
+                break;
+            default:
+                var n = _kind == "input" ? 1 : _termCount;
+                var terms = Enumerable.Range(0, n).Select(i => Term(_terms[i], _nots[i])).ToList();
+                if (terms.Any(t => t == null)) return null;
+                core = _kind == "input"
+                    ? PdmTriggerSpec.Input(terms[0]!)
+                    : PdmTriggerSpec.Logic(Enum.Parse<PdmLogicOp>(_kind, true), terms.Select(t => t!).ToArray());
+                break;
+        }
+        if (_timer != PdmTimerKind.None) core = core.WithTimer(_timer, _timerMs);
+        if (_flash) core = core.WithFlash(_flashOn, _flashOff);
+        return core;
+    }
+
+    private async Task Apply(PdmOutputRow row, PdmTriggerSpec spec)
+    {
+        var overwrite = false;
+        if (PdmTriggers.Conflict(View, row.Number) is { } taken)
+        {
+            // DECISIONS g1: never replace something already assigned without asking
+            var yes = await DialogService.ShowMessageBox("Already assigned", $"{taken} Overwrite?", yesText: "Overwrite", cancelText: "Cancel");
+            if (yes != true) return;
+            overwrite = true;
+        }
+        if (PdmTriggers.Set(View, row.Number, spec, overwrite) is { } why)
+        {
+            Notification.NewError($"Trigger not set: {why}");
+            return;
+        }
+        _edit = null;
+        Notification.NewInfo($"Output {row.Number}: {PdmTriggers.Of(PdmModel.Build(View), row.Number).Words} (on the PC). Write All sends it to the boards.");
+    }
+}
