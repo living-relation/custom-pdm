@@ -27,7 +27,7 @@ Dan's goals: (1) finish the boards, parts and firmware; (2) full Renode bench wi
 5. Before the next full enclosure build: re-download the licence-restricted vendor STEPs per `enclosure/v2b/vendor/README.md` (deleted with the encl-v2b worktree, see Mistakes) AND get back Grok's PACK `custom-pdm-enclosure-handoff.zip` (board STEPs; `build_v2b.py` reads it; not found on the PC 2026-11-16; converted copies survive in WSL `~/scratch/encl-v2b/runs/F1|F2/brep/`). Fix first (e1, 2026-11-16): OUT2 / OUT4 riser seats are 7.52 mm from their terminal centres (doc / comment say >= 8 mm), leaving about 0.02 mm between the M4 foot-screw head and the seat column (lugcheck skips same-net pairs, so it was not caught); doc `docs/enclosure-v2b.md` riser heights say 16.27 where the build gives 20.27, and section 2 still says the east tier is at z 25 (build: 29); `docs/heat-analysis.md` calls the left-out bar / joint / contact I2R heat "conservative" though leaving it out is optimistic.
 
 ## Open questions: orchestrator session (asked one at a time, explained simply, each logged in `DECISIONS.md` once settled)
-- Next question ID: a3 (one letter + one digit, letters I / L / O / Q skipped; Dan 2026-11-16).
+- Next question ID: a4 (one letter + one digit, letters I / L / O / Q skipped; Dan 2026-11-16).
 - k2 (open; L4): layout: a) one byte per command, up to 8 per frame, like 0x643 (rec); b) 24 bits; c) plus PWM duty.
 - k3 (open; L4): rate: a) 50 ms (rec); b) 20 ms; c) 100 ms.
 - k4 (open; L4): ECU command plus a PDM input on one output: a) ECU only for a first pass (rec); b) either turns it on.
