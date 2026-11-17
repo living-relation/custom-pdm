@@ -152,29 +152,30 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
     owner: claude
-  - id: enclosure-v2b-build
-    script: enclosure/v2b/src/build_check_all.sh
-    helpers: [enclosure/v2b/src/run.sh, enclosure/v2b/src/build_v2b.py, enclosure/v2b/src/clearance_v2b.py, enclosure/v2b/src/show_check.py,
-              enclosure/v2b/src/inspect_vendor.py, enclosure/v2b/src/bg.sh, enclosure/v2b/src/bbox_parts.py,
-              enclosure/v2b/src/mass_v2b.py, enclosure/v2b/src/screwtool_twin.py, enclosure/v2b/src/lugcheck_v2b.py]
+  - id: enclosure-v2c-build
+    script: enclosure/v2c/src/build_check_all.sh
+    helpers: [enclosure/v2c/src/run.sh, enclosure/v2c/src/build_v2c.py, enclosure/v2c/src/clearance_v2c.py, enclosure/v2c/src/show_check.py,
+              enclosure/v2c/src/inspect_vendor.py, enclosure/v2c/src/bg.sh, enclosure/v2c/src/bbox_parts.py,
+              enclosure/v2c/src/mass_v2c.py, enclosure/v2c/src/screwtool_twin.py, enclosure/v2c/src/lugcheck_v2c.py,
+              enclosure/v2c/src/bomcheck_v2c.py, enclosure/v2c/src/cnc_v2c.sh, enclosure/v2c/src/export_boards.ps1]
     trigger: manual
-    reads: ["enclosure/v2b/src/*.py", "hardware/*/*.step"]   # plus Grok's pack copy and vendor STEPs in .claude/tmp (not in git)
-    writes: []                      # STEP/BREP/meta/check.json go to WSL ~/scratch/encl-v2b/runs (not in git)
+    reads: ["enclosure/v2c/src/*.py", "hardware/*/*.kicad_pcb"]   # plus board / vendor STEPs in <repo root>/.claude/cache/enclosure (not in git, see enclosure/v2c/vendor/README.md)
+    writes: []                      # STEP/BREP/meta/check JSON go to WSL ~/scratch/encl-v2c/runs (not in git)
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "tr -d '\015' < enclosure/v2b/src/build_check_all.sh > /tmp/bca.sh && HERE=$PWD/enclosure/v2b/src bash /tmp/bca.sh F1 F2"   # WSL path of the checkout
-    check_cmd: wsl -e bash enclosure/v2b/src/run.sh show_check.py F1
+    run_cmd: wsl -e bash -c "tr -d '\015' < enclosure/v2c/src/build_check_all.sh > /tmp/bca.sh && HERE=$PWD/enclosure/v2c/src bash /tmp/bca.sh F1"   # WSL path of the checkout; board STEPs first: powershell -File enclosure\v2c\src\export_boards.ps1
+    check_cmd: wsl -e bash enclosure/v2c/src/run.sh show_check.py F1
     owner: claude
-  - id: enclosure-v2b-render
-    script: enclosure/v2b/src/render_v2b.py
+  - id: enclosure-v2c-render
+    script: enclosure/v2c/src/render_v2c.py
     trigger: manual
-    reads: ["~/scratch/encl-v2b/runs/*/brep/*.brep"]   # output of enclosure-v2b-build
-    writes: ["docs/diagrams/enclosure-v2b-*.png"]      # illustration only; copied from ~/scratch/encl-v2b/renders
+    reads: ["~/scratch/encl-v2c/runs/*/brep/*.brep"]   # output of enclosure-v2c-build
+    writes: ["docs/diagrams/enclosure-v2c-*.png"]      # illustration only; copied from ~/scratch/encl-v2c/renders
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "CAD_HOME=~/projects/handbuilt-cad RENDER_DIR=~/scratch/encl-v2b/renders bash enclosure/v2b/src/run.sh render_v2b.py F1 iso front"   # views as args
+    run_cmd: wsl -e bash -c "bash enclosure/v2c/src/run.sh render_v2c.py F1 iso front"   # views as args
     owner: claude
   - id: heat-sim
     script: sim/heat/run_cases.py
