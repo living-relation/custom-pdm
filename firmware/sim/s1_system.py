@@ -1,6 +1,7 @@
-"""S1-S6: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
+"""S1-S7: three boards in one box as one PDM. Commissioning, a PC-side 'single PDM' layer on stock
 firmware logic, what outputs do when a CAN link is lost (three policies), thermal protection + fans (S4),
-MCP9808 read failures + wake-up from sleep (S5), and the wake-up input set (S6, Dan B2).
+MCP9808 read failures + wake-up from sleep (S5), the wake-up input set (S6, Dan B2), and per-output link loss
+with a start-up wait and critical outputs, stock params only (S7, Dan w1).
 IDs used here: the factory base IDs, boards 0x500 / 0x540 / 0x580 (pdmsim.py BOARD_*), ECU command frame 0x4F0."""
 import sys, json, struct, pdmsim as ps
 SO = sys.argv[1] if len(sys.argv) > 1 else '/tmp/simout'
@@ -470,6 +471,121 @@ bus2 = ps.Bus(); t2 = ps.Tool(bus2); b2_ = ps.Board(ps.BOARD_A, 'A1', SO, fram=b
 kept = t2.read(base, WI, WS)
 check('wake mask (0x042, IN_2 + IN_7) saved to FRAM and read back after a restart', sv and kept == 0x042, (sv, kept))
 
+# ------------------------------------------------------------------ S7 per-output link loss + start-up wait (Dan w1, 2026-11-16)
+print('--- S7 per-output link loss, start-up wait, critical outputs')
+# Stock params only (no firmware change). Output board Q = A1, source board P = B: P's input 3 (index 2) is bit 2 of P's msg 37.
+# Per source board, shared by all its links on Q:
+#   ALIVE = CAN input on P's msg 37, bit 0, '>= 0' (true for every frame), time-out on (1 s): 1 while P's frames arrive
+#   SEEN  = the same with the time-out off: 0 until P's first frame after Q powers up, then 1 until Q restarts
+#   LOST  = virtual input 'SEEN AND NOT ALIVE' (lower index than the link virtual inputs that use it)
+# Per link: L = CAN input on bit 2, Equal 1, time-out on (off for hold). Output trigger per loss setting:
+#   off = L | hold = L (time-out off) | on = LOST OR L | condition C = (LOST AND C) OR L
+#   critical outputs: NOT ALIVE in place of LOST (no start-up wait). b4_on = today's B4 'On' (slot Equal 0, 'NOT slot OR false').
+P_MSG37 = BASE['B'] + 2 + ps.STATUS_MSG; P_BIT = 2; IGN = 0       # IGN = A1 direct input 1 (index 0), the example condition
+S7 = dict(off=0, hold=1, on=2, on_crit=3, cond=4, cond_crit=5, b4_on=6)   # A1 output index per case
+NONCRIT = ('off', 'hold', 'on', 'cond'); AND, OR, EQ, GE = 0, 1, 0, 4; s7_first_data = []
+def s7_config(lost_vi=0):
+    bq = ps.Bus(); tq = ps.Tool(bq); q = ps.Board(ps.BOARD_A, 'A1', SO, fram=frams['A1']); p = ps.Board(ps.BOARD_B, 'B', SO, fram=frams['B'])
+    bq.add(tq, q, p); bq.run_for(1200)
+    def Wq(index, sub, val):
+        if tq.write(BASE['A1'], index, sub, val) is None: raise RuntimeError(f'S7: no reply A1 {index:#x}/{sub}')
+    def slot(n, bit, op, operand, timeout):
+        for sub, val in [(4, P_MSG37), (5, bit), (6, 1), (7, ps.f32(1.0)), (11, op), (12, ps.f32(operand)), (2, TIMEOUT_MS), (1, int(timeout)), (0, 1)]: Wq(0x1300 + n, sub, val)
+    def virt(n, v0, n0, c0, v1, n1=0, c1=0, v2=0, n2=0):
+        for sub, val in [(1, n0), (2, v0), (3, c0), (4, n1), (5, v1), (6, c1), (7, n2), (8, v2), (0, 1)]: Wq(0x1400 + n, sub, val)
+    def out(o, var):
+        for sub, val in [(2, ps.f32(7.5)), (3, ps.f32(15.0)), (1, var), (0, 1)]: Wq(0x1000 + o, sub, val)
+    Wq(0x1200 + IGN, 0, 1); tq.write(BASE['B'], 0x1200 + P_BIT, 0, 1)
+    slot(0, 0, GE, 0.0, True); slot(1, 0, GE, 0.0, False)
+    ALIVE, SEEN, LOST, IGNV = q.var_canin(0), q.var_canin(1), q.var_virt(lost_vi), q.var_di(IGN)
+    virt(lost_vi, SEEN, 0, AND, ALIVE, 1)
+    L = {k: q.var_canin(2 + o) for k, o in S7.items()}
+    for k, o in S7.items(): slot(2 + o, P_BIT, EQ, 0.0 if k == 'b4_on' else 1.0, k != 'hold')
+    out(S7['off'], L['off']); out(S7['hold'], L['hold'])
+    virt(1, LOST, 0, OR, L['on']); out(S7['on'], q.var_virt(1))
+    virt(2, ALIVE, 1, OR, L['on_crit']); out(S7['on_crit'], q.var_virt(2))
+    virt(3, LOST, 0, AND, IGNV, 0, OR, L['cond']); out(S7['cond'], q.var_virt(3))
+    virt(4, ALIVE, 1, AND, IGNV, 0, OR, L['cond_crit']); out(S7['cond_crit'], q.var_virt(4))
+    virt(5, L['b4_on'], 1, OR, 0); out(S7['b4_on'], q.var_virt(5))
+    ok = tq.burn(BASE['A1']) and tq.burn(BASE['B'])
+    return ok, (q.fram(), p.fram())
+def s7_run(fr, p_bit, ign, p_on_ms, total_ms, loss=None, step=0.5):
+    """Q (A1) and P (B) power up at t = 0; P is off the bus until p_on_ms (None = never) and inside loss = (t_off, t_back).
+    Returns the time of Q's first msg-37 frame from P (ms) and per case a list of [on_ms, off_ms] intervals of the IN pin."""
+    bus = ps.Bus(); ack = ps.PyNode('another node'); q = ps.Board(ps.BOARD_A, 'A1', SO, fram=fr[0]); p = ps.Board(ps.BOARD_B, 'B', SO, fram=fr[1])
+    bus.add(ack, q, p)
+    p.set_input(P_BIT, '12v' if p_bit else 'gnd', 'up'); q.set_input(IGN, '12v' if ign else 'gnd')
+    for o in range(8): q.set_load(o, q.vbat / 4.5)
+    first = []; bus.watch.append(lambda f: first.append(f.t / 1000) if f.id == P_MSG37 and not first else None)
+    s7_first_data.clear(); bus.watch.append(lambda f: s7_first_data.append(f.data) if f.id == P_MSG37 and not s7_first_data else None)
+    pins = {k: q.model['outputs'][o][0] for k, o in S7.items()}; iv = {k: [] for k in S7}
+    while bus.now < total_ms * 1000:
+        t = bus.now / 1000
+        p.connected = p_on_ms is not None and t >= p_on_ms and not (loss and loss[0] <= t < loss[1])
+        bus.run_for(step); t = bus.now / 1000
+        for k, pn in pins.items():
+            lv = q.level(pn)
+            if lv and (not iv[k] or iv[k][-1][1] is not None): iv[k].append([t, None])
+            if not lv and iv[k] and iv[k][-1][1] is None: iv[k][-1][1] = t
+    return (first[0] if first else None), iv
+def on_ms(ivs, t0, t1):                       # ON time inside [t0, t1)
+    return round(sum(max(0, min(b if b is not None else t1, t1) - max(a, t0)) for a, b in ivs), 1)
+def state(ivs, t): return int(any(a <= t and (b is None or b > t) for a, b in ivs))
+def edges(ivs, t0, t1): return sum((t0 <= a < t1) + (b is not None and t0 <= b < t1) for a, b in ivs)
+ok7, fr7 = s7_config()
+check('S7 recipe written over CAN with stock params only (A1: 9 CAN inputs, 6 virtual inputs, 7 outputs) and saved', ok7)
+# (b) start-up: Q's outputs work from about 502 ms after power-up (main waits 500 ms); P (powered since t = 0, inputs
+# steady) stays off the bus until 0.5 s, 1.0 s or 1.5 s (past the 1 s time-out), then sends
+blip = {}
+for p_on in (500, 1000, 1500):
+    for pb in (0, 1):
+        t1st, iv = s7_run(fr7, pb, 1, p_on, p_on + 800)
+        b_ = blip[(p_on, pb)] = {k: on_ms(iv[k], 0, t1st) for k in S7}; after = {k: state(iv[k], p_on + 790) for k in S7}
+        info[f's7_boot_{p_on}_p{pb}'] = dict(first_frame_ms=t1st, on_before_first_ms=b_)
+        crit_ok = p_on == 500 or (b_['on_crit'] > 0 and b_['cond_crit'] > 0 and (pb == 0 or (len(iv['on_crit']) == 1 and len(iv['cond_crit']) == 1)))
+        check(f'start-up, P silent {p_on / 1000} s, P input {"ON" if pb else "OFF"}: non-critical outputs OFF until the first frame (worst blip 0 ms, 0.5 ms steps), '
+              f'then every output follows P{"; critical ones act at once (ON from power-up, no dropout)" if p_on > 500 else ""}',
+              t1st and t1st >= p_on and all(b_[k] == 0 for k in NONCRIT) and all(after[k] == pb for k in S7) and crit_ok, (t1st, b_, after))
+check('reference: today\'s B4 "On" recipe pulses ON before the first frame (the blip this replaces)', blip[(1000, 0)]['b4_on'] > 400, blip[(1000, 0)]['b4_on'])
+# P never appears: non-critical outputs wait (also past the 1 s time-out), critical ones act on their loss setting
+t1st, iv = s7_run(fr7, 1, 1, None, 3000); never = {k: on_ms(iv[k], 0, 3000) for k in S7}; info['s7_never_on_ms'] = never
+check('start-up, P never sends (3 s): non-critical outputs stay OFF throughout; on-critical and condition-critical (ignition on) ON throughout',
+      t1st is None and all(never[k] == 0 for k in NONCRIT) and all(state(iv[k], 2999) == 1 and len(iv[k]) == 1 for k in ('on_crit', 'cond_crit')), never)
+t1st, iv = s7_run(fr7, 1, 0, None, 3000)
+check('start-up, P never sends, ignition off: condition-critical stays OFF, on-critical ON', on_ms(iv['cond_crit'], 0, 3000) == 0 and state(iv['on_crit'], 2999) == 1)
+# both boards power up together (key on): no frame-wait blip either
+t1st, iv = s7_run(fr7, 0, 1, 0, 1500); tog = {k: on_ms(iv[k], 0, 1500) for k in S7}; info['s7_together_first_frame_ms'] = t1st; info['s7_together_on_ms'] = tog
+check('start-up, both boards power up together, P input OFF: non-critical outputs never ON', all(tog[k] == 0 for k in NONCRIT), (t1st, tog))
+# key on with P's input already ON: P's first msg 37 must carry the real input (its first cyclic round is built in InitCan,
+# before the device thread has read any input), else every link sees OFF for one 100 ms period and critical outputs drop out
+t1st, iv = s7_run(fr7, 1, 1, 0, 1500); d1 = s7_first_data[0] if s7_first_data else b''
+info['s7_together_p1'] = dict(first_frame_ms=t1st, first_bits=d1[:2].hex(), on=iv)
+check('key on, both boards together, P input ON: P\'s first msg 37 shows the input ON; critical outputs ON with no dropout; all outputs ON by 120 ms after the first frame',
+      t1st and (d1[0] >> P_BIT) & 1 and all(len(iv[k]) == 1 for k in ('on_crit', 'cond_crit'))
+      and all(state(iv[k], t1st + 120) == 1 and len(iv[k]) == 1 for k in S7), (t1st, d1[:2].hex(), iv))
+# (a) loss after running: P off the bus from 2.0 s to 4.5 s
+LOSS = (2000, 4500); lossres = {}
+for pb in (0, 1):
+    for ig in (0, 1):
+        t1st, iv = s7_run(fr7, pb, ig, 0, 6000, loss=LOSS)
+        bef = {k: state(iv[k], 1990) for k in S7}; dur = {k: state(iv[k], 4400) for k in S7}; back = {k: state(iv[k], 5990) for k in S7}
+        chg = {k: next((round(t - LOSS[0]) for a, b in iv[k] for t in (a, b) if t is not None and LOSS[0] <= t < LOSS[1]), None) for k in S7}
+        nedge = {k: edges(iv[k], LOSS[0], LOSS[1]) for k in S7}
+        want = dict(off=0, hold=pb, on=1, on_crit=1, cond=ig, cond_crit=ig, b4_on=1)
+        lossres[(pb, ig)] = dict(before=bef, during=dur, back=back, change_ms=chg, edges=nedge)
+        check(f'loss, P input {"ON" if pb else "OFF"}, ignition {"ON" if ig else "OFF"}: off / hold / on / condition / critical as set, one clean change at the time-out (no blip), follows P again after',
+              all(bef[k] == pb for k in S7) and dur == want and all(back[k] == pb for k in S7)
+              and all(nedge[k] == int(want[k] != pb) for k in S7) and all(TIMEOUT_MS - 100 <= c <= TIMEOUT_MS + 200 for c in chg.values() if c is not None),
+              dict(during=dur, change_ms={k: v for k, v in chg.items() if v is not None}, edges=nedge))
+info['s7_loss'] = {f'p{a}_ign{b}': v['change_ms'] for (a, b), v in lossres.items()}
+# order rule: LOST must be evaluated before the link virtual inputs that use it (virtual inputs run in index order each cycle)
+ok7m, fr7m = s7_config(lost_vi=7)
+t1st, iv = s7_run(fr7m, 1, 1, 0, 4000, loss=(2000, 4000), step=0.1)
+glitch = [round(b - a, 1) for a, b in [(iv['on'][i][1], iv['on'][i + 1][0]) for i in range(len(iv['on']) - 1)] if a is not None]
+info['s7_lost_after_link_glitch_ms'] = glitch
+check('order rule: with LOST at a higher virtual-input index than the "on" link, the output drops for one cycle at the time-out (so the UI must place LOST lower)',
+      ok7m and len(glitch) == 1 and 0 < glitch[0] < 5, (glitch, iv['on']))
+
 bad = [r for r in res if not r[1]]
-print(f'\nS1-S6: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
+print(f'\nS1-S7: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
 json.dump(dict(checks=res, info=info, matrix=matrix), open('/tmp/s1_results.json', 'w'), indent=1)
