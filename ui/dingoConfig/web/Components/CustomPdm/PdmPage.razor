@@ -40,6 +40,33 @@
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@problem</MudAlert>
         }
 
+        @* p2a: a board connected while the PC holds unsaved edits for it (domain/CustomPdm/PdmAutoRead.cs) *@
+        @foreach (var ask in Pdm.ConnectAsks())
+        {
+            var dev = ask.Device;
+            <MudAlert Severity="Severity.Warning" Class="mb-2" id="@($"connect-ask-{ask.Role}")">
+                <MudText Typo="Typo.body2">
+                    <b>@ask.Role connected.</b>
+                    @(dev.CustomPdm?.FactoryNew == true && !dev.FullReadDone
+                        ? "The PC holds the New PDM settings for it, not written yet."
+                        : "The PC has changes for it that are not on the board yet.")
+                    Which settings do you want?
+                </MudText>
+                <MudStack Row="true" Spacing="2" Class="mt-2">
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
+                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.TakeBoard))">Take the board's (Read All of @ask.Role)</MudButton>
+                </MudStack>
+            </MudAlert>
+        }
+        @if (busy && Pdm.ConnectWaiting() is { Count: > 0 } waiting)
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2">
+                Read on connect of @string.Join(", ", waiting.Select(b => b.Role)) waits until the running @OpName(Pdm.Ops.LastOp) ends.
+            </MudAlert>
+        }
+
         <MudPaper Outlined="true" Class="pa-3 mb-4">
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                 <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.Download"
@@ -52,7 +79,7 @@
                 @if (busy)
                 {
                     <MudProgressCircular Size="Size.Small" Indeterminate="true" />
-                    <MudText Typo="Typo.body2">@OpName(Pdm.Ops.LastOp) running: boards are handled one after another (A1, A2, B). Settings are locked until it ends.</MudText>
+                    <MudText Typo="Typo.body2">@RunName() running: boards are handled one after another (A1, A2, B). Settings are locked until it ends.</MudText>
                 }
             </MudStack>
             @if (!busy && readBlocked != null)
@@ -78,11 +105,12 @@
                 Write All changes the running settings only. Burn is never automatic: it is its own button, it first checks that all
                 three boards hold exactly the PC settings (one mismatch: nothing is burned), and each board answers with its own burn result.
                 Names are kept in the project file only, not on the boards.
+                A board that connects is read by itself (Read on connect); when the PC has changes for it that are not on the board, you are asked first.
             </MudText>
             @if (Pdm.Ops.LastOp != null && results.Count > 0)
             {
                 <MudDivider Class="my-2" />
-                <MudText Typo="Typo.body2"><b>@OpName(Pdm.Ops.LastOp)</b> @(busy ? "(running)" : "(last run)")</MudText>
+                <MudText Typo="Typo.body2"><b>@RunName()</b> @(busy ? "(running)" : "(last run)")</MudText>
                 @foreach (var r in results)
                 {
                     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
@@ -144,6 +172,10 @@
                                     <MudTooltip Text="As of the last config check (after connect, Read All, Write All, or the check before a burn). Edits made on the PC since then are not in it.">
                                         <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Warning">Config Mismatch</MudChip>
                                     </MudTooltip>
+                                }
+                                @if (Pdm.AutoReader.HasEdits(dev))
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Warning">PC changes not written</MudChip>
                                 }
                             </MudStack>
                             <MudText Typo="Typo.body2">
@@ -389,6 +421,9 @@
         PdmOpKind.Burn => "Burn",
         _ => ""
     };
+
+    // p2a: a Read All started by a board that connected (PdmAutoRead)
+    private string RunName() => Pdm.Ops.LastOnConnect ? "Read on connect" : OpName(Pdm.Ops.LastOp);
 
     private static Color ResultColor(PdmStepState state) => state switch
     {
