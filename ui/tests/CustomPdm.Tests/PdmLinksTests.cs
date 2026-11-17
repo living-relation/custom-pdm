@@ -25,7 +25,16 @@ public class PdmLinksTests
     private static void ByHand(FwDevice d, int s, int id = 0x123) => (d.CanInputs[s].Enabled, d.CanInputs[s].Id) = (true, id);
 
     internal static string Text(PdmView v) => string.Join("; ", PdmLinks.Links(v).Select(l =>
-        $"{l.In.Number}->{l.Out.Number} {l.Loss}{(l.Critical ? " critical" : "")}{(l.Cond != 0 ? $" if {l.Cond}" : "")}{(l.OldRecipe ? " old" : "")} {l.Slot} {l.Virt}"));
+        $"{l.In.Number}->{l.Out.Number} {l.Loss}{(l.OldCritical ? " old-critical" : "")}{(l.Cond != 0 ? $" if {l.Cond}" : "")}{(l.OldRecipe && !l.OldCritical ? " old" : "")} {l.Slot} {l.Virt}"));
+
+    // The dropped "critical" recipe as boards written by it hold it: NOT ALIVE in place of LOST in the link's virtual input
+    internal static void OldCritical(PdmView v, int output)
+    {
+        var o = v.Outputs.Single(r => r.Number == output);
+        var l = PdmLinks.LinkOf(v, o)!;
+        var vi = o.Device.VirtualInputs[l.Virt!.Value];
+        (vi.Not0, vi.Var0) = (true, Ci(o.Device, l.Shared!.Alive));
+    }
 
     // The old B4 "on" recipe (before w1), as boards written by it hold it: slot Equal 0 with the time-out on and a
     // virtual input "NOT slot OR false" as the output trigger
@@ -110,7 +119,7 @@ public class PdmLinksTests
         Assert.Equal(before["A2"], Raw(Dev(v, "A2")));
 
         var link = Assert.Single(PdmLinks.Links(v));
-        Assert.Equal((PdmLinkLoss.On, 2, 1, false, false), (link.Loss!.Value, link.Slot!.Value, link.Virt!.Value, link.Critical, link.OldRecipe));
+        Assert.Equal((PdmLinkLoss.On, 2, 1, false, false), (link.Loss!.Value, link.Slot!.Value, link.Virt!.Value, link.OldCritical, link.OldRecipe));
         Assert.Equal("B CAN input 3 + virtual input 2", link.SlotText);
         Assert.Equal("on 1 s after the message stops; off until the first frame", link.LossText);
         var sh = Assert.Single(PdmLinks.Shared(v));
@@ -118,46 +127,70 @@ public class PdmLinksTests
         Assert.Same(sh.Board, link.Shared!.Board);
     }
 
-    // condition = (LOST AND C) OR L; critical = NOT ALIVE in place of LOST
+    // condition = (LOST AND C) OR L, for every output (no critical variant: DECISIONS 2026-11-16)
     [Fact]
-    public void ConditionAndCriticalForms()
+    public void ConditionForm()
     {
         var v = NewPdm();
         var b = Dev(v, "B");
         var ign = Di(b, 0); // B IN1 (input 15)
-        Assert.Null(PdmLinks.Add(v, 1, 17, PdmLinkLoss.Condition, cond: ign));                 // shared 0, 1 / VI 0; L 2 / VI 1
-        Assert.Null(PdmLinks.Add(v, 2, 18, PdmLinkLoss.On, critical: true));                   // L 3 / VI 2
-        Assert.Null(PdmLinks.Add(v, 3, 19, PdmLinkLoss.Condition, critical: true, cond: ign)); // L 4 / VI 3
+        Assert.Null(PdmLinks.Add(v, 1, 17, PdmLinkLoss.Condition, cond: ign)); // shared 0, 1 / VI 0; L 2 / VI 1
+        Assert.Null(PdmLinks.Add(v, 2, 18, PdmLinkLoss.On));                   // L 3 / VI 2
         var c = b.VirtualInputs[1];
         Assert.Equal((true, false, Vi(b, 0), Conditional.And, false, ign, Conditional.Or, false, Ci(b, 2)),
             (c.Enabled, c.Not0, c.Var0, c.Cond0, c.Not1, c.Var1, c.Cond1, c.Not2, c.Var2));
-        var oc = b.VirtualInputs[2];
-        Assert.Equal((true, true, Ci(b, 0), Conditional.Or, false, Ci(b, 3), false, 0), (oc.Enabled, oc.Not0, oc.Var0, oc.Cond0, oc.Not1, oc.Var1, oc.Not2, oc.Var2));
-        var cc = b.VirtualInputs[3];
-        Assert.Equal((true, true, Ci(b, 0), Conditional.And, false, ign, Conditional.Or, false, Ci(b, 4)),
-            (cc.Enabled, cc.Not0, cc.Var0, cc.Cond0, cc.Not1, cc.Var1, cc.Cond1, cc.Not2, cc.Var2));
-        Assert.Equal([Vi(b, 1), Vi(b, 2), Vi(b, 3)], b.Outputs.Take(3).Select(o => o.Input));
-        Assert.Equal($"1->17 Condition if {ign} 2 1; 2->18 On critical 3 2; 3->19 Condition critical if {ign} 4 3", Text(v));
+        var on = b.VirtualInputs[2];
+        Assert.Equal((true, false, Vi(b, 0), Conditional.Or, false, Ci(b, 3), false, 0), (on.Enabled, on.Not0, on.Var0, on.Cond0, on.Not1, on.Var1, on.Not2, on.Var2));
+        Assert.Equal($"1->17 Condition if {ign} 2 1; 2->18 On 3 2", Text(v));
         var l17 = PdmLinks.Links(v)[0];
         Assert.StartsWith("B IN1 (input 15)", l17.CondText);
         Assert.StartsWith("follows B IN1 (input 15)", l17.LossText);
-        Assert.EndsWith("; critical: acts from power-up", PdmLinks.Links(v)[1].LossText);
-        Assert.Single(PdmLinks.Shared(v)); // one ALIVE / SEEN / LOST for all three (source A1)
+        Assert.EndsWith("; off until the first frame", l17.LossText);
+        Assert.Single(PdmLinks.Shared(v)); // one ALIVE / SEEN / LOST for both (source A1)
+        Assert.Empty(PdmLinks.OldLinks(v));
+    }
+
+    // A board read back with the dropped critical recipe (NOT ALIVE in place of LOST: on at power-up before the first
+    // frame) shows "old recipe" and Upgrade makes it the current recipe, mode and condition kept
+    [Fact]
+    public void OldCriticalRecipeIsOfferedForUpgrade()
+    {
+        var v = NewPdm();
+        var b = Dev(v, "B");
+        var ign = Di(b, 0);
+        Assert.Null(PdmLinks.Add(v, 2, 18, PdmLinkLoss.On));
+        Assert.Null(PdmLinks.Add(v, 3, 19, PdmLinkLoss.Condition, cond: ign));
+        var current = Raw(b);
+        OldCritical(v, 18);
+        OldCritical(v, 19);
+        Assert.Equal($"2->18 On old-critical 2 1; 3->19 Condition old-critical if {ign} 3 2", Text(v));
+        Assert.Equal([18, 19], PdmLinks.OldLinks(v).Select(l => l.Out.Number));
+        var l18 = PdmLinks.Links(v)[0];
+        Assert.True(l18.OldRecipe);
+        Assert.Equal("on 1 s after the message stops (old recipe: critical, on at power-up before the first frame)", l18.LossText);
+        Assert.Contains("old recipe: critical, on at power-up before the first frame (Upgrade: off until the first frame)", PdmLinks.Warnings(l18));
+        Assert.EndsWith("(old recipe: critical, acts at power-up before the first frame)", PdmLinks.Links(v)[1].LossText);
+        // the trigger editor shows it as a link (not its own) and asks before replacing it
+        Assert.Equal(PdmTriggerKind.Link, PdmTriggers.Of(PdmModel.Build(v), 18).Kind);
+        Assert.NotNull(PdmTriggers.Conflict(v, 18));
+
+        Assert.Empty(PdmLinks.Upgrade(v));
+        Assert.Empty(PdmLinks.OldLinks(v));
+        Assert.Equal($"2->18 On 2 1; 3->19 Condition if {ign} 3 2", Text(v));
+        Assert.Equal(current, Raw(b)); // exactly what Add makes today
+        Assert.All(new[] { 1, 2 }, k => Assert.False(b.VirtualInputs[k].Not0));
     }
 
     [Fact]
-    public void CriticalOnlyForOnAndConditionAndConditionNeedsAPick()
+    public void ConditionNeedsAPick()
     {
         var v = NewPdm();
         var before = Raw(Dev(v, "B"));
-        const string crit = "Critical changes 'on' and 'condition' only: with 'off' or 'hold' the output is off before the first frame anyway.";
-        Assert.Equal(crit, PdmLinks.Add(v, 1, 21, PdmLinkLoss.Hold, critical: true));
-        Assert.Equal(crit, PdmLinks.Add(v, 1, 21, PdmLinkLoss.Off, critical: true));
         Assert.Equal("Pick the condition for output 21: one of B's inputs or conditions.", PdmLinks.Add(v, 1, 21, PdmLinkLoss.Condition));
         Assert.Equal("Pick the condition for output 21: one of B's inputs or conditions.", PdmLinks.Add(v, 1, 21, PdmLinkLoss.Condition, cond: 9999));
         Assert.Equal(before, Raw(Dev(v, "B")));
         // same board: no CAN message, the mode does not matter
-        Assert.Null(PdmLinks.Add(v, 15, 22, PdmLinkLoss.Hold, critical: true));
+        Assert.Null(PdmLinks.Add(v, 15, 22, PdmLinkLoss.Hold));
         Assert.Equal("15->22   ", Text(v));
     }
 
@@ -215,9 +248,9 @@ public class PdmLinksTests
         Assert.Equal("virtualInput1", b.VirtualInputs[0].Name);
     }
 
-    // LOST must run before every non-critical link virtual input that uses it (else a 2.2 ms drop at the time-out, S7)
+    // LOST must run before every link virtual input that uses it (else a 2.2 ms drop at the time-out, S7)
     [Fact]
-    public void LostRunsBeforeEveryNonCriticalLinkVirtualInput()
+    public void LostRunsBeforeEveryLinkVirtualInput()
     {
         var v = NewPdm();
         var b = Dev(v, "B");
@@ -226,18 +259,17 @@ public class PdmLinksTests
         Assert.Null(PdmLinks.Add(v, 1, 17, PdmLinkLoss.On));     // LOST 2, link 3
         b.VirtualInputs[0].Enabled = false;                      // freed by hand: below LOST
         Assert.Null(PdmLinks.Add(v, 2, 18, PdmLinkLoss.On));     // 4, not 0
-        Assert.Null(PdmLinks.Add(v, 3, 19, PdmLinkLoss.On, critical: true)); // NOT ALIVE: no order rule -> 0
-        Assert.Equal([3, 4, 0], PdmLinks.Links(v).Select(l => l.Virt!.Value));
+        Assert.Equal([3, 4], PdmLinks.Links(v).Select(l => l.Virt!.Value));
         Assert.Equal(2, PdmLinks.Shared(v).Single().Lost);
         Assert.All(PdmLinks.Links(v), l => Assert.DoesNotContain(PdmLinks.Warnings(l), w => w.Contains("runs before")));
         for (var k = 5; k < 14; k++) b.VirtualInputs[k].Enabled = true;
         b.VirtualInputs[1].Enabled = false;                      // the only free one is below LOST
         var before = Raw(b);
-        Assert.Equal("B has no free virtual input after the shared 'A1 lost' (virtual input 3), which a non-critical 'on' link must run after: " +
-                     "free one above it, mark the output critical, or choose 'off' / 'hold'.", PdmLinks.Add(v, 4, 20, PdmLinkLoss.On));
+        Assert.Equal("B has no free virtual input after the shared 'A1 lost' (virtual input 3), which a 'on' link must run after: " +
+                     "free one above it, or choose 'off' / 'hold'.", PdmLinks.Add(v, 4, 20, PdmLinkLoss.On));
         Assert.Equal(before, Raw(b)); // nothing half made
-        Assert.Null(PdmLinks.Add(v, 4, 20, PdmLinkLoss.On, critical: true));
-        Assert.Equal(1, PdmLinks.LinkOf(v, v.Outputs.Single(o => o.Number == 20))!.Virt);
+        Assert.Null(PdmLinks.Add(v, 4, 20, PdmLinkLoss.Off)); // needs no virtual input
+        Assert.Null(PdmLinks.LinkOf(v, v.Outputs.Single(o => o.Number == 20))!.Virt);
 
         // a link virtual input below LOST (made by hand / another tool) is still ours, with a warning
         var v2 = NewPdm();
@@ -262,9 +294,9 @@ public class PdmLinksTests
         Assert.Null(PdmLinks.Add(v, 24, 3, PdmLinkLoss.Hold)); // B IN10 (bit 9, byte 1) -> A1 OUT3
         Assert.Null(PdmLinks.Add(v, 9, 12, PdmLinkLoss.On));   // A2 IN2 -> A2 OUT4: same board
         Assert.Null(PdmLinks.Add(v, 15, 13, PdmLinkLoss.On));  // B IN1 -> A2 OUT5
-        Assert.Null(PdmLinks.Add(v, 16, 14, PdmLinkLoss.On, critical: true));
+        Assert.Null(PdmLinks.Add(v, 16, 14, PdmLinkLoss.On));
         Assert.Null(PdmLinks.Add(v, 17, 15, PdmLinkLoss.Condition, cond: Di(a2, 0)));
-        Assert.Null(PdmLinks.Add(v, 18, 16, PdmLinkLoss.Condition, critical: true, cond: PdmFactoryDefaults.VarOf(a2, a2.Conditions[0])));
+        Assert.Null(PdmLinks.Add(v, 18, 16, PdmLinkLoss.Condition, cond: PdmFactoryDefaults.VarOf(a2, a2.Conditions[0])));
         OldOn(v, 2, 22, 5, 5); // an old B4 'on' link on B
         // a fresh PC (no names, no project file) that only got the param values, as after Read All
         var fresh = v.Boards.Select(b =>
@@ -274,8 +306,8 @@ public class PdmLinksTests
             return d;
         }).ToList();
         var v2 = PdmView.Build(fresh);
-        Assert.Equal($"24->3 Hold 0 ; 9->12   ; 15->13 On 2 1; 16->14 On critical 3 2; 17->15 Condition if {Di(a2, 0)} 4 3; " +
-                     $"18->16 Condition critical if {PdmFactoryDefaults.VarOf(a2, a2.Conditions[0])} 5 4; 1->21 Off 0 ; 2->22 On old 5 5", Text(v2));
+        Assert.Equal($"24->3 Hold 0 ; 9->12   ; 15->13 On 2 1; 16->14 On 3 2; 17->15 Condition if {Di(a2, 0)} 4 3; " +
+                     $"18->16 Condition if {PdmFactoryDefaults.VarOf(a2, a2.Conditions[0])} 5 4; 1->21 Off 0 ; 2->22 On old 5 5", Text(v2));
         Assert.Equal(Text(v), Text(v2));
         Assert.Equal(9, Dev(v2, "A1").CanInputs[0].StartBit);
         Assert.Equal(0x5A7, Dev(v2, "A1").CanInputs[0].Id);
@@ -312,10 +344,10 @@ public class PdmLinksTests
         Assert.Equal("1->21 On 2 1", Text(v));
         Assert.Null(PdmLinks.SetMode(v, 21, PdmLinkLoss.Condition, cond: ign));
         Assert.Equal($"1->21 Condition if {ign} 2 1", Text(v)); // the shared ones kept
-        Assert.Null(PdmLinks.SetMode(v, 21, PdmLinkLoss.On, critical: true));
-        Assert.Equal("1->21 On critical 2 1", Text(v));
+        Assert.Null(PdmLinks.SetMode(v, 21, PdmLinkLoss.On));
+        Assert.Equal("1->21 On 2 1", Text(v));
         Assert.Null(PdmLinks.SetInput(v, 21, 3));               // another source input, the mode kept
-        Assert.Equal("3->21 On critical 2 1", Text(v));
+        Assert.Equal("3->21 On 2 1", Text(v));
         Assert.Null(PdmLinks.SetInput(v, 21, 15));              // B IN1: same board now
         Assert.Equal("15->21   ", Text(v));
         Assert.Empty(PdmLinks.Shared(v));
@@ -498,7 +530,7 @@ public class PdmLinksTests
 
         Assert.Empty(PdmLinks.Upgrade(v));
         Assert.Empty(PdmLinks.OldLinks(v));
-        Assert.Equal(["1->21 On", "2->22 On", "3->23 Off"], PdmLinks.Links(v).Select(l => $"{l.In.Number}->{l.Out.Number} {l.Loss}{(l.OldRecipe ? " old" : "")}{(l.Critical ? " critical" : "")}"));
+        Assert.Equal(["1->21 On", "2->22 On", "3->23 Off"], PdmLinks.Links(v).Select(l => $"{l.In.Number}->{l.Out.Number} {l.Loss}{(l.OldRecipe ? " old" : "")}{(l.OldCritical ? " critical" : "")}"));
         var sh = PdmLinks.Shared(v).Single();
         Assert.All(PdmLinks.Links(v).Where(l => l.Virt != null), l => Assert.True(l.Virt > sh.Lost));
         Assert.DoesNotContain(b.CanInputs, c => c is { Operator: Operator.Equal, Operand: 0.0, Enabled: true }); // no Equal 0 slot left
