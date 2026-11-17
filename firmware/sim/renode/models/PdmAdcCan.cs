@@ -42,9 +42,37 @@ namespace Antmicro.Renode.Peripherals.Analog
             timer = new LimitTimer(machine.ClockSource, pclk2 / 2, this, "scanClock", limit: 100, direction: Direction.Ascending,
                 enabled: false, workMode: WorkMode.OneShot, eventEnabled: true, autoUpdate: false);
             timer.LimitReached += OnScan;
+            probe = new LimitTimer(machine.ClockSource, 1000000, this, "edgeProbe", limit: 10, direction: Direction.Ascending,
+                enabled: false, workMode: WorkMode.Periodic, eventEnabled: true, autoUpdate: false);
+            probe.LimitReached += OnProbe;
             Vbat = 13.8; Vdda = 3.3; DieTemperature = 30.0; SenseClamp = 3.3; SenseResistor = 1200.0;
             Reset();
         }
+
+        // ---- pin edge probe (tach output timing): samples one pin every periodUs of virtual time, keeps its edges ----
+        public void ProbeStart(string pin, uint periodUs)
+        {
+            lock(sync)
+            {
+                probe.Enabled = false; probePin = Pin(pin); probeStep = Math.Max(1u, periodUs); probeUs = 0; probeEdges.Clear();
+                probeLast = Level(probePin); probe.Limit = probeStep; probe.ResetValue(); probe.Enabled = true;
+            }
+        }
+        public void ProbeStop() { lock(sync) { probe.Enabled = false; } }
+        // "t_us:level;..." since ProbeStart, t counted from the start
+        public string ProbeEdges() { lock(sync) { return string.Join(";", probeEdges.Select(e => e.Key + ":" + (e.Value ? 1 : 0))); } }
+        private void OnProbe()
+        {
+            lock(sync)
+            {
+                probeUs += probeStep; var l = Level(probePin);
+                if(l != probeLast && probeEdges.Count < 100000) probeEdges.Add(new KeyValuePair<ulong, bool>(probeUs, l));
+                probeLast = l;
+            }
+        }
+        private readonly LimitTimer probe;
+        private readonly List<KeyValuePair<ulong, bool>> probeEdges = new List<KeyValuePair<ulong, bool>>();
+        private int probePin; private uint probeStep; private ulong probeUs; private bool probeLast;
 
         public void Reset()
         {

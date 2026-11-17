@@ -41,7 +41,11 @@
 #include "lookup_table.h" // custom-pdm (T1)
 #endif
 
-#if PRO_FEATURES
+#if PRO_FEATURES && PWM_FREQ_INPUT
+// custom-pdm: 0x040A = 0x030A + PWM frequency from a variable (tach-style output: Config_PwmOutput fields at the
+// end of the struct, param block 0x7C00 + output). A FRAM holding 0x030A falls back to the defaults.
+#define CONFIG_VERSION 0x040A //custom-pdm: + PWM frequency input
+#elif PRO_FEATURES
 // custom-pdm: 0x030A = 0x020A + master retry input (Config_Device), output protection extras (Config_OutputExt) and
 // lookup tables (Config_Table), all at the end of their structs. A FRAM holding 0x020A falls back to the defaults.
 #define CONFIG_VERSION 0x030A //custom-pdm: + P1 trip time, P2 min current, P3 master retry, T1 tables

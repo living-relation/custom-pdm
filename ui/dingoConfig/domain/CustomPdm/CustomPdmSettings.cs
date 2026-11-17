@@ -43,6 +43,11 @@ public class CustomPdmSettings
     // var map size of this device (FwDevice.InitVarMap): range of the var-index settings
     [JsonIgnore] public int VarMapSize { get; set; }
 
+    // PWM frequency from a variable (tach-style output), one per output: firmware block 0x7C00 + output
+    // (core/param_defs.h OUTPUT_FREQ_PARAMS), listed after the PRO_FEATURES blocks (param_registry.cpp stParams).
+    [JsonIgnore] public const int FreqBaseIndex = 0x7C00;
+    [JsonPropertyName("pwmFreqInputs")] public List<PwmFreqInput> PwmFreqInputs { get; set; } = [];
+
     // B3 (u2a): the PC values were set by "New PDM" (PdmFactoryDefaults) = our firmware's factory config, proven equal
     // against the sim. Not saved: a project loaded from a file counts as not read.
     [JsonIgnore] public bool FactoryNew { get; set; }
@@ -72,6 +77,8 @@ public class CustomPdmSettings
         while (Tables.Count < NumTables) Tables.Add(new LookupTable());
         if (Tables.Count > NumTables) Tables.RemoveRange(NumTables, Tables.Count - NumTables);
         foreach (var t in Tables) t.Normalize();
+        while (PwmFreqInputs.Count < NumOutputs) PwmFreqInputs.Add(new PwmFreqInput());
+        if (PwmFreqInputs.Count > NumOutputs) PwmFreqInputs.RemoveRange(NumOutputs, PwmFreqInputs.Count - NumOutputs);
     }
 
     public void ClearStatus()
@@ -91,7 +98,8 @@ public class CustomPdmSettings
         Param(parentName, "customPdm.wakeInputMask", 5, () => WakeInputMask, v => WakeInputMask = v, DefaultWakeInputMask),
         Param(parentName, "customPdm.masterRetryInput", MasterRetrySub, () => MasterRetryInput, v => MasterRetryInput = v, 0),
         ..OutputProtection.SelectMany((o, i) => o.GetParams(parentName, i)),
-        ..Tables.SelectMany((t, i) => t.GetParams(parentName, i))
+        ..Tables.SelectMany((t, i) => t.GetParams(parentName, i)),
+        .. PwmFreqInputs.SelectMany((f, i) => f.GetParams(parentName, FreqBaseIndex + i, i + 1))
     ];
 
     // Var map entries the firmware appends at the very end (port.h VAR_MAP_PRO_VARS, core/device.cpp InitVarMap):
@@ -166,7 +174,8 @@ public class CustomPdmSettings
         WakeInputMask >= 0 && WakeInputMask <= WakeInputMaskMax && WakeInputMaskBadBits(DeviceType, WakeInputMask) == 0 &&
         MasterRetryInput >= 0 && (VarMapSize == 0 || MasterRetryInput < VarMapSize) &&
         OutputProtection.Count == NumOutputs && OutputProtection.All(o => o.IsValid()) &&
-        Tables.Count == NumTables && Tables.All(t => t.IsValid(VarMapSize));
+        Tables.Count == NumTables && Tables.All(t => t.IsValid(VarMapSize)) &&
+        PwmFreqInputs.Count == NumOutputs && PwmFreqInputs.All(f => f.IsValid() && f.Input >= 0 && (VarMapSize == 0 || f.Input < VarMapSize));
 
     // Reset-limit wording (docs/feature-parity.md row 29): our reset limit counts every trip, the first one included
     public static string ResetLimitText(int limit) =>

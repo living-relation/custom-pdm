@@ -26,6 +26,10 @@ const ParamInfo stParams[] = {
     ALL_OUTPUT_EXT_PARAMS,
     ALL_TABLE_PARAMS,
     #endif
+    #if PWM_FREQ_INPUT
+    // custom-pdm: PWM frequency from a variable (0x7C00 + output), after the PRO_FEATURES blocks
+    ALL_OUTPUT_FREQ_PARAMS,
+    #endif
 
     // Outputs (0x1000+)
     #if NUM_OUTPUTS > 0
