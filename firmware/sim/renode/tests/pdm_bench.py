@@ -131,7 +131,8 @@ class pdm_bench:
 
     def fresh_boards_wrote_default_config_to_fram(s):
         w = {k: s._fram_written(k) for k in BASE}; s.fram_w = w
-        s._check(all(4000 < v < 5000 for v in w.values()), f'FRAM bytes written at first start {w}')
+        # config + CRC: about 5.2 kB since PRO_FEATURES (s0 prints the exact size), must fit the 8 KB FRAM
+        s._check(all(5000 < v <= 8192 for v in w.values()), f'FRAM bytes written at first start {w}')
 
     def power_cycle_keeps_ids_and_config(s):
         s._power_cycle(*BASE)
@@ -308,6 +309,22 @@ class pdm_bench:
         s._check(len(rises) == 3 and len(falls) == 3 and all(900 <= x <= 1150 for x in on_ms), f'ON pulses at ms {rises}, lengths {on_ms}, edges {edges}')
         s._check(final == 3 and 2 in states and still == 3 and pin_after == 0, f'status states seen {states}, final {final} (3 = Fault), with a normal load still {still}, pin {pin_after}')
         s._check(g in p and again == 1, f'after a power cycle: pins {p}, state {again}')
+
+    # ------------------------------------------------------------------ P1 overcurrent trip time (factory 50 ms, core/param_defs.h DEFAULT_OUT_TRIP_TIME)
+    def overcurrent_trip_time_rides_through_a_spike_and_trips_a_held_overload(s):
+        g = 5; k, o = s.OUT[g]; s._load(g, s.LIMIT[g] * 0.6)
+        trip = s._read1(BASE[k], 0x7D00 + o, 0)
+        s._set_cmd([g]); s._run(1500)                          # past the 1 s inrush window
+        on_before = g in s._pins_on()
+        s._load(g, 10.0); s._run(20); s._load(g, s.LIMIT[g] * 0.6); s._run(200)
+        after_spike = g in s._pins_on()
+        s._load(g, 10.0); t = 0
+        while g in s._pins_on() and t < 200: s._run(2); t += 2
+        tripped_at = t; st = s._status(k, (3,)).out_state(o)
+        s._load(g, s.LIMIT[g] * 0.6); s._run(1300); back = g in s._pins_on()
+        s._set_cmd([]); s._run(300)
+        s._check(trip == 50 and on_before and after_spike, f'trip time {trip} ms; on before {on_before}; still on after a 20 ms 10 A spike {after_spike}')
+        s._check(50 <= tripped_at <= 60 and back, f'10 A held: IN low after {tripped_at} ms (want 50-60, 2 ms steps); retried and on again 1 s later {back}; state seen {st}')
 
     # ------------------------------------------------------------------ temperature sensor (I2C)
     def board_temperature_reaches_the_status_frame(s):
