@@ -11,6 +11,7 @@
 #include "usb.h"
 #include <ucontext.h>
 #include <vector>
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -159,7 +160,16 @@ static Pin *pins()
 }
 static Pin &pin(ioline_t l) { return pins()[((l >> 4) & 7) * 16 + (l & 15)]; }
 static uint32_t badWrites = 0, floatReads = 0; static ioline_t lastBadWrite = 0, lastFloatRead = 0;
-static void wr(ioline_t l, int v) { Pin &p = pin(l); if (p.mode != 1) { badWrites++; lastBadWrite = l; } p.odr = v ? 1 : 0; }
+// Edge log for pin-level timing (sim_watch_pins / sim_edges): every change of a watched output line, in us
+struct EdgeRec { uint64_t t; int idx; int level; };
+static std::vector<ioline_t> watchLines; static std::vector<EdgeRec> edgeLog;
+static void wr(ioline_t l, int v)
+{
+    Pin &p = pin(l); if (p.mode != 1) { badWrites++; lastBadWrite = l; }
+    int before = p.odr; p.odr = v ? 1 : 0;
+    if (before != p.odr && edgeLog.size() < 1000000)
+        for (size_t i = 0; i < watchLines.size(); i++) if (watchLines[i] == l) edgeLog.push_back({nowUs, (int)i, p.odr});
+}
 void palSetLine(ioline_t l) { wr(l, 1); }
 void palClearLine(ioline_t l) { wr(l, 0); }
 void palToggleLine(ioline_t l) { wr(l, !pin(l).odr); }
@@ -269,20 +279,57 @@ msg_t canReceiveTimeout(CANDriver *, int, CANRxFrame *f, sysinterval_t timeout)
 PWMDriver PWMD1, PWMD2, PWMD3, PWMD4, PWMD5, PWMD8, PWMD9, PWMD10, PWMD11, PWMD12, PWMD13, PWMD14;
 static PWMDriver *allPwm[] = {&PWMD1, &PWMD2, &PWMD3, &PWMD4, &PWMD5, &PWMD8, &PWMD9, &PWMD10, &PWMD11, &PWMD12, &PWMD13, &PWMD14};
 static uint64_t cntToUs(PWMDriver *p, uint64_t cnt) { return cnt * 1000000ULL / p->config->frequency; }
+// Counts per period the timer really runs for a ChibiOS period value: ARR = period - 1, cut to the timer's width.
+// STM32F446 (RM0390 sections 17-19): TIM2 / TIM5 have 32-bit counters, the other timers 16-bit, so a period above
+// 65536 on a 16-bit timer runs short (ARR keeps the low 16 bits), as the real register does.
+static uint32_t pwmTimerPeriod(PWMDriver *p, pwmcnt_t period)
+{
+    uint32_t mask = (p == &PWMD2 || p == &PWMD5) ? 0xFFFFFFFFU : 0xFFFFU;
+    return ((uint32_t)(period - 1) & mask) + 1;
+}
+// ARR and CCR1 preload (ChibiOS pwm_lld_start sets CR1.ARPE and CCMR1.OC1PE): a period or compare value written
+// while the timer runs is taken at the next update event (end of the running period), so a running period is never
+// cut short and a duty change starts with a new period. Each write remembers the update event it waits for.
+static uint64_t pwmNextUpdate(PWMDriver *p, uint64_t at)
+{
+    uint64_t perUs = cntToUs(p, p->actPer);
+    return perUs ? p->t0 + ((at - p->t0) / perUs + 1) * perUs : at;
+}
+static void pwmCatchUp(PWMDriver *p, uint64_t at)
+{
+    if (p->state != PWM_READY) return;
+    if (p->pendPer && at >= p->pendAt) { p->t0 = p->pendAt; p->actPer = p->pendPer; p->pendPer = 0; }
+    if (p->pendCcr && at >= p->ccrAt) { p->actCcr = p->tim->CCR[0]; p->pendCcr = false; }
+}
 static void pwmSync(PWMDriver *p)
 {
     if (p->state != PWM_READY) return;
+    pwmCatchUp(p, nowUs);
     uint64_t c = (nowUs - p->t0) * p->config->frequency / 1000000ULL;
-    p->tim->CNT = (uint32_t)(c % p->period);
+    p->tim->CNT = (uint32_t)(c % p->actPer);
 }
 msg_t pwmStart(PWMDriver *p, const PWMConfig *cfg)
 {
+    // pwm_lld_start loads ARR / CCR with an update event (EGR.UG): the start values are in use at once
     p->tim = &p->simTim; p->config = cfg; p->period = cfg->period; p->state = PWM_READY; p->t0 = nowUs; p->enabled = 0;
+    p->actPer = pwmTimerPeriod(p, cfg->period); p->pendPer = 0; p->tim->CCR[0] = 0; p->actCcr = 0; p->pendCcr = false;
     p->periodicNotify = false; p->chNotify = 0; return MSG_OK;
 }
-void pwmChangePeriod(PWMDriver *p, pwmcnt_t period) { p->period = period; p->t0 = nowUs; }
-void pwmEnableChannel(PWMDriver *p, uint8_t ch, pwmcnt_t width) { p->enabled |= 1U << ch; p->tim->CCR[ch] = width; }
-void pwmDisableChannel(PWMDriver *p, uint8_t ch) { if (p->state != PWM_READY) return; p->enabled &= ~(1U << ch); p->tim->CCR[ch] = 0; p->chNotify &= ~(1U << ch); }
+void pwmChangePeriod(PWMDriver *p, pwmcnt_t period)
+{
+    // ChibiOS: pwmp->period = period at once (PWM_PERCENTAGE_TO_WIDTH uses it); the timer takes ARR at the next update
+    pwmCatchUp(p, nowUs);
+    p->period = period; p->pendPer = pwmTimerPeriod(p, period); p->pendAt = pwmNextUpdate(p, nowUs);
+    if (p->pendPer == p->actPer) p->pendPer = 0;
+}
+static void pwmWriteCcr(PWMDriver *p, uint8_t ch, pwmcnt_t width)
+{
+    pwmCatchUp(p, nowUs);
+    p->tim->CCR[ch] = width;
+    if (ch == 0) { p->pendCcr = true; p->ccrAt = pwmNextUpdate(p, nowUs); }
+}
+void pwmEnableChannel(PWMDriver *p, uint8_t ch, pwmcnt_t width) { p->enabled |= 1U << ch; pwmWriteCcr(p, ch, width); }
+void pwmDisableChannel(PWMDriver *p, uint8_t ch) { if (p->state != PWM_READY) return; p->enabled &= ~(1U << ch); pwmWriteCcr(p, ch, 0); p->chNotify &= ~(1U << ch); }
 void pwmEnablePeriodicNotification(PWMDriver *p) { p->periodicNotify = true; }
 void pwmDisablePeriodicNotification(PWMDriver *p) { p->periodicNotify = false; }
 void pwmEnableChannelNotification(PWMDriver *p, uint8_t ch) { p->chNotify |= 1U << ch; }
@@ -291,14 +338,18 @@ void pwmDisableChannelNotification(PWMDriver *p, uint8_t ch) { p->chNotify &= ~(
 static uint64_t pwmNextEvent(PWMDriver *p, uint64_t from, int *kind)
 {
     if (p->state != PWM_READY || (!p->periodicNotify && !p->chNotify)) return UINT64_MAX;
-    uint64_t perUs = cntToUs(p, p->period); if (perUs == 0) return UINT64_MAX;
+    pwmCatchUp(p, from);
+    uint64_t perUs = cntToUs(p, p->actPer); if (perUs == 0) return UINT64_MAX;
     uint64_t k = (from - p->t0) / perUs; uint64_t best = UINT64_MAX;
     for (uint64_t n = k; n <= k + 1; n++)
     {
         uint64_t start = p->t0 + n * perUs;
+        // pending values (preload) are in use from their update event on (= the period start k + 1)
+        uint32_t per = (p->pendPer && start >= p->pendAt) ? p->pendPer : p->actPer;
+        uint32_t ccr = (p->pendCcr && start >= p->ccrAt) ? p->tim->CCR[0] : p->actCcr;
         if (p->periodicNotify && start > from && start < best) { best = start; *kind = 0; }
-        uint64_t cmp = start + cntToUs(p, p->tim->CCR[0]);
-        if ((p->chNotify & 1) && p->tim->CCR[0] < p->period && cmp > from && cmp < best) { best = cmp; *kind = 1; }
+        uint64_t cmp = start + cntToUs(p, ccr);
+        if ((p->chNotify & 1) && ccr < per && cmp > from && cmp < best) { best = cmp; *kind = 1; }
     }
     return best;
 }
@@ -469,6 +520,14 @@ API void sim_set_ext(int port, int pad, int state)
     if (pins()[port * 16 + pad].event && lineCb[port][pad] && level(l, false) != before) lineCb[port][pad](lineCbArg[port][pad]);
 }
 API int sim_get_level(int port, int pad) { return level(PAL_LINE(port, pad), false); }
+// pin-level timing: watch up to n output lines (port << 4 | pad), then read and clear their edges (us, index, level)
+API void sim_watch_pins(int n, const int *lines) { watchLines.assign(lines, lines + n); edgeLog.clear(); }
+API int sim_edges(uint64_t *t, int *idx, int *lv, int max)
+{
+    int n = (int)std::min(edgeLog.size(), (size_t)max);
+    for (int i = 0; i < n; i++) { t[i] = edgeLog[i].t; idx[i] = edgeLog[i].idx; lv[i] = edgeLog[i].level; }
+    edgeLog.erase(edgeLog.begin(), edgeLog.begin() + n); return n;
+}
 API int sim_pin_info(int port, int pad) { Pin &p = pins()[port * 16 + pad]; return p.mode | (p.pupd << 2) | (p.odr << 4) | (p.af << 8) | (p.event << 12); }
 API void sim_set_pin_volts(int port, int pad, float v) { pinVolts[port][pad] = v; }
 API void sim_set_env(float vbat_, float boardTemp, float dieTemp) { vbat = vbat_; boardTempC = boardTemp; dieTempC = dieTemp; }

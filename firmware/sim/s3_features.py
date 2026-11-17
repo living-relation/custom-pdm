@@ -571,6 +571,122 @@ r.W(0x0000, 8, v.can(0)); r.run(200); awake = not r.b.flags()['asleep']
 r.sw(0, 1); r.run(300)
 check('force-sleep input (0x0000 sub 8 = a CAN bit, e.g. ignition off from the ECU): board stays awake while 0, sleeps once it is 1', awake and r.b.flags()['asleep'], r.b.flags())
 
+# ====================================================================== F16 tach-style output: frequency follows a CAN value
+print('--- F16 tach output (frequency from a CAN value)')
+# Vendors: Link "Tacho" aux output (multiplier 1 = 1 pulse per ignition event, 50 % duty), Haltech tachometer output
+# (pulses per engine cycle = cylinders), Adaptronic (4 cyl = 2 pulses / rev, 8 cyl = 4); sources in docs/feature-parity.md.
+# Here the ECU sends RPM on CAN and the PDM makes a 50 % square wave of RPM x pulses per rev / 60 Hz on a PROFET output.
+TACH = 0x7C00   # custom block 0x7C00 + output (core/param_defs.h OUTPUT_FREQ_PARAMS): sub 0 on, 1 input var, 2 factor
+                # (Hz per input unit = pulses per rev / 60 for RPM), 3 minimum Hz (below: no pulses, output low), 4 maximum Hz
+def tach(r, o, ppr, fmin=None, fmax=None, var=None):
+    r.W(TACH + o, 1, r.v.canval(8) if var is None else var); r.W(TACH + o, 2, float(ppr / 60.0))
+    if fmin is not None: r.W(TACH + o, 3, fmin)
+    if fmax is not None: r.W(TACH + o, 4, fmax)
+    r.W(TACH + o, 0, 1)
+def wave(r, outs, ms):
+    """Edges of the output pins over the next ms: one [(t_ms, level)] list per output (sim pin log, exact to 1 us)."""
+    r.b.watch(*[r.b.model['outputs'][o][0] for o in outs]); r.run(ms); e = r.b.edges()
+    return [[(t / 1000.0, l) for t, i, l in e if i == k] for k in range(len(outs))]
+def periods(ed):
+    """[(rise t_ms, period ms, high ms)] for each full period (rise to rise) in an edge list."""
+    rises = [t for t, l in ed if l == 1]; out = []
+    for a, b in zip(rises, rises[1:]):
+        f = [t for t, l in ed if l == 0 and a < t < b]
+        out.append((a, round(b - a, 4), round(f[0] - a, 4) if f else None))
+    return out
+def hz(ed):
+    """(frequency Hz, duty %) over the full periods of an edge list, or (None, None) with under 2 periods."""
+    p = periods(ed)
+    if len(p) < 2 or any(x[2] is None for x in p): return None, None
+    return round(1000.0 * len(p) / sum(x[1] for x in p), 2), round(100.0 * sum(x[2] for x in p) / sum(x[1] for x in p), 2)
+def near(f, want, pct): return f is not None and abs(f - want) <= want * pct / 100.0
+r = Rig(); v = r.v; value(r, 8, 0)                         # RPM: bytes 0-1 of 0x4F1, unsigned, x1 (ECU stand-in, every 10 ms)
+for o in (0, 1): output(r, o, v.TRUE); pwm(r, o, duty=50, freq=100)
+present = r.tool.read(r.base, TACH, 0) is not None
+dflt = tuple(r.tool.read(r.base, TACH, s) for s in range(5)) if present else None
+check('tach params 0x7C00 + output: defaults off, input 0, factor 1.0 Hz per unit, minimum 16 Hz, maximum 1000 Hz',
+      dflt == (0, 0, ps.f32(1.0), 16, 1000), dflt if present else 'no param block 0x7C00 in this firmware')
+refused = present and all(r.tool.write(r.base, TACH, s, val) is None for s, val in [(3, 15), (4, 1001), (2, ps.f32(-1.0))])
+check('tach params refuse a minimum below 16 Hz (16-bit timer at 1 MHz: 65536 counts = 15.3 Hz), a maximum above 1000 Hz, a negative factor',
+      refused)
+got4 = {}; got8 = {}
+if present:
+    tach(r, 0, 2); tach(r, 1, 4)                           # OUT1: 4-cylinder tach (2 pulses / rev); OUT2: 8-cylinder (4 pulses / rev)
+    for rpm in (600, 3000, 6000, 7500, 9000):
+        r.val16(0, rpm); r.run(80); w = wave(r, [0, 1], 320)
+        got4[rpm] = hz(w[0]); got8[rpm] = hz(w[1])
+ok4 = present and all(near(got4[x][0], x * 2 / 60, 0.2) and abs(got4[x][1] - 50) <= 0.5 for x in got4)
+ok8 = present and all(near(got8[x][0], min(x * 4 / 60, 1000), 0.2) and abs(got8[x][1] - 50) <= 0.5 for x in got8)
+check('tach 4 cylinder (2 pulses / rev, 50 % duty) from CAN RPM: 600 -> 20 Hz, 3000 -> 100, 6000 -> 200, 7500 -> 250, 9000 -> 300 Hz (within 0.2 %, duty 50 +-0.5 %)',
+      ok4, got4)
+check('tach 8 cylinder (4 pulses / rev) on a second output at the same time, own timer: 600 -> 40 Hz ... 7500 -> 500, 9000 -> 600 Hz (above the 400 Hz fixed-frequency limit)',
+      ok8, got8)
+info['tach_4cyl_hz_duty'] = got4; info['tach_8cyl_hz_duty'] = got8
+# engine stopped / below the minimum: no pulses, output low (a gauge reads 0); pulses come back with RPM
+off = None
+if present:
+    seq = []
+    for rpm in (0, 400, 600):                              # 0 Hz, 13.3 Hz (below 16), 20 Hz
+        r.val16(0, rpm); r.run(80); w = wave(r, [0], 300)[0]; seq.append((rpm, len(w), r.pin(0), hz(w)[0]))
+    off = seq
+check('tach below its minimum (16 Hz): RPM 0 and 400 (13.3 Hz) give no pulses and a low output; 600 RPM gives 20 Hz again',
+      off is not None and off[0][1:3] == (0, 0) and off[1][1:3] == (0, 0) and near(off[2][3], 20, 0.2), off)
+# clamp at the maximum
+clamp = None
+if present:
+    r.W(TACH, 4, 250); r.val16(0, 9000); r.run(80); clamp = hz(wave(r, [0], 100)[0]); r.W(TACH, 4, 1000)
+check('tach maximum (sub 4 = 250 Hz): 9000 RPM (300 Hz) is held at 250 Hz', clamp is not None and near(clamp[0], 250, 0.2), clamp)
+# step response: 3000 -> 6000 RPM (100 -> 200 Hz). Budget: ECU frame period 10 ms + one 2 ms logic cycle + the running
+# 10 ms period (the timer takes a new period at its next update event) + 1 ms = 23 ms; no runt or missed pulse
+step = None
+if present:
+    r.val16(0, 3000); r.run(100); t_set = r.bus.now / 1000.0; r.val16(0, 6000); w = wave(r, [0], 60)[0]
+    p = periods(w); first = next((a for a, per, hi in p if abs(per - 5.0) <= 0.05), None)
+    step = (round(first - t_set, 2) if first else None, sorted(set(round(per, 3) for a, per, hi in p)),
+            all(hi is not None and abs(hi / per - 0.5) <= 0.01 for a, per, hi in p))
+check('tach step 3000 -> 6000 RPM: first 200 Hz period starts within 23 ms of the new CAN value; every period is 10 or 5 ms, all 50 % (no runt, no missed pulse)',
+      step is not None and step[0] is not None and step[0] <= 23 and set(step[1]) <= {10.0, 5.0} and step[2], step)
+info['tach_step_latency_ms'] = step[0] if step else None
+# ramp 1000 -> 7000 RPM in 600 ms (ECU value every 10 ms): frequency tracks, every period between the ramp's end
+# periods and never longer than the one before (no missed pulse), each high time 50 % of its period
+ramp = None
+if present:
+    r.val16(0, 1000); r.run(100); r.b.watch(r.b.model['outputs'][0][0]); r.b.edges()
+    for k in range(61): r.val16(0, 1000 + 100 * k); r.run(10)
+    w = [(t / 1000.0, l) for t, i, l in r.b.edges()]; p = periods(w)
+    pers = [per for a, per, hi in p]
+    ramp = dict(n=len(p), longest=max(pers), shortest=min(pers),
+                grew=[(round(p[i][0]), pers[i], pers[i + 1]) for i in range(len(pers) - 1) if pers[i + 1] > pers[i] + 0.002],
+                duty_bad=[(round(a), per, hi) for a, per, hi in p if hi is None or abs(hi / per - 0.5) > 0.01], steps=len(set(pers)))
+check('tach ramp 1000 -> 7000 RPM in 600 ms (CAN value every 10 ms): periods stay within 30 .. 4.29 ms, never grow (no missed pulse), all 50 %, 30 or more frequency steps',
+      ramp is not None and ramp['longest'] <= 30.0 * 1.001 and ramp['shortest'] >= 60000 / 7000 / 2 * 0.999 and not ramp['grew'] and not ramp['duty_bad'] and ramp['steps'] >= 30, ramp)
+info['tach_ramp'] = ramp
+# steady state: period spread at 6000 RPM over 1 s (timer-driven edges; jitter = spread of rise-to-rise times)
+jit = None
+if present:
+    r.val16(0, 6000); r.run(100); p = periods(wave(r, [0], 1000)[0]); pers = [per for a, per, hi in p]
+    jit = (len(p), round((max(pers) - min(pers)) * 1000, 1))
+check('tach steady 6000 RPM (200 Hz) for 1 s: 199 or more periods, rise-to-rise spread under 2 us', jit is not None and jit[0] >= 199 and jit[1] < 2, jit)
+info['tach_jitter_us'] = jit
+# off again (sub 0 = 0): back to the fixed 100 Hz of the stock PWM settings
+back = None
+if present:
+    r.W(TACH, 0, 0); r.run(100); back = hz(wave(r, [0], 100)[0])
+check('tach off (sub 0 = 0): the output is back on its fixed PWM frequency (100 Hz, 50 %)', back is not None and near(back[0], 100, 0.2) and abs(back[1] - 50) <= 0.5, back)
+check('F16: no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# paired output follows the tach frequency of its primary (custom: the follower copies the primary's timer period)
+r = Rig(); v = r.v; value(r, 8, 0); pair = None
+output(r, 0, v.TRUE); pwm(r, 0, duty=50, freq=100); output(r, 2, v.FALSE, primary=0)
+if present:
+    tach(r, 0, 2); r.val16(0, 4500); r.run(100); w = wave(r, [0, 2], 200); pair = (hz(w[0]), hz(w[1]))
+check('tach on a paired output (OUT3 follows OUT1): both pins 150 Hz at 4500 RPM, 50 %', pair is not None and all(x[0] is not None and near(x[0], 150, 0.2) and abs(x[1] - 50) <= 0.5 for x in pair), pair)
+# found while testing (stock dingoFW, not changed): a fixed PWM frequency below 16 Hz on a 16-bit timer is wrong.
+# ARR keeps the low 16 bits of 1 MHz / f - 1 (RM0390 TIM3/4/9-14 are 16-bit); TIM5 (OUT3 on board A) is 32-bit.
+# At 10 Hz: ARR = 99999 -> 34463 (29 Hz) and CCR 50000 is above it, so OUT2 (TIM4) stays on with no pulses.
+r = Rig(); v = r.v
+for o in (1, 2): output(r, o, v.TRUE); pwm(r, o, duty=50, freq=10)
+r.run(300); w = wave(r, [1, 2], 600); info['stock_fixed_10hz_out2_tim4_16bit_vs_out3_tim5_32bit'] = (hz(w[0]), r.pin(1), hz(w[1]))
+
 # ====================================================================== summary
 cnt = {t: sum(1 for x in res if x[1] == t) for t in ('PASS', 'FAIL', 'XFAIL', 'XPASS')}
 print(f"\nS3: {cnt['PASS']} of {cnt['PASS'] + cnt['FAIL']} checks passed, {cnt['XFAIL']} expected failures (gaps with a proposal), {cnt['XPASS']} unexpected passes")

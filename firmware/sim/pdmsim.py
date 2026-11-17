@@ -98,6 +98,17 @@ class Board:
         a, b = pin(s.model['analog']); s.L.sim_set_pin_volts(a, b, min(wire_volts * 20.0 / 30.0, 3.3))   # 10k / 20k divider + clamp
     # --- pins
     def level(s, name): a, b = pin(name); return s.L.sim_get_level(a, b)
+    def watch(s, *names):
+        """Log every edge of these output pins from now on (pin-level timing, exact to 1 us)."""
+        s.L.sim_watch_pins(len(names), (ctypes.c_int * max(1, len(names)))(*[line(n) for n in names]))
+    def edges(s):
+        """[(t_us, pin index in watch(), new level)] since the last call."""
+        out = []; n = 4096
+        t = (ctypes.c_uint64 * n)(); i = (ctypes.c_int * n)(); lv = (ctypes.c_int * n)()
+        while True:
+            k = s.L.sim_edges(t, i, lv, n)
+            out += [(s.t0 + t[j], i[j], lv[j]) for j in range(k)]
+            if k < n: return out
     def pin_info(s, name):
         a, b = pin(name); v = s.L.sim_pin_info(a, b)
         return dict(mode=['input', 'output', 'alternate', 'analog'][v & 3], pull=['none', 'up', 'down', '?'][(v >> 2) & 3], odr=(v >> 4) & 1, af=(v >> 8) & 15, event=(v >> 12) & 1)
