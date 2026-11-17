@@ -1,0 +1,24 @@
+%TF.GenerationSoftware,KiCad,Pcbnew,10.0.7*%
+%TF.ProjectId,input-board,696e7075-742d-4626-9f61-72642e6b6963,rev?*%
+%TF.SameCoordinates,Original*%
+%TF.FileFunction,Profile,NP*%
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%TA.AperFunction,Profile*%
+%ADD10C,0.100000*%
+%TD*%
+G04 APERTURE END LIST*
+D10*
+X0Y0D02*
+X66000000Y0D01*
+X0Y-64000000D02*
+X0Y0D01*
+X66000000Y0D02*
+X66000000Y-64000000D01*
+X66000000Y-64000000D02*
+X0Y-64000000D01*
+M02*

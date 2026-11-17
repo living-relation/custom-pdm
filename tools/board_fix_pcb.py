@@ -43,8 +43,8 @@ def _field(fp, name):
     return next((f for f in fp.GetFields() if f.GetName() == name), None)
 
 
-def sync_fields(b, comps):
-    """Returns a list of the changes made."""
+def sync_fields(b, comps, fields=FIELDS):
+    """Returns a list of the changes made. `fields`: the schematic fields copied to the footprints."""
     log = []
     for fp in b.GetFootprints():
         c = comps.get(fp.GetReference())
@@ -56,7 +56,7 @@ def sync_fields(b, comps):
         if fp.IsDNP() != c["dnp"]:
             fp.SetDNP(c["dnp"])
             log.append(f"{fp.GetReference()} DNP -> {c['dnp']}")
-        for name in FIELDS:
+        for name in fields:
             want = c["fields"].get(name)
             if not want:
                 continue

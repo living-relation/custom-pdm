@@ -1,0 +1,33 @@
+JLCPCB check: board-b (4 layers). Limits: JLCPCB capabilities page, multilayer, 1 oz outer copper (read 2026-11-16).
+Zone fills: a refill (KiCad 9) changes the filled area by at most 0.461 % (PF_OUT2 on F.Cu); REFILL AND RE-SAVE THE PCB BEFORE ORDERING
+Drilled holes on the same spot (two vias / via on a pad): none
+Assembly: 186 parts in 43 BOM lines, 186 placements; rotation offsets applied to: D9 +180, D11 +180, D12 +180, U2 +180, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U9 +270, U10 +270, U11 +270, U22 +270, U23 +270, U24 +270, U25 +270, U26 +270
+
+Worst values from the copper:
+  track width min                                        0.200 mm  (JLCPCB 0.09 mm)  ok  
+  via hole min                                           0.400 mm  (JLCPCB 0.15 mm)  ok  
+  via diameter min                                       0.800 mm  (JLCPCB 0.25 mm)  ok  
+  via annular ring min                                   0.200 mm  (JLCPCB 0.05 mm)  ok  
+  PTH pad annular ring min                               0.150 mm  (JLCPCB 0.15 mm)  ok  J2
+  drill min                                              0.400 mm  (JLCPCB 0.15 mm)  ok  
+  hole-to-hole gap min (via-via)                         0.241 mm  (JLCPCB 0.2 mm)  ok  via  / via
+  hole-to-hole gap min (pad holes, other footprints)    -0.365 mm  (JLCPCB 0.45 mm)  BELOW JLCPCB  via  / pad T1
+
+DRC with JLCPCB's limits as the only rules (count, worst actual, examples):
+  no violations
+
+Rules used:
+(version 1)
+(rule "JLC track width" (constraint track_width (min 0.09mm)))
+(rule "JLC clearance" (constraint clearance (min 0.09mm)))
+(rule "JLC SMD pad to pad" (condition "A.Pad_Type == 'SMD' && B.Pad_Type == 'SMD'") (constraint clearance (min 0.15mm)))
+(rule "JLC hole size" (constraint hole_size (min 0.15mm)))
+(rule "JLC via diameter" (condition "A.Type == 'Via'") (constraint via_diameter (min 0.25mm)))
+(rule "JLC via annular ring" (condition "A.Type == 'Via'") (constraint annular_width (min 0.05mm)))
+(rule "JLC PTH annular ring" (condition "A.Type == 'Pad'") (constraint annular_width (min 0.15mm)))
+(rule "JLC hole to hole (pad)" (constraint hole_to_hole (min 0.45mm)))
+(rule "JLC hole to hole (via-via)" (condition "A.Type == 'Via' && B.Type == 'Via'") (constraint hole_to_hole (min 0.2mm)))
+(rule "JLC hole to copper" (constraint hole_clearance (min 0.2mm)))
+(rule "JLC PTH hole to track" (condition "A.Pad_Type == 'Through-hole' && B.Type == 'Track'") (constraint hole_clearance (min 0.28mm)))
+(rule "JLC copper to edge" (constraint edge_clearance (min 0.2mm)))
+(rule "JLC silkscreen text" (condition "A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen'") (constraint text_thickness (min 0.15mm)) (constraint text_height (min 1.0mm)))

@@ -1798,26 +1798,6 @@
 		(uuid "a2a1e936-2ef8-49fa-873f-dcb643b2c2fa")
 	)
 	(label "CAN_RX"
-		(at 107.95 71.12 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ad283e33-df3a-4081-95a5-75d8e0b7d8e2")
-	)
-	(label "CAN_TX"
-		(at 101.6 71.12 90)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b273e516-04cf-44b8-a2e4-4879ecee111f")
-	)
-	(label "CAN_RX"
 		(at 120.65 96.52 180)
 		(effects
 			(font
