@@ -63,6 +63,8 @@ try {
     if ($LASTEXITCODE) { throw 'pcb_digikey.py failed' }
     & $py9 "$repo\tools\pcb_bom_fields.py" DingoPDM.kicad_pcb "$Out\board-a.net" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_bom_fields.py failed' }
+    & $py9 "$repo\tools\pcb_hole_keepout.py" DingoPDM.kicad_pcb 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # 2026-11-20 pcbverify: no pour under the sink posts
+    if ($LASTEXITCODE) { throw 'pcb_hole_keepout.py failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3

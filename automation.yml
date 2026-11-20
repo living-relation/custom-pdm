@@ -10,7 +10,7 @@ automations:
               tools/sch_inputs_board_a.py, tools/pcb_inputs_board_a.py, tools/pcb_rework.py,
               tools/sch_board_fix.py, tools/pcb_fix_board_a.py, tools/board_fix_pcb.py, tools/netlist_pins.py,
               tools/sch_board_power.py, tools/pcb_board_power.py, tools/sch_digikey.py, tools/pcb_digikey.py,
-              tools/sch_tp_orphans.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py]
+              tools/sch_tp_orphans.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py]
     trigger: manual
     reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
     writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]
@@ -37,7 +37,7 @@ automations:
     script: tools/build_board_b.ps1
     helpers: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/board_b_geom.py, tools/check_board_b.py, tools/netlist_pins.py,
               tools/sch_board_fix.py, tools/board_fix_pcb.py, tools/sch_board_power.py, tools/pcb_board_power.py,
-              tools/sch_digikey.py, tools/pcb_digikey.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py]
+              tools/sch_digikey.py, tools/pcb_digikey.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py]
     trigger: manual
     reads: ["tools/*_board_b.py"]   # plus the baseline commit fe19c28 of hardware/board-b-max
     writes: ["hardware/board-b-max/*.kicad_sch", "hardware/board-b-max/*.kicad_pcb"]
@@ -175,29 +175,31 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; same as state-check
     owner: claude
-  - id: enclosure-v2b-build
-    script: enclosure/v2b/src/build_check_all.sh
-    helpers: [enclosure/v2b/src/run.sh, enclosure/v2b/src/build_v2b.py, enclosure/v2b/src/clearance_v2b.py, enclosure/v2b/src/show_check.py,
-              enclosure/v2b/src/inspect_vendor.py, enclosure/v2b/src/bg.sh, enclosure/v2b/src/bbox_parts.py,
-              enclosure/v2b/src/mass_v2b.py, enclosure/v2b/src/screwtool_twin.py, enclosure/v2b/src/lugcheck_v2b.py]
+  - id: enclosure-v2c-build
+    script: enclosure/v2c/src/build_check_all.sh
+    helpers: [enclosure/v2c/src/run.sh, enclosure/v2c/src/build_v2c.py, enclosure/v2c/src/clearance_v2c.py, enclosure/v2c/src/show_check.py,
+              enclosure/v2c/src/inspect_vendor.py, enclosure/v2c/src/bg.sh, enclosure/v2c/src/bbox_parts.py,
+              enclosure/v2c/src/mass_v2c.py, enclosure/v2c/src/screwtool_twin.py, enclosure/v2c/src/lugcheck_v2c.py,
+              enclosure/v2c/src/bomcheck_v2c.py, enclosure/v2c/src/cnc_v2c.sh, enclosure/v2c/src/export_boards.ps1,
+              enclosure/v2c/src/compare_v2b.py, enclosure/v2c/src/drawings_v2c.py, enclosure/v2c/src/fusion_v2c.py]
     trigger: manual
-    reads: ["enclosure/v2b/src/*.py", "hardware/*/*.step"]   # plus Grok's pack copy and vendor STEPs in .claude/tmp (not in git)
-    writes: []                      # STEP/BREP/meta/check.json go to WSL ~/scratch/encl-v2b/runs (not in git)
+    reads: ["enclosure/v2c/src/*.py", "hardware/*/*.kicad_pcb"]   # plus board / vendor STEPs in <repo root>/.claude/cache/enclosure (not in git, see enclosure/v2c/vendor/README.md)
+    writes: []                      # STEP/BREP/meta/check JSON go to WSL ~/scratch/encl-v2c/runs (not in git)
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "tr -d '\015' < enclosure/v2b/src/build_check_all.sh > /tmp/bca.sh && HERE=$PWD/enclosure/v2b/src bash /tmp/bca.sh F1 F2"   # WSL path of the checkout
-    check_cmd: wsl -e bash enclosure/v2b/src/run.sh show_check.py F1
+    run_cmd: wsl -e bash -c "tr -d '\015' < enclosure/v2c/src/build_check_all.sh > /tmp/bca.sh && HERE=$PWD/enclosure/v2c/src bash /tmp/bca.sh F1"   # WSL path of the checkout; board STEPs first: powershell -File enclosure\v2c\src\export_boards.ps1
+    check_cmd: wsl -e bash enclosure/v2c/src/run.sh show_check.py F1
     owner: claude
-  - id: enclosure-v2b-render
-    script: enclosure/v2b/src/render_v2b.py
+  - id: enclosure-v2c-render
+    script: enclosure/v2c/src/render_v2c.py
     trigger: manual
-    reads: ["~/scratch/encl-v2b/runs/*/brep/*.brep"]   # output of enclosure-v2b-build
-    writes: ["docs/diagrams/enclosure-v2b-*.png"]      # illustration only; copied from ~/scratch/encl-v2b/renders
+    reads: ["~/scratch/encl-v2c/runs/*/brep/*.brep"]   # output of enclosure-v2c-build
+    writes: ["docs/diagrams/enclosure-v2c-*.png"]      # illustration only; copied from ~/scratch/encl-v2c/renders
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "CAD_HOME=~/projects/handbuilt-cad RENDER_DIR=~/scratch/encl-v2b/renders bash enclosure/v2b/src/run.sh render_v2b.py F1 iso front"   # views as args
+    run_cmd: wsl -e bash -c "bash enclosure/v2c/src/run.sh render_v2c.py F1 iso front"   # views as args
     owner: claude
   - id: heat-sim
     script: sim/heat/run_cases.py
@@ -209,4 +211,45 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: wsl -e bash -c "python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/scratch/heat/runs/m2"
+    owner: claude
+  - id: pcb-verify-copper
+    script: tools/verify_copper.py
+    trigger: manual                 # after any board change (docs/pcb-verification.md)
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb]
+    writes: ["docs/diagrams/pcbverify-current-board-*.png"]   # only with --plots; prints the table otherwise
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_copper.py A B [--outer-um 35 --inner-um 17.5] [--plots docs/diagrams]'   # needs scipy (pip install --user scipy); plots need matplotlib
+    owner: claude
+  - id: pcb-verify-spice
+    script: tools/verify_spice.py
+    trigger: manual
+    reads: []                       # part values typed in from the board netlists (docs/pcb-verification.md)
+    writes: []                      # decks + logs in %TEMP%/pcbverify-spice
+    committed: no
+    auto_commit: false
+    enabled: true
+    run_cmd: python3 tools/verify_spice.py   # needs ngspice on PATH (Linux / cloud session; none installed on DansPC)
+    owner: claude
+  - id: pcb-verify-layout
+    script: tools/verify_layout.py
+    helpers: [tools/verify_copper.py]
+    trigger: manual
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
+    writes: []
+    committed: no
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_layout.py --stock-b <dir>/hardware/board-b-max/dingoPDM-Max.kicad_pcb'   # stock = git archive fe19c28 hardware/board-b-max
+    owner: claude
+  - id: pcb-verify-cpl
+    script: tools/verify_cpl.py
+    trigger: manual                 # after any gen_fab_jlcpcb.py run
+    reads: ["hardware/fab/*/*-cpl-jlcpcb.csv", "hardware/fab/*/*-bom-jlcpcb.csv", "hardware/*/*.kicad_pcb"]
+    writes: []                      # EasyEDA footprint cache in %TEMP%/pcbverify-easyeda (not committed: JLCEDA library data)
+    committed: no
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/verify_cpl.py   # any python with pcbnew; needs easyeda.com (403 from DansPC, works from the cloud session)
     owner: claude

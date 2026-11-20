@@ -47,8 +47,17 @@ GERBER_OPTS = ["--precision", "6"]                 # defaults kept: Protel exten
 DRILL_OPTS = ["--format", "excellon", "--drill-origin", "absolute", "--excellon-units", "mm",
               "--excellon-zeros-format", "decimal", "--excellon-oval-format", "alternate", "--excellon-separate-th"]
 # KiBot JLCPCB rotation table entries that match these boards (regex on the footprint name) + TDSO / TSDSO
-ROTATIONS = [(r"^SOT-223", 180), (r"^SOT-23", 180), (r"^SOIC-", 270), (r"^MSOP-", 270), (r"^TSSOP-", 270),
-             (r"^LQFP-", 270), (r"^JST_GH_SM", 180), (r"^T?S?DSO-\d+$", 270)]
+# 2026-11-20 (pcbverify): every entry checked part by part against the LCSC part's own footprint in the JLCEDA /
+# EasyEDA library by tools/verify_cpl.py (pads turned by the CPL rotation must land on ours). Changed from KiBot's
+# table: SOT-223 180 -> 270 (C15578), JST GH SM horizontal 180 -> 0 (C265421), new: JST GH BM vertical 180
+# (C20089173), Molex Micro-Fit 43045 horizontal 180 (C277636), Omron A6S DIP switch 270 (C231310).
+ROTATIONS = [(r"^SOT-223", 270), (r"^SOT-23", 180), (r"^SOIC-", 270), (r"^MSOP-", 270), (r"^TSSOP-", 270),
+             (r"^LQFP-", 270), (r"^JST_GH_BM", 180), (r"^T?S?DSO-\d+$", 270), (r"^Molex_Micro-Fit_3\.0_43045", 180),
+             (r"^SW_DIP_SPSTx08_Slide_Omron_A6S", 270)]
+# Placement centre: JLCPCB puts its footprint's origin (the part centre) on Mid X / Mid Y. Where our KiCad origin is
+# a pin instead, shift by this footprint-local offset (mm, KiCad footprint frame; tools/verify_cpl.py measures it).
+OFFSETS = [(r"^USB_C_Receptacle_GCT_USB4085", (2.973, 2.18)), (r"^Converter_DCDC_TRACO_TSR-1_THT", (2.54, 0.0)),
+           (r"^Molex_Micro-Fit_3\.0_43045-1200", (7.5, 1.5))]
 NOT_PARTS = re.compile(r"MountingHole|DingoFace|SolderJumper|WirePads|Tag-Connect")
 PRESS_FIT = {"7461084"}                            # MPNs JLCPCB does not fit (press-fit, see fab-notes)
 # JLCPCB limits (capabilities page). 4-layer board, 1 oz outer copper (the stackup is left as it is).
@@ -90,6 +99,13 @@ def jlc_rotation(fpname, rot):
     return (rot + off) % 360, off
 
 
+def jlc_offset(fpname, rot):
+    """Board-frame shift (mm, y down) from our footprint origin to JLCPCB's part centre."""
+    ox, oy = next((o for pat, o in OFFSETS if re.search(pat, fpname)), (0.0, 0.0))
+    a = math.radians(rot)                       # KiCad: counter-clockwise on screen, y down
+    return ox * math.cos(a) + oy * math.sin(a), -ox * math.sin(a) + oy * math.cos(a)
+
+
 def parts(board):
     """(footprint, kind) for every footprint; kind: jlc-smt / jlc-tht / press-fit / dnp / not-a-part."""
     out = []
@@ -122,7 +138,8 @@ def write_bom_cpl(board, out, tag):
                 raise SystemExit(f"{ref}: bottom-side assembly not handled (JLCPCB does not mirror like KiCad)")
             rot, off = jlc_rotation(name, fp.GetOrientationDegrees())
             p = fp.GetPosition()
-            rows.append((ref, f"{mm(p.x):.4f}", f"{-mm(p.y):.4f}", "Top", f"{rot:g}", off))
+            dx, dy = jlc_offset(name, fp.GetOrientationDegrees())
+            rows.append((ref, f"{mm(p.x) + dx:.4f}", f"{-(mm(p.y) + dy):.4f}", "Top", f"{rot:g}", off))
             k = (fp.GetValue(), name, field(fp, "LCSC"))
             groups.setdefault(k, []).append(ref)
         if kind != "not-a-part":
