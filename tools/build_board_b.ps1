@@ -71,6 +71,7 @@ try {
     Run-Py9 (Join-Path $Repo "tools\pcb_board_power.py") $Pcb "$Out\board-b.net" B   # r2a / s4a / s6a / t1a: part fields, LED DNP
     Run-Py9 (Join-Path $Repo "tools\pcb_digikey.py") $Pcb "$Out\board-b.net"   # 2026-11-14: Digi-Key fields
     Run-Py9 (Join-Path $Repo "tools\pcb_bom_fields.py") $Pcb "$Out\board-b.net"   # 2026-11-16: order fields
+    Run-Py9 (Join-Path $Repo "tools\pcb_hole_keepout.py") $Pcb                    # 2026-11-20 pcbverify: no pour under the sink posts
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"
