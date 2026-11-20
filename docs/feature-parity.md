@@ -82,14 +82,22 @@ left are out of scope (35 H-bridge, 39 logging, 42 PID, 43 password).
   so that branch never runs (upstream code, left as it is). Decision (fwgaps, from the BTS7008-2EPA data sheet; the
   BTS70012 / BTS7004 are the same PROFET+2 family): a PROFET fault does **not** latch in the firmware. Its fault
   current IIS(FAULT) is 4.4 mA min (P_9.6.1.1) x 1.2 kOhm = 5.3 V, so the IS pin reads ADC full scale, but so does a
-  real load current above 16.4 A (A) / 55 A (B 5-8) / 96 A (B 1-4), e.g. a lamp's inrush on board A; latching on full
+  real load current above the measurable range (about 12-15 A on A, 45-55 A on B 5-8, 76-93 A on B 1-4 at the
+  data-sheet kILIS, see below), e.g. a lamp's inrush on board A; latching on full
   scale would latch good loads. The PROFET protects itself (overload / over-temperature shutdown, own restart, latches
   off after nRETRY(CYC) = 2 retry cycles, P_8.6.1.4) and de-latches when IN stays low longer than tDELAY(CR) = 100 ms
   max (P_8.6.1.6, section 8.3.1); our retry holds IN low for the reset time (factory 1000 ms), so each firmware retry
   is a real one, and Count mode latches Fault after 3 trips. Fix in `PRO_FEATURES`: IS at full scale
-  (`PROFET_IS_FULL_SCALE`, 99 % of 4095) is a hard overcurrent: after the inrush window it trips at once, not after the
-  trip time (P1). Inside the inrush window nothing changed (factory inrush limit 50 A is above board A's 16.4 A full
-  scale, so the firmware cuts at the window's end; the PROFET protects itself until then). S3 F12 "PROFET fault ..." x2.
+  (`PROFET_IS_FULL_SCALE`) is a hard overcurrent: after the inrush window it trips at once, not after the
+  trip time (P1). Inside the inrush window nothing changed (factory inrush limit 50 A is above board A's full-scale
+  reading, so the firmware cuts at the window's end; the PROFET protects itself until then). S3 F12 "PROFET fault ..." x2.
+  2026-11-20 (fwkilis, ADR-2026-11-20-kilis / -is-buffer): with the rail-to-rail TLV9004 buffer the top of the IS chain
+  is the PDZ3.3B zener ahead of it, not the ADC: at IIS(FAULT) min only about 0.4 mA reaches the zener (VZ 3.32 V min
+  is specified at 5 mA; rdif up to 1 kOhm at 0.5 mA; -2.4 mV/K), so a fault may read about 2.7 V hot. The threshold moved
+  from 99 % (4054, could miss it) to 75 % of 4095 (3071 = 2.475 V at VDDA 3.3 V: 11.2 A on A, 41 A on B 5-8, 70 A on B
+  1-4, all above rating). S3 F12 "full scale, rail-to-rail ..." (chain top 2.7 and 3.3 V, a real 20 A, 10 A below the
+  threshold waits the trip time, lamp inrush inside the window), S1 S8 (board B), Renode "Full Scale With A Rail-to-rail
+  Sense Buffer". The zener's low-current knee is not in its data sheet: bench check TBD.
 - The condition bit test (`BitwiseAnd`) returns the masked value (e.g. 4), not 1. Every consumer treats non-zero as
   true, so it works; a condition "Equal 1" on it would not.
 - Reset limit wording, see row 29.

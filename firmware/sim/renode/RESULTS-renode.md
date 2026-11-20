@@ -111,3 +111,10 @@ Time steps: pin states are sampled every 20 ms (10 ms in test 7), so times are r
 - No planted-error run was made on this bench (the host simulation has one). The pin tables are shared with it.
 - The CAN-filter option, the total of bus load and the latency numbers of `s1_system.py` are not repeated.
 - The tests share one emulation and depend on their order.
+
+Update 2026-11-20 (job fwkilis, branch `fix/fw-kilis`, ADR-2026-11-20-kilis): **35 of 35 pass**. The bench plant now uses each PROFET's data-sheet kILIS (5450 / 33700 / 20000, `pdmsim.py KILIS`); firmware constants match since this branch. New tests (last in the file):
+
+| Name | Test | Evidence from the run |
+|---|---|---|
+| Current Read-back On The Real Binaries | A1 OUT1 6.6 A, B OUT1 26.5 A, B OUT5 12.5 A switched on together | CAN OutputCurrent 6 / 26 / 12 (whole amps); the stock 5950 / 35000 would send 7 / 27 |
+| Full Scale With A Rail-to-rail Sense Buffer | B OUT4, `SenseClamp` 2.7 V, trip time 1000 ms, inrush 100 A for 100 ms, reset None; PROFET fault 500 ms after switch-on | IN low 6 ms after the fault (2 ms steps); Fault in msg 3; Off after a power cycle |

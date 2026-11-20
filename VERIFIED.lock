@@ -1,0 +1,88 @@
+{
+  "docs/diagrams/enclosure-v2c-F1-front.png": "5e31afacfe64372d559590401efa0faaf56485ee3a3de93838b8cd7d51a15204",
+  "docs/diagrams/enclosure-v2c-F1-iso-lid-off.png": "9a8545f04592434232193fa232b4c1a796fdcf6a4ff5e79dc979efe66c3f893c",
+  "docs/diagrams/enclosure-v2c-F1-iso-nw.png": "e9618dac269c36bffbc33abf9be862a4813dd4f1941ed208aca379914fce57be",
+  "docs/diagrams/enclosure-v2c-F1-iso.png": "40aefa310da27b8f4df87d0d84124a7d3780a3b4a87bed32df4e3e62ac7a9637",
+  "docs/diagrams/enclosure-v2c-F1-outbay-nw.png": "b9a8cac1d4f1157d090d2e222233b4597d4049937a35c4ef3d426da08676d601",
+  "docs/diagrams/enclosure-v2c-F1-outbay-sw.png": "ba509ca17f1418812ff31f4fa63e7e17ebff19ccc8a96140a9e65e0e17289158",
+  "docs/diagrams/enclosure-v2c-F1-outstack-exploded.png": "ecc33bec7068d886a9ced9566b9c58e64c5c9b3039d6e35e4f0a8b47a599f136",
+  "docs/diagrams/enclosure-v2c-F1-section-BATT-stud.png": "a8cba2392eb4b7e12f7973066b218ebccd40e9e399882dfe047244be6b052b15",
+  "docs/diagrams/enclosure-v2c-F1-section-OUT-bay.png": "35d87dcdb31d13658396d7d7769bfb7aefa135c1e420b9bf62932f16bc68fc36",
+  "docs/diagrams/enclosure-v2c-F1-section-sink-board-stack.png": "1804734f64c2a0fd4720082f2ddbff5cf761e5f7af8864e662beba16f6317d89",
+  "docs/diagrams/enclosure-v2c-F1-top.png": "27d30bf579112946c347609de2086a3fb8580982bfd5a6a8372e634deb83a026",
+  "docs/diagrams/enclosure-v2c-F1-under.png": "f97d488855c8f3acb3dec4e302a2e34bc3946dd96e3b8731c19525a0cef6cd84",
+  "enclosure/v2c/release/BOM-v2c-F1.csv": "cee0ee58cfcc7b7f874ac134abd9a3ac5ef6cdf269fb88927e6d35fbe5e2110f",
+  "enclosure/v2c/release/MANIFEST-revB.sha256": "f7bec7bbb19b597de1f52ac699a99061d42a03e5872adb14a96dfd8df51b7e80",
+  "_history": [
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "enclosure/v2c/release/MANIFEST-revB.sha256"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "enclosure/v2c/release/BOM-v2c-F1.csv"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-front.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-iso-lid-off.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-iso-nw.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-iso.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-outbay-nw.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-outbay-sw.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-outstack-exploded.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-section-BATT-stud.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-section-OUT-bay.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-section-sink-board-stack.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-top.png"
+    },
+    {
+      "date": "2026-11-20T11:39:01Z",
+      "action": "lock",
+      "path": "docs/diagrams/enclosure-v2c-F1-under.png"
+    }
+  ]
+}

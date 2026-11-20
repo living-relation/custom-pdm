@@ -593,6 +593,52 @@ info['s7_lost_after_link_glitch_ms'] = glitch
 check('order rule: with LOST at a higher virtual-input index than the "on" link, the output drops for one cycle at the time-out (so the UI must place LOST lower)',
       ok7m and len(glitch) == 1 and 0 < glitch[0] < 5, (glitch, iv['on']))
 
+# ------------------------------------------------------------------ S8 current read-back per PROFET type (ADR-2026-11-20-kilis)
+# The plant's IS current uses the data sheet's typ. kILIS (pdmsim.py KILIS) and the board's 1.2k (1 %, PR #100) sense
+# resistor; the firmware must read a known load back within 2 % (a wrong kILIS constant in port.h shows up here; the
+# part's own +-4-5 % kILIS spread is not simulated). Points: each data sheet's kILIS calibration currents below the
+# factory limit (BTS7008-2EPA 5.5 A IL16 and 7.0 A; BTS70012-1ESP 20 A IL20 and 30 A IL22; BTS7004-1EPP 10 A IL18 and 14 A).
+print('--- S8 current read-back per PROFET type, full scale on board B')
+bus8 = ps.Bus(); t8 = ps.Tool(bus8)
+a8 = ps.Board(ps.BOARD_A, 'A1', SO, unit=1); bb8 = ps.Board(ps.BOARD_B, 'B', SO)
+st8 = {'A1': ps.Status(BASE['A1']), 'B': ps.Status(BASE['B'])}
+for s_ in st8.values(): bus8.watch.append(s_.feed)
+bus8.add(t8, a8, bb8); bus8.run_for(1500)
+S8 = [('A1', a8, 0, 'BTS7008-2EPA', (5.5, 7.0)), ('A1', a8, 1, 'BTS7008-2EPA (DSEL ch 2)', (5.5, 7.0)),
+      ('B', bb8, 0, 'BTS70012-1ESP', (20.0, 30.0)), ('B', bb8, 4, 'BTS7004-1EPP', (10.0, 14.0))]
+readback = {}
+for k, b, o, drv, pts in S8:
+    t8.write(BASE[k], 0x1000 + o, 0, 1); t8.write(BASE[k], 0x1000 + o, 1, 1)        # enable, input = always true
+    got = []
+    for a in pts:
+        b.set_load(o, b.vbat / a); bus8.run_for(300)
+        got.append((a, round(b.L.sim_out_current(o), 3), st8[k].current(o), b.L.sim_out_state(o)))
+    b.set_load(o, 0); t8.write(BASE[k], 0x1000 + o, 1, 0); bus8.run_for(100)
+    readback[f'{k} OUT{o + 1} {drv}'] = got
+    check(f'S8 {k} OUT{o + 1} {drv}: a known load reads back within 2 % (data-sheet kILIS, 1.2k sense) at {" / ".join(f"{a:g}" for a in pts)} A, output stays ON; CAN OutputCurrent = the reading in whole amps (msg.cpp casts to uint16, s0 info)',
+          all(abs(g / a - 1) <= 0.02 and s == 1 and c is not None and c == int(g) for a, g, c, s in got), got)
+info['s8_readback'] = readback
+# Full scale on board B (rail-to-rail buffer, ADR-2026-11-20-is-buffer): a PROFET fault after the inrush window is a hard
+# overcurrent at both ends of the IS chain's top (PDZ3.3B knee estimate 2.7 V, VDDA 3.3 V): cut at once, not after the trip time.
+# Inrush limit 100 A (the parameter maximum) so the reading (BTS70012 75.8 / 92.7 A, BTS7004 45 / 55 A) stays under it
+# and only the full-scale rule can cut early.
+fs8 = {}
+for o, clamp in ((0, ps.IS_CLAMP_LOW), (1, ps.IS_CLAMP), (4, ps.IS_CLAMP_LOW), (5, ps.IS_CLAMP)):
+    bb8.set_is_clamp(o, clamp)
+    t8.write(BASE['B'], 0x7D00 + o, 0, 1000)                                       # trip time 1000 ms (P1)
+    t8.write(BASE['B'], 0x1000 + o, 3, ps.f32(100.0)); t8.write(BASE['B'], 0x1000 + o, 4, 100); t8.write(BASE['B'], 0x1000 + o, 5, 0); t8.write(BASE['B'], 0x1000 + o, 0, 1); t8.write(BASE['B'], 0x1000 + o, 1, 1)   # reset mode None
+    bb8.set_load(o, bb8.vbat / 5.0); bus8.run_for(500)
+    on_before = bb8.level(ps.BOARD_B['outputs'][o][0])
+    bb8.set_load(o, bb8.vbat / 5.0, fault=1); t_cut = None
+    for ms in range(60):
+        bus8.run_for(1)
+        if not bb8.level(ps.BOARD_B['outputs'][o][0]): t_cut = ms + 1; break
+    bus8.run_for(20); fs8[f'OUT{o + 1} clamp {clamp} V'] = (on_before, t_cut, bb8.L.sim_out_state(o))
+    bb8.set_load(o, 0); bb8.set_is_clamp(o)
+info['s8_full_scale_b'] = fs8
+check('S8 board B full scale: a PROFET fault 500 ms after switch-on (IS chain top 2.7 / 3.3 V on OUT1 / OUT2 BTS70012 and OUT5 / OUT6 BTS7004; reading under the 100 A inrush limit, inrush time 100 ms, trip time 1000 ms) cuts within 4 ms, then Fault (reset mode None)',
+      all(on and t is not None and t <= 4 and s == 3 for on, t, s in fs8.values()), fs8)
+
 bad = [r for r in res if not r[1]]
 print(f'\nS1-S7: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
 json.dump(dict(checks=res, info=info, matrix=matrix), open('/tmp/s1_results.json', 'w'), indent=1)

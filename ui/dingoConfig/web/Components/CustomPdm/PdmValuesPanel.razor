@@ -1,0 +1,211 @@
+@using System.Globalization
+@using application.Services
+@using domain.CustomPdm
+@using domain.Enums
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+
+@* custom-pdm one-PDM editor, phase 2b (editor2b, domain/CustomPdm/PdmValues.cs): values and system functions in plain
+   words: counters, math, levels used as signals, values of another board, keypad buttons, the starter interlock, the
+   master retry and CAN outputs (incl. the open-load flags). Each value then shows in the value / signal lists of the
+   Output triggers, Functions and CAN output editors. PC edits: Write All sends them, Burn keeps them. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel @bind-Expanded="_open">
+        <TitleContent>
+            <MudText Typo="Typo.h6">Values and system (counters, math, levels, keypads, starter, retry, CAN out)</MudText>
+        </TitleContent>
+        <ChildContent>
+            @{
+                var busy = Pdm.Ops.Busy;
+                var m = PdmModel.Build(View);
+                var ins = View.Inputs.Where(r => r.Digital != null).ToList();
+                var vals = PdmTriggers.ValueChoices(m, _board);
+            }
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+                <MudSelect T="string" @bind-Value="_board" Label="Board for counters / math / levels / values / keypad / CAN out" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 360px" Class="pdm-val-board" Disabled="@busy">
+                    @foreach (var b in View.Boards) { <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem> }
+                </MudSelect>
+                <MudText Typo="Typo.caption">@m.Use(_board).Summary</MudText>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2"><b>Counter</b> (1 counter): counts presses, e.g. a mode button</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int?" @bind-Value="_cUp" Label="Count up on" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-cnt-up" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">IN@(r.Number) (@r.Board)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_cReset" Label="Reset on" Clearable="true" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">IN@(r.Number) (@r.Board)</MudSelectItem> }
+                </MudSelect>
+                <MudNumericField T="int" @bind-Value="_cMax" Label="0 to" Min="1" Max="1000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudCheckBox T="bool" @bind-Value="_cWrap" Label="Wrap" Dense="true" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_cHold" Label="Hold to reset (ms, 0 = off)" Min="0" Max="60000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 170px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _cUp == null)" OnClick="AddCounter" Class="pdm-cnt-add">Add counter</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Math</b> (1 math block): value = (A op B) x factor + offset</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int" @bind-Value="_mA" Label="A" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 200px" Class="pdm-math-a" Disabled="@busy">
+                    @foreach (var c in vals) { <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="MathOp" @bind-Value="_mOp" Label="op" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Disabled="@busy">
+                    @foreach (var o in Enum.GetValues<MathOp>()) { <MudSelectItem T="MathOp" Value="@o">@o</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int" @bind-Value="_mB" Label="B (none = constant)" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 200px" Disabled="@busy">
+                    <MudSelectItem T="int" Value="0">constant</MudSelectItem>
+                    @foreach (var c in vals) { <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem> }
+                </MudSelect>
+                <MudNumericField T="double" @bind-Value="_mConst" Label="Constant" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_mFactor" Label="Factor" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_mOffset" Label="Offset" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddMath" Class="pdm-math-add">Add math</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Level as a signal</b> (2 conditions + 1 virtual input): on / off with hysteresis, usable inside AND / OR</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int" @bind-Value="_lVar" Label="Value" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 200px" Class="pdm-lvl-var" Disabled="@busy">
+                    @foreach (var c in vals) { <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem> }
+                </MudSelect>
+                <MudCheckBox T="bool" @bind-Value="_lAbove" Label="On above (else below)" Dense="true" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_lOn" Label="On at" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_lOff" Label="Off at" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddLevel" Class="pdm-lvl-add">Add level</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Value of another board</b> (1 CAN input): reads that board's own status frame</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="string" @bind-Value="_rFrom" Label="From board" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Disabled="@busy">
+                    @foreach (var b in View.Boards.Where(b => b.Role != _board)) { <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="string" @bind-Value="_rSig" Label="Value" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 260px" Class="pdm-rem-sig" Disabled="@busy">
+                    @foreach (var s in PdmValues.RemoteSignals(View, _rFrom, out _)) { <MudSelectItem T="string" Value="@s.Name">@(s.PdmName ?? s.Name)@(s.Unit != "" ? $" ({s.Unit})" : "")</MudSelectItem> }
+                </MudSelect>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _rSig == null)" OnClick="AddRemote" Class="pdm-rem-add">Add value</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Keypad button</b> (1 CAN input, BlinkMarine button frame 0x180 + node; off 1 s after the keypad goes silent)</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudTextField T="string" @bind-Value="_kNode" Label="Node (hex)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Class="pdm-kp-node" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_kBtn" Label="Button" Min="1" Max="20" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddKeypad" Class="pdm-kp-add">Add button</MudButton>
+                <MudText Typo="Typo.caption">Keypad nodes must stay clear of the PDM's IDs: 0x28-0x3F or 0x68-0x7F (the BlinkMarine default 0x15 collides with A1).</MudText>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Starter interlock</b> (the starter block of each board with a chosen output): outputs held off while cranking</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int?" @bind-Value="_sCrank" Label="Crank input" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-st-crank" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">IN@(r.Number) (@r.Board)</MudSelectItem> }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_sOuts" Label="Outputs to shed, e.g. 1, 2, 22" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-st-outs" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _sCrank == null)" OnClick="SetStarter" Class="pdm-st-set">Set</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Master retry</b> (all three boards): switching this input on clears every output's fault</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int?" @bind-Value="_retry" Label="Retry input" Clearable="true" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-retry" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">IN@(r.Number) (@r.Board)</MudSelectItem> }
+                </MudSelect>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="SetRetry" Class="pdm-retry-set">Set</MudButton>
+            </MudStack>
+
+            <MudText Typo="Typo.subtitle2" Class="mt-2"><b>CAN output</b> (1 CAN output per signal; signals with one ID share one frame)</MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int" @bind-Value="_oVar" Label="Send" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-co-var" Disabled="@busy">
+                    @foreach (var e in View.Boards.Single(b => b.Role == _board).Device.VarMap.Where(e => e.VariableIndex > 0)) { <MudSelectItem T="int" Value="@e.VariableIndex">@PdmTriggers.VarText(m, _board, e.VariableIndex)</MudSelectItem> }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_oId" Label="Frame ID (hex)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Class="pdm-co-id" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_oStart" Label="Start bit" Min="0" Max="63" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_oLen" Label="Bits" Min="1" Max="32" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 80px" Disabled="@busy" />
+                <MudSelect T="ByteOrder" @bind-Value="_oOrder" Label="Byte order" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 140px" Disabled="@busy">
+                    <MudSelectItem T="ByteOrder" Value="@ByteOrder.LittleEndian">Little endian</MudSelectItem>
+                    <MudSelectItem T="ByteOrder" Value="@ByteOrder.BigEndian">Big endian</MudSelectItem>
+                </MudSelect>
+                <MudNumericField T="double" @bind-Value="_oFactor" Label="Factor" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_oOffset" Label="Offset" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_oRate" Label="Every (ms)" Min="10" Max="60000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddCanOut" Class="pdm-co-add">Add signal</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddOpenLoad" Class="pdm-co-ol">Add the 8 open-load flags (bits 0-7)</MudButton>
+            </MudStack>
+
+            @if (PdmValues.All(m) is { Count: > 0 } all)
+            {
+                <MudSimpleTable Dense="true" Class="mt-3" id="pdm-values-list">
+                    <tbody>
+                    @foreach (var f in all)
+                    {
+                        var ff = f;
+                        <tr class="pdm-value-row"><td>@f.Main.Text</td><td>@f.Words</td>
+                            <td><MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="@busy" OnClick="@(() => Done(PdmValues.Remove(View, ff.Main), $"{ff.Main.Text} removed"))">Remove</MudButton></td></tr>
+                    }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open;
+    private string _board = "B", _rFrom = "A1";
+    private int? _cUp, _cReset, _sCrank, _retry;
+    private int _cMax = 3, _cHold, _mA, _mB, _lVar, _kBtn = 1, _oVar, _oStart, _oLen = 8, _oRate = 100;
+    private bool _cWrap = true, _lAbove = true;
+    private MathOp _mOp;
+    private double _mConst, _mFactor = 1, _mOffset, _lOn, _lOff, _oFactor = 1, _oOffset;
+    private string? _rSig;
+    private string _kNode = "28", _sOuts = "", _oId = "6A0";
+    private ByteOrder _oOrder = ByteOrder.LittleEndian;
+
+    private static int? Hex(string s) =>
+        int.TryParse(s.Trim().Replace("0x", "", StringComparison.OrdinalIgnoreCase), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var x) ? x : null;
+
+    private void Done(string? why, string what)
+    {
+        if (why != null) { Notification.NewError($"Not changed: {why}"); return; }
+        Notification.NewInfo($"{what} (on the PC). Write All sends it to the boards.");
+        StateHasChanged();
+    }
+
+    private void AddCounter() => Done(PdmValues.AddCounter(View, new PdmCounterSpec(_board, PdmTerm.In(_cUp!.Value), null,
+        _cReset is { } r ? PdmTerm.In(r) : null, 0, _cMax, _cWrap, _cHold), out var i), $"{_board} counter {i + 1}");
+
+    private void AddMath() => Done(PdmValues.AddMath(View, new PdmMathSpec(_board, _mOp, _mA, _mB, _mConst, _mFactor, _mOffset), out var i), $"{_board} math block {i + 1}");
+
+    private void AddLevel() => Done(PdmValues.AddLevel(View, _board, new PdmThreshold(_lVar, _lAbove, _lOn, _lOff), out _), $"{_board} level");
+
+    private void AddRemote()
+    {
+        var s = PdmValues.AddRemoteValue(View, _board, _rFrom, _rSig!, out var why);
+        Done(why, $"{_board} CAN input {s + 1}: {_rSig}");
+    }
+
+    private void AddKeypad()
+    {
+        if (Hex(_kNode) is not { } node) { Notification.NewError("The node is a hex number, e.g. 28."); return; }
+        var s = PdmValues.AddKeypadButton(View, _board, node, _kBtn, out var why);
+        Done(why, $"{_board} CAN input {s + 1}: keypad 0x{node:X2} button {_kBtn}");
+    }
+
+    private void SetStarter()
+    {
+        var outs = _sOuts.Split([',', ' '], StringSplitOptions.RemoveEmptyEntries).Select(x => int.TryParse(x, out var n) ? n : -1).ToList();
+        if (outs.Any(n => n < 0)) { Notification.NewError("Outputs are numbers 1-24, e.g. 1, 2, 22."); return; }
+        Done(PdmValues.SetStarter(View, PdmTerm.In(_sCrank!.Value), outs), $"Starter interlock on IN{_sCrank}");
+    }
+
+    private void SetRetry() => Done(PdmValues.SetRetry(View, _retry is { } r ? PdmTerm.In(r) : null), _retry is { } n ? $"Master retry on IN{n}" : "Master retry off");
+
+    private void AddCanOut()
+    {
+        if (Hex(_oId) is not { } id) { Notification.NewError("The frame ID is a hex number, e.g. 6A0."); return; }
+        Done(PdmValues.AddCanOut(View, new PdmCanOutSpec(_board, id, _oStart, _oLen, _oVar, _oOrder, false, _oFactor, _oOffset, _oRate), out var i), $"{_board} CAN output {i + 1} on 0x{id:X3}");
+    }
+
+    private void AddOpenLoad()
+    {
+        if (Hex(_oId) is not { } id) { Notification.NewError("The frame ID is a hex number, e.g. 6A0."); return; }
+        Done(PdmValues.AddOpenLoadFrame(View, _board, id, _oRate), $"{_board} open-load flags on 0x{id:X3} bits 0-7");
+    }
+}

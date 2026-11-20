@@ -235,19 +235,28 @@ public static class PdmEcu
     public static int AddValue(PdmView v, string role, string name, int id, int byteIndex, int length, ByteOrder order, bool signed,
         double factor, double offset, int timeoutMs, out string? why)
     {
+        if (byteIndex is < 0 or >= Bytes) { why = "The value must fit in the 8 data bytes (first byte 0-7, length 1-32 bits)."; return -1; }
+        return AddValueAt(v, role, name, id, StartBit(byteIndex, order), length, order, signed, factor, offset, timeoutMs, false, out why);
+    }
+
+    // editor2b: by start bit (DBC rule: little endian = LSB, big endian = MSB); allowPdmId: another board's cyclic signal
+    public static int AddValueAt(PdmView v, string role, string name, int id, int startBit, int length, ByteOrder order, bool signed,
+        double factor, double offset, int timeoutMs, bool allowPdmId, out string? why)
+    {
         why = null;
+        var byteIndex = startBit / 8;
         var q = v.Boards.FirstOrDefault(b => b.Role == role);
         if (q == null) { why = $"{role} is not in this PDM."; return -1; }
         if (id is < 1 or > 0x7FF) { why = "The frame ID must be a standard (11-bit) ID, 0x001 to 0x7FF."; return -1; }
-        if (IsPdmId(v, id)) { why = $"0x{id:X3} is inside a PDM board's own ID block."; return -1; }
-        if (byteIndex is < 0 or >= Bytes || length is < 1 or > 32 || (byteIndex * 8 + length > 64 && order == ByteOrder.LittleEndian))
+        if (IsPdmId(v, id) && !allowPdmId) { why = $"0x{id:X3} is inside a PDM board's own ID block."; return -1; }
+        if (startBit is < 0 or > 63 || length is < 1 or > 32 || (startBit + length > 64 && order == ByteOrder.LittleEndian))
         { why = "The value must fit in the 8 data bytes (first byte 0-7, length 1-32 bits)."; return -1; }
         if (factor == 0) { why = "The factor must not be 0."; return -1; }
         var d = q.Device;
         var s = Enumerable.Range(0, d.CanInputs.Count).FirstOrDefault(i => PdmLinks.IsFreeSlot(q, i), -1);
         if (s < 0) { why = $"{role} is full: no free CAN input ({PdmModel.Build(v).Use(role).Of(PdmResKind.CanInput).Text})."; return -1; }
         var c = d.CanInputs[s];
-        PdmLinks.SetSlot(c, name, id, StartBit(byteIndex, order), Operator.GreaterThanOrEqual, AnyValue, timeoutMs > 0, Math.Max(timeoutMs, 1), length);
+        PdmLinks.SetSlot(c, name, id, startBit, Operator.GreaterThanOrEqual, AnyValue, timeoutMs > 0, Math.Max(timeoutMs, 1), length);
         (c.ByteOrder, c.Signed, c.Factor, c.Offset) = (order, signed, factor, offset);
         return s;
     }
