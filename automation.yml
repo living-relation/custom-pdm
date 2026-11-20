@@ -111,7 +111,7 @@ automations:
     owner: claude
   - id: firmware-sim
     script: firmware/sim/build.sh
-    helpers: [firmware/sim/pdmsim.py, firmware/sim/s0_board_audit.py, firmware/sim/s1_system.py, firmware/sim/s2_boot_blip.py, firmware/sim/s3_features.py, firmware/sim/sim_core.cpp]
+    helpers: [firmware/sim/pdmsim.py, firmware/sim/s0_board_audit.py, firmware/sim/s1_system.py, firmware/sim/s2_boot_blip.py, firmware/sim/s3_features.py, firmware/sim/s4_can_system.py, firmware/sim/sim_core.cpp]   # s4 = presim item 5
     trigger: manual
     reads: ["firmware/**"]
     writes: []                      # builds to an output folder outside the repo (e.g. /tmp/simout)
