@@ -4333,7 +4333,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "445-CGA4J1X7R1H475KT0Y0NCT-ND"
+		(property "Digi-Key_PN" ""
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4469,7 +4469,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "490-10750-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -5094,7 +5094,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1276-2891-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 182.245 26.035 0)
 			(hide yes)
 			(show_name no)

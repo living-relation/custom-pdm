@@ -57,13 +57,14 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 
 # ------------------------------------------------------------------------------------------------ part data
 # (Value, Footprint, LCSC, Digi-Key_PN, Manufacturer, MPN, Datasheet, Alternates)
-C100N = ("100nF", "Capacitor_SMD:C_0402_1005Metric", "C1525", "1276-1043-1-ND", "Samsung Electro-Mechanics",
+# Digi-Key_PN only where read on a Digi-Key product page (ECS crystal, 2026-11-20); else empty: LCSC is the order number
+C100N = ("100nF", "Capacitor_SMD:C_0402_1005Metric", "C1525", "", "Samsung Electro-Mechanics",
          "CL05B104KO5NNNC", "https://www.lcsc.com/datasheet/C1525.pdf",
          "YAGEO CC0402KRX7R7BB104 (X7R 16 V 0402)")
 C1U = ("1uF", "Capacitor_SMD:C_0402_1005Metric", "C47325373", "", "CCTC", "TCC0402X7R105K100AT",
        "https://www.lcsc.com/datasheet/C47325373.pdf",
        "YAGEO CC0402KRX7R6BB105 (X7R 10 V 0402, LCSC C7500381)")
-ESD = ("PESD5V0F1BL", "Diode_SMD:D_SOD-882", "C45961", "1727-3825-1-ND", "Nexperia", "PESD5V0F1BL,315",
+ESD = ("PESD5V0F1BL", "Diode_SMD:D_SOD-882", "C45961", "", "Nexperia", "PESD5V0F1BL,315",
        "https://assets.nexperia.com/documents/data-sheet/PESD5V0F1BL.pdf",
        "Nexperia PESD5V0F1BLZ (LCSC C6952437); BORN PESD5V0F1BL-N (LCSC C2929237)")
 NEW = [  # role, sheet, part, pin 1 net label (None: power GND), pin 2 net label
@@ -78,17 +79,17 @@ SWAPS_B = {
     "Y1": ("MCU.kicad_sch", "C144380", ("8MHz", "", "50-ECS-80-18-30Q-CES-TRCT-ND", "ECS Inc.", "ECS-80-18-30Q-CES-TR",
            "https://ecsxtal.com/store/pdf/ECS-30Q-CES.pdf",
            "ECS ECS-80-18-30Q-VY-TR (-40..105 C, LCSC C6844210)")),
-    "C3": ("Power.kicad_sch", "C162422", ("4.7uF", "C694229", "445-CGA4J1X7R1H475KT0Y0NCT-ND", "TDK",
+    "C3": ("Power.kicad_sch", "C162422", ("4.7uF", "C694229", "", "TDK",
            "CGA4J1X7R1H475KT0Y0N", "https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=CGA4J1X7R1H475KT0Y0N",
            "HRE CGA0805X7R475K500MT (4.7 uF 50 V X7R 0805, LCSC C6119944)")),
-    "C4": ("Power.kicad_sch", "C45783", ("22uF", "C907991", "490-10750-1-ND", "Murata", "GRM21BZ71A226ME15L",
+    "C4": ("Power.kicad_sch", "C45783", ("22uF", "C907991", "", "Murata", "GRM21BZ71A226ME15L",
            "https://www.murata.com/en-us/products/productdetail?partno=GRM21BZ71A226ME15L",
            "CCTC TCC0805X7R226M100FT (22 uF 10 V X7R 0805, LCSC C53133025)")),
-    "C6": ("Power.kicad_sch", "C15850", ("10uF", "C32635", "1276-2891-1-ND", "Samsung Electro-Mechanics",
+    "C6": ("Power.kicad_sch", "C15850", ("10uF", "C32635", "", "Samsung Electro-Mechanics",
            "CL21B106KPQNNNE", "https://www.lcsc.com/datasheet/C32635.pdf", "")),
-    "C10": ("MCU.kicad_sch", "C1779", ("4.7uF", "C98195", "1276-2399-1-ND", "Samsung Electro-Mechanics",
+    "C10": ("MCU.kicad_sch", "C1779", ("4.7uF", "C98195", "", "Samsung Electro-Mechanics",
             "CL21B475KAFNNNE", "https://www.lcsc.com/datasheet/C98195.pdf", "")),
-    "C15": ("MCU.kicad_sch", "C1779", ("4.7uF", "C98195", "1276-2399-1-ND", "Samsung Electro-Mechanics",
+    "C15": ("MCU.kicad_sch", "C1779", ("4.7uF", "C98195", "", "Samsung Electro-Mechanics",
             "CL21B475KAFNNNE", "https://www.lcsc.com/datasheet/C98195.pdf", "")),
 }
 FREEWHEEL_B = {"D13", "D15", "D17", "D19", "D25", "D26", "D27", "D28"}
