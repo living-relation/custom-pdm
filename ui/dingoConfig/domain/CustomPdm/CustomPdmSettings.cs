@@ -23,6 +23,11 @@ public class CustomPdmSettings
     // DEFAULT_TEMP_CRIT_SOON_MARGIN / DEFAULT_WAKE_INPUT_MASK. Exempt mask default is 0 except board A unit 2
     // (fan output, 0x0002): one device type covers both units, so the PC default is 0.
     public const int DefaultTempWarn = 55, DefaultTempCrit = 80, DefaultTempCritHyst = 6;
+    // custom-pdm (fwsafety, ADR-2026-11-20-presim-findings item 1): board B (type 15) ships with its own limits, from its
+    // FEA sensor map (tools/verify_thermal_box.py) and the 105 C MCU / FRAM rating: firmware port_boards.py DEFAULT_TEMP_*
+    public const int DefaultTempWarnB = 98, DefaultTempCritB = 104;
+    public static int TempWarnDefault(int deviceType) => deviceType == 15 ? DefaultTempWarnB : DefaultTempWarn;
+    public static int TempCritDefault(int deviceType) => deviceType == 15 ? DefaultTempCritB : DefaultTempCrit;
     public const int DefaultCritExemptMask = 0, DefaultTempCritSoonMargin = 5, DefaultWakeInputMask = 0;
 
     [JsonPropertyName("tempWarn")] public int TempWarn { get; set; } = DefaultTempWarn;
@@ -93,8 +98,8 @@ public class CustomPdmSettings
 
     public List<DeviceParameter> GetParams(string parentName) =>
     [
-        Param(parentName, "customPdm.tempWarn", 0, () => TempWarn, v => TempWarn = v, DefaultTempWarn),
-        Param(parentName, "customPdm.tempCrit", 1, () => TempCrit, v => TempCrit = v, DefaultTempCrit),
+        Param(parentName, "customPdm.tempWarn", 0, () => TempWarn, v => TempWarn = v, TempWarnDefault(DeviceType)),
+        Param(parentName, "customPdm.tempCrit", 1, () => TempCrit, v => TempCrit = v, TempCritDefault(DeviceType)),
         Param(parentName, "customPdm.tempCritHyst", 2, () => TempCritHyst, v => TempCritHyst = v, DefaultTempCritHyst),
         Param(parentName, "customPdm.critExemptMask", 3, () => CritExemptMask, v => CritExemptMask = v, DefaultCritExemptMask),
         Param(parentName, "customPdm.tempCritSoonMargin", 4, () => TempCritSoonMargin, v => TempCritSoonMargin = v, DefaultTempCritSoonMargin),

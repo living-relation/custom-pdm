@@ -15,6 +15,22 @@ footprint change.
          pinout (TI SLOS066AE Figure 5-1 / Table 5-1 covers both), TA -40 to 125 C (6.3). Every placed unit of each
          symbol is changed, on the sheets the board's hierarchy uses (board B's MedCurrentDrivers.kicad_sch is not
          in the hierarchy and is left alone).
+  * ADR-2026-11-20-is-buffer (supersedes t1a's part): the sense buffers become TI TLV9004IPWR, rail-to-rail in and
+         out on the 3.3 V rail (the LM2902 input range stops at VCC-1.5 / -2 V and clipped board A's readings below
+         the 7.5 A limit when hot, docs/pcb-verification.md). Same TSSOP-14 pinout, checked pin by pin: TI SBOS833R
+         Table 6-5 (TLV9004 PW: 1 OUT1, 2 IN1-, 3 IN1+, 4 V+, 5 IN2+, 6 IN2-, 7 OUT2, 8 OUT3, 9 IN3-, 10 IN3+, 11 V-,
+         12 IN4+, 13 IN4-, 14 OUT4) = TI SLOS066AE Table 5-1 (LM2902 PW) = the LM324 symbol's pin numbers; TA -40 to
+         125 C (SBOS833R 7.3). The symbol stays the generic Amplifier_Operational:LM324 quad (KiCad 9 / 10 libraries
+         have TLV9004 only as TLV9004xRUCR, the X2QFN pin numbering); Value / MPN / LCSC / Digi-Key / Datasheet carry
+         the part.
+  * ADR-2026-11-20-is-fullscale follow-up (hwfix, 2026-11-20): the IS-chain clamp zeners (A: D9, D12, D13, D14;
+         B: D14, D16, D18, D20-D24) PDZ3.3B -> Nexperia PDZ5.1B,115 (same PDZ-B series data sheet, SOD-323, same
+         footprint). With the rail-to-rail TLV9004 behind it the zener no longer needs to sit at the 3.3 V rail: the
+         op-amp's own input diodes take the overdrive (TI SBOS833R 7.1 note 2: <= 10 mA; 4.7 k limits it to about
+         0.3 mA), and the 3.3 V zener's soft knee (rdif <= 1000 Ohm at 0.5 mA, IR <= 5 uA at 1 V, -2.4 mV/K) can hold a
+         PROFET fault (IIS(FAULT) 4.4 mA min) under the 2.475 V firmware threshold when hot (tools/verify_spice.py).
+         PDZ5.1B: VZ 4.96-5.20 V, rdif <= 60 / 250 Ohm at 5 / 0.5 mA, +0.3 mV/K (Nexperia PDZ-B series Table 2).
+         D1 (BATT_SENSE, straight to the MCU pin) stays PDZ3.3B.
 The PCB side (values, fields, DNP / BOM / position attributes) is tools/pcb_board_power.py.
 Safe to re-run: a symbol already carrying the new data is left alone.
 """
@@ -33,11 +49,16 @@ PARTS = {"U4": ("MCU.kicad_sch", "C69336", MCU), "U2": ("Power.kicad_sch", "C358
 LED = {"A": "D3", "B": "D5"}[BOARD]
 DNP = {LED: ("Power.kicad_sch", "C2899888"), "R3": ("Power.kicad_sch", "C229076")}   # green LED, 120 ohm
 # t1a: op-amp part, its old LCSC, the refs and the sheets that hold their units (all units of a ref get the new data)
-OPAMP = ("LM2902PWR", "C46864", "296-6600-1-ND", "Texas Instruments", "LM2902PWR",
-         "https://www.ti.com/lit/ds/symlink/lm2902.pdf")
+OPAMP = ("TLV9004IPWR", "C2058050", "296-51827-1-ND", "Texas Instruments", "TLV9004IPWR",
+         "https://www.ti.com/lit/ds/symlink/tlv9004.pdf")      # ADR-2026-11-20-is-buffer (was LM2902PWR, C46864)
 OPAMP_OLD_LCSC = "C7942"                                 # TI LM324PWR
 OPAMP_UNITS = {"A": {"U7": 4, "U12": 3}, "B": {"U7": 5, "U22": 5}}[BOARD]   # units placed today (A: U7 unit 1 and
 OPAMP_REFS = set(OPAMP_UNITS)                                                # U12 units 1 / 2 are not placed)
+IS_ZENER = ("5.1V", "C85392", "1727-5155-1-ND", "Nexperia", "PDZ5.1B,115",
+            "https://assets.nexperia.com/documents/data-sheet/PDZ-B_SER.pdf")
+IS_ZENER_OLD_LCSC = "C426855"                           # Nexperia PDZ3.3B,115
+IS_ZENERS = {"A": {"D9", "D12", "D13", "D14"},
+             "B": {"D14", "D16", "D18", "D20", "D21", "D22", "D23", "D24"}}[BOARD]
 OPAMP_SHEETS = {"A": ("HighCurrentDrivers.kicad_sch", "MedCurrentDrivers.kicad_sch"),
                 "B": ("HighCurrentDrivers.kicad_sch", "HighCurrentDrivers2.kicad_sch")}[BOARD]
 
@@ -164,7 +185,7 @@ for sheet in OPAMP_SHEETS:
         ref = refs.pop()
         units[ref] += 1
         if get_prop(b, "LCSC") != OPAMP[1]:
-            if get_prop(b, "LCSC") != OPAMP_OLD_LCSC:
+            if get_prop(b, "LCSC") not in (OPAMP_OLD_LCSC, "C46864"):     # baseline LM324PWR, or t1a's LM2902PWR
                 raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {OPAMP_OLD_LCSC} (or {OPAMP[1]})")
             for name, v in zip(("Value", "LCSC", "Digi-Key_PN", "Manufacturer", "MPN", "Datasheet"), OPAMP):
                 b = set_prop(b, name, v)
@@ -178,5 +199,41 @@ for ref in sorted(units):
     if units[ref] != OPAMP_UNITS[ref]:
         raise SystemExit(f"{ref}: {units[ref]} op-amp units found, expected {OPAMP_UNITS[ref]}")
 print(f"op-amps {', '.join(sorted(OPAMP_REFS))}: {OPAMP[4]}, {changed} of {sum(units.values())} units set")
+
+# IS-chain zeners: every symbol (a driver sheet used several times carries several references) whose references are
+# all IS zeners of this board; D1 (BATT_SENSE) is never one of them
+ROOT = {"A": "DingoPDM.kicad_sch", "B": "dingoPDM-Max.kicad_sch"}[BOARD]
+sheets, todo = [], [ROOT]
+while todo:
+    f = todo.pop()
+    if f not in sheets:
+        sheets.append(f)
+        todo += re.findall(r'\(property "Sheetfile" "([^"]+)"', rd(f))
+seen, zchanged = set(), 0
+for sheet in sheets:
+    t = rd(sheet)
+    out, pos = [], 0
+    for m in re.finditer(r"\n\t\(symbol[\s(]", t):
+        s = m.start() + 2
+        if s < pos:
+            continue
+        e = block_end(t, s)
+        b = t[s:e]
+        refs = set(re.findall(r'\(reference "([^"]+)"\)', b))
+        if not refs or not refs <= IS_ZENERS or get_prop(b, "LCSC") not in (IS_ZENER_OLD_LCSC, IS_ZENER[1]):
+            continue
+        seen |= refs
+        if get_prop(b, "LCSC") == IS_ZENER_OLD_LCSC:
+            for name, v in zip(("Value", "LCSC", "Digi-Key_PN", "Manufacturer", "MPN", "Datasheet"), IS_ZENER):
+                b = set_prop(b, name, v)
+            zchanged += 1
+        out.append(t[pos:s] + b)
+        pos = e
+    new = "".join(out) + t[pos:]
+    if new != t:
+        wr(sheet, new)
+if seen != IS_ZENERS:
+    raise SystemExit(f"IS zeners found {sorted(seen)}, expected {sorted(IS_ZENERS)}")
+print(f"IS zeners {', '.join(sorted(IS_ZENERS))}: {IS_ZENER[4]}, {zchanged} symbols set")
 
 print("board power schematic edits OK")

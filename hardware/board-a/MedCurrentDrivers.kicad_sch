@@ -2033,7 +2033,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 246.38 36.2023 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2055,7 +2055,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 249.555 29.845 0)
 			(hide yes)
 			(show_name no)
@@ -2077,7 +2077,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 248.285 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2088,7 +2088,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 248.285 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2110,7 +2110,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 248.285 34.925 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 248.285 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2530,7 +2541,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 109.855 115.1161 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2551,7 +2562,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 111.125 116.205 0)
 			(hide yes)
 			(show_name no)
@@ -2573,7 +2584,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 109.855 121.285 0)
 			(hide yes)
 			(show_name no)
@@ -2584,7 +2595,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 109.855 121.285 0)
 			(hide yes)
 			(show_name no)
@@ -2606,7 +2617,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 109.855 121.285 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 109.855 121.285 0)
 			(hide yes)
 			(show_name no)
@@ -3112,7 +3134,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 109.22 78.9211 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3133,7 +3155,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 110.49 80.01 0)
 			(hide yes)
 			(show_name no)
@@ -3155,7 +3177,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 109.22 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -3166,7 +3188,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 109.22 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -3188,7 +3210,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 109.22 85.09 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 109.22 85.09 0)
 			(hide yes)
 			(show_name no)
@@ -3349,7 +3382,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 108.585 41.4561 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3370,7 +3403,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 109.855 42.545 0)
 			(hide yes)
 			(show_name no)
@@ -3392,7 +3425,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 108.585 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -3403,7 +3436,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 108.585 47.625 0)
 			(hide yes)
 			(show_name no)
@@ -3425,7 +3458,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 108.585 47.625 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 108.585 47.625 0)
 			(hide yes)
 			(show_name no)

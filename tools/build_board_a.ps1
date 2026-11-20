@@ -10,6 +10,8 @@
 # Then (r2a / s4a / s6a / t1a, 2026-11-14): tools/sch_board_power.py A + tools/pcb_board_power.py - part fields only.
 # Then (2026-11-14): tools/sch_digikey.py A + tools/pcb_digikey.py - Digi-Key fields only.
 # Then (2026-11-16): tools/sch_bom_fields.py A + tools/pcb_bom_fields.py - order fields (Manufacturer / MPN / LCSC / ...).
+# Then (ADR-2026-11-20-d2-move): tools/d2_tvs.py lib / sch / pcb - DO-218 load-dump TVS D2 in its new spot.
+# Last (hwprotect, ADR-2026-11-20-presim-findings): tools/hw_protect.py sch / pcb - NRST / VDDA caps, USB ESD diodes.
 param([string]$Out = "$env:LOCALAPPDATA\Workstation\claude-fusion\kicad9", [switch]$NoInputs)
 $repo = Split-Path $PSScriptRoot -Parent
 $py9 = "$env:LOCALAPPDATA\Programs\KiCad\9.0\bin\python.exe"
@@ -36,12 +38,18 @@ try {
     if ($LASTEXITCODE) { throw 'wirepads.py lib failed' }
     & $py9 "$repo\tools\wirepads.py" sch-a Connectors.kicad_sch
     if ($LASTEXITCODE) { throw 'wirepads.py sch-a failed' }
-    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a LM2902PWR op-amps
+    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a / ADR-2026-11-20-is-buffer TLV9004IPWR op-amps
     if ($LASTEXITCODE) { throw 'sch_board_power.py failed' }
     & $py9 "$repo\tools\sch_digikey.py" A                       # 2026-11-14: Digi-Key numbers for TBD fields
     if ($LASTEXITCODE) { throw 'sch_digikey.py failed' }
     & $py9 "$repo\tools\sch_bom_fields.py" A                    # 2026-11-16: order fields on every fitted part
     if ($LASTEXITCODE) { throw 'sch_bom_fields.py failed' }
+    & $py9 "$repo\tools\d2_tvs.py" lib                          # ADR-2026-11-20-d2-move: DO-218 load-dump TVS footprint
+    if ($LASTEXITCODE) { throw 'd2_tvs.py lib failed' }
+    & $py9 "$repo\tools\d2_tvs.py" sch Power.kicad_sch
+    if ($LASTEXITCODE) { throw 'd2_tvs.py sch failed' }
+    & $py9 "$repo\tools\hw_protect.py" sch A                  # hwprotect: NRST / VDDA caps, USB ESD diodes
+    if ($LASTEXITCODE) { throw 'hw_protect.py sch failed' }
     & $kc10 sch export netlist --format kicadxml -o "$Out\net.xml" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_swap_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_swap_board_a.py failed' }
@@ -65,6 +73,10 @@ try {
     if ($LASTEXITCODE) { throw 'pcb_bom_fields.py failed' }
     & $py9 "$repo\tools\pcb_hole_keepout.py" DingoPDM.kicad_pcb 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # 2026-11-20 pcbverify: no pour under the sink posts
     if ($LASTEXITCODE) { throw 'pcb_hole_keepout.py failed' }
+    & $py9 "$repo\tools\d2_tvs.py" pcb DingoPDM.kicad_pcb A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # ADR-2026-11-20-d2-move: D2 to its new spot + clamp copper
+    if ($LASTEXITCODE) { throw 'd2_tvs.py pcb failed' }
+    & $py9 "$repo\tools\hw_protect.py" pcb DingoPDM.kicad_pcb "$Out\board-a.net" A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # hwprotect: new parts placed + connected (last stage)
+    if ($LASTEXITCODE) { throw 'hw_protect.py pcb failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3

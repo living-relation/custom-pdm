@@ -78,6 +78,9 @@
 #define DEVICE_THREAD_STACK 2048
 #define CAN_THREAD_STACK 512
 
+// presim: DSEL settle before the IS read = tsIS(CC) 20 us + RC + one 45.6 us ADC sequence (port.cpp, 112-cycle
+// TS / VREFINT sampling); functions/profet.h keeps the stock 60 us for every other board
+#define DSEL_SETTLE_US 80
 #define NUM_TX_MSGS 38 // custom-pdm: + msg 37
 // Factory defaults (used only when the FRAM holds no valid config). All can be changed over CAN/USB later.
 #ifndef PDM_UNIT
@@ -180,6 +183,9 @@
 #define PRO_FEATURES 1
 #define NUM_TABLES 4
 #define VAR_MAP_PRO_VARS (NUM_TABLES + NUM_OUTPUTS) // var map end: table outputs 1-4, then undercurrent flag per output
+// MCU safety (ADR-2026-11-20-presim-findings item 3, core/safety.h): brown-out level 3 set from the option bytes at
+// boot, independent watchdog refreshed only when every essential thread ran, RTC-refreshed watchdog in sleep
+#define MCU_SAFETY 1
 
 #define ADC1_NUM_CHANNELS 8
 #define ADC1_BUF_DEPTH 1

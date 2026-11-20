@@ -55,7 +55,9 @@ struct Config_OutputExt{
 // Rise time = 20us
 // 140us + 20us + 20us = 180us
 // DSEL changeover takes max ~60us
+#ifndef DSEL_SETTLE_US // custom-pdm: a board may set its own (custompdm_a port.h, presim)
 #define DSEL_SETTLE_US 60
+#endif
 
 #define PWM_READ_DELAY_SINGLE_CH 180
 // Min duty cycle @ 100Hz = 180us / 10ms  = 1.8%

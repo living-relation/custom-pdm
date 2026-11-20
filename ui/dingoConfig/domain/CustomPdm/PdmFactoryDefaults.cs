@@ -56,6 +56,8 @@ public static class PdmFactoryDefaults
         d.BaseId = BaseFor(role);
         d.BitRate = CanBitRate.BitRate1000K;                       // DEFAULT_CAN_BITRATE
         foreach (var o in d.Outputs) o.ResetMode = ResetMode.Count; // DEFAULT_RESET_MODE
+        (d.CustomPdm.TempWarn, d.CustomPdm.TempCrit) =               // DEFAULT_TEMP_WARN / _CRIT (board B: its own, fwsafety)
+            (CustomPdmSettings.TempWarnDefault(d.DeviceTypeId), CustomPdmSettings.TempCritDefault(d.DeviceTypeId));
         for (var i = 0; i < d.Outputs.Count; i++) d.Outputs[i].CurrentLimit = CurrentLimit(role, i); // DEFAULT_OUT_CURRENT_LIMIT
         foreach (var a in d.AnalogInputs)
         {

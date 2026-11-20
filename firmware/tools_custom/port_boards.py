@@ -175,7 +175,10 @@ PRO = '''// Pro-PDM parity gaps (docs/feature-parity.md, core/custom_options.h P
 // open-load flag per output (block 0x7D00 + o), master retry input (0x7F00 sub 6), 4 lookup tables (0x7E00 + n).
 #define PRO_FEATURES 1
 #define NUM_TABLES 4
-#define VAR_MAP_PRO_VARS (NUM_TABLES + NUM_OUTPUTS) // var map end: table outputs 1-4, then undercurrent flag per output'''
+#define VAR_MAP_PRO_VARS (NUM_TABLES + NUM_OUTPUTS) // var map end: table outputs 1-4, then undercurrent flag per output
+// MCU safety (ADR-2026-11-20-presim-findings item 3, core/safety.h): brown-out level 3 set from the option bytes at
+// boot, independent watchdog refreshed only when every essential thread ran, RTC-refreshed watchdog in sleep
+#define MCU_SAFETY 1'''
 VARMAP_END = '    (NUM_KEYPADS * (KEYPAD_MAX_BUTTONS + KEYPAD_MAX_DIALS + KEYPAD_MAX_ANALOG_INPUTS)) \\\n'
 VARMAP_PRO = ('    (NUM_KEYPADS * (KEYPAD_MAX_BUTTONS + KEYPAD_MAX_DIALS + KEYPAD_MAX_ANALOG_INPUTS)) + \\\n'
               '    VAR_MAP_PRO_VARS /* custom-pdm: PRO_FEATURES vars */ \\\n')
@@ -191,6 +194,18 @@ FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is wired inside the box to b
                 '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)', fl(LIMIT_A))
 FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1',
                 f'((int)(i) < 4 ? {fl(LIMIT_B_STUD)} : {fl(LIMIT_B)})')
+# Board B temperature limits (ADR-2026-11-20-presim-findings item 1; job fwsafety): board B's own MCP9808 (U6) reads
+# 95.6 C at the car loads with fans on in a 60 C cabin (tools/thermal_board_b.py + verify_thermal_box.py, FEA on the real
+# copper), above the stock 55 / 80. Map sensor -> hot spots over the 10 modelled cases (car, feed150 / hi / lo, rating;
+# fans on / failed): laminate = sensor + 9.6 .. 19.0 K, driver Tj = sensor + 1.7 .. 19.8 K. Critical 104 C = the
+# tightest of: laminate 104 + 19.0 + 1 (MCP9808 +-1 C max at -40..125 C, DS20005095B DC characteristics) = 124 <= 130 C; Tj 125 <= 150 C; the
+# logic-area parts at the sensor reading + 1 = 105 C <= the 105 C ambient rating of the STM32F446RET7 and the
+# MB85RC64TA FRAM (the 85 C TSR 1-2450 / ABM3 / X5R parts must be >= 105 C grades: hardware job). Warn 98 C = 2.4 K
+# over the car-loads reading (no warning in normal use) and below critical-soon (104 - 5). Recovery 6 C (stock rule).
+# verify_thermal_box.py checks these values against the model. Board A keeps the stock 55 / 80 (no FEA sensor map yet).
+FAN_B += '''
+#define DEFAULT_TEMP_WARN 98     // board B: see port_boards.py (FEA sensor map, part ratings)
+#define DEFAULT_TEMP_CRIT 104'''
 COMMON = [('LED_ERROR','C0'),('LED_STATUS','C1'),('BATT_SENSE','A3'),('USB_VBUS','A9'),
           ('CAN_STANDBY','C12'),('I2C1_SCL','B6'),('I2C1_SDA','B7'),('CAN_RX','B8'),('CAN_TX','B9'),
           ('USB_DM','A11'),('USB_DP','A12'),('SWDIO','A13'),('SWCLK','A14')]
@@ -436,4 +451,28 @@ for b in ('custompdm_a', 'custompdm_b'):
     if 'analog_input.h' not in s: f.write_text(s.replace('#include "digital_input.h"', '#include "digital_input.h"\n#include "analog_input.h"'))
     f = B/b/'board.mk'; s = f.read_text()
     if 'functions/analog_input.cpp' not in s: f.write_text(s.replace('functions/profet.cpp \\\n', 'functions/profet.cpp \\\n\t\t\t\tfunctions/analog_input.cpp \\\n'))
+    # MCU safety (MCU_SAFETY in port.h): decision logic + STM32F446 register layer, custom boards only
+    s = f.read_text()
+    if 'core/safety.cpp' not in s: f.write_text(s.replace('core/sleep.cpp \\\n', 'core/sleep.cpp \\\n\t\t\t\tcore/safety.cpp \\\n\t\t\t\tboards/stm32f446/mcu_safety.cpp \\\n'))
+# presim (ADR-2026-11-20-presim, docs/system-verification.md 1): the STM32F446 needs >= 10 us of sampling for the
+# temperature sensor and VREFINT (DS DocID027107 Tables 80 / 83); stock 15 cycles at 9 MHz = 1.7 us. 112 cycles =
+# 12.4 us. VREFINT sets GetVDDA(), so every current / voltage reading depends on it. The ADC sequence then takes
+# 45.6 us on A (6 x 27 + 2 x 124 cycles) and 57.6 us on B, so board A's DSEL settle (stock 60 us) grows to 80 us:
+# BTS7008 tsIS(CC) 20 us max (P_9.6.1.10) + the 4.7k / 220p input RC + one full ADC sequence.
+# GetTemperature(): TS_CAL1 / TS_CAL2 were taken at VDDA = 3.3 V (Table 81): scale the raw count by VDDA / 3.3 V
+# first (a 1.5 % VDDA error was a 5 C error; s0 checks the reading at VDDA 3.25 V).
+TS_OLD = "    return (STM32_TS_CAL1_TEMP + ((float)(GetAdcRaw(AnalogChannel::TempSensor) - STM32_TS_CAL1) / (STM32_TS_CAL2 - STM32_TS_CAL1)) * (STM32_TS_CAL2_TEMP - STM32_TS_CAL1_TEMP));"
+TS_NEW = ("    // custom-pdm (presim): TS_CAL1 / TS_CAL2 are taken at VDDA = 3.3 V (DS Table 81): bring the count to 3.3 V first\n"
+          "    const float raw = (float)GetAdcRaw(AnalogChannel::TempSensor) * GetVDDA() / (float)STM32_CAL_VDDA;\n"
+          "    return (STM32_TS_CAL1_TEMP + ((raw - STM32_TS_CAL1) / (STM32_TS_CAL2 - STM32_TS_CAL1)) * (STM32_TS_CAL2_TEMP - STM32_TS_CAL1_TEMP));")
+for b in ('custompdm_a', 'custompdm_b'):
+    f = B/b/'port.cpp'; s = f.read_text()
+    for ch in ('SENSOR', 'VREF'):
+        s = rep(s, f'ADC_SMPR1_SMP_{ch}(ADC_SAMPLE_15)', f'ADC_SMPR1_SMP_{ch}(ADC_SAMPLE_112)')
+    s = rep(s, TS_OLD, TS_NEW)
+    f.write_text(s)
+f = B/'custompdm_a'/'port.h'; s = f.read_text()
+s = rep(s, '#define NUM_TX_MSGS', '// presim: DSEL settle before the IS read = tsIS(CC) 20 us + RC + one 45.6 us ADC sequence (port.cpp, 112-cycle\n'
+        '// TS / VREFINT sampling); functions/profet.h keeps the stock 60 us for every other board\n#define DSEL_SETTLE_US 80\n#define NUM_TX_MSGS')
+f.write_text(s)
 print('ok')

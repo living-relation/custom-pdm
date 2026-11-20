@@ -93,7 +93,9 @@ F.add_part(b, FIX[CAN_R], padnet, F.xy(F.pad(b, CAN_JP, "2")), keep_out=[LEFT])
 u4b = b.FindFootprintByReference("U4").GetBoundingBox(False, False)
 U4_ROOM = (tomm(u4b.GetLeft()) - 4.5, tomm(u4b.GetTop()) - 4.5, tomm(u4b.GetRight()) + 4.5, tomm(u4b.GetBottom()) + 4.5)  # fan-outs
 F.add_part(b, FIX[BOOT_R], padnet, (U4_ROOM[2] + 2.0, F.xy(F.pad(b, "U4", "28"))[1]), keep_out=[LEFT, U4_ROOM])
-missing = sorted(r for r in nl if not r.startswith("#") and b.FindFootprintByReference(r) is None)
+import hw_protect  # noqa: E402  (its parts are placed by the last stage, tools/hw_protect.py pcb)
+later = hw_protect.later_refs(NET)
+missing = sorted(r for r in nl if not r.startswith("#") and r not in later and b.FindFootprintByReference(r) is None)
 if missing:
     raise SystemExit(f"still not on the board: {missing}")
 
