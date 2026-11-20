@@ -580,9 +580,9 @@ class pdm_bench:
         s._load(g, 5.0); s._set_cmd([g]); s._run(500); on_before = g in s._pins_on()
         s._x(f'sysbus.adc1 SetFault {o} true', MACH[k]); t = 0
         while g in s._pins_on() and t < 200: s._run(2); t += 2
-        s._run(50); st = s._status(k, (3,)).out_state(o)
+        s._run(250); st = s._status(k, (3,)).out_state(o); still_off = g not in s._pins_on()   # msg 3 every 100 ms
         s._x(f'sysbus.adc1 SetFault {o} false', MACH[k]); s._x('sysbus.adc1 SenseClamp 3.3', MACH[k])
         s._set_cmd([]); s._load(g, s.LIMIT[g] * 0.6); s._power_cycle(k); s._run(1500)    # RAM-only settings and the latched Fault go
         again = s._status(k, (3,)).out_state(o)
-        s._check(ok_w and on_before and t <= 6 and st == 3 and again == 0,
-                 f'writes acknowledged {ok_w}; on before {on_before}; IN low {t} ms after the fault (2 ms steps, want <= 6, trip time 1000 ms); state {st} (3 = Fault); after a power cycle {again}')
+        s._check(ok_w and on_before and t <= 6 and st == 3 and still_off and again == 0,
+                 f'writes acknowledged {ok_w}; on before {on_before}; IN low {t} ms after the fault (2 ms steps, want <= 6, trip time 1000 ms); 250 ms later state {st} (3 = Fault), IN still low {still_off}; after a power cycle {again}')
