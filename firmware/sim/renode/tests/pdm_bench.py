@@ -613,13 +613,14 @@ class pdm_bench:
                  f'watchdog running, no reset in the whole bench run (Write / Burn, power cycles, critical, sleep), longest refresh gap on the real binaries <= half the shortest timeout: {got}, {t_min}')
 
     def stalled_device_loop_resets_the_board(s):
-        # the device thread gets stuck where it would refresh (a CPU hook keeps the PC on McuWdgRefresh's first
-        # instruction: the thread spins there, interrupts still run); the IWDG must reset A1 and every output starts off
+        # the device loop stalls where it would refresh: a CPU hook halts A1's core at McuWdgRefresh (Renode's hooks
+        # cannot keep one thread spinning; the host sim stalls each thread on its own, s0); the IWDG runs on and must
+        # reset A1, and every output starts off
         s._ecu_on(); s._set_cmd([1, 2, 4]); s._run(600); before = s._a1_on(); r0 = int(s._wd('A1', 'Resets'), 0)
         addr = s._symbol('custompdm_a_unit1.elf', 'McuWdgRefresh()'); tmo = s._wdf('A1', 'TimeoutMs')
-        s._x(f'sysbus.cpu AddHook {addr:#x} "self.PC = {addr:#x}"', 'a1'); t0 = s.now
+        s._x(f'sysbus.cpu AddHook {addr:#x} "self.IsHalted = True"', 'a1'); t0 = s.now
         while int(s._wd('A1', 'Resets'), 0) == r0 and s.now < t0 + tmo + 1500: s._run(10)
-        t_reset = s.now - t0; s._x(f'sysbus.cpu RemoveHooksAt {addr:#x}', 'a1')
+        t_reset = s.now - t0; s._x(f'sysbus.cpu RemoveHooksAt {addr:#x}', 'a1'); s._x('sysbus.cpu IsHalted false', 'a1')
         off = s._a1_on(); s._settle_inputs(['A1']); s._run(1500); back = s._a1_on()
         s._set_cmd([]); s._run(300)
         s._check(before == [1, 2, 4] and int(s._wd('A1', 'Resets'), 0) == r0 + 1 and abs(t_reset - tmo) <= 300 and off == [] and back == [1, 2, 4],

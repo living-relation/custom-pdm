@@ -127,7 +127,7 @@ Full Scale With A Rail-to-rail Sense Buffer: A PROFET Fault Read At A 2.7 V Sens
 Watchdog: Running On All Three Boards, No Reset In The Whole Bench Run, Longest Refresh Gap On The Real Binaries Within Half The Shortest Timeout
     Watchdog Runs With No Reset In The Whole Run
 
-Watchdog: A1's Device Thread Stuck At Its Refresh: Reset After The Timeout, Every Output Off, Back With Its Config
+Watchdog: A1's Device Loop Stalled At Its Refresh: Reset After The Timeout, Every Output Off, Back With Its Config
     Stalled Device Loop Resets The Board
 
 Watchdog In Sleep: 12 s In STOP With RTC Wake-ups Refreshing The Watchdog, No Reset
