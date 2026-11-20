@@ -121,7 +121,10 @@ class pdm_bench:
         s._settle_inputs(list(BASE))
         # MCU_SAFETY: a fresh board writes BOR level 3 into its option bytes and resets itself about 0.5 s in
         # (models/PdmSafety.cs); the reset puts Renode's GPIO inputs back at their ODR value, so drive them again
-        s._run(600); s._settle_inputs(list(BASE)); s._run(870)
+        # (after its FRAM default-config write, about 0.66 s in); wait for every board's write, then 50 ms for the reset
+        t0 = s.now
+        while s.now < t0 + 1500 and not all(int(s._fl(k, 'ProgramCount'), 0) == 1 for k in BASE): s._run(20)
+        s._run(50); s._settle_inputs(list(BASE)); s._run(max(0, 2190 - (s.now - t0)))   # the second start needs 0.5 s + init
 
     def fresh_boards_answer_on_their_own_ids(s):
         br = {k: s._bitrate(k) for k in BASE}; ver = {k: s._version(BASE[k]) for k in BASE}
