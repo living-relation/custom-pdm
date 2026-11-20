@@ -46,8 +46,13 @@ PARTS = [
     # and absorbs a 35 V suppressed load dump it cannot survive). 24 V stand-off, 5 kW, same DO-214AB footprint;
     # clamps fast ISO 7637-2 pulses under the switches' 35 V load-dump rating. Reasoning + sources:
     # docs/parts-audit.md section 13.
-    ("C152086", "DOWO", "5.0SMDJ24CA", "C284111", "F5634CT-ND",
-     "Littelfuse 5.0SMDJ24CA (DK F5634CT-ND)", "5.0SMDJ24CA"),
+    # Since 2026-11-20 (ADR-2026-11-20-tvs-loaddump / -d2-move, docs/parts-audit.md 14.3): the 5.0SMDJ24CA cannot take an
+    # ISO 16750-2 test B suppressed load dump (12-123 J for 400 ms vs ~7 J); D2 = Vishay SM8S24CAHM3/I, DO-218 (6.6 kW
+    # 10/1000 us, 5.2 kW 10/10000 us, same VBR 26.7-29.5 V; Vishay doc 98229), new footprint and spot (tools/d2_tvs.py).
+    # LCSC C20036943 had 2 in stock on 2026-11-20 (assembler global sourcing or the alternates); Bourns SM8S24CA-Q:
+    # Digi-Key SM8S24CA-QCT-ND, active, 14,800 in stock (2026-11-20). Panjit SM8H24CAS-AU: same DO-218AB body.
+    ("C152086", "Vishay", "SM8S24CAHM3/I", "C20036943", "112-SM8S24CAHM3/ITR-ND",
+     "Bourns SM8S24CA-Q (DK SM8S24CA-QCT-ND); Panjit SM8H24CAS-AU", "SM8S24CA"),
     ("C2976509", "DOWO", "NUP2105LT1G", "C2976509", KEEP, "onsemi NUP2105LT1G (DK NUP2105LT1GOSCT-ND)", None),
     ("C2899997", "OSRAM", "LS R976-NR-1-0-20-R18", "C2899997", KEEP, "", None),               # red LED 0805
     ("C2899888", "OSRAM", "LG R971-KN-1-0-20-R18", "C2899888", KEEP, "", None),               # green LED 0805
