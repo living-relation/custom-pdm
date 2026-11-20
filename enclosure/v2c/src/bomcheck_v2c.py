@@ -62,13 +62,16 @@ def walk(path, depth=0, mult=1, seen=()):
 walk(AF)
 SUBS = set(meta.get("subassemblies", {}))
 # revD (Dan 2026-11-20): one part = one solid for every made part; every bought part carries its maker's model (or is a
-# standard part built from its standard's table: ISO / DIN); "bought-drawn" or maker "(TBD)" fails
-MADE_KINDS = ("made", "made-set"); STD = ("ISO ", "DIN ")
+# standard part built from its standard's table: ISO / DIN); "bought-drawn" or maker "(TBD)" fails. Exception (handbuilt-cad
+# Conventions "Off-the-shelf CAD": a labelled best-guess from the datasheet when no maker CAD exists; coordinator 2026-11-20): a
+# "bought-drawn" part passes when its description carries BEST_GUESS and its source cites the maker's published page.
+MADE_KINDS = ("made", "made-set"); STD = ("ISO ", "DIN "); BEST_GUESS = "BEST-GUESS FROM DATASHEET"
+def best_guess_ok(c): return c["kind"] == "bought-drawn" and BEST_GUESS in (c.get("desc") or "") and bool(c.get("source")) and "(TBD)" not in c["maker"]
 for pn, c in meta.get("parts", {}).items():
     pf = os.path.join(AD, "Parts", pn + ".stp")
     nsol = sum(1 for v in parse(pf).values() if v.startswith(("MANIFOLD_SOLID_BREP", "BREP_WITH_VOIDS"))) if os.path.exists(pf) else 0
     if c["kind"] in MADE_KINDS and nsol != 1: fails.append(f"{pn}: made part file holds {nsol} solids (one part = one solid)")
-    if c["kind"].startswith("bought"):
+    if c["kind"].startswith("bought") and not best_guess_ok(c):
         if c["kind"] == "bought-drawn" or "(TBD)" in c["maker"] or not (c.get("source") or c["maker"].startswith(STD)):
             fails.append(f"{pn}: bought part without its maker's model (kind {c['kind']}, maker {c['maker']}, source {c.get('source') or '-'})")
 for spn in SUBS:

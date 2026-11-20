@@ -51,7 +51,7 @@ for i, a in enumerate(lugs):
 for k, v in res.items(): print(k, v)
 # ---- 2) head rule ----
 ROWS = [r for r in csv.DictReader(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "screw_dimensions.csv"))) if r["family"] == "SHCS ISO 4762"]
-METAL = ("copper", "ring-lugs", "screws_", "standoffs", "heat-sink", "heat-set", "panel-nuts", "panel-washers")
+METAL = ("copper", "ring-lugs", "screws_", "standoffs", "standoff-studs", "heat-sink", "heat-set", "panel-nuts", "panel-washers")
 metal = [(n, s) for n in BR if n.startswith(METAL) for s in SOL[n]]     # same solid objects as scr, so 'is' finds the screw itself
 def big(lo, hi):
     lo = [max(v, -1e3) for v in lo]; hi = [min(v, 1e3) for v in hi]
