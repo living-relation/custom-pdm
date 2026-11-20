@@ -1,0 +1,14 @@
+# Git, branches and PRs
+
+Enforcer: CI `state-check`, `no-claude-files`, `registry-check`; hooks; none yet for the rest.
+
+- Private remote (Dan, 2026-11-10): work on a feature branch, run the checks, push, open a PR, merge when green (agents merge their own PRs when green, fix-ups included; Dan 2026-11-08), then bring local `main` level with `origin/main`. Pulls are fast-forward only; never force-push; never `--no-verify`.
+- Worktrees (Dan, 2026-11-11): every worktree lives inside the repo root, `C:\projects\active\custom-pdm\.claude\worktrees\<job>` (git-ignored), never beside it in `C:\projects\active`.
+- One coordinator per repo folder; workers work only in their own worktree, never in the main checkout (Never do: commit 458ef4c went to main without a PR when another session switched the shared folder to main mid-turn, 2026-11-12; the encl job staged renames in the main checkout, 2026-11-16).
+- Check `git branch --show-current` and `git diff --cached --stat` right before every commit (Never do: committed baseline board files in 1b16fdf and build output in `firmware/1`, `firmware/2` by accident).
+- Before merging: re-run the tests yourself on the branch merged with current main; merge in a separate step that checks the result of the step before (Never do: a closeout script stopped on a merge conflict and the same command line went on to `git worktree remove --force` and `gh pr merge`, 2026-11-16).
+- `git worktree remove` also deletes git-ignored files: run `git status --ignored` and move ignored inputs out first (Never do: the 2026-11-13 cleanup deleted the licence-restricted vendor STEPs under `enclosure/v2b/`).
+- Parallel jobs that each add a STATE / doc line conflict on merge: merge main into the later branch and keep both sides.
+- Never commit or print secrets (API keys, tokens, account details). Sign memory notes `-- <agent>, YYYY-MM-DD` (absolute dates only).
+- Any `CLAUDE.md`, `CLAUDE.local.md` or `.claude/CLAUDE.md` is folded into the `AGENTS.md` of its folder (keep every rule, drop exact duplicates) and deleted in a PR (Dan, 2026-11-17, pre-approved).
+- Do not push anything upstream to dingoPDM / dingoFW / dingoConfig.

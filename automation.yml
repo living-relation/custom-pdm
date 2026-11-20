@@ -165,6 +165,16 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
     owner: claude
+  - id: no-claude-files
+    script: .github/workflows/no-claude-files.yml
+    helpers: [.github/no-claude-files.sh]
+    trigger: pr-check
+    reads: ["**"]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: false                  # GitHub only; same as state-check
+    owner: claude
   - id: enclosure-v2b-build
     script: enclosure/v2b/src/build_check_all.sh
     helpers: [enclosure/v2b/src/run.sh, enclosure/v2b/src/build_v2b.py, enclosure/v2b/src/clearance_v2b.py, enclosure/v2b/src/show_check.py,

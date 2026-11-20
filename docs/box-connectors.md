@@ -94,4 +94,4 @@ Also buy: sealing plugs for spare cavities (size 20, 16). The HDP 24-9 set is no
 
 ## Notes
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers before crimping.
-- Other open items (contacts to buy, current checks): `STATE.md`, Open items (hardware). Pictures: `docs/diagrams/` (illustrations, not a source of truth).
+- Other open items (contacts to buy, current checks): `BACKLOG.md` in the memory store (AGENTS.md role table). Pictures: `docs/diagrams/` (illustrations, not a source of truth).
