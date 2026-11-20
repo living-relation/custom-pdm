@@ -61,6 +61,7 @@ DRIVERS = [  # name, rating A, kILIS datasheet (parts-audit), kILIS firmware (po
 # IS current limits, all three PROFET +2 12V data sheets: IIS(FAULT) 4.4 min / 5.5 typ / 10 max mA (BTS7008 P_9.6.0.x,
 # BTS7004 / BTS70012 P_9.6.4.1); IIS(SAT) 4.4 min / 15 max mA (BTS7008 P_9.6.0.13).
 IIS_FAULT_MIN, IIS_SAT_MIN, IIS_SAT_MAX = 4.4e-3, 4.4e-3, 15e-3
+IIS_FAULT_MAX = 10e-3
 FULL_SCALE = 3071          # firmware PROFET_IS_FULL_SCALE (counts of 4095 at VDDA = +3V3) = 2.475 V
                            # (ADR-2026-11-20-is-fullscale, PR #112; was 4054)
 # Sense buffer (U7 / U12 on A, U7 / U22 on B), unity-gain follower on +3V3:
@@ -213,13 +214,60 @@ echo "iin = $&iin"
         add("IS -> ADC", f"IS saturation 15 mA, {temp} C: ADC pin / op-amp input current",
             f"{m['vadc']:.2f} V / {m['iin'] * 1e3:.2f} mA", "ADC <= 3.6 V; input <= 10 mA (TLV9004 abs max)",
             m["vadc"] <= 3.6 and m["iin"] <= 10e-3, f"zener node {m['vn1']:.2f} V ({ZENER} VZ max corner)")
+    tlv_input(keep)
+
+
+def tlv_input(keep):
+    """TLV9004 input pin vs its absolute maximum (TI SBOS833R 7.1, p. 14): signal input pins -10 .. +10 mA; common
+    mode (V-)-0.5 .. (V+)+0.5 V, and note 2: 'Input pins are diode-clamped to the power-supply rails. Input signals
+    that may swing more than 0.5 V beyond the supply rails must be current limited to 10 mA or less.' With PDZ5.1B
+    the zener node sits above +3V3, so the pin is held by its upper clamp diode and the 4.7k (R2) is the limit.
+    Worst case for the pin current: the highest PROFET IS current (IIS(FAULT) max 10 mA; IIS(SAT) max 15 mA), the
+    highest zener voltage the data sheet allows (VZ max 5.20 V at 5 mA, rdif max 60 Ohm, SZ +0.3 mV/K: hard knee at
+    VZ max + 60 Ohm in series), the lowest clamp-diode drop (Schottky-like IS 1e-8: 0.3 V at 0.3 mA; TI gives no
+    curve) and the +3V3 rail at 3.3 V or not yet up (0 V: power-up, the TSR / LDO start-up of section 3)."""
+    z = ZENER_PARTS[ZENER]
+    for iis, iname in ((IIS_FAULT_MAX, "IIS(FAULT) max 10 mA"), (IIS_SAT_MAX, "IIS(SAT) max 15 mA")):
+        for v3 in (3.3, 0.0):
+            for temp in TEMPS:
+                bv = z["vz"][1] + z["sz"] * (temp - 25)
+                deck = f"""* TLV9004 input current: {iname}, +3V3 = {v3} V, {temp} C
+.temp {temp}
+Iis 0 is {iis}
+Rs is 0 1.2k
+R1 is n1 4.7k
+Rz n1 nz {z['rdif'][0][1]}
+Bz nz 0 I = 5m*exp(min((V(nz)-{bv:.4f})/0.002, 40))
+R2 n1 inp 4.7k
+C1 inp 0 220p
+Dhi inp vcc desd
+Dlo 0 inp desd
+Vcc vcc 0 {v3}
+Rrail vcc 0 1e6
+.model desd D(IS=1e-8 N=1.0)
+.op
+.control
+op
+let iin = (v(n1)-v(inp))/4.7k
+echo "vn1 = $&v(n1)"
+echo "vinp = $&v(inp)"
+echo "iin = $&iin"
+.endc
+.end
+"""
+                m = ngspice(deck, f"tlv_in_{int(iis * 1e3)}_{int(v3 * 10)}_{temp}", keep)
+                add("TLV9004 in", f"{iname}, +3V3 {v3:g} V, {temp} C: input pin current", f"{m['iin'] * 1e3:.2f} mA",
+                    "<= 10 mA (SBOS833R 7.1 note 2)", abs(m["iin"]) <= 10e-3,
+                    f"zener node {m['vn1']:.2f} V, pin {m['vinp']:.2f} V ({m['vinp'] - v3:+.2f} V vs V+: allowed, "
+                    f"current-limited by R2 4.7k); margin x{10e-3 / max(abs(m['iin']), 1e-9):.0f}")
 
 
 # ------------------------------------------------------------------ 2. TVS vs surges
 # TVS parts (bidirectional, so ISO pulse 1 / reverse battery see the same clamp): VBR min / max at IT, VC at IPP
 # (10/1000 us), and the long-pulse rating used for the load dump:
-#   5.0SMDJ24CA (Littelfuse 5.0SMDJ data sheet v.4, DO-214AB, fitted today): 5 kW 10/1000 us only (about 7 J).
-#   SM8S24CA (Vishay doc 98229, DO-218AC/AB, bidirectional; AEC-Q101 HM3): 6.6 kW 10/1000 us, 5.2 kW 10/10000 us;
+#   5.0SMDJ24CA (Littelfuse 5.0SMDJ data sheet v.4, DO-214AB, fitted until 2026-11-20): 5 kW 10/1000 us only (about 7 J).
+#   SM8S24CA (Vishay doc 98229 rev 23-Jan-2026, DO-218AC/AB, bidirectional; AEC-Q101 HM3; fitted as D2 since
+#     2026-11-20, tools/d2_tvs.py): VBR 26.7 / 29.5 V, VC 38.9 V at IPPM 170 A (p. 2 table), 6.6 kW 10/1000 us, 5.2 kW 10/10000 us;
 #     pulse-width derating for the same SM8S die / package (Vishay doc 98647 fig. 1): 6.6 kW 1 ms, 5.2 kW 10 ms,
 #     1.9 kW 100 ms; beyond 100 ms extrapolated with the 10-100 ms slope (P ~ td^-0.44, the heat-diffusion law):
 #     about 1.04 kW at 400 ms; initial-TJ derating linear to 0 at 175 C (doc 98229 fig. 3).
@@ -231,6 +279,11 @@ TVS = {
                                                                               (100e-3, 1900)], e1000=9.2),
     "5.0SMDJ33CA": dict(vbr=(36.7, 40.6), vc=53.3, ipp=93.8, pkg="DO-214AB", ld=None, e1000=7.0),
 }
+# D2 sits away from the feed terminal J1 since ADR-2026-11-20-d2-move (tools/d2_tvs.py): board A 16 mm (bottom +12V
+# pour over In1 GND), board B 66 mm (In2 + bottom +12V planes over In1 GND). Plane-pair inductance L = mu0 * h * len /
+# width with h 1.07 mm (In1 - In2 / B.Cu core, JLCPCB 4-layer 1.6 mm), width >= 25 mm: A 0.9 nH, B 3.5 nH, plus 8+
+# parallel 0.4 mm vias (about 0.1 nH): 4 nH covers both (the old spot hung on a 5 mm x 1.75 mm top track, about 4 nH).
+LPATH = 4e-9
 TJ_START = 85.0      # C, board / TVS temperature before the pulse (enclosure inside, docs/heat-analysis.md: sink 71-75 C
                      # fans on, board around the feed warmer): ASSUMED
 RGND = 47.0          # Ohm, PROFET GND resistor fitted on every switch (R16 / R31 / ... ; Infineon Table 24 RGND)
@@ -278,27 +331,31 @@ Vbat b 0 13.5
 {src}
 Rsrc s v12 {ri}
 Esum s 0 POLY(2) b 0 p 0 0 1 1
-* the board itself is the load (all outputs off: about 50 mA)
-Dt1 v12 m dtvs
+* v12 = the feed terminal J1 and the switches' VS (C3 + the 47n / 100n at the switches); the board itself is the
+* load (all outputs off: about 50 mA). D2 sits LPATH away on the +12V / GND planes (ADR-2026-11-20-d2-move).
+Lp v12 t {LPATH}
+Dt1 t m dtvs
 Dt2 0 m dtvs
 C3 v12 0 10u
 Cx v12 0 0.4u
 Rload v12 0 270
 .model dtvs D(BV={vbr} IBV=1m IS=1e-12 N=1 RS={rd})
-.tran {tstop / 4000} {tstop}
+.tran {min(tstop / 4000, 2e-9 if td < 1e-6 else tstop)} {tstop}
 .control
 run
 meas tran vmax max v(v12)
 meas tran vmin min v(v12)
-let itv = (v(s)-v(v12))/{ri} - v(v12)/270
-let pt = abs(v(v12)*itv)
+let itv = lp#branch
+let iab = abs(itv)
+let pt = abs(v(t)*itv)
+meas tran ipk max iab
 meas tran pmax max pt
 meas tran etvs integ pt
 .endc
 .end
 """
             m = ngspice(deck, f"tvs_{part}_{i}_{int(vbr)}", keep)
-            note = f"TVS peak {m['pmax']:.0f} W, energy {m['etvs']:.3g} J"
+            note = f"TVS peak {m['pmax']:.0f} W / {m['ipk']:.1f} A, energy {m['etvs']:.3g} J"
             grp = f"TVS {part}"
             if ld:
                 pav = m["etvs"] / td
@@ -454,7 +511,7 @@ def main():
     ap.add_argument("--keep", default=os.path.join(tempfile.gettempdir(), "pcbverify-spice"))
     ap.add_argument("--opamp", default="TLV9004", choices=sorted(OPAMPS), help="IS buffer (LM2902 = before 2026-11-20)")
     ap.add_argument("--zener", default="PDZ5.1B", choices=sorted(ZENER_PARTS), help="IS-chain zener (PDZ3.3B = before)")
-    ap.add_argument("--tvs", nargs="+", default=["5.0SMDJ24CA"], choices=sorted(TVS),
+    ap.add_argument("--tvs", nargs="+", default=["SM8S24CA"], choices=sorted(TVS),
                     help="input TVS part(s) to check (first = fitted)")
     ap.add_argument("--only", nargs="*", help="groups to run: is tvs startup input can")
     a = ap.parse_args()
