@@ -243,8 +243,8 @@ if VAR == "F1":
     FW_T = P.get("fan_wall_t", 6.0); FW_X0 = wall_x + 3.0 - FW_T
     fwall = box(FW_X0, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
     for fy in fan_y:
-        hole = cyl(28.0, (FW_X0 - 1, fy, fan_z), FW_T + 2.0, (1, 0, 0)).fuse(box(FW_X0 - 1, wall_x + 4, fy - 6, fy + 6, zf0 - 1, fan_z - 13))   # v2c: 12 wide notch from the fin tips into the hole (v2b left a 0.5 / 1.0 bridge under it); the screw corners keep >= 1.25
-        fwall = fwall.cut(hole); finf = finf.cut(hole)
+        hole = cyl(28.0, (FW_X0 - 1, fy, fan_z), FW_T + 2.0, (1, 0, 0)).fuse(box(FW_X0 - 1, wall_x + 4, fy - 6, fy + 6, zf0 - 1, fan_z - 10))   # revD: notch top fan_z - 10 (was - 13, which left a 0.35 sliver under the bore at the notch edges, circle at y +/-6 is fan_z - 12.65); v2c: 12 wide notch from the fin tips into the hole (v2b left a 0.5 / 1.0 bridge under it); the screw corners keep >= 1.25
+        fwall = fwall.cut(hole); finf = finf.cut(isect(hole, box(FW_X0, wall_x + 4, LY0, LY1, zf0 - 2, 0)))   # fins cut only inside the wall: their ends stay flush with its west face
     for fy in fan_y:
         for dy in (-12, 12):
             for dz in (-12, 12): fwall = fwall.cut(cyl(2.5, (FW_X0 - 1, fy + dy, fan_z + dz), FW_T + 2.0, (1, 0, 0)))   # M3 tap drill 2.5, tapped through 6.0 (Sunon hole pitch 24)
@@ -415,26 +415,36 @@ part("2414-001-2486", wsh, "TE lock washer, shell 24", "TE 2414-001-2486 lock wa
 wt_ = P["nut_washer_t"]
 item("panel-washers-2414-001-2486", "2414-001-2486", [L(X, LY0 - wt_ / 2, TZ) for X in CONN.values()], (0.5, 0.5, 0.52))
 item("panel-nuts-2411-001-2405", "2411-001-2405", [L(X, LY0 - wt_, TZ, rx=-90) for X in CONN.values()], (0.12, 0.12, 0.12))
-# USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001: maker STEP + 2D drawing from amphenolltw.com (product page "Download / CAD",
-# (3D STP) UC-00PMFY-SC7001-STP.stp, drawing rev C 2021-05-07). Maker frame: axis +x = mating face at x 22, D-flat of the
-# 13/16"-28 UN thread on +y (8.7 from the axis; panel cut-out D 20.8 / flat 19.4), housing flange dia 25 at x 4..6.8, hex nut
-# AF 25.4 modelled screwed back onto the flange (x 6.8..10.8, no panel), FPC tail 47 to a 44-pin Y-beam contact at x -46.8.
-# The nut is part of the same maker solid: it is cut out (outside the thread OD) and moved out by the wall thickness, so the
-# 3 mm wall sits between flange (inside) and nut (outside) as mounted. Part frame (unchanged): axis -y out of the box, wall
-# inner face at y 0, flat on +z (lid cut-out), axis at x 0 / z 0: maker x -> -y, y -> +z, z -> -x.
+# USB-C bulkhead. revC used Amphenol LTW UC-00PMFY-SC7001 (cut-out 20.8 / flat 19.4, FPC + 44-pin Y-beam tail).
+# revD (Dan 2026-11-20 14:30): the LTW UC-00PMFY-SC7001 (FPC + Y-beam tail) is dropped for Dan's own CnLinko
+# LP-16-C05SX-02-101: silver jam-nut USB-C to USB-C bulkhead; model from Dan ("it's correct"), copied unchanged from
+# models\st185_vendor-parts_1101\cnlinko\. Panel cut-out (Dan): dia 18.5 between two horizontal flats 16.5 apart.
+# The model is ONE solid (body, silicone tether ring, dust cap on its tether, hex jam nut). Measured on the model (job
+# cadfetch2, sections every 0.25 along the axis): axis = maker y (outside = -y, dust cap at y -43.6..-17), centre x 0 / z 0;
+# flange dia 23.4 at y -3.0..-0.2; silicone ring (the ring behind the flange that the cap tether joins: dia 23.4, the tether
+# strap runs into it at z -15.4..-13.7) y 0.0..2.1 -> uncompressed 2.1; thread major dia 17.8 with flats 16.1 apart (z),
+# crests repeat every 1.5 on one side (pitch 1.5), thread ends at y 9.0 (dia 16.2 behind it to 10.4); hex jam nut AF 22 x 4.0
+# (y 2.6..6.6); rear stub dia 7.5 to y 14.8. Flange face = y 0.0 (the face in front of the ring).
+# Wall check (Dan's rule): max wall = thread from the flange face (9.0) - ring (2.1) - nut (4.0) - 2 x pitch (3.0) = -0.1.
 w_ = P["wall"]
-ubm = vstep("AmphenolLTW_UC-00PMFY-SC7001/UC-00PMFY-SC7001-STP.stp")
-U_FL, U_NUT1 = 6.8, 10.8                                            # maker x: flange front face / nut front face
-nut_zone = box(U_FL, U_NUT1 + 0.01, -20, 20, -20, 20).cut(cyl(20.7, (U_FL - 1, 0, 0), U_NUT1 - U_FL + 3, (1, 0, 0)))
-u_nut = isect(ubm, nut_zone); u_body = ubm.cut(nut_zone).cut(box(U_FL, U_FL + w_, 8.7, 20, -20, 20))   # nut thread ring left in the wall zone: trimmed to the D-flat (8.7)
-assert 600 < u_nut.volume < 1200, ("USB nut split", u_nut.volume)
-ub = Compound(list(u_body.solids()) + list(u_nut.moved(Location((w_, 0, 0))).solids()))
-ub = ub.moved(Plane(origin=(0, U_FL, 0), x_dir=(0, -1, 0), z_dir=(-1, 0, 0)).location)
-U_TAIL = round(bbx(ub).ymax, 3)                                      # FPC Y-beam end, from the wall inner face (53.6)
-part("UC-00PMFY-SC7001", ub, "Amphenol LTW USB-C bulkhead, sealed, front fastened, FPC + 44-pin Y-beam",
-     "Amphenol LTW maker STEP; panel nut moved out by the 3 mm wall (as mounted); inner end = FPC 47 to a 44-pin Y-beam contact (needs mating PCB pads)",
-     "thermoplastic housing, shielded", "bought", maker="Amphenol LTW", source="amphenolltw.com UC-00PMFY-SC7001 (3D STP) + (2D) rev C")
-item("usbc-bulkhead-UC-00PMFY-SC7001", "UC-00PMFY-SC7001", [L(USB_X, WALL_IN, P["usb_z"])], (0.15, 0.15, 0.15))
+CN = dict(flange_face=0.0, ring=2.1, thread_end=9.0, pitch=1.5, nut0=2.6, nut1=6.6, nut_af=22.0)
+CN["thread_len"] = CN["thread_end"] - CN["flange_face"]; CN["nut_t"] = round(CN["nut1"] - CN["nut0"], 2)
+CN["max_wall"] = round(CN["thread_len"] - CN["ring"] - CN["nut_t"] - 2 * CN["pitch"], 2); CN["wall"] = w_
+CN["spare_threads_at_wall"] = round((CN["thread_len"] - CN["ring"] - CN["nut_t"] - w_) / CN["pitch"], 2)
+CN["wall_ok"] = w_ <= CN["max_wall"]
+cnm = vstep("CnLinko_LP-16-C05SX-02-101/LP-16-C05SX-02-101.step")
+cb = bbx(cnm); assert abs(cb.ymax - 14.8) < 0.05 and abs(cb.xmax - 12.47) < 0.05, ("CnLinko STEP frame", cb.ymax, cb.xmax)
+cn_zone = cyl(30.0, (0, CN["nut0"] - 0.05, 0), CN["nut_t"] + 0.1, (0, 1, 0)).cut(cyl(17.9, (0, CN["nut0"] - 1, 0), CN["nut_t"] + 2, (0, 1, 0)))
+cn_nut = isect(cnm, cn_zone); cn_body = cnm.cut(cn_zone)
+assert 500 < cn_nut.volume < 2000, ("CnLinko nut split", cn_nut.volume)
+CN_SHIFT = CN["ring"] + w_ - CN["nut0"]                              # the model's nut sits 0.5 behind the ring: moved onto the wall inner face
+ub = Compound(list(cn_body.solids()) + list(cn_nut.moved(L(0, CN_SHIFT, 0)).solids()))
+ub = ub.moved(L(0, -(CN["ring"] + w_), 0))                           # part frame: wall inner face y 0, outside -y, axis x 0 / z 0, flats horizontal
+U_TAIL = round(bbx(ub).ymax, 3)                                      # rear USB-C end, from the wall inner face
+part("LP-16-C05SX-02-101", ub, "CnLinko USB-C to USB-C bulkhead, jam nut, IP-sealed, silver",
+     "CnLinko LP-16-C05SX-02-101 (Dan's part); model from Dan; jam nut moved onto the wall inner face (as mounted); cut-out 18.5 / flats 16.5",
+     "metal shell, silicone ring and cap", "bought", maker="CnLinko", source="Dan's model models\\st185_vendor-parts_1101\\cnlinko\\LP-16-C05SX-02-101.step")
+item("usbc-bulkhead-LP-16-C05SX-02-101", "LP-16-C05SX-02-101", [L(USB_X, WALL_IN, P["usb_z"])], (0.75, 0.75, 0.78))
 hub = vstep("adafruit_5997_5997-CH334F-4-Port-Hub.step")
 b = bbx(hub.rotate(Axis.Z, 90)); HUB_Z = 4.0
 part("5997", hub, "Adafruit 5997 CH334F 4-port USB hub", "Adafruit_CAD_Parts STEP (MIT)", "PCB assembly", "bought", maker="Adafruit", source="github.com/adafruit/Adafruit_CAD_Parts")
@@ -624,15 +634,19 @@ wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 
 for n, x in IN_X.items():
     wires.append(ribbon([(x + 33, DY0 + 2, z_deck_top + 8), (x + 33, DY0 - 8, TZ + 14), (CONN["X2"] + 8, YR, TZ + 14)], 10.0, 3.0))
 usbc = []
-UR = WALL_IN + U_TAIL                                               # cable starts at the bulkhead FPC's Y-beam end (an adapter PCB there is TBD: the maker part ends in Y-beam contacts, not a USB-C socket)
-UX = USB_X - 12.0; UZ = P["usb_z"] - 3.0                             # cable back south 12 mm west of the FPC (FPC + Y-beam sit x +1.3..+7.4 east of the axis), 3 lower to pass under the input deck (bottom z 30.8)
-usbc.append(tube([(USB_X - 2.5, UR + 0.5, UZ), (USB_X - 2.5, UR + 5.0, UZ), (UX, UR + 5.0, UZ), (UX, -95.0, UZ), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
+UX = USB_X - 12.0; UZ = P["usb_z"] - 3.0                             # cable runs 12 mm west of the bulkhead axis, 3 lower to pass under the input deck (bottom z 30.8)
+# revD: the CnLinko bulkhead has a USB-C socket on its back: a USB-C plug body (12.4 x 6.6 x 18 overmould, ASSUMED) then the
+# cable, on the bulkhead axis, before it drops to UZ and joins the revC route
+PLUG_L = 18.0; UR = WALL_IN + U_TAIL + PLUG_L
+usbc.append(box(USB_X - 6.2, USB_X + 6.2, WALL_IN + U_TAIL, UR, P["usb_z"] - 3.3, P["usb_z"] + 3.3))
+assert UR + 2.0 < -95.5, ("USB cable start vs route", UR)
+usbc.append(tube([(USB_X, UR - 0.5, P["usb_z"]), (USB_X, UR + 2.0, P["usb_z"]), (UX, -95.0, UZ), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
     usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, Z_TOP + 1.6)], 4.0))
 made("wire-ribbons", "CPDM-HAR-202", Compound(wires), (0.85, 0.75, 0.1), "Internal harness ribbons to X1 / X2",
      "A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2 -> X1 / X2, flat taped ribbons; routing ASSUMED", "TXL / GXL wire, tape", kind="harness")
-made("usb-cables", "CPDM-HAR-203", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables (bulkhead -> hub -> 3 boards)", "4 mm cables, plugs not modelled; routing ASSUMED", "USB cable", kind="harness")
+made("usb-cables", "CPDM-HAR-203", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables (bulkhead -> hub -> 3 boards)", "4 mm cables; the plug body at the bulkhead is modelled (12.4 x 6.6 x 18), the other plugs are not; routing ASSUMED", "USB cable", kind="harness")
 # revD: McMaster-Carr 7566K204 four-way adhesive-back cable-tie mount 19 x 19 x 6.4 (nylon, ties to 4.1 x 1.3), maker STEP
 # (3 solids: mount, adhesive foam, release liner; the liner is peeled off, so it is dropped). Maker frame: base face -y at
 # y -3.33 -> part frame base at z 0, up +z. Replaces the drawn CPDM-BUY-304 (8 x 8 x 2.5, PN TBD). NOTE: rated 0-155 F (68 C).
@@ -678,7 +692,8 @@ for k, X in CONN.items():
     fl = min(43.08 / 2, max(41.45 - 43.08 / 2, TZ - zlow + 0.2)); DFLAT[k] = round(fl, 2)
     dh = cyl(43.08, (X, LY0 - 1, TZ), w + 2, (0, 1, 0)).cut(box(X - 30, X + 30, LY0 - 2, LY0 + w + 2, TZ - 40, TZ - fl))
     lid = lid.cut(dh)
-uh = cyl(20.8, (USB_X, LY0 - 1, P["usb_z"]), w + 2, (0, 1, 0)).cut(box(USB_X - 15, USB_X + 15, LY0 - 2, LY0 + w + 2, P["usb_z"] + 19.4 - 10.4, P["usb_z"] + 15))
+USB_CUT_D, USB_CUT_FLATS = 18.5, 16.5                               # revD (Dan): CnLinko LP-16 cut-out, dia 18.5 between horizontal flats 16.5 apart
+uh = isect(cyl(USB_CUT_D, (USB_X, LY0 - 1, P["usb_z"]), w + 2, (0, 1, 0)), box(USB_X - 15, USB_X + 15, LY0 - 2, LY0 + w + 2, P["usb_z"] - USB_CUT_FLATS / 2, P["usb_z"] + USB_CUT_FLATS / 2))
 lid = lid.cut(uh)
 for i in range(6):
     X = LX0 + 40 + i * (LX1 - LX0 - 80) / 5
@@ -693,6 +708,9 @@ for (X, Y) in LID_SCREWS:
 for (X, Y) in LID_SCREWS:
     lid = lid.cut(cyl(5.6, (X, Y, -0.5), 10.5))
     screw("M4", 12.0, L(X, Y, -pt + 4.0, rx=180), "lid")
+wl = bbx(isect(lid, box(USB_X - 0.05, USB_X + 0.05, LY0 - 5, LY0 + 15, P["usb_z"] + USB_CUT_FLATS / 2 + 0.5, P["usb_z"] + USB_CUT_FLATS / 2 + 0.6)))
+CN["wall_at_hole"] = round(wl.ylen, 2); CN["wall_outer_y"] = round(wl.ymin, 2); CN["wall_ok"] = CN["wall_at_hole"] <= CN["max_wall"]
+CN["cutout"] = dict(d=USB_CUT_D, flats=USB_CUT_FLATS)
 made("lid", "CPDM-ENC-102", lid, (0.18, 0.18, 0.2), "Lid", "walls 3.0, draft 6; front turrets for X1/X2/USB-C; OUT1-4 well + wire-way; M4 heat-set inserts", "MJF PA12")
 part("RX-M4x8.1", cyl(5.6, (0, 0, 0), 8.1).cut(cyl(4.0, (0, 0, -0.1), 8.3)), "ruthex heat-set insert M4 x 8.1", "threaded insert OD 5.6 x 8.1 for the lid screw bosses (envelope)", "brass", "bought", maker="ruthex")
 item("heat-set-inserts-M4", "RX-M4x8.1", [L(X, Y, 0.5) for (X, Y) in LID_SCREWS], (0.8, 0.65, 0.25))
@@ -806,7 +824,7 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             OUT_SEAT=SEAT, OUT_LUGANG=LUGANG, OUT_RISER_ANG=ANG, CARRIER=dict(x=(CX0, CXM, CX1), y=(CY0, CY1), z=(Z_CB, ZCL, ZCU), anchors=ANCH),
             footprint=(LX0, LX1, LY0, LY1), lid_bbox=(lb.xmin, lb.xmax, lb.ymin, lb.ymax, lb.zmin, lb.zmax),
             sink_bbox=(sb.xmin, sb.xmax, sb.ymin, sb.ymax, sb.zmin, sb.zmax), overall_no_plugs=(bb.xmin, bb.xmax, bb.ymin, bb.ymax, bb.zmin, bb.zmax),
-            CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, feet=FEET, lid_screws=LID_SCREWS,
+            CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, usb_bulkhead=CN, feet=FEET, lid_screws=LID_SCREWS,
             would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], standoffs=[(n, h) for n, h, _ in SO],
             colors={k: it["color"] for k, it in ITEMS.items()}, items={k: dict(pn=it["pn"], n=len(it["locs"])) for k, it in ITEMS.items()},
             parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn], source=c["source"], solids=len(c["shape"].solids())) for pn, c in CAT.items()},
