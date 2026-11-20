@@ -284,3 +284,14 @@ automations:
     enabled: true
     run_cmd: python tools/verify_power.py [--json out.json]   # numpy; exit 1 on any FAIL
     owner: claude
+  - id: presim-switching
+    script: tools/verify_switching.py
+    helpers: [tools/presim_parts.py]
+    trigger: manual                 # docs/system-verification.md 3
+    reads: [firmware/functions/profet.h, ui/dingoConfig/domain/CustomPdm/PdmPresets.cs]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/verify_switching.py [--json out.json]   # exit 1 on any FAIL
+    owner: claude
