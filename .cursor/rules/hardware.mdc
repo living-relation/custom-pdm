@@ -16,3 +16,5 @@ Enforcer: kicad-cli ERC / DRC, the parity tool, `tools/gen_fab_jlcpcb.py` hole c
 - KiCad 9 python: `BOARD.Remove()` corrupts item lists (collect, remove once, save, reload); a python-made `NETINFO_ITEM` needs `thisown = False`; loading a second board makes the first crash on Save.
 - Spec parts by design need and project cost, not current stock: handle availability with approved alternates / assembler global sourcing (Dan, 2026-11-14). The assembler (JLCPCB or PCBWay) sources and fits the parts; Dan buys none.
 - Never do: leave debug files in a board folder (they are git-ignored now).
+- Stitching or GND vias must not pierce a high-current feed path: compare tools/verify_copper.py before / after any via change on a feed (a GND via row on board A's feed side raised the drop from 41.2 to 43.8 mV, 2026-11-20).
+- KiCad 9 python: ZONE.SetOutline can crash pcbnew: rebuild zones via a new ZONE instead (d2tvs job, 2026-11-20). When moving a part, clear any silk label it would clip (text only).
