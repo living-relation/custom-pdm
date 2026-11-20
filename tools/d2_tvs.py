@@ -68,6 +68,10 @@ R12 = (2.75, -4.9, 8.4, 4.9)           # +12V pour: from 0.6 mm past the tab to 
                                        # out it cut board A's U6 GND pad off the top GND pour)
 RGND = (-9.75, -7.4, 2.15, 7.4)        # GND pour: the tab + a 2.05 mm ring (3 sides)
 MIN_VIAS = 8
+# GND vias pierce the +12V bottom pour. Board A's feed (J1 -> U8 / U10 / U11 / U13) runs past the tab's side that faces
+# the board centre (local y < 0 at rot 270): no GND via there, so the feed copper keeps its width (verify_copper A:
+# a ring on that side too raised the +12V drop 41.2 -> 43.8 mV and the B.Cu peak 7.7 -> 13.2 A/mm).
+GND_VIA_SKIP = {"A": [(-9.75, -7.4, 2.15, -5.0)], "B": []}
 
 
 def uid(*parts):
@@ -439,7 +443,10 @@ def pcb(path, board):
             ly = y0 + 0.6
             while ly <= y1 - 0.6 + 1e-9:
                 x, y = kr(lx, ly)
+                skip = net == "GND" and any(a <= lx <= c and b2 <= ly <= d for a, b2, c, d in GND_VIA_SKIP[board])
                 ly += PITCH
+                if skip:
+                    continue
                 c = V(x, y)
                 ring = pcbnew.SHAPE_CIRCLE(c, mm(VIA_D / 2))
                 if not inside_fill(pcbnew.F_Cu, net, x, y, VIA_D / 2):      # on the clamp pour (top)
