@@ -118,7 +118,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
 
     public class PDM_IWDG : IDoubleWordPeripheral, IKnownSize
     {
-        public PDM_IWDG(IMachine machine, long frequency = 32000, uint runPrescaler = 3)
+        public PDM_IWDG(IMachine machine, ulong frequency = 32000, uint runPrescaler = 3)
         {
             this.machine = machine; RunPrescaler = runPrescaler;
             timer = new LimitTimer(machine.ClockSource, frequency, this, "iwdg", 0xFFF, Direction.Descending, false,
@@ -133,7 +133,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         }
 
         public long Size { get { return 0x400; } }
-        public long Frequency { get { return timer.Frequency; } set { timer.Frequency = value; } }   // LSI
+        public ulong Frequency { get { return timer.Frequency; } set { timer.Frequency = value; } }   // LSI
         public uint RunPrescaler { get; set; }
         public bool Running { get; private set; }
         public ulong Resets { get; private set; }
@@ -184,7 +184,7 @@ namespace Antmicro.Renode.Peripherals.Miscellaneous
         private void Load()
         {
             pr = pendPr; rlr = pendRlr;
-            timer.Divider = (int)Math.Min(256U, 4U << (int)pr);
+            timer.Divider = (ulong)Math.Min(256U, 4U << (int)pr);
             timer.Limit = rlr; timer.Value = rlr;
         }
 
