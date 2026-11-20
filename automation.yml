@@ -295,3 +295,14 @@ automations:
     enabled: true
     run_cmd: python tools/verify_switching.py [--json out.json]   # exit 1 on any FAIL
     owner: claude
+  - id: presim-mcu
+    script: tools/verify_mcu.py
+    helpers: [tools/presim_parts.py]
+    trigger: manual                 # docs/system-verification.md 4
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, "firmware/boards/custompdm_*/board.h", "firmware/boards/custompdm_*/port.*", "firmware/boards/custompdm_a/cfg/*.h", firmware/core/config_ext.cpp]
+    writes: []                      # ST pin XML cache in %TEMP%/presim-st (STM32_open_pin_data, BSD-3; not committed)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_mcu.py [--json out.json]'   # needs pcbnew + github raw access once
+    owner: claude
