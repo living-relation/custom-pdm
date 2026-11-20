@@ -183,6 +183,9 @@
 #define PRO_FEATURES 1
 #define NUM_TABLES 4
 #define VAR_MAP_PRO_VARS (NUM_TABLES + NUM_OUTPUTS) // var map end: table outputs 1-4, then undercurrent flag per output
+// MCU safety (ADR-2026-11-20-presim-findings item 3, core/safety.h): brown-out level 3 set from the option bytes at
+// boot, independent watchdog refreshed only when every essential thread ran, RTC-refreshed watchdog in sleep
+#define MCU_SAFETY 1
 
 #define ADC1_NUM_CHANNELS 8
 #define ADC1_BUF_DEPTH 1

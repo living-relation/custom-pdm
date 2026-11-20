@@ -28,7 +28,10 @@ Fresh Boards Wrote Their Default Config To The FRAM
 After A Power Cycle All Three Still Run At 1 Mbit/s On Their Own IDs With The Saved Config
     Power Cycle Keeps Ids And Config
 
-Factory Defaults: Fan Output A2 OUT2 Off At 30 C, Temperature Limits 55 / 80 / 6 C, Only The Fan Exempt From Critical, Critical-soon Margin 5 C
+Brown-out: Each Board Wrote BOR Level 3 Into Its Factory Option Bytes Once At Its First Start; No Write At Later Power Cycles
+    Brown Out Level Written Once
+
+Factory Defaults: Fan Output A2 OUT2 Off At 30 C, Temperature Limits A 55 / 80, B 98 / 104, Recovery 6 C, Only The Fan Exempt From Critical, Critical-soon Margin 5 C
     Factory Defaults Fan Output And Temperature Limits
 
 Fan On A2 Follows A 30 -> 46 -> 42 -> 39 C Ramp On Its Own Sensor: Off, On, On, Off
@@ -120,3 +123,12 @@ Current Read-back On The Real Binaries: Data-sheet kILIS (BTS7008 5450, BTS70012
 
 Full Scale With A Rail-to-rail Sense Buffer: A PROFET Fault Read At A 2.7 V Sense Top (Zener Knee) Cuts At Once, Not After The Trip Time
     Full Scale Fault Cuts At Once With A Low Sense Top
+
+Watchdog: Running On All Three Boards, No Reset In The Whole Bench Run, Longest Refresh Gap On The Real Binaries Within Half The Shortest Timeout
+    Watchdog Runs With No Reset In The Whole Run
+
+Watchdog: A1's Device Thread Stuck At Its Refresh: Reset After The Timeout, Every Output Off, Back With Its Config
+    Stalled Device Loop Resets The Board
+
+Watchdog In Sleep: 12 s In STOP With RTC Wake-ups Refreshing The Watchdog, No Reset
+    Sleep With The Watchdog Running

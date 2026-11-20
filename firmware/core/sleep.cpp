@@ -12,6 +12,7 @@
 #if WAKE_INPUT_PARAM
 #include "infomsg.h"
 #endif
+#include "safety.h" // custom-pdm (MCU_SAFETY)
 
 #if CAN_SLEEP
 // Static variables that were in pdm.cpp
@@ -149,6 +150,10 @@ void EnterSleep()
     // Clear CAN sleep request so we don't immediately re-enter sleep after waking up
     bSleepRequest = false;
 
+    #if MCU_SAFETY
+    SafetyBeforeSleep(); // custom-pdm: long watchdog timeout for the waits below and STOP
+    #endif
+
     // Forced sleep can arrive with outputs on - shut them off, no current protection while stopped
     #if NUM_OUTPUTS > 0
     for (uint8_t i = 0; i < NUM_OUTPUTS; i++)
@@ -226,7 +231,11 @@ void EnterSleep()
     NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
     NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
 
+    #if MCU_SAFETY
+    SafetyEnterStop(); // custom-pdm: STOP with RTC wake-ups that refresh the watchdog (core/safety.h)
+    #else
     EnterStopMode();
+    #endif
 }
 
 #endif

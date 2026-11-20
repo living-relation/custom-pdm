@@ -6,6 +6,7 @@
 #include "msg.h"
 #include "param_protocol.h"
 #include "can_frame.h"
+#include "safety.h" // custom-pdm (MCU_SAFETY): empty hooks on stock boards
 
 #include <iterator>
 
@@ -33,6 +34,7 @@ void CanCyclicTxThread(void *)
 
     while (1)
     {
+        SAFETY_CHECKIN(CanCyclicTx); // custom-pdm (MCU_SAFETY)
 
         if (!IsParamOpInProgress() && !bTxQuiet && !*pVarMap[stConfig.stDevice.nMuteCanTxInput])
         {
@@ -63,6 +65,11 @@ void CanTxThread(void *arg)
 
     while (1)
     {
+        #if MCU_SAFETY
+        if (nBus == 0)
+            SAFETY_CHECKIN(CanTx); // custom-pdm
+        #endif
+
         #if !defined(CAN_IDE_STD)
         // FDCAN has no automatic bus-off recovery (bxCAN ABOM), it sits in init until cleared
         if (canDrivers[nBus]->fdcan->CCCR & FDCAN_CCCR_INIT)
@@ -106,6 +113,10 @@ void CanRxThread(void *arg)
 
     while (true)
     {
+        #if MCU_SAFETY
+        if (nBus == 0)
+            SAFETY_CHECKIN(CanRx); // custom-pdm
+        #endif
 
         msg_t res = canReceiveTimeout(canDrivers[nBus], CAN_ANY_MAILBOX, &msg, TIME_MS2I(100));
         if (res == MSG_OK)

@@ -228,7 +228,7 @@ fk, fo = ps.FAN; a2f = f5['A2']; FAN_IN = a2f.model['outputs'][fo][0]
 b5.add(t5, *f5.values()); fan_boot = []
 for _ in range(300): b5.run_for(5); fan_boot.append(a2f.level(FAN_IN))          # every 5 ms from power-up, all boards at 30 C
 lim = {k: {n: t5.read(BASE[k], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
-check('thermal: factory defaults on every board (param block 0x7F00): warn 55, critical 80, recovery 6, critical-soon margin 5 deg C', all(v == ps.TEMP_DEFAULT for v in lim.values()), lim)
+check('thermal: factory defaults (param block 0x7F00): A1 / A2 warn 55, critical 80; B warn 98, critical 104 (its FEA sensor map); recovery 6, critical-soon margin 5 deg C', all(v == ps.temp_default(f5[k].model) for k, v in lim.items()), lim)
 # w3a: factory current limit = each output's rating (docs/box-connectors.md), the fan output 1 A; inrush limits unchanged
 want_lim = {'A1': [7.5] * 8, 'A2': [7.5, 1.0] + [7.5] * 6, 'B': [31.0] * 4 + [15.0] * 4}
 want_inr = {'A1': [50.0] * 8, 'A2': [50.0, 2.0] + [50.0] * 6, 'B': [50.0] * 8}
@@ -638,6 +638,34 @@ for o, clamp in ((0, ps.IS_CLAMP_LOW), (1, ps.IS_CLAMP), (4, ps.IS_CLAMP_LOW), (
 info['s8_full_scale_b'] = fs8
 check('S8 board B full scale: a PROFET fault 500 ms after switch-on (IS chain top 2.7 / 3.3 V on OUT1 / OUT2 BTS70012 and OUT5 / OUT6 BTS7004; reading under the 100 A inrush limit, inrush time 100 ms, trip time 1000 ms) cuts within 4 ms, then Fault (reset mode None)',
       all(on and t is not None and t <= 4 and s == 3 for on, t, s in fs8.values()), fs8)
+
+# ------------------------------------------------------------------ S9 MCU safety in the system (core/safety.h)
+# The three boards with the S2 config, the ECU talking: a full Read All + Write All (as dingoConfig) and Burn on each
+# board, then sleep with the watchdog running: no watchdog reset anywhere, and the longest refresh gap of the whole
+# S1-S9 run (every board, every scenario) well inside the shortest run timeout (1.0 s at the fastest LSI).
+print('--- S9 MCU safety: Write All / Burn / sleep with the watchdog running')
+bus9 = ps.Bus(); t9 = ps.Tool(bus9); ecu9 = ps.PyNode('ecu')
+b9 = {k: ps.Board(boards[k].model, k, SO, fram=boards[k].fram(), unit=2 if k == 'A2' else 1) for k in boards}
+bus9.add(t9, ecu9, *b9.values()); ecu9.every(20000, lambda t: ecu9.send(ECU_ID, bytes([0xFF, 0xFF, 0xFF, 0xA5, 0, 0, 0, 0])), start=5000)
+bus9.run_for(1500)
+wa = {}
+for k in b9:
+    r = t9.read_all(BASE[k]); n_ = len(r[0]) if r else 0
+    wa[k] = (n_, bool(r) and t9.write_all(BASE[k], r[0], r[1]), t9.burn(BASE[k]))
+bus9.run_for(2000)
+pins9 = {k: sum(b9[k].level(o[0]) for o in b9[k].model['outputs']) for k in b9}
+check('S9 full Read All + Write All (every param, dingoConfig order, 20 per batch) and Burn on A1 / A2 / B with the ECU switching every output: '
+      'all applied and saved, no watchdog reset, outputs keep running', all(n_ > 1000 and ok and bu for n_, ok, bu in wa.values())
+      and all(b.resets == [] for b in b9.values()) and all(v > 0 for v in pins9.values()), (wa, {k: b.resets for k, b in b9.items()}, pins9))
+ecu9.powered = False
+for k in b9: t9.sleep(BASE[k])
+bus9.run_for(20_000)
+check('S9 sleep request to all three boards (ECU quiet): asleep 20 s with the watchdog running, no reset (RTC wake-ups refresh it)',
+      all(b.flags()['asleep'] and not b.flags()['wdg_reset'] and b.resets == [] and b.wdg()['rtc_wakes'] >= 8 for b in b9.values()),
+      {k: (b.flags(), b.wdg()['rtc_wakes']) for k, b in b9.items()})
+wr, gap, nb = ps.watchdog_summary(); info['s9_longest_refresh_gap_ms'] = gap
+check(f'S9 whole S1-S9 run ({nb} boards made, every scenario incl. power cycles, link loss, critical temperature, sleep, Write All / Burn): '
+      f'no watchdog reset; longest refresh gap {gap:.1f} ms <= half the 1.0 s shortest run timeout', wr == [] and 0 < gap <= ps.SAFETY_WDG_MIN_MS / 2, (wr, gap))
 
 bad = [r for r in res if not r[1]]
 print(f'\nS1-S7: {len(res) - len(bad)} of {len(res)} checks passed'); print(json.dumps(info))
