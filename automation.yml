@@ -328,3 +328,14 @@ automations:
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_si.py [--json out.json]'   # scipy; about 20 s
     owner: claude
+  - id: presim-dfm
+    script: tools/verify_dfm.py
+    helpers: [tools/board_semdiff.py]
+    trigger: manual                 # docs/system-verification.md 8 (tools/verify_cpl.py is the placement check)
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb, "hardware/fab/*/jlcpcb-drc.txt", docs/parts-audit.md]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_dfm.py [--json out.json]'   # needs git (board v2c export commit)
+    owner: claude

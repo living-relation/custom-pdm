@@ -46,7 +46,7 @@ U = 0.254          # EasyEDA unit = 10 mil
 def fetch(lcsc, cache):
     p = os.path.join(cache, f"{lcsc}.json")
     if not os.path.exists(p):
-        req = urllib.request.Request(API.format(lcsc), headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+        req = urllib.request.Request(API.format(lcsc), headers={"User-Agent": "pcb-verify/1.0", "Accept": "application/json"})
         with urllib.request.urlopen(req, timeout=30) as r:
             data = r.read()
         open(p, "wb").write(data)
