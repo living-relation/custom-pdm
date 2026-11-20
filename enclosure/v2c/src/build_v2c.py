@@ -433,16 +433,25 @@ CN["max_wall"] = round(CN["thread_len"] - CN["ring"] - CN["nut_t"] - 2 * CN["pit
 CN["spare_threads_at_wall"] = round((CN["thread_len"] - CN["ring"] - CN["nut_t"] - w_) / CN["pitch"], 2)
 CN["wall_ok"] = w_ <= CN["max_wall"]
 cnm = vstep("CnLinko_LP-16-C05SX-02-101/LP-16-C05SX-02-101.step")
+cnm = Solid(max(cnm.solids()[0].shells(), key=lambda sh_: bbx(sh_).ylen))   # outer skin only: the model's solid also holds 6 tiny inner void shells (< 10 mm3, inside the body at y 1.6..5.6) that make every boolean return nothing
 cb = bbx(cnm); assert abs(cb.ymax - 14.8) < 0.05 and abs(cb.xmax - 12.47) < 0.05, ("CnLinko STEP frame", cb.ymax, cb.xmax)
-cn_zone = cyl(30.0, (0, CN["nut0"] - 0.05, 0), CN["nut_t"] + 0.1, (0, 1, 0)).cut(cyl(17.9, (0, CN["nut0"] - 1, 0), CN["nut_t"] + 2, (0, 1, 0)))
-cn_nut = isect(cnm, cn_zone); cn_body = cnm.cut(cn_zone)
-assert 500 < cn_nut.volume < 2000, ("CnLinko nut split", cn_nut.volume)
-CN_SHIFT = CN["ring"] + w_ - CN["nut0"]                              # the model's nut sits 0.5 behind the ring: moved onto the wall inner face
-ub = Compound(list(cn_body.solids()) + list(cn_nut.moved(L(0, CN_SHIFT, 0)).solids()))
+# The jam nut is fused to the thread in Dan's model (one outer shell: the slab y 2.6..6.6 is a solid hex disc), and booleans
+# against the thread return nothing, so the as-mounted copy (Dan's file is not changed) is: Dan's model minus that slab
+# + the thread core in the slab drawn from the measured sizes (dia 17.8, flats 16.1) + the jam nut drawn from the measured
+# sizes (hex AF 22 x 4.0, bore 17.8) moved onto the wall inner face.
+cn_slabz = box(-20, 20, CN["nut0"] - 0.05, CN["nut1"] + 0.05, -20, 20)
+cn_body = cnm.cut(cn_slabz)
+assert 5000 < cn_body.volume < 6000, ("CnLinko body minus nut slab", cn_body.volume)
+cn_core = isect(cyl(17.8, (0, CN["nut0"] - 0.05, 0), CN["nut_t"] + 0.1, (0, 1, 0)), box(-10, 10, CN["nut0"] - 0.1, CN["nut1"] + 0.1, -8.05, 8.05))
+cn_nut = hexp(CN["nut_af"], (0, 0, 0), CN["nut_t"], (0, 1, 0))
+if bbx(cn_nut).xlen < bbx(cn_nut).zlen: cn_nut = cn_nut.rotate(Axis.Y, 30)   # corners on x, flats on z, as in the model
+cn_nut = cn_nut.cut(cyl(17.8, (0, -1, 0), CN["nut_t"] + 2, (0, 1, 0)))
+assert abs(bbx(cn_nut).xlen - 25.4) < 0.1 and abs(bbx(cn_nut).zlen - 22.0) < 0.05, ("CnLinko nut", bbx(cn_nut).xlen, bbx(cn_nut).zlen)
+ub = Compound(list(cn_body.solids()) + list(cn_core.solids()) + list(cn_nut.moved(L(0, CN["ring"] + w_, 0)).solids()))
 ub = ub.moved(L(0, -(CN["ring"] + w_), 0))                           # part frame: wall inner face y 0, outside -y, axis x 0 / z 0, flats horizontal
 U_TAIL = round(bbx(ub).ymax, 3)                                      # rear USB-C end, from the wall inner face
 part("LP-16-C05SX-02-101", ub, "CnLinko USB-C to USB-C bulkhead, jam nut, IP-sealed, silver",
-     "CnLinko LP-16-C05SX-02-101 (Dan's part); model from Dan; jam nut moved onto the wall inner face (as mounted); cut-out 18.5 / flats 16.5",
+     "CnLinko LP-16-C05SX-02-101 (Dan's part); model from Dan; its fused jam-nut slab redrawn from measured sizes (hex AF 22 x 4.0) and set on the wall inner face (as mounted); cut-out 18.5 / flats 16.5",
      "metal shell, silicone ring and cap", "bought", maker="CnLinko", source="Dan's model models\\st185_vendor-parts_1101\\cnlinko\\LP-16-C05SX-02-101.step")
 item("usbc-bulkhead-LP-16-C05SX-02-101", "LP-16-C05SX-02-101", [L(USB_X, WALL_IN, P["usb_z"])], (0.75, 0.75, 0.78))
 hub = vstep("adafruit_5997_5997-CH334F-4-Port-Hub.step")
@@ -556,9 +565,9 @@ for k, (sx, sy, sz) in SEAT.items():
     car = car.cut(cyl(11.0, (sx, sy, sz), 40)).cut(slot_along(sx, sy, LUGANG[k], P["out_lug_w"] + 1.0, 40.0, sz, 80))   # lug ring pocket + tongue slot
 for (X, Y) in ANCH:
     car = car.cut(cyl(3.4, (X, Y, Z_CB - 1), 20)).cut(cyl(6.5, (X, Y, Z_CB + P["ear_t"] - 3.2), 10))
-    screw("M3", 8.0, L(X, Y, Z_CB + P["ear_t"] - 3.2))
+    screw("M3", 6.0, L(X, Y, Z_CB + P["ear_t"] - 3.2))   # revD: M3 x 6 (was x 8): the McMaster 93655A095 female thread is 4.8 min; x 8 reached 6.4 deep (clearance 1.6 into the bore bottom), x 6 = 4.4 (1.47 D)
 made("carrier-G10-OUT1-4", "CPDM-ENC-109", car, (0.75, 0.78, 0.55), "OUT1-4 riser carrier",
-     "3-axis machined: keys the 4 risers, solid walls between the lugs, takes lug torque; bolted to M3 x 8 standoffs on board B H2/H4", "G10 / FR4 glass-epoxy")
+     "3-axis machined: keys the 4 risers, solid walls between the lugs, takes lug torque; bolted to M3 x 8 standoffs on board B H2/H4 (M3 x 6 screws)", "G10 / FR4 glass-epoxy")
 # revD: McMaster-Carr 93655A095 18-8 stainless M-F hex standoff M3, AF 4.5 x 8, stud 4.7, female thread min 4.8; maker STEP
 # "3-D STEP no threads" (mcmaster.com/93655A095). Maker frame = part frame (body z 0..8, stud below). Replaces the drawn
 # CPDM-BUY-302 (AF5.5, stud 6, PN TBD; Wurth 971080321 STEP sits behind a bot check).
@@ -628,7 +637,7 @@ for n, xc_, xe in (("A1", None, CONN["X1"] - 6.0), ("A2", 223.0, CONN["X1"] + 6.
     wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc_, cy - 8, zr), (xc_, -97.0, zr)] + via + [(xe, YR, TZ - 8)], 14.0, P["ribbon_t"]))
 bx_, by_ = W("B", -1.5, -1.5)
 jx = (SEAT["OUT2"][0] + RR + SEAT["OUT1"][0] - RR) / 2   # lane between the low and high copper risers (d1a)
-wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (jx, by_, Z_TOP + 5.0), (jx, -60.0, Z_TOP + 5.0), (jx, -103.0, Z_TOP + 6.0), (jx, -106.0, 4.4), (CONN["X2"] - 6, -105.0, 4.4), (CONN["X2"] - 6, -103.5, TZ + 4)], 3.5, 3.5))
+wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (jx, by_, Z_TOP + 5.0), (jx, -60.0, Z_TOP + 5.0), (jx, -103.0, Z_TOP + 6.0), (jx, -106.0, 8.6), (CONN["X2"] - 6, -105.0, 8.6), (CONN["X2"] - 6, -103.5, TZ + 4)], 3.5, 3.5))
 tx = 96.5
 wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 14, YR, 19.0)], 12.0, 2.5))
 for n, x in IN_X.items():
