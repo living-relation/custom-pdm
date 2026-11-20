@@ -2,6 +2,7 @@
 CLAUDE.local.md
 .claude/*
 !.claude/rules/
+!.claude/settings.json
 TASK.md
 # KiCad
 *-backups/
