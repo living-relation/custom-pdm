@@ -20,7 +20,8 @@ for f in sorted(glob.glob(os.path.join(OLD, "*.brep"))):
     n = os.path.basename(f)[:-5]; nn = REN.get(n, [n]); done.update(nn)
     a = import_brep(f); b = load(NEW, nn)
     if b is None: res.append(dict(part=n, status="not in v2c")); continue
-    r = dict(part=n, v2c=nn, vol_v2b=round(a.volume, 1), vol_v2c=round(b.volume, 1), bbox_v2b=bb(a), bbox_v2c=bb(b))
+    vol = lambda s: sum(x.volume for x in s.solids())          # sum of solids (a compound's own .volume can differ for the same solids)
+    r = dict(part=n, v2c=nn, vol_v2b=round(vol(a), 1), vol_v2c=round(vol(b), 1), bbox_v2b=bb(a), bbox_v2c=bb(b))
     small = len(a.solids()) < 40 and len(b.solids()) < 40
     if small:
         try:

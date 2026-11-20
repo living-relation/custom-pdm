@@ -20,26 +20,30 @@ GEN = ["BREAK SHARP EDGES 0.2-0.4 x 45 DEG UNLESS NOTED.", "INSIDE CORNERS: CUTT
 JOBS = [
     (f"CPDM-ENC-101-{VAR}", "HEAT SINK / BASE " + VAR, "6061-T6 ALUMINIUM", "B",
      "v2c: lid-screw counterbores 8.0 (DIN 974-1); fan wall holes 0.5 lower",
-     ["M3x0.5 TAP 6 DEEP IN THE 6.0 BOARD BOSSES (TAP DRILL 2.5 x 8).", "LID SCREWS: 4.5 THRU, CBORE 8.0 x 5 FROM BELOW (x12).",
-      "FEET: 6.6 THRU (x4), BOLT-THROUGH MOUNTING.", "FAN WALL: M3x0.5 TAP THRU 3 WALL (x8), 28.0 THRU (x2) - SIDE SETUP.",
+     ["LID SCREWS: 4.5 THRU, CBORE 8.0 x 5 FROM BELOW (x12).", "M3x0.5 TAP 6 DEEP IN THE 6.0 BOARD BOSSES (TAP DRILL 2.5 x 8).",
+      "FEET: 6.6 THRU (x4), BOLT-THROUGH MOUNTING.", "FAN WALL: M3x0.5 TAP THRU 3 WALL (x8), 28.0 THRU (x2), CENTRES Z -23.5 - SIDE SETUP.",
       "FIN ROOTS: CORNER RADIUS OF THE CUTTER (R0.5 BULL-NOSE) ALLOWED.", "FINISH: TBD (CLEAR ANODISE ASSUMED; MASK PEDESTAL TOPS)."]),
     ("CPDM-ENC-104", "COPPER BAR BATT+", "C110 COPPER", "A", "", ["6.6 THRU (x3) AT THE M6 TERMINALS.", "11.0 THRU AT THE STANDOFF PASS-THROUGHS (INSULATING SLEEVE).", "INSULATING FILM UNDER THE BAR (ASSEMBLY)."]),
     ("CPDM-ENC-105", "COPPER BAR GND", "C110 COPPER", "A", "", ["6.6 THRU (x3) AT THE M6 TERMINALS.", "11.0 THRU AT THE STANDOFF PASS-THROUGHS (INSULATING SLEEVE)."]),
     ("CPDM-ENC-106", "COPPER TERMINAL BOSS M6", "C110 COPPER, HEX BAR AF13", "A", "", ["M6x1 TAP 10 DEEP BOTH ENDS (TAP DRILL 5.0 x 12 TOP / 10 BOTTOM)."]),
     ("CPDM-ENC-107", "COPPER OFFSET RISER, LOW (OUT2 / OUT4)", "C110 COPPER", "B", "v2c: seat 8.5 from the foot hole (was 7.52), R0.5 root",
-     ["4.5 THRU AT THE FOOT (M4 x 6 INTO THE REDCUBE).", "M4x0.7 TAP 8 DEEP IN THE SEAT (TAP DRILL 3.3 x 10).", "COLUMN ROOT R0.5 (BULL-NOSE CORNER RADIUS)."]),
+     ["SEAT COLUMN AXIS 8.50 FROM THE FOOT-HOLE AXIS.", "4.5 THRU AT THE FOOT (M4 x 6 INTO THE REDCUBE).", "M4x0.7 TAP 8 DEEP IN THE SEAT (TAP DRILL 3.3 x 10).", "COLUMN ROOT R0.5 (BULL-NOSE CORNER RADIUS)."]),
     ("CPDM-ENC-108", "COPPER OFFSET RISER, HIGH (OUT1 / OUT3)", "C110 COPPER", "B", "v2c: seat 8.5 from the foot hole (was 8.19), R0.5 root",
-     ["4.5 THRU AT THE FOOT (M4 x 6 INTO THE REDCUBE).", "M4x0.7 TAP 8 DEEP IN THE SEAT (TAP DRILL 3.3 x 10).", "COLUMN ROOT R0.5 (BULL-NOSE CORNER RADIUS)."]),
+     ["SEAT COLUMN AXIS 8.50 FROM THE FOOT-HOLE AXIS.", "4.5 THRU AT THE FOOT (M4 x 6 INTO THE REDCUBE).", "M4x0.7 TAP 8 DEEP IN THE SEAT (TAP DRILL 3.3 x 10).", "COLUMN ROOT R0.5 (BULL-NOSE CORNER RADIUS)."]),
     ("CPDM-ENC-109", "OUT1-4 RISER CARRIER", "G10 / FR4 GLASS-EPOXY, 3/4 IN PLATE", "B", "v2c: key slots and lug pockets follow the 8.5 risers",
-     ["ALL FEATURES FROM THE TOP; FLIP AND FACE TO THICKNESS.", "3.4 THRU, CBORE 6.5 x 3.2 (x2) FOR M3 x 8.", "CARBIDE TOOLS, DUST EXTRACTION (GLASS-EPOXY)."]),
+     ["KEY SLOTS AND LUG POCKETS FOLLOW THE 8.5 RISERS (SEE STEP).", "ALL FEATURES FROM THE TOP; FLIP AND FACE TO THICKNESS.", "3.4 THRU, CBORE 6.5 x 3.2 (x2) FOR M3 x 8.", "CARBIDE TOOLS, DUST EXTRACTION (GLASS-EPOXY)."]),
+    ("CPDM-ENC-102", "LID", "MJF PA12", "A", "", ["MJF PA12 FROM THE STEP; WALLS 3.0, DRAFT 6 DEG.", "HEAT-SET INSERTS ruthex RX-M4x8.1 IN THE 5.6 BOSS BORES (x12).", "TE D-FLAT PANEL CUT-OUTS 43.08 / FLAT PER TE SPEC 0425-021-0000 (x2); USB-C CUT-OUT 20.8 / FLAT 19.4."], "printed"),
+    ("CPDM-ENC-103", "INPUT DECK", "MJF PA12", "A", "", ["MJF PA12 FROM THE STEP.", "M3 HEAT-SET INSERTS IN THE 4.0 BOSS BORES (x6), PN TBD."], "printed"),
 ]
 res = {}
-for pn, title, mat, rev, why, notes in JOBS:
+for job in JOBS:
+    pn, title, mat, rev, why, notes = job[:6]; proc = job[6] if len(job) > 6 else "machined"
     step = os.path.join(PD, pn + ".stp"); rl = os.path.join(PD, pn + ".REVLOG.md")
     if os.path.exists(rl): os.remove(rl)
     revs.add_release(rl, "A", "Initial", date=V2B, title=pn)               # v2b release (PR #46)
     if rev == "B": revs.add_release(rl, "B", why, title=pn)                # this release (v2c)
-    spec = dict(file=step, pn=pn, title=title, material=mat, process="machined", notes=notes + GEN, project="custom-pdm enclosure v2c")
+    spec = dict(file=step, pn=pn, title=title, material=mat, process=proc, notes=notes + (GEN if proc == "machined" else GEN[3:]), project="custom-pdm enclosure v2c")
+    if rev == "B": spec["rev_marks"] = [dict(rev="B", note=1)] + ([dict(rev="B", note=3)] if pn.startswith("CPDM-ENC-101") else [])   # DRAWING-RULES 33: triangle at the changed notes
     try:
         part.make_part(spec, os.path.join(OUT, pn + ".pdf"), os.path.join(OUT, pn + ".dxf"), os.path.join(OUT, pn + "_preview"))
         ck = os.path.join(OUT, pn + ".checks.json")
