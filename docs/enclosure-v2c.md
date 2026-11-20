@@ -7,7 +7,7 @@ Fusion: project `custom-pdm`, folder `enclosure-v2b`, designs `custom-pdm-enclos
 
 ## 0. v2c (2026-11-16): what changed vs v2b
 
-Rebuilt without Grok's pack: board STEPs exported from our KiCad boards (`export_boards.ps1`, main 94adcc4; the 2026-11-17 layout fix changed vias only, no component or outline), maker CAD re-downloaded. Every other part is v2b's geometry; `src/compare_v2b.py` checks that part by part against the surviving v2b build (WSL `~/scratch/encl-v2b/runs/F1/brep`): lid, input deck, copper bars, M6 bosses and studs, gap pads, standoffs, inserts, tie points, USB-C bulkhead and cables, X1 / X2 and their plugs are identical (symmetric difference 0 mm3, or same volume and box where OCC's cut fails); the re-downloaded Adafruit hub model is 2 % smaller in volume, same box. Everything else that differs is in the table.
+Rebuilt without Grok's pack: board STEPs exported from our KiCad boards (`export_boards.ps1`, main 94adcc4; the 2026-11-17 layout fix changed vias only, no component or outline), maker CAD re-downloaded. Every other part is v2b's geometry; `src/compare_v2b.py` checks that part by part against the surviving v2b build (WSL `~/scratch/encl-v2b/runs/F1/brep`): lid, input deck, copper bars, M6 bosses and studs, gap pads, standoffs, inserts, tie points, USB-C bulkhead and cables, Adafruit hub, input boards, X1 / X2 and their plugs are identical (symmetric difference 0 mm3, or same solid volume and box where OCC's cut fails). Everything else that differs is in the table.
 
 | Change | v2b | v2c | Why |
 |---|---|---|---|
@@ -91,6 +91,8 @@ Fixed in this build: F1 fan against a foot web (fans moved to mid +/-16 mm), USB
 F2 (final build): same result, no unintended overlaps. Fixed: the Noctua fan sat 1 mm into its four mounting posts (the public model is 16 mm tall, not 15); pocket and posts now sized to the model.
 F1 rebuild with the OUT1-4 wire-way (2026-11-12, after Dan's review): still no unintended overlaps. New by-design overlaps: each 10 AWG wire end inside its ring-lug barrel (crimp), lugs touching their boss tops and screw heads. Closest new gaps: OUT1 wire to the wire-way wall 0.25 mm (flexible wire), OUT3 lug to the bay wall 0.65 mm, wires to the OUT2 / OUT4 screws 2.0 mm, wires to the bosses 2.4 mm. Fixed on the way: OUT3 and OUT1 wires against the wire-way walls (lanes re-spaced).
 F1 rebuild after e1a (2026-11-13): no unintended overlaps; on the way the widened carrier hit the BATT / GND bars (carrier now stops at y -53.4 / -13.14, just clear of them), the lower lug tips hit the wire-way wall (lower lugs turned to 172 / 188 deg) and the well liner touched the BATT boss (re-cleared dia 16). Earlier F1 rebuild with the OUT1-4 copper risers + G10 carrier (2026-11-13, c1b / d1a): no unintended overlaps. New by-design overlaps: M4 x 6 foot screws in the REDCUBE threads, M4 x 8 lug screws in the copper seats, M3 standoffs in board B H2 / H4 and the sink posts, wire ends crimped in the lug barrels. Closest new gaps: carrier to BATT / GND bars 0.46 mm (bars notched dia 11 at the standoffs), lid to lugs 0.5 mm, carrier to lid 0.6 mm, carrier to foot screws 0.6 mm, carrier to J6 bundle 1.03 mm, lid to wires 1.4 mm, risers to J6 bundle 1.5 mm, carrier to wires 1.9 mm, lugs to foot screws 2.27 mm. Fixed on the way: risers OUT2 / OUT4 touching (R5.5 obrounds at the 9.5 mm T pitch; now foot arm R4 + column, 1.5 mm apart with a G10 web), upper lug barrels 0.39 mm apart (now 2.1 mm), carrier against the wire-way liner and the well, J6 ribbon through the risers (rerouted between the tiers).
+F1 v2c build (2026-11-20, `clearance_v2c.py`, 521 solid pairs): no unintended overlaps. By design: screws / studs in their threads, X1 / X2 nuts on the receptacle threads (TE CAD), plugs mated, Molex J2 pins in the input-board holes, crimps, cable ends. Closest bare-metal / new gaps: carrier to foot-screw heads 0.35 mm (G10, not metal), lid to washers 0.005 (washer seated on the wall), risers to the J6 bundle 0.49 (insulated), lid to M6 bosses 0.49, all lugs / risers / screws per section 5b.
+
 Both Fusion designs (`custom-pdm-enclosure-v2b-F1` v4, `-F2` v3, saved 2026-11-13 14:00 ET) hold the e1a builds (F1 risers + carrier with the e1a clearance fix; F2 smooth fins + flow cone + the same OUT stack), imported from WSL `~/scratch/encl-v2b/runs/<variant>/custom-pdm-enclosure-v2b-<variant>-assembly.step`.
 
 ## 6. Parts (purchased parts from real models; sources and licences: `enclosure/v2c/vendor/README.md`; part numbers, quantities and descriptions of every part: the release BOM `BOM-v2c-F1.csv`, made by `build_v2c.py` from the assembly placements)
@@ -136,21 +138,22 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 | Flow cone (PA12) | - | 3 g |
 | Total | 2413 g | 2187 g |
 
-(2026-11-13 builds, `enclosure/v2b/src/mass_v2b.py`.)
+(2026-11-13 builds, v2b `mass_v2b.py`.) v2c F1 (2026-11-20, `enclosure/v2c/src/mass_v2c.py`): heat sink 1775 g, lid 233, deck 25, bars 164 + 131, bosses 34, risers 31, carrier 31 (the v2b table above under-stated it: 16.9 cm3 of G10 is 31 g), total 2423 g.
 
 ## 5b. OUT1-4 risers + carrier (2026-11-13, Dan c1b / d1a / e1a)
 
 - e1a (Dan 2026-11-13, after reviewing the riser / carrier render): the first riser layout had the upper (east) lug ring 0.9 mm from a lower lug and 1.0 mm from a lower lug-screw head. Fix applied: upper lug tier raised 4 mm (seat z 25 -> 29, lug top about flush with the terrace top z 30), seats moved to OUT2 / OUT4 (28.9, -44.9 / -21.64) and OUT1 / OUT3 (43.5, -43.2 / -23.34) (mirrored about y -33.27), lug angles OUT2 172, OUT4 188, OUT1 166, OUT3 194 deg, wire lanes y -43.3 / -37.8 / -28.7 / -23.2, G10 carrier widened to y -53.4 to -13.14 (just clear of the BATT / GND bars), upper block y -51.9 to -14.64. The wire-way between the BATT and GND collars is unchanged.
-- Bare-metal clearances after e1a (`enclosure/v2b/src/lugcheck_v2b.py`, F1 build, 3-D min distance): lug to lug min 5.57 mm (OUT1-OUT3); lug to any other-net screw min 5.24 mm (upper lug over the lower lug-screw head); lug to other risers min 6.70 mm. Same-net pairs (a lug and its own riser foot screw) are not counted. G10 carrier walls (from the build geometry): lower-pocket to carrier edge 3.0 mm, upper-pocket to edge 3.2 mm, lower-to-upper pocket wall 3.7 mm (no line of sight between lugs).
+- v2c (2026-11-20, `enclosure/v2c/src/lugcheck_v2c.py`): lug to lug min 6.12 mm (OUT1-OUT3); lug to other-net screw min 5.0 mm; lug to other risers min 4.56 mm; head rule (every socket head vs every bare-metal feature beyond its bearing face, same net included, >= 0.5 mm): 0 of 35 (riser foot heads 0.72 mm, lid counterbores 0.50, fan screws 0.75). G10 web between neighbouring key slots 1.8 mm (foot R3.75).
+- Bare-metal clearances after e1a (v2b `lugcheck_v2b.py`, F1 build, 3-D min distance): lug to lug min 5.57 mm (OUT1-OUT3); lug to any other-net screw min 5.24 mm (upper lug over the lower lug-screw head); lug to other risers min 6.70 mm. Same-net pairs (a lug and its own riser foot screw) are not counted. G10 carrier walls (from the build geometry): lower-pocket to carrier edge 3.0 mm, upper-pocket to edge 3.2 mm, lower-to-upper pocket wall 3.7 mm (no line of sight between lugs).
 - Wires: insulated wire may touch plastic (Dan 2026-11-13); only bare metal (lugs, screws, risers) is held to real clearance, so no wire-to-wall gap is required.
 
 - REDCUBE 74650074R (board B T1-T4): M4 internal thread, max tightening torque 1.2 N*m and 50 A max at 20 C (Wurth datasheet 74650074R, properties table, https://www.we-online.com/catalog/datasheet/74650074R.pdf); thread length 2.5 mm per the Wurth product page (not legible in the datasheet text; check on the drawing); body 3.0 mm tall (KiCad / Wurth 3D model). The foot screw (M4 x 6) is tightened to that limit once; afterwards every lug torque goes into the copper seat and the G10 carrier, which is keyed on the risers and bolted to the heat-sink posts through two M3 standoffs.
 - Lug seats (after e1a): OUT2 / OUT4 at z 19.0 (west pair), OUT1 / OUT3 at z 29.0 (east pair); lugs flat on the seat columns, wires leave horizontally (t1a) in four lanes y -43.3 / -37.8 / -28.7 / -23.2 (low / high / high / low tier, z 22 / 32 / 32 / 22).
-- Separation: west pair lugs sit in separate G10 pockets with solid G10 between them (no line of sight); east pair rings are separated by a solid G10 wall >= 4.9 mm in the raised carrier block, their barrels end 2 mm apart in air; east lugs pass 5.2 mm above the west lug-screw heads (was 1.0 before e1a). Riser feet of neighbouring terminals (T1-T4 pitch 9.5 mm) are 1.5 mm apart with a G10 web between.
+- Separation: west pair lugs sit in separate G10 pockets with solid G10 between them (no line of sight); east pair rings are separated by a solid G10 wall >= 4.9 mm in the raised carrier block, their barrels end 2 mm apart in air; east lugs pass 5.2 mm above the west lug-screw heads (was 1.0 before e1a). Riser feet of neighbouring terminals (T1-T4 pitch 9.5 mm) are 2.0 mm apart with a 1.8 mm G10 web between (v2c, foot R3.75; v2b R4: 1.5 / 1.3).
 - Tool access: every M4 lug screw has an open dia 11 pocket above it (3 mm hex key / bit); west screw heads top z 24 (6 below the terrace), east heads top z 34 (4 above the terrace). The foot screws are reached through the open key slots before the lugs go on.
 - Assembly: 1) risers onto T1-T4 (M4 x 6, 1.2 N*m max, threadlocker); 2) standoffs into the sink posts through board B H2 / H4; 3) carrier down over the risers, 2 x M3 x 8 into the standoffs; 4) lugs + M4 x 8.
 - Copper bars: notched dia 11 (insulating sleeve) where the carrier standoffs pass at board B H2 / H4: BATT 20 x 5 keeps about 13 x 5 there, GND 15 x 5 keeps about 8.7 x 5 (about 3.5 A/mm2 at 150 A over a few mm).
-- Clashes (F1 rebuild): see section 5; renders `enclosure-v2b-F1-outbay-sw.png`, `-outbay-nw.png`, `-outstack-exploded.png`, `-section-OUT-bay.png`, `-iso.png`, `-iso-nw.png`, `-iso-lid-off.png`, `-top.png`, `-section-BATT-stud.png` re-rendered 2026-11-13.
+- Clashes (F1 rebuild): see section 5; renders (v2c build, 2026-11-20) `docs/diagrams/enclosure-v2c-F1-outbay-sw.png`, `-outbay-nw.png`, `-outstack-exploded.png`, `-section-OUT-bay.png`, `-iso.png`, `-iso-nw.png`, `-iso-lid-off.png`, `-top.png`, `-front.png`, `-section-BATT-stud.png`, `-section-sink-board-stack.png`, `-under.png` (the v2b F1 renders were removed: superseded).
 
 ## 5c. F2 update (2026-11-13, Dan: smooth fins + flow cone; F1 stays the pick, b2a)
 
@@ -161,16 +164,28 @@ Mass of the made parts (densities Al 2.70, PA12 1.01, Cu 8.94 g/cm3; boards, con
 - Heat: F2 numbers in section 4 are from the straight-fin-equivalent estimate and do not include the cone (old or new); the cone change does not alter that estimate method, so they were not re-run (an F2 flow simulation is still excluded by Noctua's CAD licence).
 - Renders: `enclosure-v2b-F2-iso.png`, `-under.png`, `-section-fan-cone-fins.png`, `-cone-iso.png` (re-rendered 2026-11-13 after the cone change). The cone change was applied to the existing F2 build with `enclosure/v2b/src/cone_patch_v2b.py` (the full build needs the git-ignored PACK / VENDOR folders); `build_v2b.py` carries the same geometry for the next full build.
 
-## 7. Open items
+## 7. CNC check (v2c, 2026-11-20)
 
-- Dan's v2b review (2026-11-12): b1a connectors sticking out 21 mm (61 mm with plugs) are fine; b2a F1 goes forward (F2 files kept, no more work); b3a gap pad k >= 3 W/mK; b4a no OUT1-4 straps (bosses straight on T1-T4).
-- OUT1-4: superseded 2026-11-13 by the copper offset risers + G10 carrier (section 5b), clearances fixed by e1a (lug-to-lug >= 5.5 mm, lug-to-other-screw >= 5.2 mm, carrier walls >= 3.0 mm).
-- BATT / GND collars: boss top z 39.23, 9.2 above the terrace, so their M6 lugs lie flat and the wires leave horizontally clear of the lid; open tool access from above; route those wires west, north or south (the main body starts about 40 mm east).
+Tool: handbuilt-cad `tools/cnc_check.py` via `enclosure/v2c/src/cnc_v2c.sh`, on each machined part's own STEP. Cutters assumed: standard end mills r 1.0 / 1.5 / 2.0 / 3.0 / 5.0 / 6.0 (dia 2-12; the 4 mm fin channels take a dia 3-4 cutter). Walls per handbuilt-cad `docs/CNC-MACHINING-RULES.md`: 0.762 mm metal, 1.52 mm composite. Reach checked from +Z and -Z only (3-axis, one flip): anything unreachable from both is an undercut.
 
-- USB-C bulkhead, F1 Sunon fans and the TE panel nut are modelled from vendor drawings (no maker STEP reachable); check against real parts.
+| Part | Setups | Thinnest wall | Unreachable from +Z / -Z | Sharp vertical inside corners |
+|---|---|---|---|---|
+| CPDM-ENC-101-F1 heat sink (6061) | 3 (top, bottom, east side for the fan wall) | 0.99 mm | 0.22 % = the fan-wall holes (side setup, noted) | 55 (fin-to-fan-wall joints, foot-web / hex joints, fin keep-outs) |
+| CPDM-ENC-104 / -105 bars (C110) | 2 | 1.27 / 3.1 mm | 0 | 0 |
+| CPDM-ENC-106 M6 boss (C110 hex bar) | 2 | 3.99 mm | 0 | 0 |
+| CPDM-ENC-107 / -108 risers (C110) | 2 | 1.49 mm | 0 | 2 (20 deg where the R3.75 arm meets the dia 8 column) |
+| CPDM-ENC-109 carrier (G10) | 2 | 1.79 mm | 0.01 % | 6 (upper-block step, ear corners) |
+
+Found and fixed in the model before release (v2c): 1 mm fin-to-fan-wall slot (no cutter fits: fins now run into the wall), 0.5 mm bridge under the fan holes (12 mm notch), 1.3 mm G10 web between riser key slots (foot R3.75: 1.8 mm), 0.27 mm floor under the low riser tap drill (drilled through).
+Not yet modelled: the sharp vertical inside corners in the table get the cutter radius (drawing note "INSIDE CORNERS: CUTTER RADIUS ALLOWED"); CNC-MACHINING-RULES asks for 1.3 x the tool radius modelled (e.g. R1.3 for a dia 2 cutter) before a quote. Horizontal inside edges (fin roots, boss bases) take the bull-nose corner radius (note).
+
+## 8. Open items
+
+- Fusion: the v2c Fusion design with linked components (one Fusion design per part number, inserted by reference, part number + description set) is NOT made: this session had no Fusion tools. `enclosure/v2c/src/fusion_v2c.py` does it from the release folder under the Fusion lock (upload parts, set properties, build `custom-pdm-enclosure-v2c-F1`).
+- Still drawn from maker drawings: Sunon MF30101V1-1000U-A99 (the maker model is on DigiKey behind DigiKey's model-download agreement: Dan to accept or download), Amphenol LTW UC-00PMFY-SC7001 (no maker CAD found), Phoenix 3240083 (phoenixcontact.com download behind an anti-robot check: Dan to download). Swap each in `build_v2c.py` when the file is in `$VENDOR`.
+- Before a CNC quote: model the vertical inside-corner radii (section 7), pick the sink finish (clear anodise ASSUMED), put tolerances on the critical features (riser seat / foot holes, carrier key slots, sink pedestal tops), thread callouts are drawing notes (no cosmetic threads in the STEP).
+- Heat: internal I2R heat estimate added (`docs/heat-analysis.md` section 3); the air under the lid is not modelled.
+- F2 (Noctua) not rebuilt for v2c (F1 is the pick; the Noctua CAD was not re-downloaded): F2 stays at its v2b state (Fusion `-F2`, renders `enclosure-v2b-F2-*`).
 - Wire ribbons and USB cable routes are ASSUMED forms (flat taped ribbons, 4 mm cables); real harness bend radii to check at build.
-- Panel-nut thickness ASSUMED 6 mm.
-- CNC check of the base and the copper bosses (cnc-part-check) still to run on the final pick.
-- Wire-way renders (2026-11-12): `enclosure-v2b-F1-outbay-sw.png`, `-outbay-nw.png`, `-iso.png`, `-iso-nw.png`, `-top.png`, `-section-OUT-bay.png`, `-section-BATT-stud.png` re-rendered; the other F1 views are from the build before the wire-way.
-- Renders: `docs/diagrams/enclosure-v2b-*.png` (F1 full set incl. sections through the BATT stud, the OUT bay and the board / sink stack; F2 iso, iso NW, lid off, underside, stack section). F2 renders are from the build before the 1 mm fan-post fix (not visible at render scale).
-- A1a (raised collars) recorded here: the M6 boss is 15 mm tall, 6 mm of the board stud thread below and 8 mm of the M6 x 10 lug screw above, with a 1 mm gap between.
+- BATT / GND collars: boss top z 39.23, 9.2 above the terrace, so their M6 lugs lie flat and the wires leave horizontally clear of the lid; route those wires west, north or south (the main body starts about 40 mm east).
+- Renders: `docs/diagrams/enclosure-v2c-F1-*.png` (this build); `enclosure-v2b-F2-*.png` (F2, v2b).
