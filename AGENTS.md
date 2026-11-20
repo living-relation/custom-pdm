@@ -32,8 +32,8 @@ Store unreachable (PC offline, cloud session): work from committed docs.
 ## Commands
 Firmware (before any commit that touches `firmware/`):
 - WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one. Never build from `/mnt/c` (CRLF checkout): the script builds from `git archive` of a named branch (`main`).
-- Linux / WSL: `firmware/sim/build.sh custompdm_a <out> 1`, same for `custompdm_a <out> 2` and `custompdm_b <out> 1`, then `python3 firmware/sim/s0_board_audit.py <out>` (expect 50 of 50), `python3 firmware/sim/s4_can_system.py <out>` (CAN system, expect 10 of 10), `python3 firmware/sim/s1_system.py <out>` (expect 88 of 88) and `python3 firmware/sim/s3_features.py <out>` (feature parity, `docs/feature-parity.md`: expect 110 of 110, 0 XFAIL; an XFAIL marks a gap with a proposal; exit code 0).
-- Renode bench: `powershell -ExecutionPolicy Bypass -File firmware\sim\renode\run_bench.ps1 --build` (expect 35 of 35).
+- Linux / WSL: `firmware/sim/build.sh custompdm_a <out> 1`, same for `custompdm_a <out> 2` and `custompdm_b <out> 1`, then `python3 firmware/sim/s0_board_audit.py <out>` (expect 76 of 76), `python3 firmware/sim/s4_can_system.py <out>` (CAN system, expect 10 of 10), `python3 firmware/sim/s1_system.py <out>` (expect 91 of 91) and `python3 firmware/sim/s3_features.py <out>` (feature parity, `docs/feature-parity.md`: expect 111 of 111, 0 XFAIL; an XFAIL marks a gap with a proposal; exit code 0).
+- Renode bench: `powershell -ExecutionPolicy Bypass -File firmware\sim\renode\run_bench.ps1 --build` (expect 39 of 39).
 UI: `dotnet build ui\dingoConfig\dingoConfig.sln`; `dotnet test ui\tests\CustomPdm.Tests` with `CUSTOMPDM_SIM_SO` pointing at a sim build of the same firmware (`ui/README.md`).
 DBC: `dotnet run --project ui/tools/DbcGen -- --check`. Fab outputs: `python tools/gen_fab_jlcpcb.py` (hole check included).
 Every commit: `"C:\Program Files\Git\bin\bash.exe" .github/state-check.sh HEAD --staged`.

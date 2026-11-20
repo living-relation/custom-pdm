@@ -98,7 +98,7 @@ match ST's table; all 8 / 12 ADC slots read their own nets; PA4 / PA5 (TC, not 5
 signals; BOOT0 / BOOT1 fine. WARN: board B PA15 (JTDI pull-up at reset) drives PROFET IN7 (glitch << tON(DELAY));
 NRST has no capacitor (both boards, stock). Clocks: VCO 288 MHz, SYSCLK 144, USB 48.00, APB1 36 MHz: PASS. CAN
 1 Mbit/s: 18 tq, sample point 88.9 %, SJW 1, oscillator tolerance +-2778 ppm vs about +-110 ppm crystal, bus up to
-about 40 m: PASS. Watchdog: none (stock): WARN -> built (fwsafety): IWDG 1.00 / 1.47 / 2.77 s at LSI 47 / 32 / 17 kHz, refreshed only when all five essential threads ran (longest gap 251 ms host sim, 358 ms Renode), RTC-refreshed in sleep. FRAM: written only on a config save: PASS.
+about 40 m: PASS. Watchdog: none (stock): WARN -> built (fwsafety): IWDG 1.00 / 1.47 / 2.77 s at LSI 47 / 32 / 17 kHz, refreshed only when all five essential threads ran (longest gap 251 ms host sim, 362 ms Renode), RTC-refreshed in sleep. FRAM: written only on a config save: PASS.
 Sleep: 6.2 mA (25 C) / 14.1 mA (85 C) for the whole PDM (TSR no-load 1 mA x 3, battery dividers, op-amps): WARN.
 CPU load: not measurable without a cycle model: bench.
 
