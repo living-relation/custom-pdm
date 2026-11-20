@@ -51,11 +51,58 @@ public class PdmEditor2Tests
         Assert.Equal((limit, inrush, inrushMs), (x.CurrentLimit, x.InrushCurrentLimit, x.InrushTime));
         Assert.Equal((ResetMode.Count, trips, retryMs), (x.ResetMode, x.ResetCountLimit, x.ResetTime));
         Assert.Equal(soft, x.SoftStartEnabled);
-        if (soft) Assert.True(x is { PwmEnabled: true, VariableDutyCycle: false, FixedDutyCycle: 100, Frequency: 100, SoftStartRampTime: 1000 });
+        // board B fan: soft start at the freewheel-diode limit (22 Hz at 30 A, 1 mH ASSUMED), board A: the stock 100 Hz
+        if (soft) Assert.True(x is { PwmEnabled: true, VariableDutyCycle: false, FixedDutyCycle: 100, SoftStartRampTime: 1000 } && x.Frequency == (n >= 17 ? 22 : 100), $"{x.Frequency} Hz");
         Assert.Equal((tripMs, minA), (Pro(v, n).P.TripTime, Pro(v, n).P.MinCurrent));
         Assert.Equal(loss, PdmPresets.Of(k).Loss);
         Assert.Equal(k, PdmPresets.KindOf(v, Out(v, n)));
         Assert.Empty(PdmPresets.Changed(v, Out(v, n), k));
+    }
+
+    // fwsafety (docs/system-verification.md 3): BYG23M average current <= 1.5 A on board B motor PWM
+    [Fact]
+    public void MotorPresetsOnBoardBHoldPwmAtTheFreewheelDiodeLimit()
+    {
+        Assert.InRange(PdmPresets.FreewheelAvgA(30, 1e-3, 22), 0, PdmPresets.FreewheelIfAvA);
+        Assert.True(PdmPresets.FreewheelAvgA(30, 1e-3, 23) > PdmPresets.FreewheelIfAvA);
+        Assert.InRange(PdmPresets.FreewheelAvgA(25, 1e-3, 32), 0, 1.5);      // the car-loads 25 A fan: about 32 Hz (verify_switching)
+        Assert.True(PdmPresets.FreewheelAvgA(25, 1e-3, 33) > 1.5);
+        Assert.InRange(PdmPresets.FreewheelAvgA(25, 1e-3, 100), 4.5, 4.7);   // 100 Hz: 4.6 A (verify_switching row)
+        var v = NewPdm();
+        foreach (var (k, n, hz) in new[] { (PdmDeviceKind.RadiatorFan, 17, 22), (PdmDeviceKind.CondenserFan, 18, 22), (PdmDeviceKind.FuelPump, 19, 64),
+                     (PdmDeviceKind.Motor, 23, 60), (PdmDeviceKind.RadiatorFan, 21, 90), (PdmDeviceKind.Lamp, 17, 400), (PdmDeviceKind.RadiatorFan, 1, 400) })
+            Assert.Equal(hz, PdmPresets.MaxPwmHz(Out(v, n), k));
+        // a fan curve at 100 Hz on B OUT3 is held at 64 Hz by the fuel pump preset, and shows as changed when set back
+        var x = Out(v, 19).Output;
+        (x.PwmEnabled, x.VariableDutyCycle, x.FixedDutyCycle, x.Frequency) = (true, false, 60, 100);
+        var notes = new List<string>();
+        Assert.Null(PdmPresets.Apply(v, 19, PdmDeviceKind.FuelPump, notes));
+        Assert.Equal(64, x.Frequency);
+        Assert.Contains(notes, s => s.StartsWith("PWM frequency 100 -> 64 Hz"));
+        Assert.Empty(PdmPresets.Changed(v, Out(v, 19), PdmDeviceKind.FuelPump));
+        x.Frequency = 100;
+        Assert.Equal(["PWM frequency"], PdmPresets.Changed(v, Out(v, 19), PdmDeviceKind.FuelPump));
+        // board A has no freewheel diode: the fan preset keeps the stock 100 Hz soft start
+        Assert.Null(PdmPresets.Apply(v, 1, PdmDeviceKind.RadiatorFan));
+        Assert.Equal(100, Out(v, 1).Output.Frequency);
+    }
+
+    // fwsafety: a pair (B OUT3 + OUT4) is rated 52 A, not 62 A (verify_switching.py: one switch takes 59.5 %)
+    [Fact]
+    public void PairPrimaryUsesThe52APairRating()
+    {
+        var v = NewPdm();
+        var b = Dev(v, "B");
+        b.Outputs[3].PrimaryOutput = 2;                                     // OUT4 follows OUT3
+        v = PdmView.Build(v.Boards.Select(x => x.Device).ToList());
+        Assert.Equal((52.0, 31.0), (Out(v, 19).RatingA, Out(v, 20).RatingA));
+        Assert.Null(PdmPresets.Apply(v, 19, PdmDeviceKind.Heater));
+        Assert.Equal(52.0, Out(v, 19).Output.CurrentLimit);
+        Assert.False(Out(v, 19).OverRating);
+        Assert.Null(PdmPresets.Apply(v, 19, PdmDeviceKind.FuelPump));
+        Assert.Equal(25.0, Out(v, 19).Output.CurrentLimit);                // the pump's own maximum, under the pair rating
+        Assert.Contains("is paired", PdmPresets.Apply(v, 20, PdmDeviceKind.Heater));
+        Assert.Equal(25.1, PdmView.PairRating(15.0));
     }
 
     [Fact]
