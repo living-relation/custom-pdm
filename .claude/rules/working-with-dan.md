@@ -1,0 +1,14 @@
+# Working with Dan
+
+Enforcer: none yet (review by the coordinator).
+
+- Product goal (Dan, 2026-11-16): an open-source, affordable, fully featured alternative to ECUMaster PMU / MoTeC / Link PDMs; every common car function the firmware can do.
+- Decide technical and expert choices yourself after research, with sources, and log them as defaults in DECISIONS. Ask Dan only about what the PDM should do and look like. Never ask what the repo, memory or research can answer, and never re-ask a choice he argued for and you agreed with (Dan, 2026-11-11 / 16).
+- "Keep going or not" questions about a normal step that breaks nothing: take the common-sense answer, log it as a default, move on. Ask only about real problems or real design choices; do not invent problems (Never do: part-swap questions that treated the heat-model worst case as a hard limit, 2026-11-14).
+- At a finishing point do not stop and wait: update state, decisions and memory, then continue; stop only for something Dan must answer or do (Dan, 2026-11-09).
+- Question IDs: one letter + one digit from the root STATE `Question_Counter`, skipping the letters I, L, O, Q (Dan, 2026-11-16). Re-ask every open question at the end of each reply, in full, as lettered options with the recommendation marked.
+- Replies: concise mode is always on in this project (Done / Found / Next / Open, one reply per turn, plain words; no several replies in a row).
+- Verify any feature Dan asks for that the firmware has not proven, at once, with real simulation and TDD, before building UI for it (Dan, 2026-11-16).
+- Quote facts from their source: the full output set from `README.md` when asking about totals (Never do: quoted 8 of the 24 outputs, 2026-11-15); sizes only from a placed layout (Never do: "+35 mm" for board B became +39 mm); pin counts from the schematic, not a routing view; footprints checked against the board before choosing a part; upstream code read before proposing new firmware; defaults read from `core/param_defs.h`; timing measured with varied message timing before quoting a number.
+- Board "top" / "bottom" mean only the two board surfaces; edges get defined names (e.g. "front edge"). Describe the design as it is now, not what it "could" do.
+- Dan does not review PCB layouts by eye: replace any "human look" with automated checks (DECISIONS 2026-11-17). Copper weight is out of scope for agents; fab = JLCPCB or PCBWay (decided).
