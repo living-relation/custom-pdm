@@ -97,7 +97,7 @@ P = dict(
     bay_floor_top=19.2,
     out_lug_t=1.0, out_lug_w=8.0, out_lug_L=17.5, out_barrel_d=6.0, out_barrel_L=8.0, out_wire_d=4.2,   # Phoenix 3240083 C-RC 6/M4 DIN (catalogue dims); 10 AWG GXL OD 4.2 ASSUMED
     out_seat_lo=19.0, out_seat_hi=29.0,                       # OUT1-4 lug seat tops: west pair low tier, east pair high tier (d1a / e1a)
-    riser_r=4.0, riser_foot=4.0, pocket_d=5.0, ear_t=5.0, riser_d=8.5, riser_root_r=0.5,   # v2c: seat 8.5 from the T centre (all four), R0.5 column-root fillet
+    riser_r=4.0, riser_foot=4.0, pocket_d=5.0, ear_t=5.0, riser_d=8.5, riser_root_r=0.5, riser_foot_r=3.75,   # v2c: foot arm R3.75 (v2b R4): G10 web between neighbouring key slots 1.8 (was 1.3 < 1.52 composite minimum)   # v2c: seat 8.5 from the T centre (all four), R0.5 column-root fillet
     wireway_y0=-47.2, wireway_y1=-19.3,
     corner_r=14.0, draft_deg=6.0, shoulder_z=10.0, shoulder_in=2.0,
     ribbon_w=28.0, ribbon_t=4.0,
@@ -220,13 +220,13 @@ if VAR == "F1":
     fins = []
     y = LY0 + fe
     while y + P["fin_t"] <= LY1 - fe + 1e-6:
-        fins.append(box(LX0 + fe + 16, bay_x0, y, y + P["fin_t"], zf0, -pt)); y += P["fin_pitch"]
+        fins.append(box(LX0 + fe + 16, bay_x0 + 1.0, y, y + P["fin_t"], zf0, -pt)); y += P["fin_pitch"]   # v2c: fins run into the fan wall (v2b left a 1 mm slot, narrower than any cutter)
     finf = Compound(fins)
     fan_y = [(LY0 + LY1) / 2 - 16, (LY0 + LY1) / 2 + 16]
     fan_z = zf0 + 14.5   # v2c: 0.5 lower than v2b, so the upper M3 fan-screw heads (dk 5.5 at +12) clear the plate underside by 0.75 (head rule; was 0.25)
     wall_x = bay_x0 + 1.0                                         # 3 mm fan wall (part of the sink), fans bolt to its east face
     fwall = box(wall_x, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
-    for fy in fan_y: fwall = fwall.cut(cyl(28.0, (wall_x - 1, fy, fan_z), 5.0, (1, 0, 0)))
+    for fy in fan_y: fwall = fwall.cut(cyl(28.0, (wall_x - 1, fy, fan_z), 5.0, (1, 0, 0))).cut(box(wall_x - 1, wall_x + 4, fy - 6, fy + 6, zf0 - 1, fan_z - 13))   # v2c: 12 wide notch from the fin tips into the hole (v2b left a 0.5 / 1.0 bridge under it); the screw corners keep >= 1.25
     for fy in fan_y:
         for dy in (-12, 12):
             for dz in (-12, 12): fwall = fwall.cut(cyl(2.5, (wall_x - 1, fy + dy, fan_z + dz), 5.0, (1, 0, 0)))   # M3 tap (Sunon hole pitch 24)
@@ -437,7 +437,8 @@ def slot_along(x, y, ang, wd, Ls, z0, z1):
 def riser_local(H):
     """riser in its own frame: T centre at the origin, seat on +X at riser_d, z 0 = REDCUBE top"""
     ft_ = P["riser_foot"]
-    foot = obround((0, 0), (RD_, 0), RR, 0, ft_); col = cyl(2 * RR, (RD_, 0, 0), H)
+    RF = P["riser_foot_r"]
+    foot = obround((0, 0), (RD_, 0), RF, 0, ft_); col = cyl(2 * RR, (RD_, 0, 0), H)
     # column-root fillet R0.5 (= cutter corner radius) where the column meets the foot-arm top: built as a concave ring
     # (revolved quarter-round profile r 4..4.5) clipped to the foot outline (OCC's fillet fails where the column and the arm end are tangent)
     rf = P["riser_root_r"]; e_ = 0.05                       # ring reaches 0.05 into the column and the arm so the fuse is volumetric
@@ -445,16 +446,17 @@ def riser_local(H):
                  CenterArc((RD_ + RR + rf, 0, ft_ + rf), rf, 270, -90).rotate(Axis((RD_ + RR + rf, 0, ft_ + rf), (1, 0, 0)), 90),
                  Line((RD_ + RR, 0, ft_ + rf), (RD_ + RR - e_, 0, ft_ + rf)), Line((RD_ + RR - e_, 0, ft_ + rf), (RD_ + RR - e_, 0, ft_ - e_))])
     ring = revolve(Face(prof), Axis((RD_, 0, 0), (0, 0, 1)), 360).solid()
-    ring = isect(ring, obround((0, 0), (RD_, 0), RR, ft_ - e_, ft_ + rf + 0.01))
+    ring = isect(ring, obround((0, 0), (RD_, 0), RF, ft_ - e_, ft_ + rf + 0.01))
     rb = foot.fuse(col, ring)                                # one 3-way fuse, no .clean(): fusing in two steps or cleaning leaves an invalid solid
     if not rb.is_valid: rb = rb.fix()
     print("riser H", round(H, 2), "valid", rb.is_valid, "solids", len(rb.solids()), flush=True)
     rb = rb.cut(cyl(4.5, (0, 0, -0.1), ft_ + 0.2))                                                     # M4 clearance at the foot
-    rb = rb.cut(cyl(3.3, (RD_, 0, H - 10.0), 10.1))                                                    # M4 tap drill 3.3 x 10 deep (lug screw)
+    z_td = H - 10.0 if H - 10.0 >= 1.5 else -0.1          # v2c: the low riser (10.27) left a 0.27 floor under a 10-deep drill: drill it through
+    rb = rb.cut(cyl(3.3, (RD_, 0, z_td), H - z_td + 0.1))                                              # M4 tap drill 3.3 (lug screw, tap 8 deep)
     assert rb.is_valid, f"riser H {H} invalid"
     return one(rb)
-part("CPDM-ENC-107", riser_local(Z_L - TTOP), "Copper offset riser, low (OUT2 / OUT4)", f"foot arm R4 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_L - TTOP:.2f}, M4 tapped 10, R0.5 root", "C110 copper", "made")
-part("CPDM-ENC-108", riser_local(Z_U - TTOP), "Copper offset riser, high (OUT1 / OUT3)", f"foot arm R4 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_U - TTOP:.2f}, M4 tapped 10, R0.5 root", "C110 copper", "made")
+part("CPDM-ENC-107", riser_local(Z_L - TTOP), "Copper offset riser, low (OUT2 / OUT4)", f"foot arm R3.75 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_L - TTOP:.2f}, M4 tap 8 (drill 3.3 through), R0.5 root", "C110 copper", "made")
+part("CPDM-ENC-108", riser_local(Z_U - TTOP), "Copper offset riser, high (OUT1 / OUT3)", f"foot arm R3.75 x 4 + seat column dia 8 at {RD_:g} from the foot hole, height {Z_U - TTOP:.2f}, M4 tap 8 (drill 3.3 x 10), R0.5 root", "C110 copper", "made")
 item("copper-risers-OUT1-4-low", "CPDM-ENC-107", [L(OUTT[k][0], OUTT[k][1], TTOP, rz=ANG[k]) for k in ("OUT2", "OUT4")], (0.85, 0.5, 0.25))
 item("copper-risers-OUT1-4-high", "CPDM-ENC-108", [L(OUTT[k][0], OUTT[k][1], TTOP, rz=ANG[k]) for k in ("OUT1", "OUT3")], (0.85, 0.5, 0.25))
 for k, (sx, sy, sz) in SEAT.items():
@@ -470,7 +472,7 @@ for (X, Y) in ANCH:
     car = car.fuse(dblock(X - 14, X + 6, min(yA, yB), max(yA, yB), Z_CB, Z_CB + P["ear_t"], r=3))
 for k, (sx, sy, sz) in SEAT.items():
     tx, ty = OUTT[k]
-    car = car.cut(obround((tx, ty), (sx, sy), RR + 0.1, Z_CB - 1, 80))                                   # key slot = riser + 0.1
+    car = car.cut(obround((tx, ty), (sx, sy), P["riser_foot_r"] + 0.1, Z_CB - 1, 80)).cut(cyl(2 * (RR + 0.1), (sx, sy, Z_CB - 1), 81))   # key slot = riser outline + 0.1
     car = car.cut(cyl(11.0, (sx, sy, sz), 40)).cut(slot_along(sx, sy, LUGANG[k], P["out_lug_w"] + 1.0, 40.0, sz, 80))   # lug ring pocket + tongue slot
 for (X, Y) in ANCH:
     car = car.cut(cyl(3.4, (X, Y, Z_CB - 1), 20)).cut(cyl(6.5, (X, Y, Z_CB + P["ear_t"] - 3.2), 10))
