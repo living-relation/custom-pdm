@@ -306,3 +306,25 @@ automations:
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_mcu.py [--json out.json]'   # needs pcbnew + github raw access once
     owner: claude
+  - id: presim-thermal-box
+    script: tools/verify_thermal_box.py
+    helpers: [tools/thermal_board_b.py, tools/verify_copper.py]
+    trigger: manual                 # docs/system-verification.md 6 (runs thermal_board_b.py fans / nofan unless --fans / --nofan JSON given)
+    reads: [hardware/board-b-max/dingoPDM-Max.kicad_pcb]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_thermal_box.py [--cabin 60] [--json out.json]'   # about 8 min
+    owner: claude
+  - id: presim-si
+    script: tools/verify_si.py
+    helpers: [tools/verify_layout.py, tools/verify_copper.py, tools/presim_parts.py]
+    trigger: manual                 # docs/system-verification.md 7
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_si.py [--json out.json]'   # scipy; about 20 s
+    owner: claude
