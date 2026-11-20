@@ -32,6 +32,12 @@ def audit(model, label):
     for c in (56.0, 77.0, 81.0, 30.0): b.set_temp(c); bus.run_for(600); fl.append(st.thermal_flags())
     check(f'{label} thermal flags (msg 3 byte 7): 56 C warn (1), 77 C warn + critical soon (3), 81 C warn + critical (5), 30 C none (0)',
           fl == [ps.FLAG_WARN, ps.FLAG_WARN | ps.FLAG_SOON, ps.FLAG_WARN | ps.FLAG_CRIT, 0], fl)
+    # presim (docs/system-verification.md 1): readings must not move with VDDA (TLV1117LV +-1.5 %): battery and die
+    # temperature at VDDA 3.25 V vs 3.30 V (GetVDDA from VREFINT; TS_CAL taken at 3.3 V needs the VDDA ratio)
+    b.set_temp(30.0, 58.5); bus.run_for(600); ref = (st.die_temp_x10(), st.batt())
+    b.set_vdda(3.25); bus.run_for(600); low = (st.die_temp_x10(), st.batt()); b.set_vdda(3.3); bus.run_for(300)
+    check(f'{label} die temperature and battery reading independent of VDDA (3.25 vs 3.30 V)',
+          abs((low[0] or 0) - (ref[0] or 0)) <= 5 and abs((low[1] or 0) - (ref[1] or 0)) <= 0.15, f'{ref} -> {low}')
     b.set_temp(30.0, 30.0)
     # --- every output: switch it alone with a known load, compare with the hardware model
     for i in range(n):

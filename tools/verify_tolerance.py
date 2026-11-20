@@ -261,12 +261,16 @@ def temperatures():
     # STM32 die sensor: the firmware converts the raw count with TS_CAL1/2 (taken at VDDA = 3.3 V) and does not
     # correct for the real VDDA (port.cpp GetTemperature): a VDDA error shifts the reading
     v25, slope = 0.76, 2.5e-3
+    pc = open(os.path.join(P.ROOT, "firmware", "boards", "custompdm_a", "port.cpp"), encoding="utf-8").read()
+    body = pc[pc.index("float GetTemperature()"):pc.index("float GetVDDA()")]
+    corrected = "GetVDDA()" in body
     for vdda in (3.3 * 0.985, 3.3 * 1.015):
-        shift = (v25 + slope * (60 - 25)) * (3.3 / vdda - 1) / slope
+        shift = 0.0 if corrected else (v25 + slope * (60 - 25)) * (3.3 / vdda - 1) / slope
         add("Temperature", f"STM32 die sensor at VDDA {vdda:.3f} V (TLV1117LV +-1.5 %): firmware reading shift",
             f"{shift:+.1f} C (plus +-{P.STM32['ts_linearity']} C linearity)", "+-3 C", "WARN" if abs(shift) > 3 else "PASS",
-            "GetTemperature() uses the raw count as if VDDA were 3.3 V (TS_CAL at 3.3 V, DS Table 81); "
-            "die temperature is reported only (msg), it switches nothing")
+            ("GetTemperature() scales the count by GetVDDA() / 3.3 V (TS_CAL at 3.3 V, DS Table 81)" if corrected else
+             "GetTemperature() uses the raw count as if VDDA were 3.3 V (TS_CAL at 3.3 V, DS Table 81)") +
+            "; die temperature is reported only (msg), it switches nothing")
 
 
 # ------------------------------------------------------------------ 6. ADC sampling of the internal channels
@@ -288,6 +292,21 @@ def adc_sampling():
             "PASS" if t >= need else "FAIL",
             "VREFINT sets GetVDDA(), so every current and voltage reading carries its error" if ch == "VREF" else
             "die-temperature reading only")
+    # board A dual-channel PROFETs: the IS read after a DSEL change must come from a conversion started after the
+    # sense output settled: DSEL_SETTLE_US >= tsIS(CC) 20 us (BTS7008 P_9.6.1.10) + 7 x 4.7k x 220p + one ADC sequence
+    smp = {m.group(1): int(m.group(2)) for m in re.finditer(r"SMP_(\w+)\(ADC_SAMPLE_(\d+)\)", src)}
+    nch = len(re.findall(r"SQ\d+_N\(", src))
+    seq = sum(smp.get(c, 15) + 12 for c in ["AN0"] * (nch - 2)) + (smp.get("SENSOR", 15) + 12) + (smp.get("VREF", 15) + 12)
+    t_seq = seq / fadc
+    ph = open(os.path.join(P.ROOT, "firmware", "boards", "custompdm_a", "port.h"), encoding="utf-8").read()
+    m = re.search(r"#define DSEL_SETTLE_US (\d+)", ph) or re.search(r"#define DSEL_SETTLE_US (\d+)", open(
+        os.path.join(P.ROOT, "firmware", "functions", "profet.h"), encoding="utf-8").read())
+    settle = int(m.group(1)) * 1e-6
+    need = 20e-6 + 7 * 4700 * 220e-12 + t_seq
+    add("ADC sampling", "board A DSEL change -> IS read (dual BTS7008 channels)",
+        f"DSEL_SETTLE_US {settle * 1e6:.0f} us; ADC sequence {t_seq * 1e6:.1f} us ({nch} channels)",
+        f">= tsIS(CC) 20 us + RC {7 * 4700 * 220e-12 * 1e6:.1f} us + one sequence = {need * 1e6:.1f} us",
+        "PASS" if settle >= need else "FAIL", "else the read can come from a conversion of the other channel's current")
 
 
 def main():
