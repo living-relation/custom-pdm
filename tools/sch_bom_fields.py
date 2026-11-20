@@ -51,8 +51,13 @@ PARTS = [
     # 10/1000 us, 5.2 kW 10/10000 us, same VBR 26.7-29.5 V; Vishay doc 98229), new footprint and spot (tools/d2_tvs.py).
     # LCSC C20036943 had 2 in stock on 2026-11-20 (assembler global sourcing or the alternates); Bourns SM8S24CA-Q:
     # Digi-Key SM8S24CA-QCT-ND, active, 14,800 in stock (2026-11-20). Panjit SM8H24CAS-AU: same DO-218AB body.
-    ("C152086", "Vishay", "SM8S24CAHM3/I", "C20036943", "112-SM8S24CAHM3/ITR-ND",
-     "Bourns SM8S24CA-Q (DK SM8S24CA-QCT-ND); Panjit SM8H24CAS-AU", "SM8S24CA"),
+    # ADR-2026-11-20-d2-mpn: Digi-Key lists SM8S24CAHM3/I as obsolete; Bourns SM8S24CA-Q (AEC-Q101, same DO-218AB
+    # land pattern, VBR 26.7-29.5 V, VC 38.9 V at 170 A, 6.6 kW 10/1000 us; LCSC C1976790, Digi-Key SM8S24CA-QCT-ND,
+    # active, about 14,800 in stock 2026-11-20) is the MPN; Vishay / Panjit stay approved alternates.
+    ("C152086", "Bourns", "SM8S24CA-Q", "C1976790", "SM8S24CA-QCT-ND",
+     "Vishay SM8S24CAHM3/I (LCSC C20036943, DK 112-SM8S24CAHM3/ITR-ND); Panjit SM8H24CAS-AU", "SM8S24CA"),
+    ("C20036943", "Bourns", "SM8S24CA-Q", "C1976790", "SM8S24CA-QCT-ND",
+     "Vishay SM8S24CAHM3/I (LCSC C20036943, DK 112-SM8S24CAHM3/ITR-ND); Panjit SM8H24CAS-AU", "SM8S24CA"),
     ("C2976509", "DOWO", "NUP2105LT1G", "C2976509", KEEP, "onsemi NUP2105LT1G (DK NUP2105LT1GOSCT-ND)", None),
     ("C2899997", "OSRAM", "LS R976-NR-1-0-20-R18", "C2899997", KEEP, "", None),               # red LED 0805
     ("C2899888", "OSRAM", "LG R971-KN-1-0-20-R18", "C2899888", KEEP, "", None),               # green LED 0805

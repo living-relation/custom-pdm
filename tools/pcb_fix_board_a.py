@@ -47,7 +47,9 @@ for line in F.sync_fields(b, comps):
     print("  sync:", line)
 
 # ---- 3. CAN terminator
-new = sorted(r for r in comps if not r.startswith("#") and b.FindFootprintByReference(r) is None)
+import hw_protect  # noqa: E402  (its parts are placed by the last stage, tools/hw_protect.py pcb)
+later = hw_protect.later_refs(NET)
+new = sorted(r for r in comps if not r.startswith("#") and r not in later and b.FindFootprintByReference(r) is None)
 jp = next(r for r in new if r.startswith("JP"))
 rt = next(r for r in new if r.startswith("R"))
 if sorted(new) != sorted([jp, rt]):

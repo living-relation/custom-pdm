@@ -5,8 +5,9 @@
   python   tools/d2_tvs.py sch <Power.kicad_sch>        D2 symbol: footprint -> dingoPDM:D_DO-218AB_Vishay_SM8S
   python.exe (KiCad 9) tools/d2_tvs.py pcb <board.kicad_pcb> A|B   move D2 to its new spot, clamp copper (last PCB stage)
 
-Part: Vishay SM8S24CAHM3/I (bidirectional, VBR 26.7-29.5 V, VC 38.9 V at IPPM 170 A, 6.6 kW 10/1000 us, 5.2 kW
-10/10000 us; Vishay doc 98229 rev 23-Jan-2026). Order fields: tools/sch_bom_fields.py (C152086 row). Approved
+Part: Bourns SM8S24CA-Q is the MPN (ADR-2026-11-20-d2-mpn); land pattern and ratings from Vishay SM8S24CAHM3/I
+(bidirectional, VBR 26.7-29.5 V, VC 38.9 V at IPPM 170 A, 6.6 kW 10/1000 us, 5.2 kW 10/10000 us; Vishay doc 98229
+rev 23-Jan-2026). Order fields: tools/sch_bom_fields.py (C152086 row). Approved
 alternates in the same DO-218 land pattern: Bourns SM8S24CA-Q (data sheet "Recommended Footprint": tab 9.0 x 10.0,
 lead 2.0 x 2.7, 14.5 overall: inside this pattern), Panjit SM8H24CAS-AU (DO-218AB, body 9.7-10.3 / 8.7-9.3 / 4.7-5.0
 mm: the same body as Vishay's).
