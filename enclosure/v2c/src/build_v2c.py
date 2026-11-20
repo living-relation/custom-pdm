@@ -21,6 +21,9 @@ Rev C (2026-11-20, job cadfetch): the last three drawn stand-ins replaced by mak
   "Manufacturer Provided" STEP, 10.4 thick: fan-screw heads 0.4 further east), Phoenix 3240083 ring lug (phoenixcontact.com STEP:
   ring centre to barrel end 14, barrel OD 5.6; OUT1-4 wire ends follow), Amphenol LTW UC-00PMFY-SC7001 (amphenolltw.com STEP:
   round flange, nut moved out by the wall, FPC tail 47 to a Y-beam contact; the USB cable now starts at the tail end)
+Rev D (2026-11-20, job cadfetch2): drawn bought stand-ins replaced by maker CAD (McMaster-Carr STEPs: 93655A360 / 93655A095
+  M-F standoffs, 94669A096 hub spacer, 7566K204 tie mount); fan wall 3.0 -> 6.0 (grows west) so the fan screws (now M3 x 16)
+  get 5.6 thread (>= 1.5 D); plus the revD restructure (feet split, gap pads, heat-sink subassembly file).
 ASSUMED = designer's choice, TBD = not confirmed by a primary source.
 """
 import os, sys, json, math
@@ -232,11 +235,19 @@ if VAR == "F1":
     fan_y = [(LY0 + LY1) / 2 - 16, (LY0 + LY1) / 2 + 16]
     fan_z = zf0 + 14.5   # v2c: 0.5 lower than v2b, so the upper M3 fan-screw heads (dk 5.5 at +12) clear the plate underside by 0.75 (head rule; was 0.25)
     wall_x = bay_x0 + 1.0                                         # 3 mm fan wall (part of the sink), fans bolt to its east face
-    fwall = box(wall_x, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
-    for fy in fan_y: fwall = fwall.cut(cyl(28.0, (wall_x - 1, fy, fan_z), 5.0, (1, 0, 0))).cut(box(wall_x - 1, wall_x + 4, fy - 6, fy + 6, zf0 - 1, fan_z - 13))   # v2c: 12 wide notch from the fin tips into the hole (v2b left a 0.5 / 1.0 bridge under it); the screw corners keep >= 1.25
+    # revD (fan-screw engagement, CNC-THREAD-DEPTH): the wall grows 3 mm WEST (its east face, the fans and the fan screws' heads
+    # stay put), 3.0 -> 6.0 thick, so the M3 taps run 6.0 through: M3 x 16 gives 5.6 thread (1.87 D >= 1.5 D) and ends 0.4 short
+    # of the west face; a through tap needs no blind-hole relief. Local bosses / columns were rejected: behind a 3-axis cut from
+    # the fin tips the lower-corner bosses leave an undercut or close whole fin channels at the fan holes. The fins just meet
+    # the wall 3 mm further west; the air holes and notches run through the full 6.0, cutting the fin ends inside them.
+    FW_T = P.get("fan_wall_t", 6.0); FW_X0 = wall_x + 3.0 - FW_T
+    fwall = box(FW_X0, wall_x + 3.0, LY0 + fe + 8, LY1 - fe - 8, zf0, -pt)
+    for fy in fan_y:
+        hole = cyl(28.0, (FW_X0 - 1, fy, fan_z), FW_T + 2.0, (1, 0, 0)).fuse(box(FW_X0 - 1, wall_x + 4, fy - 6, fy + 6, zf0 - 1, fan_z - 13))   # v2c: 12 wide notch from the fin tips into the hole (v2b left a 0.5 / 1.0 bridge under it); the screw corners keep >= 1.25
+        fwall = fwall.cut(hole); finf = finf.cut(hole)
     for fy in fan_y:
         for dy in (-12, 12):
-            for dz in (-12, 12): fwall = fwall.cut(cyl(2.5, (wall_x - 1, fy + dy, fan_z + dz), 5.0, (1, 0, 0)))   # M3 tap (Sunon hole pitch 24)
+            for dz in (-12, 12): fwall = fwall.cut(cyl(2.5, (FW_X0 - 1, fy + dy, fan_z + dz), FW_T + 2.0, (1, 0, 0)))   # M3 tap drill 2.5, tapped through 6.0 (Sunon hole pitch 24)
     finf = finf.fuse(fwall)
     fan_info = dict(kind="2 x Sunon MF30101V1-1000U-A99", x=(wall_x + 3.0, wall_x + 13.0), y=fan_y, z=fan_z)
 else:
@@ -371,7 +382,9 @@ if VAR == "F1":
         for dy in (-12, 12):
             for dz in (-12, 12):
                 if (dy, dz) == (-12, -12): continue   # maker STEP: this corner (maker +x / -z) holds the lead-wire retainer, its hole is partly blocked -> 3 screws per fan (the wall keeps its 4th tapped hole, unused)
-                screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90), "fan")   # horizontal, head on the fan's east face; maker fan 10.4 thick -> 1.6 mm (3 threads) into the 3 mm wall (was 2.0 with the drawn 10 mm fan); M3 x 14 would poke 0.6 out of the wall into the fins
+                screw("M3", 16.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90), "fan")   # horizontal, head on the fan's east face; revD: M3 x 16 through the maker fan (10.4) -> 5.6 thread in the 6.0 wall (revC: M3 x 12, 1.6 in 3.0)
+    fan_info["fan_screw"] = dict(size="M3x16", wall_t=FW_T, thread_mm=round(16.0 - FAN_T, 2), min_thread_mm=4.5)
+    assert 16.0 - FAN_T >= 4.5 and 16.0 - FAN_T < FW_T, ("fan screw engagement", 16.0 - FAN_T, FW_T)
 else:
     nf = vstep("noctua_NF-A6x15/NF-A6x15_Public-CAD.stp")
     b = bbx(nf.rotate(Axis.X, 90))
@@ -428,8 +441,13 @@ part("5997", hub, "Adafruit 5997 CH334F 4-port USB hub", "Adafruit_CAD_Parts STE
 hub_loc = L(-2.0 - b.xmin, WALL_IN + 7.5 - b.ymin, HUB_Z - b.zmin, rz=90)
 item("vendor-hub-Adafruit-5997", "5997", [hub_loc], (0.1, 0.1, 0.4))
 hb = bbx(hub.moved(hub_loc))
-part("CPDM-BUY-303", cyl(5.0, (0, 0, 0), HUB_Z), "M2.5 x 4 standoff", "M2.5 hex / round standoff 4 mm under the hub, maker PN TBD (buy to spec)", "brass Ni", "bought", maker="(TBD)")
-item("hub-standoffs-M2.5x4", "CPDM-BUY-303", [L(x, y, 0.0) for x in (hb.xmin + 2.5, hb.xmax - 2.5) for y in (hb.ymin + 2.5, hb.ymax - 2.5)], (0.3, 0.3, 0.33))
+# revD: McMaster-Carr 94669A096 aluminium unthreaded spacer for M2.5, OD 4.5 x 4 (ID 2.7), maker STEP (mcmaster.com/94669A096,
+# "3-D STEP"); maker frame centred on z 0 -> bottom face moved to z 0. Replaces the drawn CPDM-BUY-303 (dia 5 x 4, PN TBD).
+sp = vstep("McMaster_94669A096/94669A096.STEP"); sb = bbx(sp); sp = sp.moved(L(-(sb.xmin + sb.xmax) / 2, -(sb.ymin + sb.ymax) / 2, -sb.zmin))
+assert abs(bbx(sp).zlen - HUB_Z) < 0.01, ("94669A096 length", bbx(sp).zlen)
+part("94669A096", sp, "Unthreaded spacer M2.5, OD 4.5 x 4", "McMaster-Carr 94669A096 round spacer under the USB hub (M2.5 hub screw passes through)",
+     "aluminium", "bought", maker="McMaster-Carr", source="mcmaster.com/94669A096 3-D STEP")
+item("hub-standoffs-M2.5x4", "94669A096", [L(x, y, 0.0) for x in (hb.xmin + 2.5, hb.xmax - 2.5) for y in (hb.ymin + 2.5, hb.ymax - 2.5)], (0.3, 0.3, 0.33))
 
 # ---------------- terminals: copper bosses (v3b) on board B J1/J3 and T1-T4; copper bars to A1/A2 ----------------
 M6TOP = Z_BOT + max(bbx(so).zmax for so in stepB.solids() if abs(bbx(so).xlen - 10) < 0.6)
@@ -531,8 +549,16 @@ for (X, Y) in ANCH:
     screw("M3", 8.0, L(X, Y, Z_CB + P["ear_t"] - 3.2))
 made("carrier-G10-OUT1-4", "CPDM-ENC-109", car, (0.75, 0.78, 0.55), "OUT1-4 riser carrier",
      "3-axis machined: keys the 4 risers, solid walls between the lugs, takes lug torque; bolted to M3 x 8 standoffs on board B H2/H4", "G10 / FR4 glass-epoxy")
-part("CPDM-BUY-302", standoff_mf(5.5, 8.0, 3.0, 6.0, 6.0, (0, 0, 0)), "M3 x 8 hex standoff male-female AF5.5", "M3 M-F hex standoff 8 mm (e.g. Wurth WA-SSTIE series), maker PN TBD (buy to spec)", "brass Ni", "bought", maker="(TBD)")
-item("standoffs-M3x8-MF-carrier", "CPDM-BUY-302", [L(X, Y, Z_TOP) for (X, Y) in ANCH], (0.8, 0.7, 0.3))
+# revD: McMaster-Carr 93655A095 18-8 stainless M-F hex standoff M3, AF 4.5 x 8, stud 4.7, female thread min 4.8; maker STEP
+# "3-D STEP no threads" (mcmaster.com/93655A095). Maker frame = part frame (body z 0..8, stud below). Replaces the drawn
+# CPDM-BUY-302 (AF5.5, stud 6, PN TBD; Wurth 971080321 STEP sits behind a bot check).
+def mc_standoff(pn, Lb):
+    s = vstep(f"McMaster_{pn}/{pn}_NO_THREADS.STEP"); b = bbx(s)
+    assert abs(b.zmax - Lb) < 0.01 and abs(b.zmin + 4.7) < 0.01, (pn, "frame", b.zmin, b.zmax)
+    return s
+part("93655A095", mc_standoff("93655A095", 8.0), "M3 x 8 hex standoff male-female AF4.5", "McMaster-Carr 93655A095: stud 4.7, female thread min 4.8 (carrier standoffs on board B H2 / H4)",
+     "18-8 stainless steel", "bought", maker="McMaster-Carr", source="mcmaster.com/93655A095 3-D STEP no threads")
+item("standoffs-M3x8-MF-carrier", "93655A095", [L(X, Y, Z_TOP) for (X, Y) in ANCH], (0.8, 0.7, 0.3))
 M6_EXT_TOP = P["collar_top"] + 1.0; M4_EXT_TOP = Z_U
 # OUT1-4 ring lugs (Phoenix Contact 3240083 = C-RC 6/M4 DIN, M4, 6 mm2 / 10 AWG) from the maker STEP (phoenixcontact.com product
 # page, Downloads > CAD data, pxc_3240083_00_00_C-RC-6-M4-DIN_3D.stp "simplified 3D model", 2023-11-23, sha256 7a7b9f8f...).
@@ -570,8 +596,11 @@ for n in IN_X:
 for (X, Y) in in_pts: deck = deck.cut(cyl(4.0, (X, Y, z_deck_top - 2.99), P["in_boss"] + 3.0))
 for n, h, (X, Y) in SO: deck = deck.cut(cyl(3.4, (X, Y, z_deck_bot - 1), P["deck_t"] + 2))
 made("input-deck", "CPDM-ENC-103", deck, (0.3, 0.3, 0.33), "Input deck", "frame for the 3 input boards on M3 x 25 standoffs, M3 heat-set inserts", "MJF PA12")
-part("CPDM-BUY-301", standoff_mf(5.5, P["so_m3_len"], 3.0, 6.0, 6.0, (0, 0, 0)), "M3 x 25 hex standoff male-female AF5.5", "M3 M-F hex standoff 25 mm (e.g. Wurth WA-SSTIE series), maker PN TBD (buy to spec)", "brass Ni", "bought", maker="(TBD)")
-item("standoffs-M3x25-MF", "CPDM-BUY-301", [L(X, Y, Z_TOP) for (n, h, (X, Y)) in SO], (0.8, 0.7, 0.3))
+# revD: McMaster-Carr 93655A360 18-8 stainless M-F hex standoff M3, AF 4.5 x 25, stud 4.7, female thread min 6.4 (maker STEP
+# "3-D STEP no threads"). Replaces the drawn CPDM-BUY-301 (AF5.5, stud 6, PN TBD; Wurth 971250321 STEP behind a bot check).
+part("93655A360", mc_standoff("93655A360", P["so_m3_len"]), "M3 x 25 hex standoff male-female AF4.5", "McMaster-Carr 93655A360: stud 4.7, female thread min 6.4 (input-deck standoffs)",
+     "18-8 stainless steel", "bought", maker="McMaster-Carr", source="mcmaster.com/93655A360 3-D STEP no threads")
+item("standoffs-M3x25-MF", "93655A360", [L(X, Y, Z_TOP) for (n, h, (X, Y)) in SO], (0.8, 0.7, 0.3))
 for n, h, (X, Y) in SO: screw("M3", 8.0, L(X, Y, z_deck_top))
 so_set = {(n, h) for (n, h, _) in SO} | {("B", "H2"), ("B", "H4")}   # carrier standoffs replace these board screws
 for n, h, (X, Y) in BOSS:
@@ -604,8 +633,16 @@ for n in ("B", "A1", "A2"):
 made("wire-ribbons", "CPDM-HAR-202", Compound(wires), (0.85, 0.75, 0.1), "Internal harness ribbons to X1 / X2",
      "A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2 -> X1 / X2, flat taped ribbons; routing ASSUMED", "TXL / GXL wire, tape", kind="harness")
 made("usb-cables", "CPDM-HAR-203", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables (bulkhead -> hub -> 3 boards)", "4 mm cables, plugs not modelled; routing ASSUMED", "USB cable", kind="harness")
-part("CPDM-BUY-304", box(-4, 4, -4, 4, 0.0, 2.5), "Cable tie anchor pad 8 x 8", "adhesive / screw cable-tie anchor on the sink field (k1a), maker PN TBD", "PA66", "bought", maker="(TBD)")
-item("tie-points", "CPDM-BUY-304", [L(x, -107.0, 0.0) for x in (60.0, 140.0)], (0.3, 0.3, 0.33))
+# revD: McMaster-Carr 7566K204 four-way adhesive-back cable-tie mount 19 x 19 x 6.4 (nylon, ties to 4.1 x 1.3), maker STEP
+# (3 solids: mount, adhesive foam, release liner; the liner is peeled off, so it is dropped). Maker frame: base face -y at
+# y -3.33 -> part frame base at z 0, up +z. Replaces the drawn CPDM-BUY-304 (8 x 8 x 2.5, PN TBD). NOTE: rated 0-155 F (68 C).
+tm = vstep("McMaster_7566K204/7566K204.STEP")
+tm = Compound([so for so in tm.solids() if bbx(so).ylen > 0.5])
+tm = tm.moved(L(0, 0, 0, rx=90)); tb = bbx(tm); tm = tm.moved(L(-(tb.xmin + tb.xmax) / 2, -(tb.ymin + tb.ymax) / 2, -tb.zmin))
+assert abs(bbx(tm).xlen - 19.38) < 0.1 and abs(bbx(tm).zlen - 6.6) < 0.1, ("7566K204 frame", bbx(tm).xlen, bbx(tm).zlen)
+part("7566K204", tm, "Cable tie mount, adhesive-back, four-way, 19 x 19", "McMaster-Carr 7566K204 on the sink field (k1a), for ties up to 4.1 wide",
+     "nylon, acrylic foam adhesive", "bought", maker="McMaster-Carr", source="mcmaster.com/7566K204 3-D STEP")
+item("tie-points", "7566K204", [L(x, -107.0, 0.0) for x in (60.0, 140.0)], (0.3, 0.3, 0.33))
 
 # ---------------- lid (MJF PA12): Grok b form, front turrets for X1/X2/USB ----------------
 w = P["wall"]; dr = P["draft_deg"]; R = P["corner_r"]; TX1 = 62.0
@@ -664,7 +701,7 @@ for (pn, grp), locs in SCR.items():
 # revD: heat-sink subassembly (Dan 2026-11-20): the machined sink and what is fitted to it before anything else. The feet and
 # their screws are NOT in it: they go on after the lid screws (they cover the corner lid screws), so they sit in the top assembly
 SUBASM = {f"CPDM-ENC-120-{VAR}": dict(name=f"Heat-sink subassembly {VAR}", desc="heat sink + gap pads + fans + fan screws + cable-tie anchors",
-          items=[nm for nm in ITEMS if nm == "heat-sink" or nm.startswith(("gap-pads-", "fans-", "tie-points", "screws_ISO4762-M3x12_fan"))])}
+          items=[nm for nm in ITEMS if nm == "heat-sink" or nm.startswith(("gap-pads-", "fans-", "tie-points", "screws_ISO4762-M3x16_fan"))])}
 
 # ---------------- export ----------------
 # 1) one STEP per part number (parts/<PN>.stp, in the part's own frame) + the assembly STEP that references them (external
