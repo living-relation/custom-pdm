@@ -20,6 +20,14 @@ namespace domain.CustomPdm;
 //   A/C clutch; off for PWM fans (a low duty reads as low current) and loads that are often idle
 // - link-loss behaviour: applied to the output's cross-board link or ECU command when it has one (PdmLinks /
 //   PdmEcu SetMode); fuel pump off (ECUMaster: pump default 0 "for safety"), fans on, lamps / modules hold, rest off
+// - board B motor PWM (fwsafety, ADR-2026-11-20-presim-findings item 2, docs/system-verification.md 3): in the PWM off
+//   time a motor's current freewheels in the output's BYG23M (D13 .. D28, Vishay doc 88962: IF(AV) 1.5 A). The average
+//   diode current at the worst duty, I x tau x f x (1 - e^(-toff / tau)) with tau = L x I / 13.5 V (back-EMF ignored, as
+//   tools/verify_switching.py), must stay <= 1.5 A: so the PWM frequency of a motor preset on board B is held at or
+//   below MaxPwmHz (radiator / condenser fan at their 30 A limit, 1 mH: 22 Hz; at the car-loads 25 A it would be 32 Hz),
+//   the fan soft start included. L is ASSUMED (tools/presim_parts.py CAR_LOADS upper end; bench: measure it) until the
+//   hardware job changes the diodes; board A has no freewheel diodes (the PROFET clamps each turn-off).
+// - a primary output with a follower (pair) uses the pair rating, 52 A on B OUT1-4 (PdmView.PairRating)
 // The chosen preset is a PC-side label (project file, CustomPdmSettings.OutputPresets); without one (a fresh PC after
 // Read All) the preset whose values all match is shown.
 public enum PdmDeviceKind { None, RadiatorFan, CondenserFan, FuelPump, Lamp, LedLamp, Horn, AcClutch, Solenoid, Motor, Heater, Module, Tacho, Other }
@@ -35,6 +43,35 @@ public static class PdmPresets
 {
     public const double MaxInrushA = 100.0;          // stock InrushCurrentLimit clamp (PdmPage / OutputsGrid)
     public const int SoftStartFreqHz = 100;
+    public const double FreewheelIfAvA = 1.5, MotorSupplyV = 13.5;   // BYG23M IF(AV) (Vishay doc 88962); verify_switching.py
+
+    // ASSUMED motor inductance per motor preset (tools/presim_parts.py CAR_LOADS, upper end of the range)
+    public static double? MotorInductanceH(PdmDeviceKind k) => k switch
+    {
+        PdmDeviceKind.RadiatorFan or PdmDeviceKind.CondenserFan => 1.0e-3,
+        PdmDeviceKind.FuelPump => 0.5e-3,
+        PdmDeviceKind.Motor => 1.5e-3,
+        _ => null
+    };
+
+    // average freewheel-diode current at the worst duty (5 % steps, as verify_switching.py)
+    public static double FreewheelAvgA(double amps, double inductanceH, double hz)
+    {
+        if (amps <= 0 || inductanceH <= 0) return 0;
+        var tau = inductanceH * amps / MotorSupplyV;
+        return Enumerable.Range(1, 19).Max(d => amps * tau * hz * (1 - Math.Exp(-((1 - d / 20.0) / hz) / tau)));
+    }
+
+    // highest PWM frequency (Hz) the output allows with this preset: board B motor presets keep the freewheel diode within
+    // its rating (0 = none, even the lowest PWM frequency overloads it); everything else the stock maximum
+    public static int MaxPwmHz(PdmOutputRow o, PdmDeviceKind k)
+    {
+        if (o.Board != "B" || MotorInductanceH(k) is not { } l) return PdmPwm.MaxFreq;
+        var amps = Values(Of(k), o.RatingA).CurrentLimit * (PdmView.IsPairPrimary(o.Device, o.BoardOutput - 1) ? PdmView.PairShareMax : 1.0);
+        for (var f = PdmPwm.MaxFreq; f >= PdmPwm.MinFreq; f--)
+            if (FreewheelAvgA(amps, l, f) <= FreewheelIfAvA) return f;
+        return 0;
+    }
 
     public static readonly IReadOnlyList<PdmPreset> All =
     [
@@ -102,7 +139,9 @@ public static class PdmPresets
         if (x.InrushTime != want.InrushTime) c.Add("inrush time");
         if (x.ResetMode != want.ResetMode || x.ResetCountLimit != want.Trips) c.Add("trips");
         if (x.ResetTime != want.RetryMs) c.Add("retry time");
-        if (x.SoftStartEnabled != want.SoftStart || want.SoftStart && (!x.PwmEnabled || x.SoftStartRampTime != want.SoftStartMs)) c.Add("soft start");
+        var maxHz = MaxPwmHz(o, k);
+        if (x.SoftStartEnabled != (want.SoftStart && maxHz > 0) || want.SoftStart && maxHz > 0 && (!x.PwmEnabled || x.SoftStartRampTime != want.SoftStartMs)) c.Add("soft start");
+        if (x.PwmEnabled && x.Frequency > maxHz) c.Add("PWM frequency");
         if (Pro(o) is { } pr)
         {
             if (pr.TripTime != want.TripTime) c.Add("trip time");
@@ -151,9 +190,10 @@ public static class PdmPresets
         var restore = PdmSnapshot.Take([o.Device]);
         (x.CurrentLimit, x.InrushCurrentLimit, x.InrushTime) = (w.CurrentLimit, w.InrushLimit, w.InrushTime);
         (x.ResetMode, x.ResetCountLimit, x.ResetTime) = (w.ResetMode, w.Trips, w.RetryMs);
-        if (w.SoftStart)
+        var maxHz = MaxPwmHz(o, k);
+        if (w.SoftStart && maxHz > 0)
         {
-            if (!x.PwmEnabled) (x.PwmEnabled, x.VariableDutyCycle, x.FixedDutyCycle, x.Frequency) = (true, false, 100, SoftStartFreqHz);
+            if (!x.PwmEnabled) (x.PwmEnabled, x.VariableDutyCycle, x.FixedDutyCycle, x.Frequency) = (true, false, 100, Math.Min(SoftStartFreqHz, maxHz));
             (x.SoftStartEnabled, x.SoftStartRampTime) = (true, w.SoftStartMs);
         }
         else if (x.SoftStartEnabled)
@@ -161,6 +201,12 @@ public static class PdmPresets
             x.SoftStartEnabled = false;
             // PWM that was only there for the soft start (full duty, no curve): off again
             if (x is { PwmEnabled: true, VariableDutyCycle: false, FixedDutyCycle: 100 }) x.PwmEnabled = false;
+        }
+        if (w.SoftStart && maxHz == 0) notes?.Add($"no soft start: any PWM overloads the {o.Board} OUT{o.BoardOutput} freewheel diode at this current");
+        if (x.PwmEnabled && x.Frequency > maxHz && maxHz > 0)
+        {
+            notes?.Add($"PWM frequency {x.Frequency} -> {maxHz} Hz: the board B freewheel diode (BYG23M, {FreewheelIfAvA} A) limits motor PWM");
+            x.Frequency = maxHz;
         }
         if (Pro(o) is { } pr) (pr.TripTime, pr.MinCurrent, pr.MinCurrentTime) = (w.TripTime, w.MinCurrent, w.MinCurrentTime);
         if (PdmLinks.LinkOf(v, o) is { CrossBoard: true, Loss: { } l } link && l != w.Loss)

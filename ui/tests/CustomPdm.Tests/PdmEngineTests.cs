@@ -248,7 +248,8 @@ public class PdmEngineTests
     {
         var v = NewPdm();
         var items = PdmCritical.Items(v);
-        Assert.Equal(["0x500", "0x540", "0x580", "1000K", "80 C", "10"], items.Select(i => i.Current));
+        // board B has its own critical limit (fwsafety): the one-set value shows that the boards differ (u1a open question)
+        Assert.Equal(["0x500", "0x540", "0x580", "1000K", "differs: A1 80 C, A2 80 C, B 104 C", "10"], items.Select(i => i.Current));
         Dev(v, "B").BitRate = CanBitRate.BitRate500K;
         Assert.Equal("differs: A1 1000K, A2 1000K, B 500K", PdmCritical.Items(v).Single(i => i.Kind == PdmCriticalKind.BitRate).Current);
     }

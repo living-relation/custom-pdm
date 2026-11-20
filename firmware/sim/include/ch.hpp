@@ -6,7 +6,7 @@ struct ThreadReference { thread_t *t = nullptr; };
 struct BaseThread
 {
     virtual void main() = 0;
-    void setName(const char *) {}
+    void setName(const char *n) { chRegSetThreadName(n); }
     ThreadReference start(int prio);
     virtual ~BaseThread() {}
 };

@@ -71,7 +71,7 @@ public class PdmView
         {
             var dev = board.Device;
             for (var i = 0; i < dev.Outputs.Count && OutputNumber(board.Role, i) is { } n; i++)
-                view.Outputs.Add(new PdmOutputRow(n, board.Role, i + 1, Rating(board.Role, i),
+                view.Outputs.Add(new PdmOutputRow(n, board.Role, i + 1, RowRating(dev, board.Role, i),
                     OutputConnector(board.Role, i), dev, dev.Outputs[i]));
 
             for (var i = 0; i < dev.DigitalInputs.Count && DigitalInputNumber(board.Role, i) is { } n; i++)
@@ -93,6 +93,15 @@ public class PdmView
 
     // also our firmware's factory current limit (PdmFactoryDefaults.CurrentLimit, w3a)
     public static double Rating(string role, int i) => role == "B" ? (i < 4 ? 31.0 : 15.0) : 7.5;
+
+    // custom-pdm (fwsafety): a primary output with a follower carries the pair's current, and the firmware checks the
+    // primary's limit against the sum (functions/profet.cpp). The two switches do not share it evenly (RDS(ON) +-20 %,
+    // tools/verify_switching.py: the lower one takes 59.5 %), so the pair is rated at its own rating / 0.5954 (B OUT1-4:
+    // 52 A, not 62 A), rounded down to 0.1 A.
+    public const double PairShareMax = 0.5954;
+    public static double PairRating(double ratingA) => Math.Floor(ratingA / PairShareMax * 10.0) / 10.0;
+    public static bool IsPairPrimary(FwDevice dev, int i) => dev.Outputs.Any(o => o.PrimaryOutput == i) && dev.Outputs[i].PrimaryOutput < 0;
+    private static double RowRating(FwDevice dev, string role, int i) => IsPairPrimary(dev, i) ? PairRating(Rating(role, i)) : Rating(role, i);
     // The PDM-wide numbers (also used for the DBC PDM-wide names, d2b): board output i (0-based) of a role, board
     // digital input i, the role's analog input; null when the role has no such row.
     public static int? OutputNumber(string role, int i) =>

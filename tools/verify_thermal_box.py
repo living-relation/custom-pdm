@@ -13,13 +13,19 @@ copper with the sink, gap pad and lid air; its sink temperature = 60 C cabin + R
     heat out through the lid (0.12 m2 x 1.8 W/m2K overall, docs/heat-analysis.md 3) - all ASSUMED values from there;
   * the transient: the sink's heat capacity (1775 g aluminium, mass_v2c.py, c 896 J/kgK) with R_sys: warm-up and a fan
     failure at full load, against the board's own MCP9808 critical limit (80 C) and the laminate limit;
-  * each temperature-rated part (docs/parts-audit.md section 6 / 10 ratings) against its local temperature.
-Limits: ADR-2026-11-20-thermal-limits (laminate <= 130 C, Tj <= 150 C).
+  * each temperature-rated part (docs/parts-audit.md section 6 / 10 ratings) against its local temperature;
+  * board B's firmware temperature limits (job fwsafety, ADR-2026-11-20-presim-findings item 1), read from
+    firmware/tools_custom/port_boards.py: the sensor -> hot-spot map over every case in the input (laminate - U6 and
+    Tj - U6), then: no warning at the car loads with fans on; at the critical limit (+ the MCP9808's +-1 C, DS20005095B)
+    the laminate stays <= 130 C and Tj <= 150 C at the largest modelled offset; the board B logic-area parts (at the
+    sensor reading) stay within their rating; and the limit any part rating would need.
+Limits: laminate <= 130 C, Tj <= 150 C.
 """
 import argparse
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -32,7 +38,23 @@ G_LID = 0.12 * 1.8                           # W/K lid to cabin
 G_SINK_AIR = 0.010 * 3.0                     # W/K open sink top (about 0.01 m2 not under a board) to the lid air
 G_BOARD_AIR = 0.024 * 3.0                    # W/K three board tops (2 x 72 x 95 mm + board B) to the lid air
 DT_BOARD_A = 15.0                            # K, board A mean over the sink (ASSUMED from docs/heat-analysis.md 2)
-CRIT_C, LAMINATE_C, TJ_C = 80.0, 130.0, 150.0
+LAMINATE_C, TJ_C = 130.0, 150.0
+SENSOR_ERR = 1.0                             # MCP9808 +-1 C max at -40..125 C (DS20005095B DC characteristics)
+# board B logic-area parts at its MCP9808 reading (verify_thermal_box part table): rating C. The 85 C ones are to be
+# replaced by >= 105 C grades (ADR-2026-11-20-presim-findings item 1, hardware job).
+LOGIC_PARTS = [("STM32F446RET7 (ambient, suffix 7)", 105.0), ("MB85RC64TA FRAM", 105.0),
+               ("Traco TSR 1-2450 / ABM3 crystal / X5R caps (85 C grades, to be replaced)", 85.0)]
+
+
+def board_b_limits():
+    """Board B's factory warn / critical from firmware/tools_custom/port_boards.py (the FAN_B block)."""
+    py = open(os.path.join(ROOT, "firmware", "tools_custom", "port_boards.py"), encoding="utf-8").read()
+    warn = int(re.search(r"#define DEFAULT_TEMP_WARN (\d+)", py).group(1))
+    crit = int(re.search(r"#define DEFAULT_TEMP_CRIT (\d+)", py).group(1))
+    return warn, crit
+
+
+CRIT_C = float(board_b_limits()[1])
 # parts rated below the board limit (docs/parts-audit.md section 10 table): name, rating C, where it sits
 RATED = [("Traco TSR 1-2450 (A U15, B U13)", 85.0, "board"), ("Abracon ABM3 crystal Y1", 85.0, "board"),
          ("X5R capacitors (A C3 C4 C6 C14 C38, B C3 C4 C6 C10 C15)", 85.0, "board"),
@@ -47,8 +69,9 @@ def add(group, check, value, limit, verdict, note=""):
 def contacts_harness(case):
     """Heat into the lid air from the X1 / X2 contacts and the internal harness, W (docs/heat-analysis.md 3)."""
     a7 = {"car": [2.0, 2.5, 0.5, 0.2, 5.0, 0.15, 5.0, 5.0, 0.2, 0.13, 0.2, 3.0, 0, 0, 0, 0],
-          "feed150": [7.5 * 0.4] * 16, "rating": [7.5] * 16}[case]
-    b15 = {"car": [8.1, 3.6, 6.0, 0], "feed150": [15.0 * 0.815] * 4, "rating": [15.0] * 4}[case]
+          "feed150": [7.5 * 0.4] * 16, "feed150hi": [7.5 * 0.4] * 16, "feed150lo": [7.5 * 0.4] * 16, "rating": [7.5] * 16}[case]
+    b15 = {"car": [8.1, 3.6, 6.0, 0], "feed150": [15.0 * 0.815] * 4, "feed150hi": [26.0 / 4] * 4, "feed150lo": [15.0] * 4,
+           "rating": [15.0] * 4}[case]   # board B OUT5-8 (thermal_board_b.py case_currents)
     return sum(i * i * (2e-3 + 3.3e-3) for i in a7) + sum(i * i * (1e-3 + 0.78e-3) for i in b15)
 
 
@@ -66,7 +89,7 @@ def main():
     ap.add_argument("--cabin", type=float, default=60.0)
     ap.add_argument("--json")
     a = ap.parse_args()
-    cases = ["car", "feed150", "rating"]
+    cases = ["car", "feed150", "feed150hi", "feed150lo", "rating"]
     data = {}
     for air in ("fans", "nofan"):
         path = getattr(a, air) or run_board_b(air, cases)
@@ -88,14 +111,14 @@ def main():
             label = f"{case} ({r['I_B']:.0f} A on B), {'fans on' if air == 'fans' else 'fans failed / off'}, cabin {a.cabin:.0f} C"
             ok = lam <= LAMINATE_C and tj <= TJ_C
             if case in ("car", "feed150"):
-                v = "PASS" if sens < CRIT_C else "FAIL"
-                add("Firmware limits", f"board B's own MCP9808 vs the critical limit {CRIT_C:.0f} C (stock default, "
-                    f"core/device_config.h) at {label}", f"reads {sens:.1f} C (laminate max {lam:.1f} C)",
-                    f"< {CRIT_C:.0f} C, else board B cuts its outputs in normal use", v,
-                    "" if v == "PASS" else "the board's own heat (drivers + copper) puts the sensor above the stock "
-                    "critical limit at a normal load; the limit must follow the laminate / Tj limits (ADR-2026-11-20-"
-                    f"thermal-limits): here {lam - sens:.0f} K between the sensor and the laminate hot spot. Stock values "
-                    "are kept until the bench (Dan r6c): a real problem for the coordinator / Dan")
+                # normal use = the car loads with the fans on: must not cut; anything hotter: a cut is the protection
+                v = ("PASS" if sens < CRIT_C else "FAIL") if (case, air) == ("car", "fans") else "INFO"
+                add("Firmware limits", f"board B's own MCP9808 vs its critical limit {CRIT_C:.0f} C (port_boards.py "
+                    f"DEFAULT_TEMP_CRIT) at {label}", f"reads {sens:.1f} C (laminate max {lam:.1f} C)",
+                    f"< {CRIT_C:.0f} C, else board B cuts its outputs in normal use" if v != "INFO" else
+                    f"{'cuts here' if sens >= CRIT_C else 'no cut'} (not normal use)", v,
+                    "" if v == "PASS" else f"{lam - sens:.0f} K between the sensor and the laminate hot spot; a cut here "
+                    "is the protection working (see the firmware-limit rows below for normal use)")
             add("Box steady", label, f"box {r['p_box']:.1f} W (B copper {r['p_copper']:.1f} W); sink {ts:.1f} C; lid air "
                 f"{t_air:.1f} C; board B: Tj max {tj:.1f} C ({r['hottest_chip']}), laminate {lam:.1f} C, own MCP9808 {sens:.1f} C",
                 f"Tj <= {TJ_C:.0f}, laminate <= {LAMINATE_C:.0f} C", "PASS" if ok else ("INFO" if case == "rating" else "FAIL"),
@@ -139,6 +162,7 @@ def main():
         add("Box transient", "warm-up from cold at 150 A, fans on", f"sink reaches 90 % of {f['t_sink']:.0f} C after "
             f"{2.3 * R_SYS['fans'] * C_SINK / 60:.0f} min", "information", "INFO", "a 30 s fan-curve or a short run "
             "never sees the steady numbers above")
+    firmware_limits(data, a.cabin)
     for r in RES:
         print(f"{r['verdict']:<5} [{r['group']}] {r['check']}: {r['value']} (limit {r['limit']})" + (f" - {r['note']}" if r['note'] else ""))
     cnt = {v: sum(r["verdict"] == v for r in RES) for v in ("PASS", "WARN", "FAIL", "INFO")}
@@ -146,6 +170,36 @@ def main():
     if a.json:
         json.dump(RES, open(a.json, "w"), indent=1)
     return 1 if cnt["FAIL"] else 0
+
+
+def firmware_limits(data, cabin):
+    """Board B's factory limits against the sensor -> hot-spot map of every modelled case."""
+    warn, crit = board_b_limits()
+    rows = [(air, r["case"], r["t_sensor_u6"] + cabin - 60.0, r["laminate_max"] - r["t_sensor_u6"], r["tj_max"] - r["t_sensor_u6"])
+            for air in ("fans", "nofan") for r in data[air].values() if r.get("t_sensor_u6") is not None]
+    if not rows:
+        return
+    d_lam = max(x[3] for x in rows)
+    d_tj = max(x[4] for x in rows)
+    add("Board B limits", "sensor -> hot-spot map (laminate - U6, Tj - U6) over the modelled cases",
+        "; ".join(f"{c} {'fans' if a == 'fans' else 'no fans'}: U6 {t:.1f} C, +{dl:.1f} / +{dt:.1f} K" for a, c, t, dl, dt in rows),
+        "information", "INFO", f"largest offsets: laminate +{d_lam:.1f} K, Tj +{d_tj:.1f} K")
+    car = next((x for x in rows if x[0] == "fans" and x[1] == "car"), None)
+    if car:
+        add("Board B limits", f"no warning in normal use: U6 at the car loads, fans on, cabin {cabin:.0f} C, vs warn {warn} C",
+            f"{car[2]:.1f} C", f"< {warn} C", "PASS" if car[2] < warn else "FAIL",
+            f"critical-soon from {crit - 5} C, critical {crit} C: a {cabin + 10:.0f} C cabin adds 10 K")
+    lam_at = crit + SENSOR_ERR + d_lam
+    tj_at = crit + SENSOR_ERR + d_tj
+    add("Board B limits", f"laminate / Tj when U6 reaches critical {crit} C (+{SENSOR_ERR:.0f} C sensor error, largest offset)",
+        f"laminate {lam_at:.1f} C, Tj {tj_at:.1f} C", f"<= {LAMINATE_C:.0f} / {TJ_C:.0f} C",
+        "PASS" if lam_at <= LAMINATE_C and tj_at <= TJ_C else "FAIL")
+    for name, rating in LOGIC_PARTS:
+        t = crit + SENSOR_ERR
+        add("Board B limits", f"{name} at the critical limit (logic area at the U6 reading + {SENSOR_ERR:.0f} C)",
+            f"{t:.0f} C", f"<= {rating:.0f} C", "PASS" if t <= rating else ("FAIL" if rating < 100 else "WARN"),
+            "" if t <= rating else f"would need critical <= {rating - SENSOR_ERR:.0f} C, which trips at the car loads "
+            f"({car[2]:.1f} C) unless the part is a higher grade" if car else "")
 
 
 if __name__ == "__main__":

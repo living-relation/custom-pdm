@@ -38,6 +38,7 @@
 #if CAN_SLEEP
 #include "sleep.h"
 #endif
+#include "safety.h" // custom-pdm (MCU_SAFETY): empty hooks on stock boards
 
 CanInput canIn[NUM_CAN_INPUTS];
 CanOutputs canOutputs;
@@ -169,6 +170,9 @@ struct DeviceThread : chibios_rt::BaseStaticThread<DEVICE_THREAD_STACK>
             CyclicUpdate();
             States();
             UnlockConfig();
+            #if MCU_SAFETY
+            SafetyService(); // custom-pdm: watchdog refresh once every essential thread has run
+            #endif
             chThdSleepMilliseconds(2);
         }
     }
@@ -187,6 +191,8 @@ struct SlowThread : chibios_rt::BaseStaticThread<256>
             //=================================================================
             // Perform tasks that don't need to be done every cycle here
             //=================================================================
+            SAFETY_CHECKIN(Slow); // custom-pdm (MCU_SAFETY)
+
             #if HAS_BATT_VOLT_SENSE
             fBattVolt = GetBattVolt();
             #endif
@@ -212,6 +218,10 @@ static chibios_rt::ThreadReference slowThreadRef;
 
 void InitDevice()
 {
+    #if MCU_SAFETY
+    SafetyWdgStart(); // custom-pdm: independent watchdog from here on (core/safety.h)
+    #endif
+
     #if HAS_SE_LEDS
     Error::Initialize(&statusLed, &errorLed);
     #endif
@@ -236,6 +246,12 @@ void InitDevice()
 
     if (InitAdc() != HAL_RET_SUCCESS)
         Error::SetFatalError(FatalErrorType::ErrADC, MsgSrc::Init);
+
+    #if MCU_SAFETY
+    // custom-pdm: brown-out level 3 in the option bytes (once; resets the MCU after the write). Outputs are all off
+    // and CAN is not started yet.
+    SafetyBoot(GetBattVolt);
+    #endif
         
     if (InitCan(&stConfig.stDevice) != HAL_RET_SUCCESS) // Starts CAN threads
         Error::SetFatalError(FatalErrorType::ErrCAN, MsgSrc::Init);
@@ -264,6 +280,10 @@ void InitDevice()
     #endif
 
     InitInfoMsgs();
+
+    #if MCU_SAFETY
+    SafetyReportBoot(); // custom-pdm: watchdog / brown-out reset, BOR level not set yet
+    #endif
 
     #if CAN_SLEEP
     palClearLine(LINE_CAN_STANDBY);

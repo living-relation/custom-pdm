@@ -834,6 +834,11 @@ r = Rig(); v = r.v
 for o in (1, 2): output(r, o, v.TRUE); pwm(r, o, duty=50, freq=10)
 r.run(300); w = wave(r, [1, 2], 600); info['stock_fixed_10hz_out2_tim4_16bit_vs_out3_tim5_32bit'] = (hz(w[0]), r.pin(1), hz(w[1]))
 
+# MCU safety (core/safety.h): the independent watchdog runs in every rig above; none of these features may trip it
+wr, gap, nb = ps.watchdog_summary(); info['longest_refresh_gap_ms'] = gap
+check(f'MCU safety: no watchdog reset in any S3 scenario ({nb} boards: PWM / soft start, flashers, wipers, keypads, tables, trip times, retries); '
+      f'longest refresh gap {gap:.1f} ms <= half the 1.0 s shortest run timeout', wr == [] and 0 < gap <= ps.SAFETY_WDG_MIN_MS / 2, (wr, gap))
+
 # ====================================================================== summary
 cnt = {t: sum(1 for x in res if x[1] == t) for t in ('PASS', 'FAIL', 'XFAIL', 'XPASS')}
 print(f"\nS3: {cnt['PASS']} of {cnt['PASS'] + cnt['FAIL']} checks passed, {cnt['XFAIL']} expected failures (gaps with a proposal), {cnt['XPASS']} unexpected passes")

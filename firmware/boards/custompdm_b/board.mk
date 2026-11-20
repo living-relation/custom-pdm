@@ -20,6 +20,8 @@ ALLXASMSRC += $(BOOTLOADERASM)
 
 CPPSRC_BOARD += comms/usb.cpp \
 				core/sleep.cpp \
+				core/safety.cpp \
+				boards/stm32f446/mcu_safety.cpp \
 				functions/profet.cpp \
 				functions/analog_input.cpp \
 				functions/pwm.cpp \
