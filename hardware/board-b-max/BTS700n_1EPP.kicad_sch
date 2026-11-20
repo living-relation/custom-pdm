@@ -3765,7 +3765,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "3.3V"
+		(property "Value" "5.1V"
 			(at 171.2722 128.143 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3787,7 +3787,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/PDZ-B_SER.pdf"
 			(at 169.545 127 90)
 			(hide yes)
 			(show_name no)
@@ -3809,7 +3809,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1727-5150-1-ND"
+		(property "Digi-Key_PN" "1727-5155-1-ND"
 			(at 169.545 127 0)
 			(hide yes)
 			(show_name no)
@@ -3820,7 +3820,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C426855"
+		(property "LCSC" "C85392"
 			(at 169.545 127 0)
 			(hide yes)
 			(show_name no)
@@ -3842,7 +3842,7 @@
 				)
 			)
 		)
-		(property "MPN" "PDZ3.3B,115"
+		(property "MPN" "PDZ5.1B,115"
 			(at 169.545 127 0)
 			(hide yes)
 			(show_name no)

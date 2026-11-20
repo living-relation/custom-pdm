@@ -3,7 +3,7 @@
 # Steps: restore baseline files -> tools\sch_board_b.py -> tools\sch_board_fix.py B -> tools\sch_board_power.py B -> tools\sch_digikey.py B -> tools\sch_bom_fields.py B
 #        -> netlist checks (tools\check_board_b.py) -> ERC summary
 #        -> tools\pcb_board_b.py (parts, outline, zones) -> tools\route_board_b.py (if present) -> tools\tidy_board_b.py
-#        -> tools\wirepads.py pcb J6 (a2b: wire pads in the J6 holes) -> tools\pcb_board_power.py -> tools\pcb_digikey.py -> tools\pcb_bom_fields.py -> DRC summary + renders.
+#        -> tools\wirepads.py pcb J6 (a2b: wire pads in the J6 holes) -> tools\pcb_board_power.py -> tools\pcb_digikey.py -> tools\pcb_bom_fields.py -> tools\pcb_hole_keepout.py -> tools\pcb_feed_board_b.py -> DRC summary + renders.
 param([switch]$SchOnly, [switch]$NoRoute)
 $ErrorActionPreference = "Stop"
 $Repo = Split-Path $PSScriptRoot -Parent
@@ -42,7 +42,7 @@ try {
         if ($LASTEXITCODE) { throw "sch_board_b.py failed" }
         python (Join-Path $Repo "tools\sch_board_fix.py") B         # board fix 2026-11-11 (DECISIONS.md)
         if ($LASTEXITCODE) { throw "sch_board_fix.py failed" }
-        python (Join-Path $Repo "tools\sch_board_power.py") B       # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a LM2902PWR op-amps
+        python (Join-Path $Repo "tools\sch_board_power.py") B       # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a / ADR-2026-11-20-is-buffer TLV9004IPWR op-amps
         if ($LASTEXITCODE) { throw "sch_board_power.py failed" }
         python (Join-Path $Repo "tools\sch_digikey.py") B           # 2026-11-14: Digi-Key numbers for TBD fields
         if ($LASTEXITCODE) { throw "sch_digikey.py failed" }
@@ -72,6 +72,7 @@ try {
     Run-Py9 (Join-Path $Repo "tools\pcb_digikey.py") $Pcb "$Out\board-b.net"   # 2026-11-14: Digi-Key fields
     Run-Py9 (Join-Path $Repo "tools\pcb_bom_fields.py") $Pcb "$Out\board-b.net"   # 2026-11-16: order fields
     Run-Py9 (Join-Path $Repo "tools\pcb_hole_keepout.py") $Pcb                    # 2026-11-20 pcbverify: no pour under the sink posts
+    Run-Py9 (Join-Path $Repo "tools\pcb_feed_board_b.py") $Pcb                   # ADR-2026-11-20-boardb-feed: In1 / In2 +12V, wider B.Cu, stitching
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"

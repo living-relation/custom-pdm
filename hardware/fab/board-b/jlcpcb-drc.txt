@@ -2,7 +2,7 @@ JLCPCB check: board-b (4 layers). Limits: JLCPCB capabilities page, multilayer, 
 Zone fills: a refill (KiCad 9) changes the filled area by at most 0.000 % (-); current
 Drilled holes on the same spot (two vias / via on a pad): none
 Hole pairs closer than JLCPCB's hole-to-hole limits (via-via 0.2 mm, pad hole 0.45 mm): none
-Assembly: 186 parts in 43 BOM lines, 186 placements; rotation offsets applied to: D9 +180, D11 +180, D12 +180, J7 +180, U2 +270, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U9 +270, U10 +270, U11 +270, U22 +270, U23 +270, U24 +270, U25 +270, U26 +270
+Assembly: 186 parts in 44 BOM lines, 186 placements; rotation offsets applied to: D9 +180, D11 +180, D12 +180, J7 +180, U2 +270, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U9 +270, U10 +270, U11 +270, U22 +270, U23 +270, U24 +270, U25 +270, U26 +270
 
 Worst values from the copper:
   track width min                                        0.200 mm  (JLCPCB 0.09 mm)  ok  

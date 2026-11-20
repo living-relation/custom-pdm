@@ -36,7 +36,7 @@ try {
     if ($LASTEXITCODE) { throw 'wirepads.py lib failed' }
     & $py9 "$repo\tools\wirepads.py" sch-a Connectors.kicad_sch
     if ($LASTEXITCODE) { throw 'wirepads.py sch-a failed' }
-    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a LM2902PWR op-amps
+    & $py9 "$repo\tools\sch_board_power.py" A                   # r2a / s4a / s6a 2026-11-14: RET7, TLV1117LV, power LED DNP; t1a / ADR-2026-11-20-is-buffer TLV9004IPWR op-amps
     if ($LASTEXITCODE) { throw 'sch_board_power.py failed' }
     & $py9 "$repo\tools\sch_digikey.py" A                       # 2026-11-14: Digi-Key numbers for TBD fields
     if ($LASTEXITCODE) { throw 'sch_digikey.py failed' }

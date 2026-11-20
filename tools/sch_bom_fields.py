@@ -40,7 +40,8 @@ PARTS = [
     ("C576920", "YAGEO", "CC0805GRNPO0BN221", "C576920", KEEP, "", None),                     # 220pF 100V NP0
     ("C22388555", "PSA", "FS55X476K250LRG", "C22388555", KEEP, "", None),                     # 47uF 25V X7R 2220
     # ---- diodes, LEDs, ferrite
-    ("C426855", "Nexperia", "PDZ3.3B,115", "C426855", KEEP, "", None),                        # 3.3 V zener SOD-323
+    ("C426855", "Nexperia", "PDZ3.3B,115", "C426855", KEEP, "", None),                        # 3.3 V zener SOD-323 (D1)
+    ("C85392", "Nexperia", "PDZ5.1B,115", "C85392", "1727-5155-1-ND", "", None),                          # 5.1 V IS-chain zeners
     # TVS D2 across the +12 V feed: was BORN SMCJ20CA (LCSC C152086, 20 V stand-off: conducts at a 24 V jump start
     # and absorbs a 35 V suppressed load dump it cannot survive). 24 V stand-off, 5 kW, same DO-214AB footprint;
     # clamps fast ISO 7637-2 pulses under the switches' 35 V load-dump rating. Reasoning + sources:
@@ -79,7 +80,9 @@ PARTS = [
     ("C43379785", "RAMXEED (Fujitsu)", "MB85RC64TAPNF-G-AWERE2", "C43379785", KEEP,
      "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)", None),
     ("C129490", "Microchip", "MCP9808T-E/MS", "C129490", KEEP, "", None),
-    ("C46864", "Texas Instruments", "LM2902PWR", "C46864", KEEP, "", None),
+    # IS sense buffers (A U7 / U12, B U7 / U22): ADR-2026-11-20-is-buffer, rail-to-rail on 3.3 V (sch_board_power.py)
+    ("C2058050", "Texas Instruments", "TLV9004IPWR", "C2058050", "296-51827-1-ND",
+     "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)", None),
     ("C15578", "Texas Instruments", "TLV1117LV33DCYR", "C15578", KEEP, "", None),
     ("C2150060", "Infineon", "BTS70082EPAXUMA1", "C2150060", KEEP,
      "Infineon BTS7008-2EPA (same chip, LCSC C534830)", None),
