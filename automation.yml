@@ -41,7 +41,8 @@ automations:
               tools/sch_digikey.py, tools/pcb_digikey.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py,
               tools/d2_tvs.py]
     trigger: manual
-    reads: ["tools/*_board_b.py"]   # plus the baseline commit fe19c28 of hardware/board-b-max
+    reads: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/check_board_b.py,
+            tools/pcb_feed_board_b.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
     writes: ["hardware/board-b-max/*.kicad_sch", "hardware/board-b-max/*.kicad_pcb"]
     committed: yes
     auto_commit: false
