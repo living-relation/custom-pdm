@@ -11194,7 +11194,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2e515274-4eb2-4726-a882-c5662168b86d")
+		(uuid "f379d122-078e-47d2-9ed2-b4c3884af3d1")
 	)
 	(label "IN_4"
 		(at 53.975 85.725 0)
@@ -11204,7 +11204,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ed1391c4-0f33-4303-88e0-e09fcdaaa7aa")
+		(uuid "63370abb-6ed3-4b88-8512-7c9008734816")
 	)
 	(label "IN_5"
 		(at 127 90.805 0)
@@ -11214,7 +11214,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "32784ab5-ff62-4d00-b500-16b4d2fd87ea")
+		(uuid "40fd4779-16d6-4b46-bd5f-c0b3f618a20f")
 	)
 	(label "IN_6"
 		(at 45.085 88.265 0)
@@ -11224,7 +11224,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "744c9b50-d0c5-42a6-a67b-88ba736ad0cb")
+		(uuid "86f9f0a0-0b08-4edc-85a2-b58a3930d9d3")
 	)
 	(label "IN_3"
 		(at 215.9 48.26 180)
@@ -11234,7 +11234,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "28927d78-7d16-44cf-937e-0554d8abfe0f")
+		(uuid "20762286-ea77-42e7-93b1-8e85089a7207")
 	)
 	(label "IN_4"
 		(at 215.9 50.8 180)
@@ -11244,7 +11244,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "11916e5e-3797-4d07-8f5f-f34591d1f5a4")
+		(uuid "a4775ad4-ed9f-4068-b2fc-601a751a535f")
 	)
 	(label "IN_5"
 		(at 215.9 53.34 180)
@@ -11254,7 +11254,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "90fbee06-2923-42ca-bb72-741d360cf176")
+		(uuid "6ff201ff-7087-42ed-a2de-d3b60b842a54")
 	)
 	(label "IN_6"
 		(at 215.9 55.88 180)
@@ -11264,7 +11264,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "c7c21cdf-9929-4b03-9ccd-a8f03e732d45")
+		(uuid "2727e8af-e352-41a4-8e06-53f2743fa6f7")
 	)
 	(label "IN_7"
 		(at 215.9 58.42 180)
@@ -11274,19 +11274,19 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "9d391d8d-59a5-4b8e-8c04-189c87e0366b")
+		(uuid "ccf230ec-b75c-49b9-9e53-ccf387690cfe")
 	)
 	(no_connect
 		(at 215.9 60.96)
-		(uuid "9fa9f381-3a0f-4f7d-a76a-8c4208b66594")
+		(uuid "293ad152-002e-4ef6-924c-0bf74b9fff89")
 	)
 	(no_connect
 		(at 215.9 63.5)
-		(uuid "393c1b90-06ae-4b1d-af18-e05679f3c303")
+		(uuid "dd20986a-82a5-4be6-8a28-aa27ceea3bd4")
 	)
 	(no_connect
 		(at 215.9 66.04)
-		(uuid "f842db7a-c9ab-47a5-a7b9-be443b8e8bd6")
+		(uuid "acf07266-f936-4fbf-85cb-2139fec55c0e")
 	)
 	(hierarchical_label "PF2_IS"
 		(shape input)
@@ -11297,7 +11297,7 @@
 			)
 			(justify right)
 		)
-		(uuid "5bb3351a-9d01-40dc-a178-d671c6ec7e61")
+		(uuid "880ab129-1834-4ebf-ad2d-5dbc7dcc8d41")
 	)
 	(symbol
 		(lib_id "power:+3V3")
@@ -11309,7 +11309,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "645e2ee4-6240-4e82-8240-9351fa2d0286")
+		(uuid "77a4195a-757b-4e1b-a4cc-87c27a597a0e")
 		(property "Reference" "#PWR122"
 			(at 215.9 74.93 0)
 			(hide yes)
@@ -11365,7 +11365,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "ff250036-7f5d-44b1-88d6-8a1447846bc1")
+			(uuid "64092fde-0e92-4013-8930-5aa83a3f3d82")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11386,7 +11386,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "893e09a3-7763-4eea-8aa8-dbb3c370f4e7")
+		(uuid "deddd7c8-3134-4c91-84c2-7ee0ffcfa12a")
 		(property "Reference" "#PWR123"
 			(at 209.55 73.66 0)
 			(hide yes)
@@ -11443,7 +11443,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "3e767c89-89b9-4761-a4ae-dc54c35e347e")
+			(uuid "6c023555-8d7e-4efb-b6e2-f2a4114b0abe")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11464,7 +11464,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "ecc2b320-87cb-4f28-8aea-d5e6a8d2e0a1")
+		(uuid "5e65aecd-8473-476c-9a5c-d5d25d14b06b")
 		(property "Reference" "#PWR124"
 			(at 209.55 76.2 0)
 			(hide yes)
@@ -11521,7 +11521,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "e5253c52-4a33-41ab-8b3f-71da715de8f7")
+			(uuid "457469f0-a88a-43bd-b729-90073ca80aaa")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11542,7 +11542,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "bdf25442-428f-4a2e-9a54-af0f999c9e55")
+		(uuid "34276ee3-731c-4bb4-a6f8-429576d4c1b0")
 		(property "Reference" "J6"
 			(at 220.98 43.18 0)
 			(show_name no)
@@ -11641,40 +11641,40 @@
 			)
 		)
 		(pin "1"
-			(uuid "d26a4935-0ad8-48be-8a54-84182e7b0fde")
+			(uuid "16cfa6fb-d70d-4c35-b520-d4d9c61e500c")
 		)
 		(pin "2"
-			(uuid "af097dca-c2b2-45b5-94c6-6465ac09c284")
+			(uuid "d2149312-8c8e-4150-9136-70ef7d98e30c")
 		)
 		(pin "3"
-			(uuid "578f3a32-7d68-4a95-a829-bcdd240977db")
+			(uuid "776a8951-f596-48de-8e8d-a3b6ecd04d19")
 		)
 		(pin "4"
-			(uuid "8317bd3e-ebea-4e17-8115-bb310f165dd7")
+			(uuid "3f316eaa-1edc-4f16-8d76-7cd766c3b5f6")
 		)
 		(pin "5"
-			(uuid "1a7395d5-644f-4adc-80d9-de0c25484b22")
+			(uuid "98345c9c-8456-460c-8663-b8ad946fb922")
 		)
 		(pin "6"
-			(uuid "6f883c09-9efb-465e-845f-4a4d93bcca08")
+			(uuid "90dc8096-da63-4d7c-984b-15d16c37a2ae")
 		)
 		(pin "7"
-			(uuid "51ad7273-d3e0-4504-96df-192e0e9dea2c")
+			(uuid "2b500cde-7aca-489b-b5ad-859508a0d28a")
 		)
 		(pin "8"
-			(uuid "319dcb93-4916-4700-aded-64f5f1019464")
+			(uuid "acac61ad-f0fa-48ba-8938-9b202c037783")
 		)
 		(pin "9"
-			(uuid "124bf154-6787-42d2-beb4-2cf90636dec4")
+			(uuid "3e0a6a80-8105-4efe-a172-9e0e0f4fea19")
 		)
 		(pin "10"
-			(uuid "83a86be0-f805-404e-8ce3-07f056ecd545")
+			(uuid "90f16e7b-8242-4107-9422-aecda91eddb5")
 		)
 		(pin "11"
-			(uuid "2ea9d437-512f-4d93-9214-c8c496d1b22b")
+			(uuid "d28300b9-5df8-463d-976d-fbc4abddd7f0")
 		)
 		(pin "12"
-			(uuid "b126f227-161f-4204-ad41-74750e7e4980")
+			(uuid "ba373e5f-4202-4130-a6fb-1460513c4e00")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11694,7 +11694,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1438bc4d-683f-406c-8315-3c0c0821094e")
+		(uuid "2a585dd6-48a6-470b-ab20-52ffcb6f1dc7")
 	)
 	(symbol
 		(lib_id "Jumper:SolderJumper_2_Open")
@@ -11706,7 +11706,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "a71e9225-3ef1-478c-a722-9eba9764d697")
+		(uuid "bdb8aab0-dd29-478d-adfe-ee9950bfb30e")
 		(property "Reference" "JP3"
 			(at 132.08 17.78 90)
 			(show_name no)
@@ -11761,10 +11761,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "00b4dc4b-1b77-43c8-9984-c3bdb8b80352")
+			(uuid "e9e91f74-444d-4661-b7db-ce6c453b9c17")
 		)
 		(pin "2"
-			(uuid "dc28f664-8cf6-49d3-a62f-4aa8a5de53d8")
+			(uuid "31cb784a-3d73-44f4-8376-6a5a85a3f3ea")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11784,7 +11784,7 @@
 			)
 			(justify right)
 		)
-		(uuid "74d9e534-a017-4fd1-9b17-a4e70f784d2c")
+		(uuid "59d53cde-ce38-42ac-9d47-c6b322906484")
 	)
 	(label "CAN_TERM"
 		(at 142.24 17.78 0)
@@ -11794,7 +11794,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "c3cd27d9-f6a6-4539-a402-c0aac12a788e")
+		(uuid "3add5dbd-0bd9-44de-b042-cd98887c1896")
 	)
 	(symbol
 		(lib_id "Device:R_Small_US")
@@ -11806,7 +11806,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "1d26db1b-3ead-49e8-8886-2cbc6fa723f4")
+		(uuid "025fa238-bb04-4513-9b81-8441e82e6d69")
 		(property "Reference" "R59"
 			(at 149.86 17.78 90)
 			(show_name no)
@@ -11916,10 +11916,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "98d5495d-8836-4de6-a558-5055b25a9a13")
+			(uuid "e2b5a355-6326-46fb-98f0-337c1616ced1")
 		)
 		(pin "2"
-			(uuid "68084ced-937c-4877-8b08-fa19dd8e20c8")
+			(uuid "c704ceec-9f86-49b9-acb2-b6e4076d7a3d")
 		)
 		(instances
 			(project "DingoPDM"
@@ -11938,7 +11938,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "f0f507e8-7a85-4a3a-88e6-d66565360e35")
+		(uuid "8a2c2a16-4119-45d5-8300-ce879f7986e7")
 	)
 	(hierarchical_label "CAN_L"
 		(shape bidirectional)
@@ -11949,7 +11949,7 @@
 			)
 			(justify left)
 		)
-		(uuid "2be30716-640d-4df1-948e-7749a0c9e969")
+		(uuid "303f2f96-bf51-4972-8712-8fa3d1002c8a")
 	)
 	(text "CAN termination (C7b): bridge JP3 only on the board at the end of the bus."
 		(exclude_from_sim no)
@@ -11960,6 +11960,688 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "ead355c8-3453-47f1-b4a2-99f77e15e082")
+		(uuid "d05eb04d-751f-4a77-a652-5538a96c80ec")
+	)
+	(label "VDDA"
+		(at 116.84 32.385 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "4abf9cc0-1c41-495f-9cb6-fe040e8ab3fb")
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 154.94 55.88 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "3792d11f-cb59-474a-ae9b-a64d770a545d")
+		(property "Reference" "C52"
+			(at 157.48 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 157.48 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 157.48 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C1525.pdf"
+			(at 157.48 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 157.48 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C1525"
+			(at 154.94 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "1276-1043-1-ND"
+			(at 154.94 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 154.94 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL05B104KO5NNNC"
+			(at 154.94 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0402KRX7R7BB104 (X7R 16 V 0402)"
+			(at 154.94 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e2764464-86c2-49e0-b32e-001108cba2a5")
+		)
+		(pin "2"
+			(uuid "2f2819f8-1196-47f6-997b-99295c6e8ba7")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "C52")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "NRST"
+		(at 154.94 53.34 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "4eb77178-d635-4ada-8474-363d4d54212a")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 154.94 58.42 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "f98e1f62-ec9a-41ad-aabf-ead76679db30")
+		(property "Reference" "#PWR0122"
+			(at 148.59 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 151.6888 58.547 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 154.94 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 154.94 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 154.94 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5ef90805-ca2f-453f-b916-83a9907060df")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "#PWR0122")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 170.18 55.88 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "69408a65-25a6-4f66-8a07-5fa007c00f02")
+		(property "Reference" "C53"
+			(at 172.72 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1uF"
+			(at 172.72 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 172.72 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C47325373.pdf"
+			(at 172.72 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 172.72 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C47325373"
+			(at 170.18 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "CCTC"
+			(at 170.18 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "TCC0402X7R105K100AT"
+			(at 170.18 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0402KRX7R6BB105 (X7R 10 V 0402, LCSC C7500381)"
+			(at 170.18 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "2f19f54e-b107-4cc3-a6ee-c5e1cb6e6e87")
+		)
+		(pin "2"
+			(uuid "044b19b2-fb89-485e-bd4c-75e4c1816c83")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "C53")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "VDDA"
+		(at 170.18 53.34 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e1f52615-630c-479b-bcd1-7a36b7e33c06")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 170.18 58.42 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a0ec938b-ac2b-4233-94a2-17a38d34a0d7")
+		(property "Reference" "#PWR0123"
+			(at 163.83 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 166.9288 58.547 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 170.18 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 170.18 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 170.18 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "80bef4fc-0fa3-4365-8fc7-6fc3f55f371f")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "#PWR0123")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 185.42 55.88 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e5ec4615-6a48-4c24-a7a1-351e646e073d")
+		(property "Reference" "C54"
+			(at 187.96 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 187.96 57.15 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 187.96 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C1525.pdf"
+			(at 187.96 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C1525"
+			(at 185.42 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "1276-1043-1-ND"
+			(at 185.42 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 185.42 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "CL05B104KO5NNNC"
+			(at 185.42 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "YAGEO CC0402KRX7R7BB104 (X7R 16 V 0402)"
+			(at 185.42 55.88 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "62016bb9-d447-45e1-b2fd-2b1d2d1a98fe")
+		)
+		(pin "2"
+			(uuid "08e33812-fb6e-44da-8143-dccf4bdc812f")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "C54")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "VDDA"
+		(at 185.42 53.34 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6e833bd8-dc69-436a-ba77-9b474888667a")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 185.42 58.42 270)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "b8beb915-cd90-409c-aa8b-3eeacfbf883c")
+		(property "Reference" "#PWR0124"
+			(at 179.07 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 182.1688 58.547 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 185.42 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 185.42 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 185.42 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "4f00d982-ad26-4ff6-a1cb-d7175fdbe72e")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f4db108"
+					(reference "#PWR0124")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "hwprotect (ADR-2026-11-20-presim-findings 4): C52 NRST 100 nF (ST AN4488 2.3.3); C53 1 uF + C54 100 nF on VDDA behind FB1 (AN4488 2.2)."
+		(exclude_from_sim no)
+		(at 147.32 45.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9819e7cf-07df-4678-af3b-3d33ecb9a870")
 	)
 )

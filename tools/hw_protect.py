@@ -641,13 +641,16 @@ def pcb(path, netfile, board):
             f = next((x for x in fp.GetFields() if x.GetName() == name), None)
             if f is None and not v:
                 continue
-            if f is None:
+            if f is None:                               # text set before AddField (KiCad 9 stores a copy)
                 f = pcbnew.PCB_FIELD(fp, fp.GetNextFieldId(), name)
+                f.SetText(v)
                 f.SetVisible(False)
                 f.SetLayer(pcbnew.F_Fab)
                 f.SetPosition(fp.GetPosition())
                 f.thisown = False
                 fp.AddField(f)
+                nf += 1
+                continue
             if f.GetText() != v:
                 f.SetText(v)
                 nf += 1
