@@ -118,7 +118,10 @@ class pdm_bench:
     def start_bench(s):
         s._x(f'include @{s.resc}'); s._run(10)
         s.vbus_before = {k: (s._n('sysbus ReadDoubleWord 0x40020010', MACH[k]) >> 9) & 1 for k in BASE}    # GPIOA IDR bit 9, before the bench drives it
-        s._settle_inputs(list(BASE)); s._run(1480)
+        s._settle_inputs(list(BASE))
+        # MCU_SAFETY: a fresh board writes BOR level 3 into its option bytes and resets itself about 0.5 s in
+        # (models/PdmSafety.cs); the reset puts Renode's GPIO inputs back at their ODR value, so drive them again
+        s._run(600); s._settle_inputs(list(BASE)); s._run(870)
 
     def fresh_boards_answer_on_their_own_ids(s):
         br = {k: s._bitrate(k) for k in BASE}; ver = {k: s._version(BASE[k]) for k in BASE}
