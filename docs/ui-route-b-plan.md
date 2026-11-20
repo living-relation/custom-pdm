@@ -1,6 +1,6 @@
 # dingoConfig route B plan: one combined PDM page
 
-Status: `STATE.md`, Next 1; what is built: `ui/README.md`. Decisions behind it: `DECISIONS.md` K1a (2026-11-14) and k2b, k3a, k4a (2026-11-15).
+Status: B1-B5 done (PRs #71-#84), editor phases in progress (memory-store STATE, AGENTS.md role table); what is built: `ui/README.md`. Decisions behind it: `DECISIONS.md` K1a (2026-11-14) and k2b, k3a, k4a (2026-11-15).
 
 Goal: the three boards (A1, A2, B) look like one PDM in `ui/dingoConfig/`: 24 outputs in one grid, all inputs in one grid, one set of buttons.
 
@@ -16,9 +16,9 @@ Goal: the three boards (A1, A2, B) look like one PDM in `ui/dingoConfig/`: 24 ou
 |---|---|---|---|
 | B1 | New page "PDM": live view only. 24 outputs in one grid (board, pad / connector pin, name, state, current, reset count), all 24 digital + 3 analog inputs, the three board temperatures and thermal flags side by side. | No | Small |
 | B2 | The same grids become editable (enable, name, current / inrush limits, reset mode; input mode, pull, invert, debounce). One Read All / Write All / Burn for all three boards, with the route A guard (no write before a good read of every board). | No | Medium |
-| B3 | Linked settings set once for the PDM: temperature limits on all three boards, fan on / off thresholds (6 params that must move together, `STATE.md` 2026-11-14 PR #60), base IDs, and a "new PDM" project with our factory defaults instead of stock ones. | No | Medium |
+| B3 | Linked settings set once for the PDM: temperature limits on all three boards, fan on / off thresholds (6 params that must move together, PR #60), base IDs, and a "new PDM" project with our factory defaults instead of stock ones. | No | Medium |
 | B4 | Cross-board picking: choose any input of the PDM as the trigger of any output; the tool creates the CAN output / CAN input pair on the two boards and shows the slots used. | No (uses stock CAN inputs / outputs); slot limits apply | Large |
-| B5 | DBC export for the ECU with msg 37 and the msg 3 flags (`STATE.md` open item). | No | Small |
+| B5 | DBC export for the ECU with msg 37 and the msg 3 flags (done, PR #81). | No | Small |
 
 "Needs firmware: No" comes from reading the code, not from a build. Each phase starts by proving it against the sim (`ui/tests/sim_bridge.py`) before any UI work.
 

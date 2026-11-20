@@ -1,6 +1,8 @@
 # Agent local files
 CLAUDE.local.md
-.claude/
+.claude/*
+!.claude/rules/
+TASK.md
 # KiCad
 *-backups/
 *.kicad_prl

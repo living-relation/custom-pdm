@@ -1,0 +1,7 @@
+# Other repos
+
+Enforcer: none yet (each job checks `git -C <other repo> status --short` before committing).
+
+- st185-link-ecu-config, center-cluster-esp32-p4, realdash-dashboard-builder and any other repo are read-only for this project: read / pull only, never commit or push there without Dan's say (Dan, 2026-11-16). The PDM is unproven until the PCBs are made.
+- Copies of their content in this repo are dummy test copies: say so in the file name and on line 1 (source repo + commit), never a source of truth, never the only reason for a design change without Dan's approval.
+- Car CAN bus facts: center cluster CAN is frozen, RealDash CAN is mostly frozen, the Link ECU CAN setup is not finished: PDM integration goes on the ECU side; never require cluster changes.
