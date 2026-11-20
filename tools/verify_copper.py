@@ -408,6 +408,7 @@ def solve_net(board, net, cfg, res, th, diel, tplate=TPLATE):
             excl[j0:j0 + d2.shape[0], i0:i0 + d2.shape[1]] |= d2 <= (d / 2 + 0.6) ** 2
     Ksum = np.zeros((ny, nx))
     qsum = np.zeros((ny, nx))
+    q_layers = {}                            # W/m2 per copper layer (tools/thermal_board_b.py)
     per_layer = {}
     for k, L in enumerate(layers):
         ii = idx[k]
@@ -427,6 +428,7 @@ def solve_net(board, net, cfg, res, th, diel, tplate=TPLATE):
         q = (E ** 2) * th[L] / RHO          # W/m2
         Ksum += K
         qsum += q
+        q_layers[L] = q
         Kx = np.where(excl, 0, K)
         j, i = np.unravel_index(np.argmax(Kx), Kx.shape)
         per_layer[L] = dict(k_max=float(Kx.max()), at=(round(float(g.xc[i]), 2), round(float(g.yc[j]), 2)),
@@ -459,7 +461,7 @@ def solve_net(board, net, cfg, res, th, diel, tplate=TPLATE):
     res_out["vias_over_ipc"] = int(sum(1 for (x, y, d, kind, p, segs) in hole_info if kind == "via" and
                                        max([abs(V[a] - V[bn]) * gg for a, bn, gg in segs] or [0]) > via_ipc_chart(d)))
     res_out["seconds"] = round(time.time() - t0, 1)
-    return res_out, dict(g=g, q=qsum + via_q, K=Ksum, excl=excl)
+    return res_out, dict(g=g, q=qsum + via_q, K=Ksum, excl=excl, q_layers=q_layers, via_q=via_q)
 
 
 def via_limit(drill_mm, tp=TPLATE, dt=LIM["via_dt_k"], L=1.6e-3):

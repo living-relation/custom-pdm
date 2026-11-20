@@ -9,7 +9,7 @@ docs/pcb-verification.md). Models are behavioural, built from data-sheet limits,
 it rests on:
   - Sense buffer: TLV9004 (fitted since ADR-2026-11-20-is-buffer; TI SBOS833R) rail-to-rail, or LM2902 (--opamp
     LM2902, the part before; TI SLOS066 6.8: input range to VCC-1.5 V at 25 C / VCC-2 V hot) -> clamp at that level.
-  - PDZ3.3B zener (Nexperia PDZ-B series): two corners, see ZENERS; BAT54S (Nexperia): Schottky, IS 2e-7 A at 25 C
+  - IS clamp zener PDZ5.1B (fitted since 2026-11-20) or PDZ3.3B (--zener, before): two corners, see ZENER_PARTS; BAT54S (Nexperia): Schottky, IS 2e-7 A at 25 C
     doubling every 10 K.
   - TVS parts in TVS (bidirectional -> two diodes, dynamic resistance (VC - VBR) / IPP); --tvs picks the part(s).
   - Sense ratios kILIS from docs/parts-audit.md (Infineon tables) vs the firmware constants (port.h).
@@ -53,35 +53,52 @@ def add(group, check, value, limit, ok, note="", warn=False):
 
 
 # ------------------------------------------------------------------ 1. current sense -> ADC
-DRIVERS = [  # name, rating A, kILIS datasheet (parts-audit), kILIS firmware (port.h)
-    ("BTS7008-2EPA (board A, 7.5 A)", 7.5, 5450, 5950),
+DRIVERS = [  # name, rating A, kILIS datasheet (parts-audit), kILIS firmware (port_boards.py; ADR-2026-11-20-kilis, PR #112)
+    ("BTS7008-2EPA (board A, 7.5 A)", 7.5, 5450, 5450),
     ("BTS7004-1EPP (board B OUT5-8, 15 A)", 15.0, 20000, 20000),
-    ("BTS70012-1ESP (board B OUT1-4, 31 A)", 31.0, 33700, 35000),
+    ("BTS70012-1ESP (board B OUT1-4, 31 A)", 31.0, 33700, 33700),
 ]
 # IS current limits, all three PROFET +2 12V data sheets: IIS(FAULT) 4.4 min / 5.5 typ / 10 max mA (BTS7008 P_9.6.0.x,
 # BTS7004 / BTS70012 P_9.6.4.1); IIS(SAT) 4.4 min / 15 max mA (BTS7008 P_9.6.0.13).
 IIS_FAULT_MIN, IIS_SAT_MIN, IIS_SAT_MAX = 4.4e-3, 4.4e-3, 15e-3
-FULL_SCALE = 4054          # firmware PROFET_IS_FULL_SCALE (counts of 4095 at VDDA = +3V3)
+FULL_SCALE = 3071          # firmware PROFET_IS_FULL_SCALE (counts of 4095 at VDDA = +3V3) = 2.475 V
+                           # (ADR-2026-11-20-is-fullscale, PR #112; was 4054)
 # Sense buffer (U7 / U12 on A, U7 / U22 on B), unity-gain follower on +3V3:
 #   LM2902 (TI SLOS066, 6.8): input common-mode 0 .. VCC-1.5 V (25 C) / VCC-2 V (-40..125 C) -> output clamp there.
 #   TLV9004 (TI SBOS833R, 7.5 / 7.1): rail-to-rail in ((V-)-0.1 .. (V+)+0.1 V) and out (swing from rail 20 mV max at
 #   RL 10 k, VS 5.5 V; here the DC load is the 120R + ADC pin, so 20 mV is conservative); inputs diode-clamped to the
 #   rails, 10 mA abs max; TA -40..125 C.
 OPAMPS = {"LM2902": {"25": 1.5, "-40": 2.0, "125": 2.0}, "TLV9004": {"25": 0.02, "-40": 0.02, "125": 0.02}}
-# PDZ3.3B zener (Nexperia PDZ-B series data sheet, Table 1 / 2): VZ 3.32 .. 3.53 V at IZ 5 mA, rdif <= 95 Ohm at 5 mA
-# and <= 1000 Ohm at 0.5 mA, IR <= 5 uA at VR 1 V, SZ -2.4 mV/K (typ, 5 mA). Two corners:
+# IS-chain clamp zener (Nexperia PDZ-B series data sheet, Tables 1 / 2): VZ at 5 mA (min, max), rdif max at 5 mA and
+# at the low test current, IR max at VR, temperature coefficient SZ (typ). PDZ3.3B = fitted until 2026-11-20,
+# PDZ5.1B = fitted since (tools/sch_board_power.py). Two corners each:
 #   sharp  = VZ max, a hard knee (the PR #109 model): the best case for the clamp level;
-#   limit  = VZ min and the softest knee the data sheet allows: an exponential through (5 mA, 3.32 V) and (5 uA, 1 V)
-#            (rdif 67 Ohm at 5 mA, 672 Ohm at 0.5 mA: inside both rdif limits), the worst case for leakage.
-ZENERS = {"sharp": dict(bv=3.53, nvt=1.5 * 0.025865), "limit": dict(bv=3.32, nvt=(3.32 - 1.0) / math.log(1000))}
+#   limit  = VZ min and the softest single-exponential knee all three data-sheet limits allow (rdif at 5 mA, rdif at
+#            the low current, IR at VR): the worst case for leakage and for how high a fault can read.
+ZENER_PARTS = {
+    "PDZ3.3B": dict(vz=(3.32, 3.53), rdif=((5e-3, 95), (0.5e-3, 1000)), ir=(5e-6, 1.0), sz=-2.4e-3),
+    "PDZ5.1B": dict(vz=(4.96, 5.20), rdif=((5e-3, 60), (0.5e-3, 250)), ir=(2e-6, 1.5), sz=0.3e-3),
+}
+ZENER = "PDZ5.1B"
+ZENERS = ("sharp", "limit")
+
+
+def zener_corner(corner):
+    z = ZENER_PARTS[ZENER]
+    if corner == "sharp":
+        return z["vz"][1], 1.5 * 0.025865
+    nvt = min([r * i for i, r in z["rdif"]] + [(z["vz"][0] - z["ir"][1]) / math.log(5e-3 / z["ir"][0])])
+    return z["vz"][0], nvt
+
+
 TEMPS = (-40, 25, 125)
 
 
 def zener_model(corner, temp=25):
     """Reverse branch of the zener at node n1 as a behavioural current: 5 mA at VZ(T), exponential knee."""
-    z = ZENERS[corner]
-    bv = z["bv"] - 2.4e-3 * (temp - 25)
-    return f"Bz n1 0 I = 5m*exp(min((V(n1)-{bv:.4f})/{z['nvt']:.4f}, 40)) - 5m*exp(-{bv:.4f}/{z['nvt']:.4f})"
+    vz, nvt = zener_corner(corner)
+    bv = vz + ZENER_PARTS[ZENER]["sz"] * (temp - 25)
+    return f"Bz n1 0 I = 5m*exp(min((V(n1)-{bv:.4f})/{nvt:.4f}, 40)) - 5m*exp(-{bv:.4f}/{nvt:.4f})"
 
 
 def opamp_line(opamp, temp):
@@ -125,7 +142,12 @@ meas dc vadc_top max v(adc)
                 clip_a = m.get("clip_a", imax)
                 ok = clip_a >= rating * 1.1
                 err = (m["vadc_rated"] / (rating / k_ds * 1200) - 1) * 100
-                add("IS -> ADC", f"{short} {rating:g} A, {opamp}, zener {zc}, {temp} C: reading 5 % low at",
+                vth = FULL_SCALE / 4095 * 3.3
+                add("IS -> ADC", f"{short} {rating:g} A, {opamp}, {ZENER} {zc}, {temp} C: rated current below the "
+                    f"fault threshold", f"{m['vadc_rated']:.3f} V", f"< {vth:.3f} V", m["vadc_rated"] < vth,
+                    f"margin {vth - m['vadc_rated']:.3f} V; threshold = {vth / 1200 * k_ds:.1f} A typ "
+                    f"({vth / 1200 * k_ds / rating:.2f} x rating)")
+                add("IS -> ADC", f"{short} {rating:g} A, {opamp}, {ZENER} {zc}, {temp} C: reading 5 % low at",
                     f"{clip_a:.1f} A", f">= 1.1 x {rating:g} A", ok,
                     f"reading at rating {err:+.1f} % (ADC {m['vadc_rated']:.3f} V); top of range {m['vadc_top']:.3f} V "
                     f"= {m['vadc_top'] / 3.3 * 4095:.0f} counts; {opamp} limit VCC-{clip} V", warn=zc == "limit")
@@ -158,9 +180,10 @@ echo "vn1 = $&v(n1)"
 """
                 m = ngspice(deck, f"isf_{short}_{opamp}_{zc}_{temp}", keep)
                 counts = m["vadc"] / 3.3 * 4095
-                add("IS -> ADC", f"{short}, {opamp}, zener {zc}, {temp} C: fault (IIS(FAULT) 4.4 mA) reads",
-                    f"{counts:.0f} counts", f">= {FULL_SCALE} (PROFET_IS_FULL_SCALE)", counts >= FULL_SCALE,
-                    f"zener node {m['vn1']:.2f} V, ADC {m['vadc']:.3f} V", warn=zc == "limit")
+                add("IS -> ADC", f"{short}, {opamp}, {ZENER} {zc}, {temp} C: fault (IIS(FAULT) 4.4 mA) reads",
+                    f"{m['vadc']:.3f} V ({counts:.0f})", f">= {FULL_SCALE / 4095 * 3.3:.3f} V ({FULL_SCALE}, "
+                    f"PROFET_IS_FULL_SCALE)", counts >= FULL_SCALE,
+                    f"margin {m['vadc'] - FULL_SCALE / 4095 * 3.3:+.3f} V; zener node {m['vn1']:.2f} V")
     # IS saturation (15 mA, IIS(SAT) max) into the chain: ADC pin <= 3.6 V and op-amp input current <= 10 mA
     for temp in TEMPS:
         op, clip = opamp_line(opamp, temp)
@@ -189,7 +212,7 @@ echo "iin = $&iin"
         m = ngspice(deck, f"is_sat_{opamp}_{temp}", keep)
         add("IS -> ADC", f"IS saturation 15 mA, {temp} C: ADC pin / op-amp input current",
             f"{m['vadc']:.2f} V / {m['iin'] * 1e3:.2f} mA", "ADC <= 3.6 V; input <= 10 mA (TLV9004 abs max)",
-            m["vadc"] <= 3.6 and m["iin"] <= 10e-3, f"zener node {m['vn1']:.2f} V (VZ max corner)")
+            m["vadc"] <= 3.6 and m["iin"] <= 10e-3, f"zener node {m['vn1']:.2f} V ({ZENER} VZ max corner)")
 
 
 # ------------------------------------------------------------------ 2. TVS vs surges
@@ -430,6 +453,7 @@ def main():
     ap.add_argument("--ngspice", default=os.environ.get("NGSPICE") or shutil.which("ngspice") or shutil.which("ngspice_con"))
     ap.add_argument("--keep", default=os.path.join(tempfile.gettempdir(), "pcbverify-spice"))
     ap.add_argument("--opamp", default="TLV9004", choices=sorted(OPAMPS), help="IS buffer (LM2902 = before 2026-11-20)")
+    ap.add_argument("--zener", default="PDZ5.1B", choices=sorted(ZENER_PARTS), help="IS-chain zener (PDZ3.3B = before)")
     ap.add_argument("--tvs", nargs="+", default=["5.0SMDJ24CA"], choices=sorted(TVS),
                     help="input TVS part(s) to check (first = fitted)")
     ap.add_argument("--only", nargs="*", help="groups to run: is tvs startup input can")
@@ -437,6 +461,8 @@ def main():
     if not a.ngspice:
         raise SystemExit("ngspice not found: install it or pass --ngspice / set NGSPICE")
     NG = a.ngspice
+    global ZENER
+    ZENER = a.zener
     os.makedirs(a.keep, exist_ok=True)
     run = set(a.only or ["is", "tvs", "startup", "input", "can"])
     if "is" in run:

@@ -21,7 +21,9 @@ PCB, NET, BOARD = sys.argv[1], sys.argv[2], sys.argv[3].upper()
 OFF = ("R3", {"A": "D3", "B": "D5"}[BOARD])            # power LED resistor + LED (s6a)
 OPAMPS = {"A": ("U7", "U12"), "B": ("U7", "U22")}[BOARD]   # t1a 2026-11-14 LM2902PWR; ADR-2026-11-20-is-buffer TLV9004IPWR
 OPAMP_MPN = "TLV9004IPWR"
-SHEET_REFS = ("U2", "U4") + OPAMPS                     # refs whose Datasheet field follows the schematic
+IS_ZENERS = {"A": ("D9", "D12", "D13", "D14"),           # IS-chain zeners PDZ5.1B (tools/sch_board_power.py)
+             "B": ("D14", "D16", "D18", "D20", "D21", "D22", "D23", "D24")}[BOARD]
+SHEET_REFS = ("U2", "U4") + OPAMPS + IS_ZENERS          # refs whose Datasheet field follows the schematic
 REFS = SHEET_REFS + OFF
 
 comps = F.read_netlist(NET)

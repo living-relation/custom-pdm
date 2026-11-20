@@ -210,6 +210,15 @@ automations:
     enabled: true
     run_cmd: wsl -e bash -c "python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/scratch/heat/runs/m2"
     owner: claude
+  - id: pcb-thermal-board-b
+    script: tools/thermal_board_b.py
+    trigger: manual                 # after any board B change (docs/pcb-verification.md, ADR-2026-11-20-boardb-feed)
+    reads: [hardware/board-b-max/dingoPDM-Max.kicad_pcb]
+    writes: ["docs/diagrams/thermal-board-b-*.png"]   # only with --plots; prints the table otherwise
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_board_b.py [--case feed150 feed150hi feed150lo car rating] [--res 0.3] [--plots docs/diagrams]'   # needs scipy + matplotlib
   - id: pcb-verify-copper
     script: tools/verify_copper.py
     trigger: manual                 # after any board change (docs/pcb-verification.md)
