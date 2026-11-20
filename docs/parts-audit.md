@@ -2,7 +2,7 @@
 
 Written 2026-11-11 on branch `feat/parts-audit` (from main d319ad3). Stock and prices were checked 2026-11-10 to 2026-11-11.
 This file lists what the design really needs and where each rating came from. It makes no choices: the choices it offered are in section 3, each now marked with its decision (`DECISIONS.md` 2026-11-11 to 2026-11-14).
-Progress and open items are not repeated here: see `STATE.md` ("Open items") and `DECISIONS.md`.
+Progress and open items are not repeated here: see the memory-store `BACKLOG.md` (AGENTS.md role table) and `DECISIONS.md`.
 Machine-readable copy of the board tables, one row per part group with LCSC stock and price breaks: `docs/parts-audit.csv`.
 
 Marks: **TBD** = could not be confirmed from a primary source. **Proposal** = a part number I suggest, not one the design names.

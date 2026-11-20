@@ -4,4 +4,4 @@ Personal 12 V power distribution module (PDM) for car accessories: 24 outputs (1
 
 Based on [corygrant/dingoPDM](https://github.com/corygrant/dingoPDM) (MIT). Personal project, not for sale.
 
-Progress and open items: see [STATE.md](STATE.md).
+Progress and open items: live state lives in the memory store (`STATE.md`, `BACKLOG.md`; see the role table in [AGENTS.md](AGENTS.md)).

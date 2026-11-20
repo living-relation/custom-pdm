@@ -266,4 +266,4 @@ Five quick checks:
 | B | PC13 (2) | B_IN5 | J7 pin 3 (PB2, pin 28: 10k to GND only) |
 | B | PC4 (24) | PF_IS8 | R53 -> U22A buffer <- CH8 (U26 sense) |
 
-Checked since: ChibiOS behaviour for a repeated EXTI line (`STATE.md`, Wake lines); BTS7004-1EPP kILIS (section 7). Not yet checked (TBD): RM0390 reset states of PA15 / PB3 / PB4 and drive limits of PC13-PC15; whether `NUM_DIG_INPUTS` / `NUM_ANALOG_INPUTS` can be raised in dingoFW without changes to the CAN message layout.
+Checked since: ChibiOS behaviour for a repeated EXTI line (PR #64; wake-line facts queued for section 6 in the memory-store `BACKLOG.md`); BTS7004-1EPP kILIS (section 7). Not yet checked (TBD): RM0390 reset states of PA15 / PB3 / PB4 and drive limits of PC13-PC15; whether `NUM_DIG_INPUTS` / `NUM_ANALOG_INPUTS` can be raised in dingoFW without changes to the CAN message layout.

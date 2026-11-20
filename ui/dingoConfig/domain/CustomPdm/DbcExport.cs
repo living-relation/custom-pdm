@@ -26,7 +26,7 @@ public static class DbcExport
     public const string Receiver = "Vector__XXX";
     public const string PdmFileName = "custompdm_PDM.dbc";
 
-    // Base IDs of the PDM (STATE.md): A1 0x500, A2 0x540, B 0x580
+    // Base IDs of the PDM (docs/box-connectors.md): A1 0x500, A2 0x540, B 0x580
     public static readonly DbcRepoBoard[] RepoBoards = [new("A1", 14, 0x500), new("A2", 14, 0x540), new("B", 15, 0x580)];
 
     public static string FileName(DbcRepoBoard b) => $"custompdm_{b.Node}_0x{b.BaseId:X3}.dbc";
