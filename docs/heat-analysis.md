@@ -65,7 +65,19 @@ Geometry follows Grok's TEST 2 pack (read-only copy; `handoff/HANDOFF.md` sectio
 - Through-plane k = 0.30 W/mK (FR4, **ASSUMED** handbook value), except under each EP: a "via patch" the size of the EP with the vias counted in the board files (0.8 / 0.4 mm vias): 12 under each BTS7008 and BTS7004 EP (4.00 x 2.65 mm) -> k_z 10.7 W/mK; 9 under each BTS70012 EP (6.40 x 2.77 mm) -> k_z 4.96 W/mK. Via plating **20 um ASSUMED** (fab TBD), vias unfilled.
 - So the model spreads heat through the whole board thickness instead of mainly the top copper, and ignores solder mask between the board and the pad outside the bare windows (slightly optimistic), and pad contact resistance (optimistic).
 
-**Left out (all make the result conservative):** heat into wires, terminals and connectors; heat from the board top and the lid; radiation (sink finish TBD; black anodising could add roughly 0.5 W/K to case 1b); conduction through the M3 bosses and screws. The plate top inside the lid is adiabatic.
+**Left out, conservative (extra ways OUT for the heat):** heat into wires, terminals and connectors; heat from the board top and the lid; radiation (sink finish TBD; black anodising could add roughly 0.5 W/K to case 1b); conduction through the M3 bosses and screws. The plate top inside the lid is adiabatic.
+
+**Left out, OPTIMISTIC (extra heat IN that the model does not have; corrected 2026-11-16, it was listed as conservative):** I2R heat made inside the box outside the chips. Estimate (worst case for the copper: 150 A feed with 120 A going on to A1 + A2, 60 A each; Cu C110 at 80 C, rho 2.13e-8 ohm m; bar lengths from the v2c build, B -> A1 113.4 mm, A1 -> A2 74.4 mm):
+
+| Source | Path of the heat | Estimate |
+|---|---|---|
+| BATT bar 20 x 5 / GND bar 15 x 5 | bars -> board M6 terminals -> boards -> sink | 0.40 W / 0.54 W (upper bound with the full 150 A over the full length: 0.90 W / 1.20 W; the "about 2.2 W per bar" quoted before does not reproduce) |
+| Bolted joints on the feed (lug-boss, boss-bar, bar-terminal at B / A1 / A2), 20 uOhm each ASSUMED | same | 1.1 W per net, 2.1 W both |
+| OUT1-4 joints (lug-seat, riser foot-REDCUBE), 31 A | risers -> board B -> sink | 0.15 W |
+| X1 / X2 contacts (16 x 7.5 A size 16 at 2 mOhm, 4 x 15 A size 12 at 1 mOhm, ASSUMED; TE max values to check) | connector -> harness and lid | about 2.7 W |
+| Internal harness to X1 (16 x 7.5 A, 16 AWG about 0.25 m; 4 x 15 A, 12 AWG about 0.15 m) | wires -> air inside the lid | about 3.7 W |
+
+Effect (scaling the fans-on result, sink max rise 14.5 K for 31.1 W = 0.47 K/W): the 3.2 W (up to 4.5 W) that reaches the sink through the copper raises the sink and every chip by about 1.5 K (up to 2.1 K): worst case k = 3 hottest Tj about 123 C (was 121), k = 1 about 147 C (margin 3 K, was 5 K). Fans off, wall-mounted (v2b / v2c F1 table, `docs/enclosure-v2c.md` section 4: 1.0 K/W): about +3 K (k = 3 board top about 142 C, still under 150). The 6 W or so in the connectors and harness goes into the air under the PA12 lid, which this model does not have (lid and air not modelled); if most of it had to leave through the 3 mm lid (about 0.12 m2, about 1.8 W/m2K overall) the air inside would sit tens of K above cabin air, so the board-top parts' air temperature is the open question, not the sink. Next step: add the lid, the internal air and these sources to the model (`sim/heat`), or measure on the bench.
 
 **Materials:** aluminium k = 167 W/mK (6061-T6 handbook value; alloy ASSUMED, 6063 would be better). Air properties: Incropera & DeWitt, Table A.4, at film temperature.
 
