@@ -106,14 +106,14 @@ Both Fusion designs (`custom-pdm-enclosure-v2b-F1` v4, `-F2` v3, saved 2026-11-1
 | Panel nuts X1 / X2 | TE 2411-001-2405 | TE customer view model (v2c; v2b drew it, 6 thick ASSUMED, the real nut is 6.35) |
 | Lock washers X1 / X2 | TE 2414-001-2486 | TE customer view model (v2c, new) |
 | Input-board J2 | Molex 43045-1200 | Molex STEP AP242 (molex.com, v2c, new) |
-| USB-C bulkhead | Amphenol LTW UC-00PMFY-SC7001 | modelled from the UC series catalogue (no maker STEP reachable) |
+| USB-C bulkhead | Amphenol LTW UC-00PMFY-SC7001 | Amphenol LTW maker STEP + 2D drawing rev C (amphenolltw.com, revC; revB drew it from the catalogue). Round housing flange dia 25 inside, hex nut AF 25.4 outside (the build moves the maker's nut out by the 3 mm wall), FPC tail 47 mm to a 44-pin Y-beam contact (see section 8) |
 | USB hub | Adafruit 5997 (CH334F, 4 port) | Adafruit_CAD_Parts STEP (MIT) |
-| Fans F1 | 2 x Sunon MF30101V1-1000U-A99 (30 x 30 x 10) | modelled from Sunon spec D03033580G-01 (maker model is on DigiKey behind its model-download agreement, not accepted) |
+| Fans F1 | 2 x Sunon MF30101V1-1000U-A99 (30 x 30 x 10) | Sunon maker STEP via DigiKey "Manufacturer Provided" (agreement accepted 2026-11-20, revC): solid envelope 30 x 30 x 10.4, no bore / blades (fit only) |
 | Fan F2 | Noctua NF-A6x15 PWM (60 x 60 x 15) | Noctua public CAD STEP |
 | Boards A1, A2, B, input boards | this repo | v2c: STEPs exported from our KiCad by `enclosure/v2c/src/export_boards.ps1` (J3 / J6 are wire pads, a1a / a2b); v2b used Grok's pack copies |
 | Heat-set inserts | ruthex RX-M4x8.1 | envelope OD 5.6 x 8.1 |
 | Screws | ISO 4762 / threaded rod | build123d fasteners (screw_dimensions.csv) |
-| OUT1-4 ring lugs | Phoenix Contact 3240083 = C-RC 6/M4 DIN (M4, 6 mm2 / 10 AWG, non-insulated; M4 kept: the lug screw goes into copper, not into the REDCUBE) | modelled from catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED (phoenixcontact.com CAD download sits behind an anti-robot check) |
+| OUT1-4 ring lugs | Phoenix Contact 3240083 = C-RC 6/M4 DIN (M4, 6 mm2 / 10 AWG, non-insulated; M4 kept: the lug screw goes into copper, not into the REDCUBE) | Phoenix Contact maker STEP (phoenixcontact.com product page Downloads > CAD data, simplified model, revC): 8.0 wide, 1.0 thick, ring centre to barrel end 14.0, barrel OD 5.6 (revB drew 17.5 / 6.0 from catalogue dims) |
 | OUT1-4 wires | 10 AWG GXL (31 A each) | OD 4.2 ASSUMED |
 | Copper bosses BATT / GND (custom, 3-axis mill) | hex AF 13 x 15, M6 female both ends, C110 copper | this build |
 | Copper offset risers OUT1-4 (custom, 3-axis mill) | C110; foot arm R3.75 x 4 thick (v2c; v2b R4) with M4 clearance hole on the T centre, seat column dia 8, seat 8.5 mm from the T centre (v2c), R0.5 column-root fillet, M4 tapped 10 deep; height 10.27 (OUT2 / OUT4, CPDM-ENC-107) and 20.27 (OUT1 / OUT3, CPDM-ENC-108); from 12 x 20 flat bar (low) and 25 x 20 bar (high), 2 setups (top profile + holes, flip and face to height); no undercuts | this build |

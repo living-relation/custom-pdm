@@ -23,17 +23,20 @@ Downloading maker CAD is a standing OK (Dan, 2026-11-09); TE's ECAD model terms 
 | Lock washer TE 2414-001-2486 | `2414-001-2486/c-2414-001-2486-99-3d.stp` | te.com `CVM_2414-001-2486` (new in v2c) | TE CVM terms |
 | Input-board J2 Molex 43045-1200 | `Molex_43045-1200/430451200.stp` | [molex.com part 430451200](https://www.molex.com/en-us/products/part-detail/430451200), 3D model STEP AP242 | Molex site terms |
 | USB hub Adafruit 5997 (CH334F 4-port) | `adafruit_5997_5997-CH334F-4-Port-Hub.step` | [adafruit/Adafruit_CAD_Parts](https://github.com/adafruit/Adafruit_CAD_Parts) `5997 CH334F 4-Port Hub/` | MIT |
+| Fan (F1) Sunon MF30101V1-1000U-A99 | `Sunon_MF30101V1-1000U-A99/Sunon_MF30101V1-1000U-A99_259_Doc-0175505-7-0.stp` | [DigiKey models/10441405](https://www.digikey.com/en/models/10441405), "Manufacturer Provided" (Sunon Creo export `MF3010_K201004120G`); file URL `mm.digikey.com/.../259_Doc-0175505-7-0.stp` (new in revC) | DigiKey CAD Model Agreement (click-through, accepted 2026-11-20 for this download; internal business use, no ownership) |
+| OUT1-4 ring lug Phoenix Contact 3240083 (C-RC 6/M4 DIN) | `Phoenix_3240083/pxc_3240083_00_00_C-RC-6-M4-DIN_3D.stp` | [phoenixcontact.com product page](https://www.phoenixcontact.com/en-us/products/ring-cable-lug-c-rc-6-m4-din-3240083), Downloads > CAD data, "Simplified 3D model of the item", 2023-11-23, sha256 `7a7b9f8fd0148cfee7f475a3f239ca69eb484a4fba56e3482102c1f6f8a6a762` (new in revC) | Phoenix site terms (direct link, no licence prompt) |
+| USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001 | `AmphenolLTW_UC-00PMFY-SC7001/UC-00PMFY-SC7001-STP.stp` (+ `UC-00PMFY-SC7001-2D.pdf`, drawing rev C) | [amphenolltw.com product page](https://amphenolltw.com/product-info/USB/USB-Receptacle/UC-00PMFY-SC7001.html), Download / CAD: (3D STP) zip in `_zips\`, (2D) PDF (new in revC) | Amphenol LTW site terms (direct link, no licence prompt) |
 | Fan (F2 only) Noctua NF-A6x15 PWM | `noctua_NF-A6x15/NF-A6x15_Public-CAD.stp` | [noctua.at downloads](https://www.noctua.at/en/products/nf-a6x15-pwm/downloads) | Noctua public CAD: rendering and integration only, no flow simulation. Not re-downloaded for v2c (F2 not rebuilt) |
 
 TE download tip (2026-11-16): `curl` gets HTTP 403 from te.com; in Chrome, open the product page once, then open each `DocumentDelivery/DDEController?...DocNm=CVM_<PN>&DocFormat=3d_stp.zip` link as a page (a script-started second download is blocked by Chrome's multiple-download guard).
 
-## Still drawn from maker drawings (no maker CAD reached)
+## Drawn stand-ins: none left (revC, 2026-11-20)
 
-| Part | Basis | Why no maker CAD |
-|---|---|---|
-| Fan (F1) Sunon MF30101V1-1000U-A99 | Sunon spec D03033580G-01 (30 x 30 x 10, holes 3.4 at 24, hub 12) | maker model exists on DigiKey ([models/10441405](https://www.digikey.com/en/models/10441405), "Manufacturer Provided") behind DigiKey's model-download agreement, not accepted (Dan to accept or download) |
-| USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001 | UC series catalog: cut-out 20.8 with 19.4 flat, flange 25.4, panel up to 4.0; depths ASSUMED | DigiKey lists only a SnapMagic symbol / footprint; the LTW site has no CAD download |
-| OUT1-4 ring lug Phoenix Contact 3240083 (C-RC 6/M4 DIN) | catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED | phoenixcontact.com "3D view and CAD download" sits behind an anti-robot check (not passed by an agent: Dan to download) |
+revB drew the Sunon fan, the LTW USB-C bulkhead and the Phoenix ring lug from drawings; revC uses the maker STEPs above. Notes from the swap:
+- Download route (2026-11-20): the DigiKey model page's STEP is a plain `mm.digikey.com` file (curl works); Phoenix's "3D view and CAD download" panel has a Friendly Captcha, but the product page's own Downloads > CAD data list links the STEP directly (no captcha); LTW's `down.php?prod_files=<id>` links work with curl. TraceParts / 3Dfindit need an account; SnapMagic / Mouser show a bot check.
+- Sunon STEP is a solid envelope (no bore, no blades), 10.4 thick (spec 10): fit only, not for airflow.
+- Phoenix STEP: ring centre to barrel end 14.0 (revB drew 17.5), barrel OD 5.6 (drew 6.0), barrel bottom flush with the tongue.
+- LTW STEP: round housing flange dia 25 (catalogue said square 25.4), hex nut AF 25.4 modelled against the flange (the build moves it out by the wall), FPC tail 47 mm ending in a 44-pin Y-beam contact that presses onto PCB pads (drawing "Recommended PCB Layout"): the part has no USB-C socket on the inside.
 
 ## Data sheets used for the OUT1-4 risers (2026-11-13)
 

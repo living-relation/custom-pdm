@@ -5,15 +5,16 @@ Fusion script) while holding the Fusion lock (projects-AGENTS.md section 5). Ste
 Reads the release folder (REL): parts/<PN>.stp, BOM-v2c-F1.csv, check/meta.json (placements: 4x4 row-major, mm).
 Fusion: project custom-pdm, folder enclosure-v2c (parts in enclosure-v2c/parts), assembly design custom-pdm-enclosure-v2c-F1."""
 import adsk.core, adsk.fusion, os, json, csv, time
-REL = r"C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-v2c\v2c"
-VAR = "F1"; PROJECT = "custom-pdm"; FOLDER = "enclosure-v2c"; ASM = f"custom-pdm-enclosure-v2c-{VAR}"
+RELREV = globals().get("RELREV", "revC")                            # release folder rev to build from (set RELREV before exec to change)
+REL = rf"C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-v2c\{RELREV}"
+VAR = "F1"; PROJECT = "custom-pdm"; FOLDER = "enclosure-v2c"; ASM = f"custom-pdm-enclosure-v2c-{VAR}-{RELREV}"
 app = adsk.core.Application.get()
 def _folder(parent, name):
     f = parent.dataFolders.itemByName(name)
     return f if f else parent.dataFolders.add(name)
 def load():
     proj = next(p for p in app.data.dataProjects if p.name == PROJECT)
-    top = _folder(proj.rootFolder, FOLDER); parts = _folder(top, "parts")
+    top = _folder(proj.rootFolder, FOLDER); parts = _folder(top, f"parts-{RELREV}")   # one parts folder per release rev (upload_parts reuses files by name)
     meta = json.load(open(os.path.join(REL, "check", "meta.json")))
     bom = {r["part_number"]: r for r in csv.DictReader(open(os.path.join(REL, f"BOM-v2c-{VAR}.csv"), encoding="utf-8"))}
     return dict(top=top, parts=parts, meta=meta, bom=bom, files={}, log=[])
@@ -38,7 +39,7 @@ def upload_parts(st, timeout_s=900):
 def set_props(st):
     """open each part design, set root component part number + description, save, close"""
     for pn, df in st["files"].items():
-        r = st["bom"][pn]; desc = f"{r['name']} | {r['description']} | material: {r['material']} | maker: {r['maker']} | rev v2c"
+        r = st["bom"][pn]; desc = f"{r['name']} | {r['description']} | material: {r['material']} | maker: {r['maker']} | v2c {RELREV}"
         doc = app.documents.open(df, False)
         des = adsk.fusion.Design.cast(doc.products.itemByProductType("DesignProductType"))
         rc = des.rootComponent

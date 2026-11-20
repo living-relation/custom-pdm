@@ -17,6 +17,10 @@ Changes vs v2b (geometry is v2b's except these):
     for M4 SHCS; v2b 7.5 left 0.25 mm round the head)
   - every part is its own STEP file named by its part number (product name = PN, description = what + material + rev) and
     the assembly STEP references those files (external references, one instance per placement) (Dan 2026-11-16)
+Rev C (2026-11-20, job cadfetch): the last three drawn stand-ins replaced by maker CAD: Sunon MF30101V1 fan (DigiKey
+  "Manufacturer Provided" STEP, 10.4 thick: fan-screw heads 0.4 further east), Phoenix 3240083 ring lug (phoenixcontact.com STEP:
+  ring centre to barrel end 14, barrel OD 5.6; OUT1-4 wire ends follow), Amphenol LTW UC-00PMFY-SC7001 (amphenolltw.com STEP:
+  round flange, nut moved out by the wall, FPC tail 47 to a Y-beam contact; the USB cable now starts at the tail end)
 ASSUMED = designer's choice, TBD = not confirmed by a primary source.
 """
 import os, sys, json, math
@@ -95,7 +99,7 @@ P = dict(
     bar_t=5.0, batt_w=20.0, batt_yc=-63.5, gnd_w=15.0, gnd_yc=-5.0,   # copper bars (C110) 20x5 / 15x5
     boss6_af=13.0, boss4_d=9.5, boss4_flats=8.0, lug_t=2.0,
     bay_floor_top=19.2,
-    out_lug_t=1.0, out_lug_w=8.0, out_lug_L=17.5, out_barrel_d=6.0, out_barrel_L=8.0, out_wire_d=4.2,   # Phoenix 3240083 C-RC 6/M4 DIN (catalogue dims); 10 AWG GXL OD 4.2 ASSUMED
+    out_lug_t=1.0, out_lug_w=8.0, out_lug_L=14.0, out_barrel_d=5.6, out_barrel_L=6.0, out_wire_d=4.2,   # Phoenix 3240083 C-RC 6/M4 DIN: re-measured from the maker STEP in ring_lug_local() (revC; revB drew L 17.5 / barrel 6.0 from catalogue dims); 10 AWG GXL OD 4.2 ASSUMED
     out_seat_lo=19.0, out_seat_hi=29.0,                       # OUT1-4 lug seat tops: west pair low tier, east pair high tier (d1a / e1a)
     riser_r=4.0, riser_foot=4.0, pocket_d=5.0, ear_t=5.0, riser_d=8.5, riser_root_r=0.5, riser_foot_r=3.75,   # v2c: foot arm R3.75 (v2b R4): G10 web between neighbouring key slots 1.8 (was 1.3 < 1.52 composite minimum)   # v2c: seat 8.5 from the T centre (all four), R0.5 column-root fillet
     wireway_y0=-47.2, wireway_y1=-19.3,
@@ -312,23 +316,22 @@ made("gap-pads", "CPDM-ENC-110", Compound(pads), (0.95, 0.5, 0.6), "Gap pads (9 
 # ---------------- vendor models ----------------
 def vstep(rel): return import_step(os.path.join(VENDOR, rel))
 if VAR == "F1":
-    # Sunon MF30101V1-1000U-A99: the maker model is on DigiKey (models/10441405, "Manufacturer Provided") behind DigiKey's
-    # model-download agreement, not accepted yet (Dan's call); drawn from Sunon spec D03033580G-01: 30 x 30 x 10,
-    # 4 holes 3.4 at 24 pitch, hub dia 12. Part frame: inlet face at x 0, axis +x, centre (0, 0, 0).
-    f = box(0, 10, -15, 15, -15, 15).cut(cyl(28.6, (-1, 0, 0), 12, (1, 0, 0)))
-    f = f.fuse(cyl(12.0, (0, 0, 0), 10, (1, 0, 0)))
-    for k in range(7):
-        a = 2 * math.pi * k / 7
-        f = f.fuse(Pos(5, 9.5 * math.cos(a), 9.5 * math.sin(a)) * Rot(a * 180 / math.pi, 25, 0) * Box(1.2, 8.5, 6))
-    for dy in (-12, 12):
-        for dz in (-12, 12): f = f.cut(cyl(3.4, (-1, dy, dz), 12, (1, 0, 0)))
-    part("MF30101V1-1000U-A99", f, "Sunon fan 30 x 30 x 10, 12 V", "MODELLED FROM DRAWING: Sunon spec D03033580G-01 (maker STEP behind DigiKey's download agreement)",
-         "PBT frame", "bought-drawn", maker="Sunon", source="Sunon spec D03033580G-01")
+    # Sunon MF30101V1-1000U-A99: maker STEP (DigiKey models/10441405 "Manufacturer Provided", Sunon Creo export
+    # MF3010_K201004120G, DigiKey CAD model agreement accepted 2026-11-20). It is a solid envelope (frame outline, 4 x dia 3.2
+    # through holes at 24 pitch, no bore / blades): fit only, not for flow. Maker frame: axis +y, faces y 0 / 10.4, centre
+    # x = z = 0. Part frame (unchanged): face at x 0 on the fan wall, axis +x, centre (0, 0, 0): maker y -> x, x -> -y.
+    f = vstep("Sunon_MF30101V1-1000U-A99/Sunon_MF30101V1-1000U-A99_259_Doc-0175505-7-0.stp")
+    f = f.moved(Plane(origin=(0, 0, 0), x_dir=(0, -1, 0), z_dir=(0, 0, 1)).location)
+    fb = bbx(f); assert abs(fb.ylen - 30) < 0.05 and abs(fb.zlen - 30) < 0.05 and abs(fb.xmin) < 0.01, ("Sunon STEP frame", fb.xmin, fb.ylen, fb.zlen)
+    FAN_T = round(fb.xlen, 3)                                       # 10.4 in the maker STEP (spec nominal 10)
+    fan_info["x"] = (wall_x + 3.0, wall_x + 3.0 + FAN_T); fan_info["t_maker_step"] = FAN_T
+    part("MF30101V1-1000U-A99", f, "Sunon fan 30 x 30 x 10, 12 V", "Sunon maker STEP (solid envelope, no bore / blades; fit only)",
+         "PBT frame", "bought", maker="Sunon", source="digikey.com/en/models/10441405 Manufacturer Provided STEP (259_Doc-0175505-7-0.stp)")
     item("fans-Sunon-MF30101V1", "MF30101V1-1000U-A99", [L(fan_info["x"][0], fy, fan_z) for fy in fan_info["y"]], (0.1, 0.1, 0.1))
     for fy in fan_info["y"]:
         for dy in (-12, 12):
             for dz in (-12, 12):
-                screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90))   # v2c: horizontal, head on the fan's east face, 2 mm thread into the 3 mm wall
+                screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90))   # horizontal, head on the fan's east face; maker fan 10.4 thick -> 1.6 mm (3 threads) into the 3 mm wall (was 2.0 with the drawn 10 mm fan); M3 x 14 would poke 0.6 out of the wall into the fins
 else:
     nf = vstep("noctua_NF-A6x15/NF-A6x15_Public-CAD.stp")
     b = bbx(nf.rotate(Axis.X, 90))
@@ -359,16 +362,25 @@ part("2414-001-2486", wsh, "TE lock washer, shell 24", "TE 2414-001-2486 lock wa
 wt_ = P["nut_washer_t"]
 item("panel-washers-2414-001-2486", "2414-001-2486", [L(X, LY0 - wt_ / 2, TZ) for X in CONN.values()], (0.5, 0.5, 0.52))
 item("panel-nuts-2411-001-2405", "2411-001-2405", [L(X, LY0 - wt_, TZ, rx=-90) for X in CONN.values()], (0.12, 0.12, 0.12))
-# USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001: no maker STEP (DigiKey lists only a SnapMagic symbol / footprint; LTW site has
-# no CAD); MODELLED FROM CATALOG VALUES (UC series catalog): cut-out D 20.8 with 19.4 flat, panel <= 4.0, square flange 25.4,
-# nut OD 25.4; depths ASSUMED. Part frame: axis -y out of the box, wall inner face at y 0, axis at x 0 / z 0.
+# USB-C bulkhead Amphenol LTW UC-00PMFY-SC7001: maker STEP + 2D drawing from amphenolltw.com (product page "Download / CAD",
+# (3D STP) UC-00PMFY-SC7001-STP.stp, drawing rev C 2021-05-07). Maker frame: axis +x = mating face at x 22, D-flat of the
+# 13/16"-28 UN thread on +y (8.7 from the axis; panel cut-out D 20.8 / flat 19.4), housing flange dia 25 at x 4..6.8, hex nut
+# AF 25.4 modelled screwed back onto the flange (x 6.8..10.8, no panel), FPC tail 47 to a 44-pin Y-beam contact at x -46.8.
+# The nut is part of the same maker solid: it is cut out (outside the thread OD) and moved out by the wall thickness, so the
+# 3 mm wall sits between flange (inside) and nut (outside) as mounted. Part frame (unchanged): axis -y out of the box, wall
+# inner face at y 0, flat on +z (lid cut-out), axis at x 0 / z 0: maker x -> -y, y -> +z, z -> -x.
 w_ = P["wall"]
-ub = box(-11, 11, 0, 29.3, -11, 11)
-ub = ub.fuse(box(-12.7, 12.7, 0, 2.0, -12.7, 12.7))
-ub = ub.fuse(cyl(20.6, (0, 0, 0), 16.0, (0, -1, 0)).cut(box(-12, 12, 1, -w_ - 20, 9.0, 12))).fuse(hexp(22.0, (0, -w_, 0), 5.0, axis=(0, -1, 0), rot=0))
-ub = ub.cut(box(-4.5, 4.5, -w_ - 14, -w_ - 3, -1.7, 1.7))
-part("UC-00PMFY-SC7001", ub, "Amphenol LTW USB-C bulkhead, sealed, panel mount", "MODELLED FROM CATALOG (UC series): no maker STEP reachable; depths ASSUMED",
-     "PA / metal shell", "bought-drawn", maker="Amphenol LTW", source="Amphenol LTW UC series catalog")
+ubm = vstep("AmphenolLTW_UC-00PMFY-SC7001/UC-00PMFY-SC7001-STP.stp")
+U_FL, U_NUT1 = 6.8, 10.8                                            # maker x: flange front face / nut front face
+nut_zone = box(U_FL, U_NUT1 + 0.01, -20, 20, -20, 20).cut(cyl(20.7, (U_FL - 1, 0, 0), U_NUT1 - U_FL + 3, (1, 0, 0)))
+u_nut = isect(ubm, nut_zone); u_body = ubm.cut(nut_zone)
+assert 600 < u_nut.volume < 1200, ("USB nut split", u_nut.volume)
+ub = Compound(list(u_body.solids()) + list(u_nut.moved(Location((w_, 0, 0))).solids()))
+ub = ub.moved(Plane(origin=(0, U_FL, 0), x_dir=(0, -1, 0), z_dir=(-1, 0, 0)).location)
+U_TAIL = round(bbx(ub).ymax, 3)                                      # FPC Y-beam end, from the wall inner face (53.6)
+part("UC-00PMFY-SC7001", ub, "Amphenol LTW USB-C bulkhead, sealed, front fastened, FPC + 44-pin Y-beam",
+     "Amphenol LTW maker STEP; panel nut moved out by the 3 mm wall (as mounted); inner end = FPC 47 to a 44-pin Y-beam contact (needs mating PCB pads)",
+     "thermoplastic housing, shielded", "bought", maker="Amphenol LTW", source="amphenolltw.com UC-00PMFY-SC7001 (3D STP) + (2D) rev C")
 item("usbc-bulkhead-UC-00PMFY-SC7001", "UC-00PMFY-SC7001", [L(USB_X, WALL_IN, P["usb_z"])], (0.15, 0.15, 0.15))
 hub = vstep("adafruit_5997_5997-CH334F-4-Port-Hub.step")
 b = bbx(hub.rotate(Axis.Z, 90)); HUB_Z = 4.0
@@ -482,14 +494,21 @@ made("carrier-G10-OUT1-4", "CPDM-ENC-109", car, (0.75, 0.78, 0.55), "OUT1-4 rise
 part("CPDM-BUY-302", standoff_mf(5.5, 8.0, 3.0, 6.0, 6.0, (0, 0, 0)), "M3 x 8 hex standoff male-female AF5.5", "M3 M-F hex standoff 8 mm (e.g. Wurth WA-SSTIE series), maker PN TBD (buy to spec)", "brass Ni", "bought", maker="(TBD)")
 item("standoffs-M3x8-MF-carrier", "CPDM-BUY-302", [L(X, Y, Z_TOP) for (X, Y) in ANCH], (0.8, 0.7, 0.3))
 M6_EXT_TOP = P["collar_top"] + 1.0; M4_EXT_TOP = Z_U
-# OUT1-4 ring lugs (Phoenix Contact 3240083 = C-RC 6/M4 DIN, M4, 6 mm2 / 10 AWG; maker 3-D download sits behind a bot check on
-# phoenixcontact.com, so modelled from catalogue dims: 8.0 wide, 17.5 long, 0.99 thick, barrel OD 6 ASSUMED) + 10 AWG wires
+# OUT1-4 ring lugs (Phoenix Contact 3240083 = C-RC 6/M4 DIN, M4, 6 mm2 / 10 AWG) from the maker STEP (phoenixcontact.com product
+# page, Downloads > CAD data, pxc_3240083_00_00_C-RC-6-M4-DIN_3D.stp "simplified 3D model", 2023-11-23, sha256 7a7b9f8f...).
+# Maker frame: tongue z 0..1, ring (hole dia 4.3, OD 8) centre at (4, 14), barrel (OD 5.6, bottom flush with the tongue
+# underside) toward -y, overall 18. Part frame (unchanged): ring centre at the origin, barrel along +x, tongue z 0..1.
 def ring_lug_local():
-    t, wdt, Lg, bd, bL = P["out_lug_t"], P["out_lug_w"], P["out_lug_L"], P["out_barrel_d"], P["out_barrel_L"]
-    tongue = cyl(wdt, (0, 0, 0), t).fuse(box(0, Lg - bL, -bd / 2, bd / 2, 0, t)).cut(cyl(4.3, (0, 0, -1), t + 2))
-    return one(tongue.fuse(Solid.make_cylinder(bd / 2, bL, Plane(origin=(Lg - bL, 0, bd / 2), z_dir=(1, 0, 0)))))
-part("3240083", ring_lug_local(), "Phoenix Contact ring cable lug C-RC 6/M4 DIN", "M4 ring lug, 6 mm2 (10 AWG); MODELLED FROM CATALOGUE DIMS (maker CAD behind a bot check)",
-     "copper, tin plated", "bought-drawn", maker="Phoenix Contact", source="Digi-Key / Phoenix catalogue dims")
+    s = vstep("Phoenix_3240083/pxc_3240083_00_00_C-RC-6-M4-DIN_3D.stp")
+    hole = [f.center() for f in s.faces() if f.geom_type.name == "CYLINDER" and abs(f.radius - 2.15) < 0.01]
+    cx, cy = sum(c.X for c in hole) / len(hole), sum(c.Y for c in hole) / len(hole)
+    b = bbx(s); bar = max(f.radius for f in s.faces() if f.geom_type.name == "CYLINDER" and f.radius < 3.5)
+    t = min(f.center().Z for f in s.faces() if f.geom_type.name == "PLANE" and abs(f.normal_at().Z) > 0.99 and f.center().Z > 0.5)
+    P.update(out_lug_L=round(cy - b.ymin, 3), out_barrel_d=round(2 * bar, 3), out_lug_t=round(t, 3), out_lug_w=round(b.xlen, 3))
+    assert abs(P["out_lug_L"] - 14.0) < 0.1 and abs(P["out_barrel_d"] - 5.6) < 0.1 and abs(P["out_lug_t"] - 1.0) < 0.05 and abs(P["out_lug_w"] - 8.0) < 0.05, P
+    return s.moved(Plane(origin=(cy, -cx, 0), x_dir=(0, 1, 0), z_dir=(0, 0, 1)).location)
+part("3240083", ring_lug_local(), "Phoenix Contact ring cable lug C-RC 6/M4 DIN", "M4 ring lug, 6 mm2 (10 AWG), non-insulated; Phoenix Contact maker STEP (simplified)",
+     "copper, tin plated", "bought", maker="Phoenix Contact", source="phoenixcontact.com 3240083 Downloads > CAD data (pxc_3240083_00_00_C-RC-6-M4-DIN_3D.stp)")
 item("ring-lugs-OUT1-4", "3240083", [L(sx, sy, sz, rz=LUGANG[k]) for k, (sx, sy, sz) in SEAT.items()], (0.85, 0.6, 0.3))
 XE = LX0 - 15.0
 owires = []
@@ -536,8 +555,9 @@ wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 
 for n, x in IN_X.items():
     wires.append(ribbon([(x + 33, DY0 + 2, z_deck_top + 8), (x + 33, DY0 - 8, TZ + 14), (CONN["X2"] + 8, YR, TZ + 14)], 10.0, 3.0))
 usbc = []
-UR = WALL_IN + 29.3
-usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
+UR = WALL_IN + U_TAIL                                               # cable starts at the bulkhead FPC's Y-beam end (an adapter PCB there is TBD: the maker part ends in Y-beam contacts, not a USB-C socket)
+UX = USB_X - 12.0                                                    # cable runs back south 12 mm west of the FPC (FPC + Y-beam sit x +1.3..+7.4 east of the axis)
+usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, UR + 5.0, P["usb_z"]), (UX, UR + 5.0, P["usb_z"]), (UX, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
     usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, Z_TOP + 1.6)], 4.0))

@@ -5,7 +5,7 @@
 set -u
 HERE="${HERE:-$(cd "$(dirname "$0")" && pwd)}"   # set HERE when running a CR-stripped copy
 VARS="${*:-F1}"
-L=~/scratch/encl-v2c/logs
+L="${SCR:-$HOME/scratch/encl-v2c}/logs"
 for V in $VARS; do
   bash "$HERE/run.sh" build_v2c.py "$V" > /dev/null || { echo "build $V failed"; continue; }
   NPROC="${NPROC:-12}" bash "$HERE/run.sh" clearance_v2c.py "$V" > /dev/null
