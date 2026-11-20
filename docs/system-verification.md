@@ -182,4 +182,10 @@ the d2tvs DO-218 change.
   --no-freewheel-b`: fan / pump PWM only to 2-7 Hz. With the diodes (as built): fan PWM safe to about 30 Hz (BYG23M
   1.5 A). Options in `docs/parts-audit.md` 15.4.
 - **Item 5:** fab notes ask for epoxy-filled + capped vias in SMD pads (all three boards).
-- **D2:** Bourns SM8S24CA-Q is the MPN (ADR-2026-11-20-d2-mpn); Vishay / Panjit alternates.
+- **D2:** Bourns SM8S24CA-Q is the MPN (ADR-2026-11-20-d2-mpn); Vishay / Panjit alternates. Its EasyEDA footprint
+  (C1976790) made the placement checkable: CPL rotation +180 and centre offset 1.912 mm (`gen_fab_jlcpcb.py`).
+- **Enclosure (item 7):** board STEPs re-exported from this branch (`enclosure/v2c/src/export_boards.ps1`, commit
+  5a363e2) and from main 699a8b8; enclosure v2c F1 (main's sources) built twice and checked with
+  `clearance_v2c.py`: all 144 part pairs, every pair with a board has the same minimum gap and overlap volume on both
+  (to 0.01 mm / 0.05 mm3): the new 0402 / SOD-882 parts (0.5-0.6 mm tall, top side, MCU area) touch nothing. D2 did
+  not move, so its gaps stay as measured by d2tvs (A 5.83 mm to the sink, B 2.61 mm to the carrier standoff).
