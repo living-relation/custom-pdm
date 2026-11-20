@@ -88,6 +88,8 @@ class Board:
     def set_vbat(s, v):
         s.vbat = v; s.L.sim_set_env(v, s.board_c, s.die_c)
         a, b = pin(s.model['batt']); s.L.sim_set_pin_volts(a, b, v * 4700.0 / (47000.0 + 4700.0))
+    def set_vdda(s, v):
+        s.L.sim_set_vdda.argtypes = [ctypes.c_float]; s.L.sim_set_vdda(v)
     def set_temp(s, board_c, die_c=None):
         """board_c: MCP9808 reading. die_c: STM32 die (internal sensor), unchanged if None."""
         s.board_c = board_c; s.die_c = s.die_c if die_c is None else die_c; s.L.sim_set_env(s.vbat, s.board_c, s.die_c)

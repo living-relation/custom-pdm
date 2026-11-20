@@ -374,13 +374,20 @@ def run_case(board, th, diel, case, a, T, plots=None):
         c["tj"] = round(top + c["P"] * RTHJC[c["type"]], 1)
         c.pop("nodes")
     hot = max(chips, key=lambda c: c["tj"])
+    # presim (docs/system-verification.md 6): what the board's own MCP9808 (U6) reads, for the firmware's warn /
+    # critical limits: the F.Cu cell under its footprint centre
+    fp6 = board.FindFootprintByReference("U6")
+    x6, y6 = VC.mm(fp6.GetPosition().x), VC.mm(fp6.GetPosition().y)
+    i6, j6 = int(np.argmin(abs(g.xc - x6))), int(np.argmin(abs(g.yc - y6)))
+    n6 = T.ids[0][j6, i6]
+    t_sensor = round(float(Tn[n6]), 1) if n6 >= 0 else None
     out.update(p_chip=round(p_chip, 2), p_copper=round(p_cu, 2), p_joints=round(p_joint, 2), p_a_boards=round(p_a, 2),
                p_bars_contacts=round(p_ext, 2), p_box=round(p_box, 2), t_sink=round(tsink, 1),
                laminate_max=round(float(Tn[:-1].max()), 1), t_j1=round(float(Tn[-1]), 1),
                laminate_at=lay[VC.CU[kmax // T.ncell]]["at"], laminate_layer=VC.CU[kmax // T.ncell],
                copper_rise_max=round(float(dcu[:-1].max()), 1), copper_rise_at_hot=round(float(dcu[kmax]), 1),
                layers=lay, chips=[{k: c[k] for k in ("ref", "net", "type", "I", "P", "t_board", "tj")} for c in chips],
-               hottest_chip=hot["ref"], tj_max=hot["tj"],
+               hottest_chip=hot["ref"], tj_max=hot["tj"], t_sensor_u6=t_sensor,
                feed=[dict(net=r["net"], I=round(r["I"], 1), drop_mv=round(r["drop_mv"], 1), p_w=round(r["power_w"], 2))
                      for r in rs])
     out["pass"] = dict(tj=out["tj_max"] <= LIMITS["tj"], laminate=out["laminate_max"] <= LIMITS["laminate"])

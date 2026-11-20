@@ -543,6 +543,7 @@ API int sim_pin_info(int port, int pad) { Pin &p = pins()[port * 16 + pad]; retu
 API void sim_set_pin_volts(int port, int pad, float v) { pinVolts[port][pad] = v; }
 API void sim_set_env(float vbat_, float boardTemp, float dieTemp) { vbat = vbat_; boardTempC = boardTemp; dieTempC = dieTemp; }
 API void sim_set_usb(int c) { usbConnected = c; }
+API void sim_set_vdda(float v) { vdda = v; }   // presim: VDDA off 3.3 V (TLV1117LV +-1.5 %); VREFINT / TS follow
 API int sim_plant_add(int in, int den, int dsel, int dselLevel, int is, float kilis, float rsense, float vclamp)
 {
     PlantCh c; c.in = in; c.den = den; c.dsel = dsel < 0 ? 0 : dsel; c.hasDsel = dsel >= 0; c.dselLevel = dselLevel; c.is = is;

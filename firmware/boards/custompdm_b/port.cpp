@@ -90,8 +90,8 @@ static const ADCConversionGroup adc1_cfg = {
     .smpr1 = ADC_SMPR1_SMP_AN12(ADC_SAMPLE_15) |
              ADC_SMPR1_SMP_AN13(ADC_SAMPLE_15) |
              ADC_SMPR1_SMP_AN14(ADC_SAMPLE_15) |
-             ADC_SMPR1_SMP_SENSOR(ADC_SAMPLE_15) |
-             ADC_SMPR1_SMP_VREF(ADC_SAMPLE_15),
+             ADC_SMPR1_SMP_SENSOR(ADC_SAMPLE_112) |
+             ADC_SMPR1_SMP_VREF(ADC_SAMPLE_112),
     .smpr2 = ADC_SMPR2_SMP_AN0(ADC_SAMPLE_15) |
              ADC_SMPR2_SMP_AN1(ADC_SAMPLE_15) |
              ADC_SMPR2_SMP_AN2(ADC_SAMPLE_15) |
@@ -154,7 +154,9 @@ float GetBattVolt()
 
 float GetTemperature()
 {
-    return (STM32_TS_CAL1_TEMP + ((float)(GetAdcRaw(AnalogChannel::TempSensor) - STM32_TS_CAL1) / (STM32_TS_CAL2 - STM32_TS_CAL1)) * (STM32_TS_CAL2_TEMP - STM32_TS_CAL1_TEMP));
+    // custom-pdm (presim): TS_CAL1 / TS_CAL2 are taken at VDDA = 3.3 V (DS Table 81): bring the count to 3.3 V first
+    const float raw = (float)GetAdcRaw(AnalogChannel::TempSensor) * GetVDDA() / (float)STM32_CAL_VDDA;
+    return (STM32_TS_CAL1_TEMP + ((raw - STM32_TS_CAL1) / (STM32_TS_CAL2 - STM32_TS_CAL1)) * (STM32_TS_CAL2_TEMP - STM32_TS_CAL1_TEMP));
 }
 
 float GetVDDA()

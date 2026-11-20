@@ -78,6 +78,9 @@
 #define DEVICE_THREAD_STACK 2048
 #define CAN_THREAD_STACK 512
 
+// presim: DSEL settle before the IS read = tsIS(CC) 20 us + RC + one 45.6 us ADC sequence (port.cpp, 112-cycle
+// TS / VREFINT sampling); functions/profet.h keeps the stock 60 us for every other board
+#define DSEL_SETTLE_US 80
 #define NUM_TX_MSGS 38 // custom-pdm: + msg 37
 // Factory defaults (used only when the FRAM holds no valid config). All can be changed over CAN/USB later.
 #ifndef PDM_UNIT
