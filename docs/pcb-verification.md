@@ -100,6 +100,18 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 
 - `tools/gen_fab_jlcpcb.py`: JLCPCB rotation table corrected part by part (SOT-223 180 -> 270, JST GH SM horizontal 180 -> 0; new: JST GH BM vertical 180, Molex Micro-Fit 43045 180, Omron A6S DIP 270) and a centre-offset table (USB-C GCT USB4085, Traco TSR-1, Micro-Fit 43045-1200). CPL files regenerated: 4 rows on A, 4 on B, 4 on the input board.
 - `tools/pcb_hole_keepout.py` (new last stage of `build_board_a.ps1` / `build_board_b.ps1`): copper-pour keep-out r 3.6 mm on F.Cu / B.Cu around every mounting hole. Boards A and B refilled, Gerbers F_Cu / B_Cu regenerated. DRC counts unchanged; +12V drop +0.6 mV (A) / +3.6 mV (B).
+- hwprotect (2026-11-20, `tools/hw_protect.py`, ADR-2026-11-20-presim-findings item 4): new parts on the top side of
+  both boards, placed in free space (B refs; A: C52-C54, D26 / D27): NRST 100 nF C63 at (-4.20, 48.20), VDDA 1 uF C64 at
+  (-1.90, 52.20) + 100 nF C65 at (3.90, 51.90), USB ESD PESD5V0F1BL D29 / D30 at (0.2, 30.8) / (1.8, 30.2) (A: (0.2,
+  30.9) / (2.7, 30.7)) tapped onto the D+ / D- vias beside U4. VDDA: the U4 fan-out leaves no via site beside pin 13 /
+  FB1, so a 0.7 / 0.3 mm via sits in FB1 pad 2 (filled + capped, fab notes) and B.Cu tracks (11 / 15 mm) reach the
+  caps; board B's In2 B_IN6 / B_IN8 re-routed around that via (tracks only). Each GND pad has its own GND via.
+  Checks vs main 699a8b8 (kicad-cli 10): DRC same counts on B (413), A +5 library-path warnings (214 -> 219), 0
+  unconnected, parity 4 = 4; ERC one error fewer per board, +5 / +10 library warnings; netlist: same connectivity
+  plus the 5 new parts, Net-(U4-VDDA) named /MCU/VDDA; board_semdiff: 5 new footprints + U4 / FB1 pad-net rename only;
+  JLC-limit DRC 0, co-located holes 0, second fab run identical; verify_copper identical to main (A +12V 42.1 mV, B 99.4
+  mV; the B no-sink self-heating FAIL is main's too); verify_layout PASS; verify_cpl 126 / 191 / 48 (D2 now has an
+  EasyEDA footprint via Bourns C1976790: CPL rotation +180 and centre offset 1.912 mm added to `gen_fab_jlcpcb.py`).
 
 ## Left (for the coordinator; technical choices, data above)
 

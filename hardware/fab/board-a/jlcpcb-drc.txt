@@ -2,16 +2,16 @@ JLCPCB check: board-a (4 layers). Limits: JLCPCB capabilities page, multilayer, 
 Zone fills: a refill (KiCad 9) changes the filled area by at most 0.000 % (-); current
 Drilled holes on the same spot (two vias / via on a pad): none
 Hole pairs closer than JLCPCB's hole-to-hole limits (via-via 0.2 mm, pad hole 0.45 mm): none
-Assembly: 121 parts in 41 BOM lines, 121 placements; rotation offsets applied to: D4 +180, D6 +180, D7 +180, U2 +270, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U10 +270, U11 +270, U12 +270, U13 +270
+Assembly: 126 parts in 44 BOM lines, 126 placements; rotation offsets applied to: D2 +180, D4 +180, D6 +180, D7 +180, U2 +270, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U10 +270, U11 +270, U12 +270, U13 +270
 
 Worst values from the copper:
   track width min                                        0.200 mm  (JLCPCB 0.09 mm)  ok  
-  via hole min                                           0.400 mm  (JLCPCB 0.15 mm)  ok  
-  via diameter min                                       0.800 mm  (JLCPCB 0.25 mm)  ok  
+  via hole min                                           0.300 mm  (JLCPCB 0.15 mm)  ok  
+  via diameter min                                       0.700 mm  (JLCPCB 0.25 mm)  ok  
   via annular ring min                                   0.200 mm  (JLCPCB 0.05 mm)  ok  
   PTH pad annular ring min                               0.150 mm  (JLCPCB 0.15 mm)  ok  J5
-  drill min                                              0.400 mm  (JLCPCB 0.15 mm)  ok  
-  hole-to-hole gap min (via-via)                         0.452 mm  (JLCPCB 0.2 mm)  ok  via  / via
+  drill min                                              0.300 mm  (JLCPCB 0.15 mm)  ok  
+  hole-to-hole gap min (via-via)                         0.260 mm  (JLCPCB 0.2 mm)  ok  via  / via
   hole-to-hole gap min (pad holes, other footprints)     0.482 mm  (JLCPCB 0.45 mm)  ok  via  / pad J4
 
 DRC with JLCPCB's limits as the only rules (count, worst actual, examples):
