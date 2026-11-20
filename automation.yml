@@ -273,3 +273,14 @@ automations:
     enabled: true
     run_cmd: python tools/verify_tolerance.py [--n 20000] [--json out.json]   # numpy; exit 1 on any FAIL
     owner: claude
+  - id: presim-power
+    script: tools/verify_power.py
+    helpers: [tools/presim_parts.py]
+    trigger: manual                 # docs/system-verification.md 2
+    reads: ["firmware/**/*.c", "firmware/**/*.cpp", "firmware/**/*.h"]   # looks for a BOR_LEV write; mcuconf PVD
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/verify_power.py [--json out.json]   # numpy; exit 1 on any FAIL
+    owner: claude

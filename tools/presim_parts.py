@@ -114,3 +114,29 @@ def kilis_tol(model, il):
         if r[0] <= il:
             best = r
     return best[1], best[2]
+
+# ---------------------------------------------------------------- car loads (docs/car-loads.dummy.md, a DUMMY TEST COPY)
+# steady current from the car-loads dummy (st185 fuse = upper bound); inductance / inrush are NOT measured on the car:
+# the values are typical published ranges (low, high) and every result built on them is a bench test (BACKLOG).
+#   DC PM motors (fans, pumps, wiper, washer): armature L 0.1-1 mH; start / stall current 3-5 x steady for 0.3-1 s
+#   (HP Academy motor inrush, ui PdmPresets.cs); A/C clutch coil 3-4 Ohm, 50-200 mH; relay coil 80-120 Ohm, 0.1-0.4 H;
+#   horn coil (electromagnetic, self-interrupting) 5-30 mH; solenoid valve 1-2 A, 10-50 mH. All ASSUMED (no data sheet).
+CAR_LOADS = [  # name, board, out, driver, steady A, L range (H), inrush x steady, inrush s, kind
+    ("Radiator fan", "B", 1, "BTS70012-1ESP", 25.0, (0.2e-3, 1.0e-3), 4.0, 0.5, "motor"),
+    ("Condenser fan", "B", 2, "BTS70012-1ESP", 20.0, (0.2e-3, 1.0e-3), 4.0, 0.5, "motor"),
+    ("Fuel pump", "B", 3, "BTS70012-1ESP", 19.0, (0.1e-3, 0.5e-3), 4.0, 0.3, "motor"),
+    ("CAN-Lambda", "B", 5, "BTS7004-1EPP", 8.1, (0.0, 1e-6), 1.5, 0.1, "electronic"),
+    ("A/C clutch", "B", 6, "BTS7004-1EPP", 3.6, (0.05, 0.2), 1.0, 0.0, "coil"),
+    ("Wiper motor", "B", 7, "BTS7004-1EPP", 6.0, (0.3e-3, 1.5e-3), 4.0, 0.3, "motor"),
+    ("Low beams (LED)", "A1", 1, "BTS7008-2EPA", 2.0, (0.0, 1e-6), 3.0, 0.01, "electronic"),
+    ("High beams + dash LED", "A1", 2, "BTS7008-2EPA", 2.5, (0.0, 1e-6), 3.0, 0.01, "electronic"),
+    ("Horn pair", "A1", 5, "BTS7008-2EPA", 5.0, (5e-3, 30e-3), 1.0, 0.0, "coil"),
+    ("EPS enable (relay coil)", "A1", 6, "BTS7008-2EPA", 0.15, (0.1, 0.4), 1.0, 0.0, "coil"),
+    ("Washer pump", "A2", 4, "BTS7008-2EPA", 3.0, (0.2e-3, 1.0e-3), 4.0, 0.2, "motor"),
+    ("Generic solenoid (boost / valve)", "A2", 5, "BTS7008-2EPA", 1.5, (10e-3, 50e-3), 1.0, 0.0, "coil"),
+    ("Box fans", "A2", 2, "BTS7008-2EPA", 0.13, (1e-3, 5e-3), 3.0, 0.2, "motor"),
+]
+FREEWHEEL = {"A1": None, "A2": None, "B": "BYG23M"}   # board B: BYG23M from GND to every PF_OUT (D13 .. D28), as stock Max
+BYG23M = dict(src="Vishay BYG23M doc 88962 (2020-02-25)", if_av=1.5, ifsm=30.0, ifsm_t=10e-3, vf_1a=1.7, rth_ja=125.0)
+PMEG10010 = dict(src="Nexperia PMEG10010ELR", vf_100ma=0.55, vr=100)      # D19 (A) / D3 (B): +12V -> +12P (est. VF)
+PMEG2010 = dict(vf_100ma=(0.265, 0.290), vf_cold=0.38)                      # D18 / D4, docs/parts-audit.md section 9
