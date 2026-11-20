@@ -574,3 +574,37 @@ Pulse 1 (-150 V, 10 Ohm, 2 ms), every bidirectional part: -29 to -32 V on +12V v
 
 Sources: TI SBOS833R (TLV900x, Nov 2021); TI SLOS066AE; Microchip DS20001733L (MCP6001/2/4); Nexperia PDZ-B series data sheet (2004-03-22 / NXP); Infineon BTS7008-2EPA Rev 1.20, BTS7004-1EPP, BTS70012-1ESP Rev 1.21 (Tables 3, 24, P_4.1.0.3 / .5 / .9, P_6.4.0.9, P_8.6.0.6 / .7, P_9.6.x); Vishay SM8S10CA thru SM8S85CA doc 98229 (rev 23-Jan-2026), SM8S10AHM3 thru SM8S43AHM3 doc 98647 (rev 16-Jan-2024); Littelfuse 5.0SMDJ data sheet; Panjit load-dump TVS flyer (panjit.com.tw); Panjit SM8H14CAS-AU ~ SM8H48CAS-AU data sheet Rev.00 (2025-05-22, page 5 DO-218AB dimensions / pad layout); Bourns SM8S-Q series data sheet ("Product Dimensions", "Recommended Footprint"); LCSC product pages C2058050, C85392, C557518, C3720850, C2990549, C20036943 (read 2026-11-20); Digi-Key product pages 18869881 (Vishay SM8S24CAHM3/I, listed obsolete) and 9920516 (Bourns SM8S24CA-Q, active, 14,800 in stock), read 2026-11-20.
 
+
+## 15. Protection parts and 125 C grades (2026-11-20, branch `fix/hw-protect`, job hwprotect)
+
+Decision: ADR-2026-11-20-presim-findings items 1, 2, 4, 5 and ADR-2026-11-20-d2-mpn. Stage: `tools/hw_protect.py` (sch + pcb, last stage of `tools/build_board_a.ps1` / `tools/build_board_b.ps1`); D2 fields in `tools/sch_bom_fields.py`. Stock: JLCPCB parts search, read 2026-11-20.
+
+### 15.1 Board B 85 C parts -> 125 C (same footprints)
+
+| Ref | Was (rating) | Now | Rating | LCSC (stock) | Check |
+|---|---|---|---|---|---|
+| Y1 | Abracon ABM3-8.000MHZ-D2Y-T (-40..85 C, ESR 140 Ohm) | ECS ECS-80-18-30Q-CES-TR | -40..125 C, AEC-Q200, 18 pF, ESR 100 Ohm, 5.0 x 3.2 mm 2-pad (Digi-Key 50-ECS-80-18-30Q-CES-TRCT-ND, active) | none at LCSC (assembler global sourcing); alternate ECS-80-18-30Q-VY-TR, -40..105 C, LCSC C6844210 (0) | same 18 pF load: C7 / C8 27 pF unchanged; lower ESR = more HSE gain margin |
+| C3 (+12V) | Murata GRM21BR6YA106KE43L 10 uF 35 V X5R (85 C) | TDK CGA4J1X7R1H475KT0Y0N 4.7 uF 50 V X7R, AEC-Q200 | 125 C | C694229 (6,436) | no 0805 X7R / X7S >= 35 V 10 uF part at JLCPCB; at 12-16 V bias the 50 V 4.7 uF keeps about as much as the 35 V X5R 10 uF; 50 V covers the 35 V load-dump clamp; alternate HRE CGA0805X7R475K500MT (C6119944, 47,431) |
+| C4 (+5VP) | Samsung CL21A226MAQNNNE 22 uF X5R | Murata GRM21BZ71A226ME15L 22 uF 10 V X7R | 125 C | C907991 (53,744) | 5.2 V rail; alternate CCTC TCC0805X7R226M100FT (C53133025) |
+| C6 (+3V3) | Samsung CL21A106KAYNNNE 10 uF X5R | Samsung CL21B106KPQNNNE 10 uF 10 V X7R | 125 C | C32635 (137,979) | TLV1117LV needs >= 1 uF effective: met |
+| C10 (VCAP_1), C15 (+3V3) | Samsung CL21A475KAQNNNE 4.7 uF X5R | Samsung CL21B475KAFNNNE 4.7 uF 25 V X7R | 125 C | C98195 (21,742) | VCAP_1 needs 2.2 uF min, ESR < 2 Ohm (DS10693): met |
+| U13 | Traco TSR 1-2450 (-40..85 C) | **unchanged** | - | - | no 5 V converter rated above 85-90 C fits the TSR SIP-3 footprint or the DNP VXO78-500-M / OKI-78SR footprints (TSR 1, TSR 1E 85 C; RECOM R-78K-1.0 90 C; section 11): a footprint change (e.g. TI LMZM23601V5, TJ 125 C), reported, not done |
+
+### 15.2 New parts (board A and board B)
+
+| Role | Part | Rating | LCSC (stock) | Source |
+|---|---|---|---|---|
+| NRST capacitor (C63 on B) | Samsung CL05B104KO5NNNC 100 nF 16 V X7R 0402 | 125 C | C1525 (basic, 33.8 M) | ST AN4488 Rev 4, 2.3.3 / Figure 6 (100 nF on NRST for EMS) |
+| VDDA 1 uF (C64 on B) | CCTC TCC0402X7R105K100AT 1 uF 10 V X7R 0402 | 125 C | C47325373 (277,574); alt YAGEO CC0402KRX7R6BB105 (C7500381) | AN4488 2.2: "100 nF ceramic + 1 uF" on VDDA |
+| VDDA 100 nF (C65 on B) | CL05B104KO5NNNC | 125 C | C1525 | same |
+| USB D+ / D- ESD (D29 / D30 on B) | Nexperia PESD5V0F1BL,315, DFN1006-2 (SOD-882), bidirectional | Tj -40..125 C; VRWM 5.5 V; 0.4 pF; IEC 61000-4-2 | C45961 (125,095); alt PESD5V0F1BLZ (C6952437), BORN PESD5V0F1BL-N (C2929237) | USB 2.0 full speed (12 Mbit/s): 0.4 pF per line is negligible |
+
+A USBLC6-2 array (SOT-23-6 / SOT-666, ST, LCSC C7519 / C15999) was the first choice; neither package has a top-side site on either board with room for both taps and its GND via without moving a part (searched 4 mm around the In2 pair beside U2 and at the MCU end): two single-line diodes fit at the MCU end of the lines.
+
+### 15.3 D2 (A and B): Bourns SM8S24CA-Q is the MPN (ADR-2026-11-20-d2-mpn)
+
+Bourns SM8S24CA-Q: LCSC C1976790 (0 at LCSC; JLCPCB global sourcing), Digi-Key SM8S24CA-QCT-ND (active, about 14,800, 2026-11-20). Same DO-218AB land pattern (`tools/d2_tvs.py`). Alternates: Vishay SM8S24CAHM3/I (LCSC C20036943, Digi-Key lists the /I code obsolete), Panjit SM8H24CAS-AU.
+
+### 15.4 Board B freewheel diodes D13-D28 (BYG23M): kept fitted
+
+Infineon BTS70012-1ESP / BTS7004-1EPP data sheets, 8.4.1 Reverse Polarity Protection: "The reverse current through the output stage must be limited by the connected load." A diode from GND to OUT bypasses the load, so with the switch's ReverseON channel (or body diode) it shorts a reversed battery (verify_power FAIL, unchanged). Removing them (what-if: `python tools/verify_power.py --no-freewheel-b`, `verify_switching.py --no-freewheel-b`) moves every inductive turn-off into the switch clamp: A/C clutch (B OUT6, 3.6 A, L 50-200 mH ASSUMED) 0.55-2.2 J vs BTS7004 EAS 0.15 J (FAIL), radiator / condenser fan 0.07-0.53 J vs BTS70012 EAR 0.16 J (WARN), and fan PWM only up to 2-3 Hz (1 W clamp budget). No 2-terminal part in the DO-214AC footprint satisfies both (any diode GND -> OUT conducts with a reversed battery; a 1.5-3 A SMA part cannot carry 100 Hz fan PWM either). Options for the coordinator / Dan: (a) keep (fused feed, no reversed jump start; fan PWM <= ~30 Hz); (b) remove + suppression diodes at the clutch / fans in the harness; (c) a reverse-blocking N-MOSFET (+ gate resistor + zener) in series with each diode, gate from +12V: 24 new parts and a new net per output, layout report first (rule hardware.md).

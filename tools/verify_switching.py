@@ -60,9 +60,38 @@ def pwm_loss():
                 "above these currents a PWM'd output runs hotter than the heat model's DC case " + d["src"])
 
 
+def pwm_motor_clamp():
+    """PWM of an inductive load with no freewheel diode (board A, and board B since hwprotect): every PWM period ends
+    in a turn-off whose L energy goes into the switch's clamp, E = L Vcl / R (I0 - Vz / R ln(1 + I0 R / Vz)) (data
+    sheet eq. 7.1). Repetitive clamping: E <= EAR (1M cycles, TJ0 85 C) and E x f within a 1 W extra-heat budget per
+    switch (heat model margin; the clamp power is not in the DC heat model). Gives the highest PWM frequency per load."""
+    budget = 1.0
+    for name, board, out, drv, i, (l_lo, l_hi), *_, kind in P.CAR_LOADS:
+        if kind != "motor" or P.FREEWHEEL[board]:      # coils (horn, clutch, solenoid) are switched, not PWM'd
+            continue
+        d = P.PROFET[drv]
+        vcl, vbat = d["clamp"][0], 16.0
+        r = 13.5 / i
+        vz = vcl - vbat
+        i0 = vbat / r
+        e = l_hi * vcl / r * (i0 - vz / r * math.log(1 + i0 * r / vz))
+        ear = d["ear"][0]
+        fmax = budget / e if e > 0 else float("inf")
+        ok = e <= ear and fmax >= 100
+        add("PWM into an inductive load (no freewheel diode)", f"{name} ({board} OUT{out}, {drv}, {i} A, L {l_hi * 1e3:g} mH "
+            "ASSUMED): clamp energy per PWM period", f"{e * 1e3:.1f} mJ; {budget:.0f} W extra heat at {fmax:.1f} Hz",
+            f"EAR {ear * 1e3:.0f} mJ (1M cycles); >= 100 Hz within {budget:.0f} W", "PASS" if ok else ("WARN" if e <= ear else "FAIL"),
+            ("PWM fine" if ok else f"PWM (soft start, fan curve) only up to {fmax:.1f} Hz with this L, or on / off only; "
+             "a PWM'd motor on this output needs its own freewheel path (a diode at the load, or a reverse-protected "
+             "freewheel on the board: design choice). Firmware presets: BACKLOG (fwsafety)"))
+
+
 def pwm_motor_diode():
     """PWM of a motor on board B: in the off time the load current freewheels in the BYG23M (I e^-t/tau, tau = L/R,
     back-EMF ignored = more diode current, conservative). Average diode current at the worst duty."""
+    pwm_motor_clamp()                                    # every board without a freewheel diode (A; B in the what-if)
+    if not P.FREEWHEEL["B"]:
+        return
     lim = P.BYG23M["if_av"]
     for name, board, out, drv, i, (l_lo, l_hi), *_, kind in P.CAR_LOADS:
         if board != "B" or kind != "motor":
@@ -163,7 +192,10 @@ def pairing():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json")
+    ap.add_argument("--no-freewheel-b", action="store_true", help="board B without its BYG23M freewheel diodes (what-if)")
     a = ap.parse_args()
+    if a.no_freewheel_b:
+        P.FREEWHEEL["B"] = None
     pwm_loss()
     pwm_motor_diode()
     min_on_time()

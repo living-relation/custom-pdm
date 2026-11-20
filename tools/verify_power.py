@@ -107,13 +107,19 @@ def reverse_battery():
     add("Reverse battery", "PROFET channels (ReverseON) with the board's RGND 47 Ohm, RIN / RDEN / RDSEL / RIS 4.7k",
         "same parts as the data sheet's reverse-polarity setup", "-VBAT(REV) 16 V for 2 min (BTS7008 P_4.1.0.5, Ch. 10)",
         "PASS", "IDI(REV) via 4.7k: 13.5 / 4.7k = 2.9 mA <= 10 mA (P_4.1.0.36); the loads run reversed")
-    add("Reverse battery", "board B freewheel diodes D13 .. D28 (BYG23M, anode GND, cathode PF_OUT) with the PROFET "
-        "conducting in reverse (ReverseON / body diode)", "forward-biased straight across the battery: about 13.5 V / "
-        "(wiring + PROFET RDS(REV) of a few mOhm) = hundreds of A", f"BYG23M IFSM {P.BYG23M['ifsm']} A (10 ms)", "FAIL",
-        "every board B output shorts the reversed battery through its diode and switch: the diodes fail (then short or "
-        "open) and the feed fuse blows. Stock dingoPDM-Max has the same 8 diodes (fe19c28). A design choice: remove the "
-        "diodes (PROFET clamp takes the inductive energy, rows below), add a reverse-polarity FET / fuse on the feed, "
-        "or accept it (fused battery, no reversed jump start)")
+    if P.FREEWHEEL["B"]:
+        add("Reverse battery", "board B freewheel diodes D13 .. D28 (BYG23M, anode GND, cathode PF_OUT) with the PROFET "
+            "conducting in reverse (ReverseON / body diode)", "forward-biased straight across the battery: about 13.5 V / "
+            "(wiring + PROFET RDS(REV) of a few mOhm) = hundreds of A", f"BYG23M IFSM {P.BYG23M['ifsm']} A (10 ms)", "FAIL",
+            "every board B output shorts the reversed battery through its diode and switch: the diodes fail (then short or "
+            "open) and the feed fuse blows (stock dingoPDM-Max the same). Removing them moves the A/C clutch / fan "
+            "turn-off into the switch clamp (run with --no-freewheel-b): a design choice, see docs/system-verification.md")
+    else:
+        add("Reverse battery", "board B outputs: freewheel diodes " + P.FREEWHEEL_FOOTPRINTS_B, "no path from GND to an "
+            "output past the load: each switch's reverse current is its load current (ReverseON channel)",
+            "BTS70012 / BTS7004 8.4.1: 'reverse current ... limited by the connected load'; -VBAT(REV) 16 V, 2 min",
+            "PASS", "the loads run reversed (fans / pumps backwards, lamps lit) until the battery is turned round; "
+            "the feed fuse sees only the sum of the load currents")
     add("Reverse battery", "input board pins at -13.5 V", f"{13.5 / 4.7e3 * 1e3:.1f} mA into the BAT54S low diode",
         "BAT54S IF 200 mA; STM32 pin -5 mA", "PASS", "the Schottky holds the pin near -0.3 V, above the MCU's own diode")
     add("Reverse battery", "CAN lines (transceiver unpowered)", "bus pins see the other nodes' levels",
@@ -152,15 +158,16 @@ def pin_transients():
         "inputs few and their pull-ups off, or add a +3V3 shunt clamp (hardware)")
     add("CAN pins", "short to battery at a 24 V jump start / ISO 7637-3 coupled pulses", "NUP2105 VRWM 24 V: off at 24 V",
         "MCP2562FD -58 .. +58 V DC, -150 / +100 V ISO 7637", "PASS", "NUP2105 (onsemi) on CAN_H / CAN_L (D4 A, D9 B)")
-    add("USB", "USB-C behind the box bulkhead and the Adafruit 5997 hub (enclosure v2c)", "no TVS on USB_D+ / D- / VBUS "
-        "on the boards", "ESD to the bulkhead lands on the hub's CH334F first", "WARN",
-        "the board's MCU pins have only their own HBM 2 kV protection: plug the USB only with the lid open, or add a "
-        "USB ESD array at the bulkhead side (enclosure job)")
+    add("USB", "USB-C behind the box bulkhead and the Adafruit 5997 hub (enclosure v2c)", "PESD5V0F1BL on USB_D+ and "
+        "USB_D- (both main boards, hwprotect), at the MCU end of the lines", "IEC 61000-4-2 8 kV contact (Nexperia "
+        "PESD5V0F1BL), 0.4 pF per line vs USB full speed", "PASS",
+        "VBUS has the D6 / D15 Schottky and the +5V bulk capacitors; the bulkhead side is the hub's (enclosure job)")
 
 
 def clamp_energy():
     """Single turn-off of each car load (docs/car-loads.dummy.md): board A has no freewheel diode, so the PROFET's
-    active clamp (VDS(CLAMP) >= 35 V) takes E = 1/2 L I^2 x Vcl / (Vcl - Vbat); board B's BYG23M freewheels it."""
+    active clamp (VDS(CLAMP) >= 35 V) takes E = 1/2 L I^2 x Vcl / (Vcl - Vbat); board B the same since hwprotect (its
+    BYG23M freewheel diodes are not fitted)."""
     vbat = 16.0
     for name, board, out, drv, i, (l_lo, l_hi), *_ in P.CAR_LOADS:
         d = P.PROFET[drv]
@@ -194,7 +201,10 @@ def clamp_energy():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--json")
+    ap.add_argument("--no-freewheel-b", action="store_true", help="board B without its BYG23M freewheel diodes (what-if)")
     a = ap.parse_args()
+    if a.no_freewheel_b:
+        P.FREEWHEEL["B"] = None
     rail_checks()
     bor_check()
     reverse_battery()

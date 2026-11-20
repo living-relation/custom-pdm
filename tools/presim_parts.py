@@ -136,7 +136,12 @@ CAR_LOADS = [  # name, board, out, driver, steady A, L range (H), inrush x stead
     ("Generic solenoid (boost / valve)", "A2", 5, "BTS7008-2EPA", 1.5, (10e-3, 50e-3), 1.0, 0.0, "coil"),
     ("Box fans", "A2", 2, "BTS7008-2EPA", 0.13, (1e-3, 5e-3), 3.0, 0.2, "motor"),
 ]
-FREEWHEEL = {"A1": None, "A2": None, "B": "BYG23M"}   # board B: BYG23M from GND to every PF_OUT (D13 .. D28), as stock Max
+# board B: BYG23M from GND to every PF_OUT (D13 .. D28), as stock Max. hwprotect (2026-11-20) checked removing them
+# (Infineon PROFET+2 data sheets 8.4.1: reverse current must be limited by the load): verify_power / verify_switching
+# --no-freewheel-b show what that does to the car loads (A/C clutch and fan turn-off into the switch clamp); kept fitted
+# until the design choice is made (BACKLOG / report).
+FREEWHEEL = {"A1": None, "A2": None, "B": "BYG23M"}
+FREEWHEEL_FOOTPRINTS_B = "D13 D15 D17 D19 D25 D26 D27 D28 (DO-214AC, do not fit)"
 BYG23M = dict(src="Vishay BYG23M doc 88962 (2020-02-25)", if_av=1.5, ifsm=30.0, ifsm_t=10e-3, vf_1a=1.7, rth_ja=125.0)
 PMEG10010 = dict(src="Nexperia PMEG10010ELR", vf_100ma=0.55, vr=100)      # D19 (A) / D3 (B): +12V -> +12P (est. VF)
 PMEG2010 = dict(vf_100ma=(0.265, 0.290), vf_cold=0.38)                      # D18 / D4, docs/parts-audit.md section 9

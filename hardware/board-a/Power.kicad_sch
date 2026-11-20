@@ -3967,7 +3967,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "112-SM8S24CAHM3/ITR-ND"
+		(property "Digi-Key_PN" "SM8S24CA-QCT-ND"
 			(at 35.56 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -3978,7 +3978,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C20036943"
+		(property "LCSC" "C1976790"
 			(at 35.56 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -3989,7 +3989,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Vishay"
+		(property "Manufacturer" "Bourns"
 			(at 35.56 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -4000,7 +4000,7 @@
 				)
 			)
 		)
-		(property "MPN" "SM8S24CAHM3/I"
+		(property "MPN" "SM8S24CA-Q"
 			(at 35.56 38.1 0)
 			(hide yes)
 			(show_name no)
@@ -4011,7 +4011,7 @@
 				)
 			)
 		)
-		(property "Alternates" "Bourns SM8S24CA-Q (DK SM8S24CA-QCT-ND); Panjit SM8H24CAS-AU"
+		(property "Alternates" "Vishay SM8S24CAHM3/I (LCSC C20036943, DK 112-SM8S24CAHM3/ITR-ND); Panjit SM8H24CAS-AU"
 			(at 35.56 38.1 0)
 			(hide yes)
 			(show_name no)

@@ -70,10 +70,10 @@ ran items 1-8; DansPC WSL ran the Renode bench (Renode 1.17.0, arm-none-eabi-gcc
 | 16 V / 24 V jump start | TSR, LDO, PROFET inside their ratings | PASS |
 | Brown-out | firmware sets no BOR level; factory option byte = BOR off: 1.7-2.7 V unprotected at 144 MHz / 4 wait states | **FAIL** -> fixed (fwsafety): the firmware writes BOR level 3 once at its first start (>= 10 V battery), host sim s0 + Renode |
 | Reverse battery: logic, PROFETs, inputs, CAN | blocked / data-sheet setup / 2.9 mA / -58 V rating | PASS |
-| Reverse battery: board B freewheel diodes D13-D28 | forward across the reversed battery through the PROFET (stock Max the same) | **FAIL** |
+| Reverse battery: board B freewheel diodes D13-D28 | forward across the reversed battery through the PROFET (stock Max the same); kept fitted by hwprotect (removing them fails the A/C clutch turn-off, see below) | **FAIL** (design choice) |
 | ISO 7637-2 on an input wire | pulses 1 / 2a / 3b fine; 3a puts 216 V over a 0603 4.7k (150 V overload rating, 0.1 us) | PASS / WARN |
 | Load dump on inputs | 9.9 mA per battery-switched input into +3V3 (LDO cannot sink): up to 4 per board | WARN |
-| USB | no TVS on the boards, the hub takes the bulkhead ESD | WARN |
+| USB | PESD5V0F1BL ESD diode on USB_D+ and USB_D- (both main boards, hwprotect) | PASS |
 | Turn-off energy, board B loads (BYG23M freewheel) | 0.01-0.58 A2s vs 4.5 A2s | PASS |
 | Turn-off energy, board A: horn pair (5 A, L 5-30 mH ASSUMED) | 105-633 mJ vs EAS 75 / EAR 25 mJ | **FAIL** (needs the bench L) |
 | Turn-off energy, board A: solenoid 1.5 A, 10-50 mH | 19-95 mJ | WARN |
@@ -131,12 +131,14 @@ Field solver self-check 53.4 vs 51.3 Ohm (Hammerstad-Jensen, +4 %). CAN pairs: A
 (IPC 128 / 90): both 20 mm long, electrically short at 1 Mbit/s, so impedance does not matter: PASS. USB pairs on
 In2.Cu (stripline): short (43 mm vs 100 mm critical, `verify_layout.py`). PWM spectrum: corner 8.6-20 kHz, -40
 dB/decade: 25 A at 100 Hz is 56 dBuA at 150 kHz, 34 dBuA at 530 kHz (chamber test for the CISPR 25 limits).
-Decoupling: worst MCU loop 3.7 nH (PASS); **VDDA has no capacitor behind its ferrite (both boards, stock): WARN**.
+Decoupling: worst MCU loop 3.7 nH (PASS); VDDA 1 uF + 100 nF behind its ferrite since hwprotect (both boards; via in
+FB1 pad 2, 11-15 mm on B.Cu to the capacitors: the U4 fan-out leaves no closer site): PASS.
 
 ## 8. Manufacturing (8 PASS, 6 WARN)
 
-Via-in-pad: 53 (A), 146 (B), 27 (IN) vias in SMD pads, mostly the PROFET exposed-pad thermal vias: order JLCPCB
-epoxy-filled + capped vias (or accept voids): WARN. Copper to edge: KiCad edge_clearance 0.2 mm, no violations.
+Via-in-pad: 54 (A), 147 (B), 27 (IN) vias in SMD pads (incl. the hwprotect VDDA via in FB1), mostly the PROFET
+exposed-pad thermal vias: the fab notes now ask JLCPCB for epoxy-filled + capped vias (table row + order remark,
+`tools/gen_fab_jlcpcb.py`): PASS once ordered so. Copper to edge: KiCad edge_clearance 0.2 mm, no violations.
 Silk: 356 / 609 / 168 lines under 0.15 mm (KiCad library 0.12 mm, cosmetic): WARN. Vias 0.4 mm drill / 0.2 mm ring:
 PASS. BOM: 0 parts short at JLCPCB without an alternate; 30 of 45 types are extended parts (feeder fee). Placement:
 `verify_cpl.py` 121 / 186 / 48 placements ok (fixed its user agent: easyeda.com refused 'Mozilla/5.0'). 3D: 0
@@ -169,10 +171,36 @@ failed, 60 C cabin): laminate = U6 + 9.6 .. 19.0 K, Tj = U6 + 1.7 .. 19.8 K.
 ## Left for the coordinator (real problems / design choices; data above)
 
 1. Board B MCP9808 at 96-110 C in normal use vs the stock 80 C critical (and 55 C warn): done in firmware (fwsafety:
-   98 / 104 C, table above); the board B logic area (TSR, crystal, X5R) still needs the >= 105 C grades (hardware job).
+   98 / 104 C, table above); the board B logic area: crystal and X5R caps now 125 C parts (hwprotect); the TSR still 85 C (footprint change).
 2. Board B freewheel diodes BYG23M: reverse-battery short (FAIL) and PWM of fans above about 30 Hz (FAIL): remove /
    replace with a larger diode / reverse-polarity protection on the feed; the fan presets' 100 Hz soft start.
+   hwprotect: kept fitted (removing them fails the A/C clutch turn-off); options below and parts-audit 15.4.
 3. BOR level 3: done (fwsafety: the firmware writes it once at boot).
 4. Horn / solenoids on board A outputs (no diode): measure L; move to board B or add a diode at the load.
-5. Hardware adds (stock gaps): VDDA 100 nF + 1 uF, NRST 100 nF, USB ESD array, +3V3 shunt for battery-switched inputs.
+5. Hardware adds (stock gaps): VDDA 100 nF + 1 uF, NRST 100 nF, USB ESD: done (hwprotect, below); +3V3 shunt for
+   battery-switched inputs still open.
 6. Watchdog: done (fwsafety; a reset turns all outputs off for about 0.6 s after the 1.0-2.8 s timeout).
+
+## hwprotect follow-up (2026-11-20, branch `fix/hw-protect`; ADR-2026-11-20-presim-findings items 1, 2, 4, 5)
+
+- **Item 4 (both boards):** NRST 100 nF, VDDA 1 uF + 100 nF, one PESD5V0F1BL ESD diode per USB data line
+  (`tools/hw_protect.py`, last schematic + PCB stage; parts and sources: `docs/parts-audit.md` section 15). Placed on
+  the top side in free space; no other part moved (`tools/board_semdiff.py`). USB ESD at the MCU end of the lines
+  (the connector end has no free site).
+- **Item 1 (board B):** crystal and the five X5R capacitors are 125 C parts in the same footprints. U13 (TSR 1-2450,
+  85 C) stays: every same-footprint 5 V converter found stops at 85-90 C; a 125 C converter needs a footprint change
+  (left for the coordinator).
+- **Item 2 (board B freewheel diodes): kept fitted, design choice open.** The PROFET data sheets (8.4.1) want the
+  reverse current limited by the load, so the GND -> OUT diodes short a reversed battery. Without them every turn-off
+  goes into the switch clamp: `python tools/verify_power.py --no-freewheel-b` gives A/C clutch (B OUT6, L 50-200 mH
+  ASSUMED) 0.55-2.2 J vs BTS7004 EAS 0.15 J (FAIL), fans 0.07-0.53 J vs EAR 0.16 J (WARN); `verify_switching.py
+  --no-freewheel-b`: fan / pump PWM only to 2-7 Hz. With the diodes (as built): fan PWM safe to about 30 Hz (BYG23M
+  1.5 A). Options in `docs/parts-audit.md` 15.4.
+- **Item 5:** fab notes ask for epoxy-filled + capped vias in SMD pads (all three boards).
+- **D2:** Bourns SM8S24CA-Q is the MPN (ADR-2026-11-20-d2-mpn); Vishay / Panjit alternates. Its EasyEDA footprint
+  (C1976790) made the placement checkable: CPL rotation +180 and centre offset 1.912 mm (`gen_fab_jlcpcb.py`).
+- **Enclosure (item 7):** board STEPs re-exported from this branch (`enclosure/v2c/src/export_boards.ps1`, commit
+  5a363e2) and from main 699a8b8; enclosure v2c F1 (main's sources) built twice and checked with
+  `clearance_v2c.py`: all 144 part pairs, every pair with a board has the same minimum gap and overlap volume on both
+  (to 0.01 mm / 0.05 mm3): the new 0402 / SOD-882 parts (0.5-0.6 mm tall, top side, MCU area) touch nothing. D2 did
+  not move, so its gaps stay as measured by d2tvs (A 5.83 mm to the sink, B 2.61 mm to the carrier standoff).
