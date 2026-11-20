@@ -6,13 +6,15 @@ Results, not decisions: the choices this asks for are listed under "Left" and go
 
 ## For Dan (plain English)
 
-1. **Board A (x2) and the input board: OK to order** after today's fixes. **Board B: not yet**: its +12 V copper is too thin for every output at full rating at once (up to 20 W of heat in the copper, see the picture below); it needs one choice first (thicker copper and / or a current cap on board B).
+1. **Board A (x2) and the input board: OK to order.** **Board B: its +12 V copper is fixed in layout (hwfix, 2026-11-20)**: more copper on two inner layers and 135 extra vias; in a heat model with the heat sink, the gap pad and the lid it now stays at 123 C or less at the 150 A feed limit with the fans on (was 165 C; limit 130 C). Still above the limit only with every output at full rating at once (184 A, more than the feed allows) or at 150 A with the fans off: the firmware's 150 A cap and thermal limit cover those.
 2. **Fixed today:** the JLCPCB placement file would have put 8 parts in turned the wrong way (3.3 V regulator on A and B, 4 connectors, 2 DIP switches) and 3 part types off-centre (USB socket, 5 V module, wire connector); and the +12 V copper on the bottom of A and B came within 0.1 mm of the aluminium posts under the screws (now 0.6 mm clear).
-3. **Left (choices for the coordinator):** the input surge diode (TVS) cannot take a 35 V "suppressed" load dump from the alternator; the current-sense amplifier stops reading board A outputs a little above 7.5 A (lower when hot), so overcurrent above that is only caught by the switch chip itself.
+3. **Fixed 2026-11-20 (hwfix):** the current-sense amplifier is now rail-to-rail (TLV9004): board A reads to about 15 A, hot or cold, and every switch fault reads 3.28 V, above the firmware's 2.475 V fault level, with a 5.1 V clamp diode. **Left (coordinator):** the input surge diode: the part that survives the alternator's 35 V load dump (SM8S24CA, a larger package) does not fit where the diode sits now without moving it (or two parts next to it).
 4. Everything else passed: rule checks (KiCad, JLCPCB limits, holes), output copper (2-5 mV drop per output), 3.3 V start-up, CAN, USB, inputs.
 5. Not checkable here: Fusion's own ERC / DRC (the Fusion MCP add-in was not connected on DansPC today); KiCad + JLCPCB-rule checks cover the same rules.
 
 ![board B current and copper heating](diagrams/pcbverify-current-board-b.png)
+
+![board B heat with the sink, 150 A, after the fix](diagrams/thermal-board-b-feed150lo-fans.png)
 
 ## Tools and how to re-run
 
@@ -22,12 +24,14 @@ Results, not decisions: the choices this asks for are listed under "Left" and go
 | `tools/gen_fab_jlcpcb.py` | DRC with JLCPCB's limits only, drilled-hole overlap check, zone refill check, fab outputs | KiCad 9 python: `python tools/gen_fab_jlcpcb.py` -> `hardware/fab/*/jlcpcb-drc.txt` |
 | `tools/verify_copper.py` (new) | DC current density, IR drop, I^2R, via currents, copper self-heating, on the real copper polygons (finite-volume network, 0.1 mm cells, 0.2 mm for the feed; grid-checked 0.1 / 0.15 / 0.2 / 0.3 mm: loss within 0.7 %) | KiCad 9 python + scipy: `python tools/verify_copper.py A B [--outer-um 35 --inner-um 17.5] [--plots docs/diagrams]` |
 | `tools/verify_spice.py` (new) | ngspice: current sense -> ADC, TVS vs ISO 7637-2 / ISO 16750-2, 3V3 start-up, input board, CAN termination | `python3 tools/verify_spice.py` (Linux / cloud: ngspice 42; DansPC needs an ngspice build, none installed) |
+| `tools/thermal_board_b.py` (hwfix) | board B steady heat on the real copper of all 4 layers + vias: driver and copper I^2R (hot-copper rho), joints, gap pad on the sink pedestals, 4 mm air gap, lid air, J1 terminal + BATT bar; sink temperature from the enclosure model (`docs/enclosure-v2c.md` 4); grid-checked 0.3 / 0.25 mm: 0.2 K | KiCad 9 python + scipy: `python tools/thermal_board_b.py [--case ...] [--air fans|nofan] [--kpad 3] [--res 0.3]` |
+| `tools/board_semdiff.py` (hwfix) | content diff of a rebuilt board against main: footprints / pads / nets, tracks and vias, zones | `python tools/board_semdiff.py <old> <new>` |
 | `tools/verify_layout.py` (new) | CAN / USB pairs, crystal, I2C rise time, decoupling distance, metal at mounting holes, solid joints on power pads, mask dams, fiducials, board B vs stock | KiCad 9 python: `python tools/verify_layout.py --stock-b <stock dingoPDM-Max.kicad_pcb>` |
 | `tools/verify_cpl.py` (new) | the "JLC preview" check: every placed part's LCSC footprint (JLCEDA / EasyEDA official library, https://easyeda.com, https://lceda.cn) turned by the CPL rotation must land on our pads | `python tools/verify_cpl.py` (needs easyeda.com; it answers 403 from DansPC, works from the cloud session) |
 
 Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB default order (1 oz outer finished about 35 um, 0.5 oz inner) is run as well (`--outer-um 35 --inner-um 17.5`). Copper weight is Dan's choice (not set by agents).
 
-## Board A (dingoPDM v7.5 based, built twice): 17 PASS, 2 FAIL, 3 WARN, 1 not checkable, 1 info (rows)
+## Board A (dingoPDM v7.5 based, built twice): 18 PASS, 1 FAIL (TVS), 3 WARN, 1 not checkable, 1 info (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -39,10 +43,10 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 | PF_OUT1-8, 7.5 A each | verify_copper | drop 2.0-2.6 mV, 15-20 mW each, peak 4.4 A/mm at the driver pins; 1 oz: 2.4-3.1 mV. PASS | `verify_copper.py A` | none |
 | +12V feed, 60 A (8 x 7.5 A) | verify_copper | J1 to the farthest driver 41 mV (1 oz: 50 mV), I^2R 2.2 W (1 oz: 2.7 W); hot spot 8.5 K over the board mean (1 oz: 11.7 K, limit 10 K, no-sink model). PASS (1 oz: marginal) | same | add the copper I^2R to the heat model (below) |
 | Vias | verify_copper | worst 2.05 A in one +12V via at U13; barrel self-heating < 0.2 K (fin model); 1 via over the long-trace IPC-2221 chart. PASS | same | none |
-| Current sense -> ADC, BTS7008 | verify_spice | reading clips at 8.2 A (25 C) / 5.9 A (-40..125 C): the LM2902 follower on 3.3 V cannot take more than VCC-1.5 V (25 C) / VCC-2 V (TI SLOS066 6.8). Overcurrent above that is seen as "8.2 A" (or 5.9 A hot), and the firmware's full-scale fault check (`PROFET_IS_FULL_SCALE` 4054 counts) can never trigger (output tops out near 2230 counts). Stock dingoPDM has the same LM324 on 3.3 V. FAIL | `verify_spice.py` (is_*) | Left 3 |
-| kILIS constant | verify_spice | firmware 5950 vs data-sheet 5450 typ (+-4 %): readings 9.2 % high (stock constant; trips early, the safe side). PASS | same, docs/parts-audit.md | none |
-| IS fault 15 mA into the chain | verify_spice | zener holds 3.29 V, ADC pin 1.80 V (<= 3.6 V). PASS | same | none |
-| TVS D2 5.0SMDJ24CA | verify_spice | pulse 2a 33.5-34.9 V (<= 35 V VBAT(LD)) PASS; 3a / 3b absorbed by the caps PASS; pulse 1 clamps at -29.6 / -31.9 V vs the static reverse rating -16 V WARN; ISO 16750-2 load dump B (central clamp 35 V, Ri 0.5-4 Ohm, 400 ms): the TVS starts at 26.7-29.5 V so it soaks up 12-123 J vs about 7 J rated (5 kW, 10/1000 us). FAIL | same (tvs_*) | Left 2 |
+| Current sense -> ADC, BTS7008 | verify_spice | was FAIL (LM2902: clips at 8.2 A at 25 C / 5.9 A hot). FIXED 2026-11-20: TLV9004IPWR (rail-to-rail) + PDZ5.1B clamp: reading 5 % low only from 15.7 A (rating 7.5 A), at -40 / 25 / 125 C and in both zener corners; at rating 1.651 V, 0.823 V under the firmware fault level 2.475 V (PROFET_IS_FULL_SCALE 3071, reached at 11.2 A = 1.50 x rating); a fault (IIS(FAULT) 4.4 mA min) reads 3.280 V (4070 counts), +0.805 V over the level, at every corner. PASS | `verify_spice.py` (is_*) | done (docs/parts-audit.md 14.1 / 14.2) |
+| kILIS constant | verify_spice | firmware 5450 = data-sheet typical (+-4 %; PR #112, was 5950): reading at rating +0.0 %. PASS | same, docs/parts-audit.md | none |
+| IS saturation 15 mA into the chain | verify_spice | PDZ5.1B holds 5.14-5.19 V; TLV9004 input current 0.25-0.34 mA (abs max 10 mA, its input diodes); ADC pin 3.28 V (<= 3.6 V), -40 / 25 / 125 C. PASS | same | none |
+| TVS D2 5.0SMDJ24CA | verify_spice | pulse 2a 33.5-34.9 V (<= 35 V VBAT(LD)) PASS; 3a / 3b absorbed by the caps PASS; pulse 1 -29.6 / -31.9 V vs the static reverse rating -16 V WARN (GND-VS breakdown then up to 0.29-0.34 A through the fitted RGND 47R for the 2 ms; no pulse rating in the data sheets); ISO 16750-2 load dump B (35 V, Ri 0.5 / 2 / 4 Ohm, 400 ms): 12-123 J vs about 7 J FAIL. Candidates (`--tvs`): SM8S24CA (DO-218AB) PASS everywhere except pulse 1 WARN (load dump 31-327 W vs 622 W derated rating, 2a 32.4-34.0 V); 5.0SMDJ33CA (DO-214AB, Infineon's DZ2) stays off in the load dump but clamps 2a at 44-46 V FAIL | same (tvs_*) | Left 2: SM8S24CA does not fit at D2 (parts-audit 14.3) |
 | 3V3 start-up | verify_spice | monotonic, max 3.298 V, 3.0 V at 1.96 ms. PASS | same | none |
 | CAN pair | verify_layout | 21.5 / 19.9 mm, electrically short (critical 1.2 m at 1 Mbit/s); termination stub 2.9 mm; jumper JP3 open. PASS | `verify_layout.py` | keep every PDM CAN_TERM jumper open (SPICE: a third 120R drops the dominant level to 1.38 V < 1.5 V) |
 | USB pair | verify_layout | 42.8 / 43.2 mm, short for full speed (critical 100 mm). PASS | same | none |
@@ -56,7 +60,7 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 | Fiducials | verify_layout | none; JLCPCB adds rails with fiducials and tooling holes when it panelises. INFO | same | none |
 | CPL polarity / rotation | verify_cpl | was 2 FAIL: U2 SOT-223 (TLV1117LV, C15578) turned 90 deg, J6 JST GH turned 180 deg; centre offsets J5 USB-C 3.7 mm, U15 TSR 2.5 mm. FIXED in `gen_fab_jlcpcb.py` (rotation table checked part by part, new OFFSETS). Now 121 of 121 placements land on their pads. PASS | `verify_cpl.py`; `board-a-cpl-jlcpcb.csv` | done |
 
-## Board B (dingoPDM-Max based): 11 PASS, 2 FAIL, 1 WARN, 1 not checkable, 1 info (rows)
+## Board B (dingoPDM-Max based): 12 PASS, 1 FAIL (TVS), 1 WARN, 1 not checkable, 1 info (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -67,10 +71,10 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 | Fusion ERC / DRC | Fusion MCP | not checkable (add-in not connected) | - | re-run when Fusion is up |
 | PF_OUT1-4, 31 A each | verify_copper | 2.1 mV, 65 mW each, 23 vias each, worst via 1.5 A. PASS | `verify_copper.py B` | none |
 | PF_OUT5-8, 15 A each | verify_copper | 4.8 mV, 72 mW each (F.Cu carries it: the inner / bottom pours of these nets have no vias at the driver, only the terminal holes join them). PASS | same | none |
-| +12V feed, all outputs at rating (184 A) | verify_copper | only B.Cu carries +12V: 143 mV J1 -> U26 (1 oz: 175 mV), **I^2R 19.9 W** (1 oz: 24.4 W; 2 oz outer: 12.5 W); hot spot 106 K over the board mean at (-18, 18.6), between J1 and the BTS70012 pair (no-sink model). At the 150 A box feed limit: about 13 W / 116 mV. Stock dingoPDM-Max with the same 4 x 31 A: 7.9 W / 81 mV (same weakness; our board equals it, the BTS7004 rail adds 60 A over 80 mm). +12V on the free In2.Cu layer only cuts it to 18.4 W (tried). FAIL | same; `--path` stock run | Left 1 |
+| +12V feed | verify_copper / thermal_board_b | was FAIL (B.Cu only: 184 A 143 mV / 19.9 W, 150 A 117 mV / 13.3 W; in the sink model 163-165 C at 150 A, limit 130 C). FIXED 2026-11-20 by `tools/pcb_feed_board_b.py` (In2 +12V pour over the board, In1 +12V band over the J1 corridor with GND channels for D14 / D16, B.Cu +12V edge moved into the +3V3 pour, 135 stitching vias; no part moved): 150 A 82 mV / 9.1 W, 184 A 99.9 mV / 13.6 W (20 C copper; verify_copper's no-sink screen: hot spot 59 K over the board mean, was 106 K, screen 10 K: the sink model below is the judge); worst via 4.5 A (fin limit 22 A). Heat model, fans on, gap pad k 3: 150 A laminate max 122.7-124.3 C (3 splits), Tj max 110.5-121.0 C; car load (118 A, car-loads.dummy.md) 109.9 C / Tj 114.2 C. PASS at the 150 A feed limit. Every output at rating (184 A): 157.5 C FAIL (above the feed limit: firmware cap). Fans off (wall): 150 A 138.6-140.1 C FAIL, car load 120.7 C PASS; gap pad k 1 instead of the decided k >= 3 (b3a): 137.4 C FAIL | `thermal_board_b.py --res 0.3` (`--air nofan`) | firmware keeps the 150 A cap; fans-off full load needs the thermal limit (e3c) |
 | Vias | verify_copper | worst 4.9 A in a via under a BTS70012 pad (the EP via array carries 31 A); barrel self-heating 0.5 K (fin model); 28 over the long-trace chart. PASS | same | none |
-| Current sense -> ADC | verify_spice | BTS70012 clips at 50.5 / 36.5 A (rating 31 A) PASS; BTS7004 30 / 21.6 A (15 A) PASS; kILIS fw 35000 vs 33700 typ (+3.9 %) and 20000 vs 20000. PASS | `verify_spice.py` | none |
-| TVS D2 | verify_spice | as board A: load dump B FAIL, pulse 1 WARN | same | Left 2 |
+| Current sense -> ADC | verify_spice | TLV9004 + PDZ5.1B: BTS70012 reads to 97 A (5 % low; rating 31 A), BTS7004 to 57.5 A (15 A), -40..125 C, both zener corners; at rating 1.104 / 0.900 V, 1.371 / 1.575 V under the 2.475 V fault level (reached at 69.5 / 41.2 A); faults read 3.280 V (+0.805 V); kILIS fw 33700 / 20000 = typical (PR #112). PASS | `verify_spice.py` | none |
+| TVS D2 | verify_spice | as board A: load dump B FAIL, pulse 1 WARN; SM8S24CA passes but does not fit (same D2 spot as A) | same | Left 2 |
 | 3V3 start-up, CAN, USB, crystal, I2C, decoupling | verify_spice / verify_layout | as board A: start-up, CAN (stub 15.8 mm), USB PASS; crystal keep-out, I2C 10k, no cap at U3 VDD, U22 op-amp cap 8.5 mm WARN | same | Left 5 |
 | Metal at mounting holes H1-H6 | verify_layout | FIXED (keep-out stage): +12V +0.61 mm from the sink post, +3V3 +0.23 mm at H1. PASS | same | done |
 | Power pads, mask dams, fiducials | verify_layout | 0 / 0 / none (INFO). PASS | same | none |
@@ -96,12 +100,12 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 
 ## Left (for the coordinator; technical choices, data above)
 
-1. **Board B +12V copper** (FAIL): 20 W of copper loss at full rating, 13 W at the 150 A feed, is as much heat as all board B drivers (16.7 W, `docs/enclosure-layout.md` 4.3) and is not in the heat model. Options: a) 2 oz outer copper (Dan's call: about 12.5 W at full rating, 8 W at 150 A); b) a firmware power cap for board B (e.g. 100 A total -> about 6 W); c) a second +12V feed point near the BTS7004 rail (new terminal: changes the enclosure, needs the enclosure job). Board A at 1 oz is marginal (hot spot 11.7 K in the no-sink model).
-2. **TVS 5.0SMDJ24CA vs suppressed load dump** (FAIL): with the car's central clamp at 35 V the TVS (VBR 26.7-29.5 V) absorbs 12-123 J for up to 400 ms; it is rated about 7 J. A load-dump-rated TVS (e.g. Vishay SM8S24A, DO-218AB: different footprint, so a pad change: enclosure job first) or a part with VBR above 35 V (then pulse 2a clamps above 35 V) is a design choice.
-3. **Current-sense buffer** (FAIL on board A): LM2902 on 3.3 V clips at VCC-1.5 / -2 V. A rail-to-rail-input quad op-amp in the same TSSOP-14 LM324 pinout (e.g. TI TLV9004IPWR, -40..125 C) reads to about 3.3 V, so board A reads up to about 15 A (hot too) and the firmware's full-scale fault check starts working. Same footprint; it replaces the LM2902 picked in t1a (2026-11-14) for its temperature range, which TLV9004 keeps.
+1. ~~Board B +12V copper~~ FIXED in layout 2026-11-20 (ADR-2026-11-20-boardb-feed, hwfix): see the +12V feed row; copper weight unchanged. Open: the 150 A firmware cap must stay; with the fans off a full 150 A load runs the corridor to about 140 C (thermal limit e3c).
+2. **TVS D2 vs suppressed load dump** (FAIL, open): the part that passes is Vishay SM8S24CAHM3/I (DO-218AB, bidirectional, AEC-Q101; SPICE above; docs/parts-audit.md 14.3). It does not fit at D2 (7.6 mm free across, needs about 11.5 mm): either D2 moves to a free spot (A about (24.9, -12.5 .. 8.5), B about (36-39, -14 .. -9)) with new copper to +12V / GND, or C2 / J1 move; it is about 5 mm tall (lid). Not changed: a footprint / part move needs the coordinator and the enclosure job first. Infineon's own 33 V TVS (5.0SMDJ33CA, same footprint) avoids the load-dump energy but lets pulse 2a reach 44-46 V.
+3. ~~Current-sense buffer~~ FIXED 2026-11-20 (ADR-2026-11-20-is-buffer): TLV9004IPWR; the IS clamp zeners are PDZ5.1B (a PDZ3.3B at its data-sheet limits holds a fault at 2.31 V when hot, under the 2.475 V fault level).
 4. Input board current into +3V3 while the board sleeps with inputs high (WARN): check against the sleep current, or a 3.6 V clamp / bleed on +3V3.
 5. Small, stock-inherited: no 100 nF at the CAN transceiver VDD (MCP2562FD data sheet asks for one); I2C pull-ups 10k at 400 kHz are at the 300 ns edge (4.7k would give about 150 ns).
 
 ## Copper loss for the heat model
 
-`docs/heat-analysis.md` counts only the driver losses (31.1 W worst case). The copper adds, at every output at its rating, 2 x 2.2 W (A1, A2) + 19.9 W (B) + output pours 0.13 W (A) / 0.55 W (B): about 25 W more (stackup copper; 31 W with 1 oz). At the 150 A feed limit it is about 0.24 x that (I^2), about 6-13 W depending on how the 150 A splits.
+`docs/heat-analysis.md` counts only the driver losses (31.1 W worst case). The copper adds, at every output at its rating, 2 x 2.2 W (A1, A2) + 13.6 W (B since the 2026-11-20 feed fix; 19.9 W before) + output pours 0.13 W (A) / 0.55 W (B): about 19 W more (25 W before the board B fix; stackup copper). At the 150 A feed limit it is about 0.24 x that (I^2), about 6-13 W depending on how the 150 A splits.

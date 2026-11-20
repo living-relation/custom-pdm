@@ -1977,7 +1977,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 139.065 52.2511 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1998,7 +1998,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 140.335 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -2020,7 +2020,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 139.065 58.42 0)
 			(hide yes)
 			(show_name no)
@@ -2031,7 +2031,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 139.065 58.42 0)
 			(hide yes)
 			(show_name no)
@@ -2053,7 +2053,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 139.065 58.42 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 139.065 58.42 0)
 			(hide yes)
 			(show_name no)
@@ -2202,7 +2213,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "41cd471b-ff4b-4267-8933-f187962a1a9e")
+		(uuid "98a9c122-d21f-4bec-b7cd-149f7a7b59ff")
 		(property "Reference" "#PWR061"
 			(at 87.63 86.3600 0)
 			(hide yes)
@@ -2258,7 +2269,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "8aeed517-77bc-4c0e-b009-efacc29eac1e")
+			(uuid "7d88fb86-ffa4-4bf3-b8b6-1c9b4ec7b4fe")
 		)
 		(instances
 			(project "DingoPDM"
@@ -2290,7 +2301,7 @@
 				)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 139.7 76.3811 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2311,7 +2322,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 140.97 77.47 0)
 			(hide yes)
 			(show_name no)
@@ -2333,7 +2344,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 139.7 82.55 0)
 			(hide yes)
 			(show_name no)
@@ -2344,7 +2355,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 139.7 82.55 0)
 			(hide yes)
 			(show_name no)
@@ -2366,7 +2377,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 139.7 82.55 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 139.7 82.55 0)
 			(hide yes)
 			(show_name no)
@@ -2451,7 +2473,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "LM2902PWR"
+		(property "Value" "TLV9004IPWR"
 			(at 233.045 41.2823 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2473,7 +2495,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lm2902.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
 			(at 236.22 34.925 0)
 			(hide yes)
 			(show_name no)
@@ -2495,7 +2517,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "296-6600-1-ND"
+		(property "Digi-Key_PN" "296-51827-1-ND"
 			(at 234.95 40.005 0)
 			(hide yes)
 			(show_name no)
@@ -2506,7 +2528,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C46864"
+		(property "LCSC" "C2058050"
 			(at 234.95 40.005 0)
 			(hide yes)
 			(show_name no)
@@ -2528,7 +2550,18 @@
 				)
 			)
 		)
-		(property "MPN" "LM2902PWR"
+		(property "MPN" "TLV9004IPWR"
+			(at 234.95 40.005 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
 			(at 234.95 40.005 0)
 			(hide yes)
 			(show_name no)
@@ -2805,7 +2838,7 @@
 		)
 		(pin "DSEL" input
 			(at 66.04 58.42 180)
-			(uuid "7058d2e1-7504-4d13-97de-a342eb01171f")
+			(uuid "d4bbb499-4cbc-4ebf-98f9-2c1d60a4dd66")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2815,7 +2848,7 @@
 		)
 		(pin "IN1" input
 			(at 66.04 62.23 180)
-			(uuid "bccddf44-aae2-4dfe-932f-c5c0b805c42e")
+			(uuid "07fcc266-db37-4740-9eab-654986648b46")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2825,7 +2858,7 @@
 		)
 		(pin "OUT1" output
 			(at 87.63 60.96 0)
-			(uuid "ea8d2e1b-e393-459c-8b1c-fe50e55a6950")
+			(uuid "d8593155-2649-45ed-b8eb-404746d0e420")
 			(effects
 				(font
 					(size 1.27 1.27)
