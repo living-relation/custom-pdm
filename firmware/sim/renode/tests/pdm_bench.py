@@ -130,7 +130,9 @@ class pdm_bench:
     def no_board_is_in_fatal_error(s):
         f = {k: s._fatal(k) for k in BASE}; st = {k: s._status(k, (0,)) for k in BASE}
         batt = {k: st[k].batt() for k in BASE}
-        s._check(not any(f.values()) and all(b is not None and abs(b - s.vbat) < 0.3 for b in batt.values()), f'fatal {f}, battery volts in status {batt}')
+        why = {k: dict(leds=(s._pin(k, 'PC0'), s._pin(k, 'PC1')), state=st[k].dev_state(), last=s._info(k), bor=s._fl(k, 'BorLevelBits'),
+                       writes=s._fl(k, 'ProgramCount'), wdg=(s._wd(k, 'Running'), s._wd(k, 'Resets'))) for k in BASE}
+        s._check(not any(f.values()) and all(b is not None and abs(b - s.vbat) < 0.3 for b in batt.values()), f'fatal {f}, battery volts in status {batt}; {why}')
 
     def fresh_boards_wrote_default_config_to_fram(s):
         w = {k: s._fram_written(k) for k in BASE}; s.fram_w = w
