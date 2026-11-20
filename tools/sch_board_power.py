@@ -15,6 +15,14 @@ footprint change.
          pinout (TI SLOS066AE Figure 5-1 / Table 5-1 covers both), TA -40 to 125 C (6.3). Every placed unit of each
          symbol is changed, on the sheets the board's hierarchy uses (board B's MedCurrentDrivers.kicad_sch is not
          in the hierarchy and is left alone).
+  * ADR-2026-11-20-is-buffer (supersedes t1a's part): the sense buffers become TI TLV9004IPWR, rail-to-rail in and
+         out on the 3.3 V rail (the LM2902 input range stops at VCC-1.5 / -2 V and clipped board A's readings below
+         the 7.5 A limit when hot, docs/pcb-verification.md). Same TSSOP-14 pinout, checked pin by pin: TI SBOS833R
+         Table 6-5 (TLV9004 PW: 1 OUT1, 2 IN1-, 3 IN1+, 4 V+, 5 IN2+, 6 IN2-, 7 OUT2, 8 OUT3, 9 IN3-, 10 IN3+, 11 V-,
+         12 IN4+, 13 IN4-, 14 OUT4) = TI SLOS066AE Table 5-1 (LM2902 PW) = the LM324 symbol's pin numbers; TA -40 to
+         125 C (SBOS833R 7.3). The symbol stays the generic Amplifier_Operational:LM324 quad (KiCad 9 / 10 libraries
+         have TLV9004 only as TLV9004xRUCR, the X2QFN pin numbering); Value / MPN / LCSC / Digi-Key / Datasheet carry
+         the part.
 The PCB side (values, fields, DNP / BOM / position attributes) is tools/pcb_board_power.py.
 Safe to re-run: a symbol already carrying the new data is left alone.
 """
@@ -33,8 +41,8 @@ PARTS = {"U4": ("MCU.kicad_sch", "C69336", MCU), "U2": ("Power.kicad_sch", "C358
 LED = {"A": "D3", "B": "D5"}[BOARD]
 DNP = {LED: ("Power.kicad_sch", "C2899888"), "R3": ("Power.kicad_sch", "C229076")}   # green LED, 120 ohm
 # t1a: op-amp part, its old LCSC, the refs and the sheets that hold their units (all units of a ref get the new data)
-OPAMP = ("LM2902PWR", "C46864", "296-6600-1-ND", "Texas Instruments", "LM2902PWR",
-         "https://www.ti.com/lit/ds/symlink/lm2902.pdf")
+OPAMP = ("TLV9004IPWR", "C2058050", "296-51827-1-ND", "Texas Instruments", "TLV9004IPWR",
+         "https://www.ti.com/lit/ds/symlink/tlv9004.pdf")      # ADR-2026-11-20-is-buffer (was LM2902PWR, C46864)
 OPAMP_OLD_LCSC = "C7942"                                 # TI LM324PWR
 OPAMP_UNITS = {"A": {"U7": 4, "U12": 3}, "B": {"U7": 5, "U22": 5}}[BOARD]   # units placed today (A: U7 unit 1 and
 OPAMP_REFS = set(OPAMP_UNITS)                                                # U12 units 1 / 2 are not placed)
@@ -164,7 +172,7 @@ for sheet in OPAMP_SHEETS:
         ref = refs.pop()
         units[ref] += 1
         if get_prop(b, "LCSC") != OPAMP[1]:
-            if get_prop(b, "LCSC") != OPAMP_OLD_LCSC:
+            if get_prop(b, "LCSC") not in (OPAMP_OLD_LCSC, "C46864"):     # baseline LM324PWR, or t1a's LM2902PWR
                 raise SystemExit(f"{ref}: LCSC is {get_prop(b, 'LCSC')}, expected {OPAMP_OLD_LCSC} (or {OPAMP[1]})")
             for name, v in zip(("Value", "LCSC", "Digi-Key_PN", "Manufacturer", "MPN", "Datasheet"), OPAMP):
                 b = set_prop(b, name, v)

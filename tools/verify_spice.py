@@ -7,11 +7,11 @@ usage (repo root): python tools/verify_spice.py [--ngspice PATH] [--keep DIR]
 Part values are the ones on the boards (netlists exported from hardware/*; checked against them in
 docs/pcb-verification.md). Models are behavioural, built from data-sheet limits, so each result says which limit
 it rests on:
-  - LM2902 (TI SLOS066, section 6.8): input common-mode range 0 to VCC-1.5 V at 25 C, 0 to VCC-2 V over -40..125 C;
-    the follower output cannot go higher than its input range allows -> modelled as a clamp at that level.
-  - PDZ3.3B zener (Nexperia): BV 3.3 V; BAT54S (Nexperia): Schottky, IS 2e-7 A at 25 C doubling every 10 K.
-  - 5.0SMDJ24CA TVS (Littelfuse): VBR 26.7 min / 29.5 max at 1 mA, VC 38.9 V at IPP 128.5 A (10/1000 us),
-    bidirectional -> two diodes, dynamic resistance (38.9 - VBR) / 128.5 A.
+  - Sense buffer: TLV9004 (fitted since ADR-2026-11-20-is-buffer; TI SBOS833R) rail-to-rail, or LM2902 (--opamp
+    LM2902, the part before; TI SLOS066 6.8: input range to VCC-1.5 V at 25 C / VCC-2 V hot) -> clamp at that level.
+  - PDZ3.3B zener (Nexperia PDZ-B series): two corners, see ZENERS; BAT54S (Nexperia): Schottky, IS 2e-7 A at 25 C
+    doubling every 10 K.
+  - TVS parts in TVS (bidirectional -> two diodes, dynamic resistance (VC - VBR) / IPP); --tvs picks the part(s).
   - Sense ratios kILIS from docs/parts-audit.md (Infineon tables) vs the firmware constants (port.h).
   - Surges: ISO 7637-2 (12 V, highest test levels: pulse 1 -150 V / 10 Ohm / 2 ms, 2a +112 V / 2 Ohm / 50 us,
     3a -220 V / 50 Ohm / 0.1 us, 3b +150 V / 50 Ohm / 0.1 us) and ISO 16750-2 load dump test B (suppressed,
@@ -20,6 +20,7 @@ it rests on:
 Exit code 1 on any FAIL.
 """
 import argparse
+import math
 import os
 import re
 import shutil
@@ -57,93 +58,190 @@ DRIVERS = [  # name, rating A, kILIS datasheet (parts-audit), kILIS firmware (po
     ("BTS7004-1EPP (board B OUT5-8, 15 A)", 15.0, 20000, 20000),
     ("BTS70012-1ESP (board B OUT1-4, 31 A)", 31.0, 33700, 35000),
 ]
+# IS current limits, all three PROFET +2 12V data sheets: IIS(FAULT) 4.4 min / 5.5 typ / 10 max mA (BTS7008 P_9.6.0.x,
+# BTS7004 / BTS70012 P_9.6.4.1); IIS(SAT) 4.4 min / 15 max mA (BTS7008 P_9.6.0.13).
+IIS_FAULT_MIN, IIS_SAT_MIN, IIS_SAT_MAX = 4.4e-3, 4.4e-3, 15e-3
+FULL_SCALE = 4054          # firmware PROFET_IS_FULL_SCALE (counts of 4095 at VDDA = +3V3)
+# Sense buffer (U7 / U12 on A, U7 / U22 on B), unity-gain follower on +3V3:
+#   LM2902 (TI SLOS066, 6.8): input common-mode 0 .. VCC-1.5 V (25 C) / VCC-2 V (-40..125 C) -> output clamp there.
+#   TLV9004 (TI SBOS833R, 7.5 / 7.1): rail-to-rail in ((V-)-0.1 .. (V+)+0.1 V) and out (swing from rail 20 mV max at
+#   RL 10 k, VS 5.5 V; here the DC load is the 120R + ADC pin, so 20 mV is conservative); inputs diode-clamped to the
+#   rails, 10 mA abs max; TA -40..125 C.
+OPAMPS = {"LM2902": {"25": 1.5, "-40": 2.0, "125": 2.0}, "TLV9004": {"25": 0.02, "-40": 0.02, "125": 0.02}}
+# PDZ3.3B zener (Nexperia PDZ-B series data sheet, Table 1 / 2): VZ 3.32 .. 3.53 V at IZ 5 mA, rdif <= 95 Ohm at 5 mA
+# and <= 1000 Ohm at 0.5 mA, IR <= 5 uA at VR 1 V, SZ -2.4 mV/K (typ, 5 mA). Two corners:
+#   sharp  = VZ max, a hard knee (the PR #109 model): the best case for the clamp level;
+#   limit  = VZ min and the softest knee the data sheet allows: an exponential through (5 mA, 3.32 V) and (5 uA, 1 V)
+#            (rdif 67 Ohm at 5 mA, 672 Ohm at 0.5 mA: inside both rdif limits), the worst case for leakage.
+ZENERS = {"sharp": dict(bv=3.53, nvt=1.5 * 0.025865), "limit": dict(bv=3.32, nvt=(3.32 - 1.0) / math.log(1000))}
+TEMPS = (-40, 25, 125)
 
 
-def is_chain(keep):
+def zener_model(corner, temp=25):
+    """Reverse branch of the zener at node n1 as a behavioural current: 5 mA at VZ(T), exponential knee."""
+    z = ZENERS[corner]
+    bv = z["bv"] - 2.4e-3 * (temp - 25)
+    return f"Bz n1 0 I = 5m*exp(min((V(n1)-{bv:.4f})/{z['nvt']:.4f}, 40)) - 5m*exp(-{bv:.4f}/{z['nvt']:.4f})"
+
+
+def opamp_line(opamp, temp):
+    clip = OPAMPS[opamp]["25" if temp == 25 else str(temp) if str(temp) in OPAMPS[opamp] else "125"]
+    if opamp == "TLV9004":     # rail-to-rail: follows its input to 20 mV from either rail
+        return f"Bop opo 0 V = min(max(V(inp), 0.02), 3.3-{clip})", clip
+    return f"Bop opo 0 V = min(V(inp), 3.3-{clip})", clip
+
+
+def is_chain(keep, opamp):
     for name, rating, k_ds, k_fw in DRIVERS:
-        for temp, clip in (("25 C", 1.5), ("-40..125 C", 2.0)):
-            tag = re.sub(r"\W+", "_", name.split()[0] + temp)
-            deck = f"""* IS chain: IS -> 1.2k (1 %) -> 4.7k -> PDZ3.3B -> 4.7k / 220p -> LM2902 follower -> 120R -> ADC
-.param kilis={k_ds} vcc=3.3 clip={clip}
-Iis 0 is {{I(Vload)/kilis}}
+        short = name.split()[0]
+        for zc in ZENERS:
+            for temp in TEMPS:
+                tag = re.sub(r"\W+", "_", f"{short}_{opamp}_{zc}_{temp}")
+                op, clip = opamp_line(opamp, temp)
+                imax = IIS_SAT_MIN * k_ds          # the PROFET IS output saturates here (IIS(SAT) min)
+                deck = f"""* IS chain: IS -> 1.2k (1 %) -> 4.7k -> PDZ3.3B -> 4.7k / 220p -> {opamp} follower -> 120R -> ADC
+.temp {temp}
+Bis 0 is I = min(V(ld)/{k_ds}, {IIS_SAT_MIN})
 Vload ld 0 0
-Rld ld 0 1
 Rs is 0 1.2k
 R1 is n1 4.7k
-Dz 0 n1 dz
 R2 n1 inp 4.7k
 C1 inp 0 220p
-Bop opo 0 V = min(V(inp), vcc-clip)
+{op}
 R3 opo adc 120
 Cadc adc 0 10p
-.model dz D(BV=3.3 IBV=5m IS=1e-12 N=1.5 RS=10)
+{zener_model(zc, temp)}
 .control
-dc Vload 0 {rating * 2} 0.05
-let ifw = v(adc)/1200*{k_fw}
-let iload = v(ld)
-meas dc clip_a when v(adc)={3.3 - clip - 0.002:.3f} rise=1
+dc Vload 0 {imax:.3f} {imax / 2000:.5f}
+let ideal = v(ld)/{k_ds}*1200
+let ratio = v(adc)/(ideal + 1e-6)
+meas dc clip_a when ratio=0.95 fall=1
 meas dc vadc_rated find v(adc) at={rating}
-meas dc ifw_rated find ifw at={rating}
+meas dc vadc_top max v(adc)
 .endc
 .end
 """
-            # current source driven by the swept voltage (1 Ohm -> I = V)
-            deck = deck.replace("Iis 0 is {I(Vload)/kilis}", "Bis 0 is I = V(ld)/kilis")
-            try:
                 m = ngspice(deck, "is_" + tag, keep)
-            except SystemExit:
-                raise
-            clip_a = m.get("clip_a", 2 * rating)
-            err = (m["ifw_rated"] / rating - 1) * 100
-            ok = clip_a >= rating * 1.1
-            add("IS -> ADC", f"{name}, {temp}: reading clips at", f"{clip_a:.1f} A", f">= 1.1 x {rating} A", ok,
-                f"ADC {m['vadc_rated']:.3f} V at rating; LM2902 input limit VCC-{clip} V")
-            if temp == "25 C":
-                add("IS -> ADC", f"{name}: firmware reading at rating (kILIS fw {k_fw} vs typ {k_ds})",
-                    f"{m['ifw_rated']:.2f} A ({err:+.1f} %)", "within +-10 %", abs(err) <= 10,
-                    "datasheet kILIS tolerance about +-4-5 % on top; 1 % sense resistor")
-    # fault current: IS saturates at up to 15 mA (BTS7008 IIS(SAT) max): ADC pin must stay <= 3.6 V
-    deck = """* IS fault: 15 mA into the chain
-Iis 0 is 15m
+                clip_a = m.get("clip_a", imax)
+                ok = clip_a >= rating * 1.1
+                err = (m["vadc_rated"] / (rating / k_ds * 1200) - 1) * 100
+                add("IS -> ADC", f"{short} {rating:g} A, {opamp}, zener {zc}, {temp} C: reading 5 % low at",
+                    f"{clip_a:.1f} A", f">= 1.1 x {rating:g} A", ok,
+                    f"reading at rating {err:+.1f} % (ADC {m['vadc_rated']:.3f} V); top of range {m['vadc_top']:.3f} V "
+                    f"= {m['vadc_top'] / 3.3 * 4095:.0f} counts; {opamp} limit VCC-{clip} V", warn=zc == "limit")
+                if zc == "sharp" and temp == 25:
+                    ifw = m["vadc_rated"] / 1200 * k_fw
+                    e = (ifw / rating - 1) * 100
+                    add("IS -> ADC", f"{short}: firmware reading at rating (kILIS fw {k_fw} vs typ {k_ds})",
+                        f"{ifw:.2f} A ({e:+.1f} %)", "within +-10 %", abs(e) <= 10,
+                        "data-sheet kILIS tolerance about +-4-5 % on top; 1 % sense resistor")
+        # firmware fault rule: a latched fault drives IIS(FAULT) (4.4 mA min) -> must read >= PROFET_IS_FULL_SCALE
+        for zc in ZENERS:
+            for temp in TEMPS:
+                op, clip = opamp_line(opamp, temp)
+                deck = f"""* IS fault current (IIS(FAULT) min) into the chain
+.temp {temp}
+Iis 0 is {IIS_FAULT_MIN}
 Rs is 0 1.2k
-Dvs is vs dclamp
-Vvs vs 0 12.5
 R1 is n1 4.7k
-Dz 0 n1 dz
 R2 n1 inp 4.7k
-Bop opo 0 V = min(V(inp), 3.3-1.5)
+{op}
 R3 opo adc 120
-.model dz D(BV=3.3 IBV=5m IS=1e-12 N=1.5 RS=10)
+{zener_model(zc, temp)}
+.op
+.control
+op
+echo "vadc = $&v(adc)"
+echo "vn1 = $&v(n1)"
+.endc
+.end
+"""
+                m = ngspice(deck, f"isf_{short}_{opamp}_{zc}_{temp}", keep)
+                counts = m["vadc"] / 3.3 * 4095
+                add("IS -> ADC", f"{short}, {opamp}, zener {zc}, {temp} C: fault (IIS(FAULT) 4.4 mA) reads",
+                    f"{counts:.0f} counts", f">= {FULL_SCALE} (PROFET_IS_FULL_SCALE)", counts >= FULL_SCALE,
+                    f"zener node {m['vn1']:.2f} V, ADC {m['vadc']:.3f} V", warn=zc == "limit")
+    # IS saturation (15 mA, IIS(SAT) max) into the chain: ADC pin <= 3.6 V and op-amp input current <= 10 mA
+    for temp in TEMPS:
+        op, clip = opamp_line(opamp, temp)
+        deck = f"""* IS saturation: 15 mA into the chain
+.temp {temp}
+Iis 0 is {IIS_SAT_MAX}
+Rs is 0 1.2k
+R1 is n1 4.7k
+R2 n1 inp 4.7k
+Dclamp inp vcc dclamp
+Vcc vcc 0 3.3
+{op}
+R3 opo adc 120
+{zener_model("sharp", temp)}
 .model dclamp D(IS=1e-12)
 .op
 .control
 op
-print v(is) v(n1) v(inp) v(adc)
-let iz = (v(is)-v(n1))/4.7k
-meas op zr find v(n1)
+let iin = (v(n1)-v(inp))/4.7k
+echo "vn1 = $&v(n1)"
+echo "vadc = $&v(adc)"
+echo "iin = $&iin"
 .endc
 .end
 """
-    deck = deck.replace(".control\nop\nprint v(is) v(n1) v(inp) v(adc)\nlet iz = (v(is)-v(n1))/4.7k\nmeas op zr find v(n1)\n.endc",
-                        ".control\nop\nlet iz = (v(is)-v(n1))/4.7k\necho \"vis = $&v(is)\"\necho \"vn1 = $&v(n1)\"\n"
-                        "echo \"vadc = $&v(adc)\"\necho \"izener = $&iz\"\n.endc")
-    m = ngspice(deck, "is_fault", keep)
-    add("IS -> ADC", "IS fault / saturation (15 mA): op-amp input and ADC pin", f"input {m['vn1']:.2f} V, ADC {m['vadc']:.2f} V",
-        "ADC <= 3.6 V (STM32 abs max VDD + 0.3 V)", m["vadc"] <= 3.6, f"zener current {m['izener'] * 1e3:.2f} mA")
+        m = ngspice(deck, f"is_sat_{opamp}_{temp}", keep)
+        add("IS -> ADC", f"IS saturation 15 mA, {temp} C: ADC pin / op-amp input current",
+            f"{m['vadc']:.2f} V / {m['iin'] * 1e3:.2f} mA", "ADC <= 3.6 V; input <= 10 mA (TLV9004 abs max)",
+            m["vadc"] <= 3.6 and m["iin"] <= 10e-3, f"zener node {m['vn1']:.2f} V (VZ max corner)")
 
 
 # ------------------------------------------------------------------ 2. TVS vs surges
-def tvs(keep):
-    pulses = [  # name, amplitude V, Ri, tr, td(width), shape
+# TVS parts (bidirectional, so ISO pulse 1 / reverse battery see the same clamp): VBR min / max at IT, VC at IPP
+# (10/1000 us), and the long-pulse rating used for the load dump:
+#   5.0SMDJ24CA (Littelfuse 5.0SMDJ data sheet v.4, DO-214AB, fitted today): 5 kW 10/1000 us only (about 7 J).
+#   SM8S24CA (Vishay doc 98229, DO-218AC/AB, bidirectional; AEC-Q101 HM3): 6.6 kW 10/1000 us, 5.2 kW 10/10000 us;
+#     pulse-width derating for the same SM8S die / package (Vishay doc 98647 fig. 1): 6.6 kW 1 ms, 5.2 kW 10 ms,
+#     1.9 kW 100 ms; beyond 100 ms extrapolated with the 10-100 ms slope (P ~ td^-0.44, the heat-diffusion law):
+#     about 1.04 kW at 400 ms; initial-TJ derating linear to 0 at 175 C (doc 98229 fig. 3).
+#   5.0SMDJ33CA (Littelfuse, DO-214AB; Infineon's application list asks for a 33 V TVS, DZ2): VBR 36.7 .. 40.6 V, VC
+#     53.3 V at 93.8 A: it stays off in the 35 V suppressed load dump; fast pulses clamp above 35 V.
+TVS = {
+    "5.0SMDJ24CA": dict(vbr=(26.7, 29.5), vc=38.9, ipp=128.5, pkg="DO-214AB", ld=None, e1000=7.0),
+    "SM8S24CA": dict(vbr=(26.7, 29.5), vc=38.9, ipp=170.0, pkg="DO-218AB", ld=[(1e-3, 6600), (10e-3, 5200),
+                                                                              (100e-3, 1900)], e1000=9.2),
+    "5.0SMDJ33CA": dict(vbr=(36.7, 40.6), vc=53.3, ipp=93.8, pkg="DO-214AB", ld=None, e1000=7.0),
+}
+TJ_START = 85.0      # C, board / TVS temperature before the pulse (enclosure inside, docs/heat-analysis.md: sink 71-75 C
+                     # fans on, board around the feed warmer): ASSUMED
+RGND = 47.0          # Ohm, PROFET GND resistor fitted on every switch (R16 / R31 / ... ; Infineon Table 24 RGND)
+VS_CLAMP_MIN = 33.0  # V, PROFET VS(CLAMP) min at -40 C (35 V at >= 25 C), P_8.6.0.6 / 7; IGND abs max 50 mA (P_4.1.0.9)
+
+
+def tvs_rating_w(part, td):
+    """Allowed rectangular-pulse power for td seconds at TJ_START (None: no long-pulse rating published)."""
+    pts = TVS[part]["ld"]
+    if not pts:
+        return None
+    (t1, p1), (t2, p2) = pts[-2], pts[-1]
+    slope = math.log(p2 / p1) / math.log(t2 / t1)
+    if td <= pts[-1][0]:
+        for (ta, pa), (tb, pb) in zip(pts, pts[1:]):
+            if ta <= td <= tb:
+                slope = math.log(pb / pa) / math.log(tb / ta)
+                return pa * (td / ta) ** slope * (175 - TJ_START) / 150
+    return p2 * (td / t2) ** slope * (175 - TJ_START) / 150
+
+
+def tvs(keep, part):
+    d = TVS[part]
+    pulses = [  # name, amplitude V, Ri, tr, td(width)
         ("ISO 7637-2 pulse 1 (-150 V, 10 Ohm, 2 ms)", -150, 10, 1e-6, 2e-3),
         ("ISO 7637-2 pulse 2a (+112 V, 2 Ohm, 50 us)", 112, 2, 1e-6, 50e-6),
         ("ISO 7637-2 pulse 3a (-220 V, 50 Ohm, 0.1 us)", -220, 50, 5e-9, 100e-9),
         ("ISO 7637-2 pulse 3b (+150 V, 50 Ohm, 0.1 us)", 150, 50, 5e-9, 100e-9),
         ("ISO 16750-2 load dump B (Us* 35 V, Ri 4 Ohm, 400 ms)", 35 - 13.5, 4, 5e-3, 400e-3),
+        ("ISO 16750-2 load dump B (Us* 35 V, Ri 2 Ohm, 400 ms)", 35 - 13.5, 2, 5e-3, 400e-3),
         ("ISO 16750-2 load dump B (Us* 35 V, Ri 0.5 Ohm, 400 ms)", 35 - 13.5, 0.5, 5e-3, 400e-3),
     ]
-    for vbr, corner in ((26.7, "VBR min"), (29.5, "VBR max")):
-        rd = (38.9 - vbr) / 128.5
+    for vbr, corner in zip(d["vbr"], ("VBR min", "VBR max")):
+        rd = (d["vc"] - vbr) / d["ipp"]
         for i, (name, amp, ri, tr, td) in enumerate(pulses):
             ld = "load dump" in name
             tstop = td * (1.6 if ld else 6)
@@ -152,7 +250,7 @@ def tvs(keep):
             else:      # ISO 7637 pulses: fast rise, exponential decay to 10 % at td
                 tau = td / 2.3
                 src = f"Vp p 0 EXP(0 {amp} 0 {tr / 2.2} {tr} {tau})"
-            deck = f"""* TVS 5.0SMDJ24CA on +12V, {name}, {corner}
+            deck = f"""* TVS {part} on +12V, {name}, {corner}
 Vbat b 0 13.5
 {src}
 Rsrc s v12 {ri}
@@ -167,7 +265,6 @@ Rload v12 0 270
 .tran {tstop / 4000} {tstop}
 .control
 run
-let ptvs = abs(v(v12)*i(Vbat))
 meas tran vmax max v(v12)
 meas tran vmin min v(v12)
 let itv = (v(s)-v(v12))/{ri} - v(v12)/270
@@ -177,25 +274,35 @@ meas tran etvs integ pt
 .endc
 .end
 """
-            m = ngspice(deck, f"tvs_{i}_{int(vbr)}", keep)
-            if amp > 0:
+            m = ngspice(deck, f"tvs_{part}_{i}_{int(vbr)}", keep)
+            note = f"TVS peak {m['pmax']:.0f} W, energy {m['etvs']:.3g} J"
+            grp = f"TVS {part}"
+            if ld:
+                pav = m["etvs"] / td
+                rate = tvs_rating_w(part, td)
+                if rate is None:
+                    ok = m["etvs"] <= d["e1000"] * 0.05 or pav < 1.0
+                    add(grp, f"{name}, {corner}: TVS energy", f"{m['etvs']:.1f} J",
+                        f"<= ~{d['e1000']:.0f} J (10/1000 us rating only)", ok, note + f"; +12V peak {m['vmax']:.1f} V")
+                else:
+                    ok = pav <= rate
+                    add(grp, f"{name}, {corner}: TVS power over {td * 1e3:.0f} ms", f"{pav:.0f} W ({m['etvs']:.0f} J)",
+                        f"<= {rate:.0f} W (data-sheet derating, TJ start {TJ_START:.0f} C)", ok,
+                        note + f"; +12V peak {m['vmax']:.1f} V; repeated each minute: {m['etvs'] / 60:.1f} W mean")
+            elif amp > 0:
                 ok = m["vmax"] <= 35.0
-                lim = "<= 35 V (PROFET VBAT(LD))"
-                val = f"{m['vmax']:.1f} V"
+                ignd = max(0.0, (m["vmax"] - VS_CLAMP_MIN) / RGND)
+                add(grp, f"{name}, {corner}: +12V", f"{m['vmax']:.1f} V", "<= 35 V (PROFET VBAT(LD))", ok,
+                    note + (f"; above VS(CLAMP) min 33 V: GND current through RGND 47R up to {ignd * 1e3:.0f} mA "
+                            f"(abs max 50 mA static)" if ignd else ""))
             else:
                 ok = m["vmin"] >= -16.0
-                lim = ">= -16 V (PROFET reverse battery, P_4.1.0.5, 2 min static)"
-                val = f"{m['vmin']:.1f} V"
-            note = f"TVS peak {m['pmax']:.0f} W, energy {m['etvs']:.3g} J"
-            if ld:
-                # 5.0SMDJ: 5000 W for a 10/1000 us pulse, about 7 J; long pulses derate further
-                eok = m["etvs"] <= 7.0
-                add("TVS / surge", f"{name}, {corner}: TVS energy", f"{m['etvs']:.1f} J", "<= ~7 J (5 kW 10/1000 us)",
-                    eok, note + "; +12V peak " + val)
-            else:
-                add("TVS / surge", f"{name}, {corner}: +12V", val, lim, ok,
-                    note + ("" if ok or amp > 0 else "; 2 ms pulse vs a static rating: the data sheet gives no "
-                            "ISO 7637 pulse rating"), warn=amp < 0)
+                ignd = max(0.0, (-m["vmin"] - 16.0) / RGND)
+                add(grp, f"{name}, {corner}: +12V", f"{m['vmin']:.1f} V",
+                    ">= -16 V (PROFET reverse battery, P_4.1.0.5, 2 min static)", ok,
+                    note + ("" if ok else f"; GND-VS breakdown (-VS(REV) 16 V min) then drives up to {ignd * 1e3:.0f} mA "
+                            "through RGND 47R (IGND abs max 50 mA static); no pulse rating in the data sheets"),
+                    warn=amp < 0)
 
 
 # ------------------------------------------------------------------ 3. 3V3 start-up
@@ -322,16 +429,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ngspice", default=os.environ.get("NGSPICE") or shutil.which("ngspice") or shutil.which("ngspice_con"))
     ap.add_argument("--keep", default=os.path.join(tempfile.gettempdir(), "pcbverify-spice"))
+    ap.add_argument("--opamp", default="TLV9004", choices=sorted(OPAMPS), help="IS buffer (LM2902 = before 2026-11-20)")
+    ap.add_argument("--tvs", nargs="+", default=["5.0SMDJ24CA"], choices=sorted(TVS),
+                    help="input TVS part(s) to check (first = fitted)")
+    ap.add_argument("--only", nargs="*", help="groups to run: is tvs startup input can")
     a = ap.parse_args()
     if not a.ngspice:
         raise SystemExit("ngspice not found: install it or pass --ngspice / set NGSPICE")
     NG = a.ngspice
     os.makedirs(a.keep, exist_ok=True)
-    is_chain(a.keep)
-    tvs(a.keep)
-    startup(a.keep)
-    input_board(a.keep)
-    can(a.keep)
+    run = set(a.only or ["is", "tvs", "startup", "input", "can"])
+    if "is" in run:
+        is_chain(a.keep, a.opamp)
+    if "tvs" in run:
+        for part in a.tvs:
+            tvs(a.keep, part)
+    if "startup" in run:
+        startup(a.keep)
+    if "input" in run:
+        input_board(a.keep)
+    if "can" in run:
+        can(a.keep)
     w = max(len(r[1]) for r in RES)
     for g, c, v, l, verdict, note in RES:
         print(f"{verdict:4}  {g:12} {c:{w}}  {v:>18}  [{l}]  {note}")

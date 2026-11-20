@@ -79,7 +79,9 @@ PARTS = [
     ("C43379785", "RAMXEED (Fujitsu)", "MB85RC64TAPNF-G-AWERE2", "C43379785", KEEP,
      "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)", None),
     ("C129490", "Microchip", "MCP9808T-E/MS", "C129490", KEEP, "", None),
-    ("C46864", "Texas Instruments", "LM2902PWR", "C46864", KEEP, "", None),
+    # IS sense buffers (A U7 / U12, B U7 / U22): ADR-2026-11-20-is-buffer, rail-to-rail on 3.3 V (sch_board_power.py)
+    ("C2058050", "Texas Instruments", "TLV9004IPWR", "C2058050", "296-51827-1-ND",
+     "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)", None),
     ("C15578", "Texas Instruments", "TLV1117LV33DCYR", "C15578", KEEP, "", None),
     ("C2150060", "Infineon", "BTS70082EPAXUMA1", "C2150060", KEEP,
      "Infineon BTS7008-2EPA (same chip, LCSC C534830)", None),
