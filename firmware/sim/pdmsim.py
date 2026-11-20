@@ -10,8 +10,19 @@ def pin(name):            # 'PB10' -> (1, 10)
 def line(name):
     a, b = pin(name); return (a << 4) | b
 
-# ---- drivers (Infineon data sheets: typ. kILIS) ----
-KILIS = {'BTS7008-2EPA': 5950, 'BTS70012-1ESP': 35000, 'BTS7004-1EPP': 20000}
+# ---- drivers: the real part's typ. kILIS from the Infineon data sheet, NOT the firmware constant (port.h), so a wrong
+# constant shows up as a wrong reading (s1 S8). BTS7008-2EPA Rev 1.21 Table 22 kILIS16 5450 +-4.0 % at 5.5 A (P_9.7.1.20,
+# also kILIS18 at 10 A); BTS70012-1ESP Rev 1.21 Table 21 kILIS22 33700 +-4.8 % at 30 A (P_9.7.26.26, 33700 from 7 A up);
+# BTS7004-1EPP Rev 1.11 Table 21 kILIS19 20000 +-5.0 % at 15 A (P_9.7.11.23, 20000 from 2 A up).
+KILIS = {'BTS7008-2EPA': 5450, 'BTS70012-1ESP': 33700, 'BTS7004-1EPP': 20000}
+# Top of the IS chain (IS -> 1.2k -> 4.7k -> PDZ3.3B -> 4.7k -> TLV9004 follower -> 120R -> ADC, docs/pcb-verification.md):
+# the rail-to-rail follower (TI SBOS833R 7.x: input (V-)-0.1 to (V+)+0.1 V, output within 20 mV of the rails) passes
+# the zener node up to 3.28 V, so the zener sets the top. PDZ3.3B (NXP PDZ-B series data sheet 2004 Mar 22, Table 2):
+# VZ 3.32-3.53 V at 5 mA, rdif up to 1000 Ohm at 0.5 mA, -2.4 mV/K; with IIS(FAULT) 4.4 mA min only about 0.4 mA flows
+# in the zener, so a fault reads somewhere from about 2.7 V (min part, low current, hot; an estimate: the low-current
+# knee is not specified) to VDDA. Default: VDDA (3.3 V); s3 / s1 also run the low end (IS_CLAMP_LOW).
+IS_CLAMP = 3.3
+IS_CLAMP_LOW = 2.7
 LEDS = ('PC0', 'PC1')     # error (red), status (green), both boards, active high via 120 R (docs/firmware-pin-map.md)
 RSENSE = 1200.0
 # out: (IN, DEN, DSEL or None, DSEL level for this channel, IS pin, driver)
@@ -60,14 +71,14 @@ class Board:
         L.sim_set_pin_volts.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_float]
         L.sim_set_env.argtypes = [ctypes.c_float] * 3
         L.sim_plant_add.argtypes = [ctypes.c_int] * 5 + [ctypes.c_float] * 3
-        L.sim_plant_set.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]
+        L.sim_plant_set.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]; L.sim_plant_clamp.argtypes = [ctypes.c_int, ctypes.c_float]
         L.sim_fram.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_uint32]
         s.fram_size = fram_size
         if fram is not None: L.sim_fram(fram, 1, fram_size)
         else:
             buf = ctypes.create_string_buffer(b'\xff' * fram_size, fram_size); L.sim_fram(buf, 1, fram_size)
         for o in model['outputs']:
-            L.sim_plant_add(line(o[0]), line(o[1]), line(o[2]) if o[2] else -1, o[3], line(o[4]), KILIS[o[5]], RSENSE, 3.3)
+            L.sim_plant_add(line(o[0]), line(o[1]), line(o[2]) if o[2] else -1, o[3], line(o[4]), KILIS[o[5]], RSENSE, IS_CLAMP)
         s.vbat = vbat; s.t0 = 0; s.board_c = 30.0; s.die_c = 30.0
         s.set_vbat(vbat)
         s.dip = {}; s.wire = {}
@@ -81,6 +92,7 @@ class Board:
         """board_c: MCP9808 reading. die_c: STM32 die (internal sensor), unchanged if None."""
         s.board_c = board_c; s.die_c = s.die_c if die_c is None else die_c; s.L.sim_set_env(s.vbat, s.board_c, s.die_c)
     def set_load(s, out, ohms, fault=0): s.L.sim_plant_set(out, ohms or 0.0, fault)
+    def set_is_clamp(s, out, volts=IS_CLAMP): s.L.sim_plant_clamp(out, volts)   # top of the IS chain (see IS_CLAMP)
     # --- MCP9808 (sim_core.cpp model)
     def mcp_fail(s, n): s.L.sim_mcp_fail(n)                 # next n reads fail on I2C, -1 = all until mcp_fail(0)
     def mcp_carry(s, held): s.L.sim_mcp_carry(ctypes.c_float(held))   # chip left in shutdown by the last sleep, holding 'held'

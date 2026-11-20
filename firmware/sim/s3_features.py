@@ -568,7 +568,7 @@ check('endless retry (reset time 500 ms): 5 or more tries in 3 s with an 8 A loa
 r = Rig(); v = r.v; switch(r, 0)
 output(r, 0, v.can(0), limit=5.0, inrush=10.0, inrush_ms=100, reset_mode=1, reset_ms=300, reset_limit=2)
 r.b.set_load(0, r.b.vbat / 2.0, fault=1); r.sw(0, 1); s_ = r.sample([0], 1500); sp = on_spans(s_)
-check('driver fault (IS at its clamp, about 16 A read): cut at once (no inrush allowance above 10 A), retried per the reset settings with IN low 300 ms between tries '
+check('driver fault (IS at its clamp, about 15 A read): cut at once (no inrush allowance above 10 A), retried per the reset settings with IN low 300 ms between tries '
       '(>= the PROFET de-latch time tDELAY(CR) 100 ms max, BTS7008-2EPA P_8.6.1.6, so each try starts with the PROFET counter reset), then Fault',
       len(sp) == 2 and all(b is not None and b - a <= 4 for a, b in sp) and 100 <= sp[1][0] - sp[0][1] and r.b.L.sim_out_state(0) == FAULT_, sp)
 dflt = [r.tool.read(r.base, 0x1000 + o, 6) for o in range(1, 8)]
@@ -601,15 +601,56 @@ check('P1: trip time 1000 ms: 8 A held trips 1000 ms (+0..6) after the step', le
 check('F12 (P1 part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
 # PROFET fault while the trip time runs: IS at the ADC full scale is a hard overcurrent (functions/profet.h PROFET_IS_FULL_SCALE)
 r = Rig(); v = r.v; switch(r, 0); switch(r, 1)
-output(r, 0, v.can(0), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)   # factory-like 50 A inrush limit: above the 16.4 A full-scale reading of board A
+output(r, 0, v.can(0), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)   # factory-like 50 A inrush limit: above the 15.0 A full-scale reading of board A (3.3 V x 5450 / 1.2k)
 amps(r, 0, 3.0); r.sw(0, 1); r.run(500); r.b.set_load(0, r.b.vbat / 3.0, fault=1); s_ = r.sample([0], 50); e = edges(s_)
-check('PROFET fault after the inrush window (IS at full scale = 16.4 A read, inrush limit 50 A, trip time 1000 ms): cut at once (within 4 ms), not after the trip time',
+check('PROFET fault after the inrush window (IS at full scale = 15.0 A read, inrush limit 50 A, trip time 1000 ms): cut at once (within 4 ms), not after the trip time',
       len(e) == 1 and e[0][0] <= 4 and r.b.L.sim_out_state(0) == FAULT_, e)
 output(r, 1, v.can(1), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
 r.b.set_load(1, r.b.vbat / 3.0, fault=1); r.sw(1, 1); s_ = r.sample([1], 300, vars=[v.can(1)]); e = lag(s_, 0, 1)
 check('PROFET fault from switch-on with the inrush limit (50 A) above the full-scale reading: no firmware cut inside the 100 ms inrush window (the PROFET protects itself), cut at its end (100-106 ms) without the trip time',
       e is not None and [l for _, l in e] == [1, 0] and e[0][0] <= 4 and 100 <= e[1][0] <= 106, e)
 check('F12 (PROFET fault part): no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# Rail-to-rail IS buffer (TLV9004, ADR-2026-11-20-is-buffer): the top of the IS chain is the PDZ3.3B zener node, not the
+# ADC full scale. At the fault current (IIS(FAULT) 4.4 mA min) only about 0.4 mA reaches the zener, so the top can sit
+# near 2.7 V (pdmsim.py IS_CLAMP_LOW, an estimate) or reach VDDA. The hard-overcurrent rule must fire at both ends, for a
+# PROFET fault and for a real current above the measurable range, and must not fire for a reading that is still a real
+# number (functions/profet.h PROFET_IS_FULL_SCALE, 75 % of the ADC range = 2.475 V at VDDA 3.3 V = 11.2 A on board A).
+r = Rig(); v = r.v
+for k in range(4): switch(r, k)
+fs = {}
+for o, clamp in ((0, ps.IS_CLAMP_LOW), (1, ps.IS_CLAMP)):
+    r.b.set_is_clamp(o, clamp)
+    output(r, o, v.can(o), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+    amps(r, o, 3.0); r.sw(o, 1); r.run(500); r.b.set_load(o, r.b.vbat / 3.0, fault=1); s_ = r.sample([o], 50); fs[clamp] = (edges(s_), r.b.L.sim_out_state(o))
+    r.b.set_load(o, 0)
+check('full scale, rail-to-rail buffer: a PROFET fault after the inrush window is cut at once (within 4 ms) whether the IS chain tops out at 2.7 V (zener knee, 12.3 A read) or at VDDA (3.3 V, 15.0 A read); inrush limit 50 A, trip time 1000 ms',
+      all(len(e) == 1 and e[0][0] <= 4 and st == FAULT_ for e, st in fs.values()), fs)
+info['full_scale_fault_by_clamp'] = {str(k): v_ for k, v_ in fs.items()}
+r.b.set_is_clamp(2, ps.IS_CLAMP_LOW)
+output(r, 2, v.can(2), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+amps(r, 2, 3.0); r.sw(2, 1); r.run(500); amps(r, 2, 20.0); s_ = r.sample([2], 50); e = edges(s_)
+check('full scale: a real 20 A on a 5 A output after the inrush window (IS 4.4 V unclamped, reads the 2.7 V chain top = 12.3 A, below the 50 A inrush limit) is a hard overcurrent: cut at once (within 4 ms), not after the 1000 ms trip time',
+      len(e) == 1 and e[0][0] <= 4 and r.b.L.sim_out_state(2) == FAULT_, e)
+output(r, 3, v.can(3), limit=5.0, inrush=50.0, inrush_ms=100, reset_mode=0, trip_ms=1000)
+amps(r, 3, 3.0); r.sw(3, 1); r.run(500); amps(r, 3, 10.0); s_ = r.sample([3], 1100); e = edges(s_)
+check('below full scale: 10 A on a 5 A output after the inrush window (2.2 V on IS, a real reading under the 75 % threshold) waits the trip time: cut 1000 ms (+0..6) after the step, not at once',
+      len(e) == 1 and 1000 <= e[0][0] <= 1006, e)
+check('F12 (full scale, rail-to-rail): no CAN overruns / time-outs, no fatal error', r.ok_bus())
+# lamp cold-filament inrush inside the inrush window: about 10 x the hot current for tens of ms, read at full scale, must not trip
+r = Rig(); v = r.v; switch(r, 0); switch(r, 1)
+lamp = {}
+for o, clamp in ((0, ps.IS_CLAMP_LOW), (1, ps.IS_CLAMP)):
+    r.b.set_is_clamp(o, clamp)
+    output(r, o, v.can(o), limit=7.5, inrush=50.0, inrush_ms=100, reset_mode=0)      # factory limits 7.5 A / 50 A (w3a), factory trip time 50 ms
+    amps(r, o, 45.0); r.sw(o, 1)
+    for _ in range(50):                                                            # wait for the switch-on (CAN frame period)
+        if r.pin(o): break
+        r.run(1)
+    s_ = r.sample([o], 30); amps(r, o, 15.0); s_ += r.sample([o], 40); amps(r, o, 4.6); s_ += r.sample([o], 300)
+    lamp[clamp] = (s_[0][1][0], edges(s_), r.b.L.sim_out_state(o), round(r.b.L.sim_out_current(o), 2))
+check('lamp inrush inside the inrush window (55 W H4: 45 A for 30 ms, 15 A for 40 ms, then 4.6 A; full-scale reading at both chain tops 2.7 / 3.3 V; limit 7.5 A, inrush 50 A / 100 ms): no trip, stays ON',
+      all(s0 and not e and st == ON_ and 4.5 <= a <= 4.7 for s0, e, st, a in lamp.values()), lamp)
+check('F12 (lamp inrush): no CAN overruns / time-outs, no fatal error', r.ok_bus())
 # P2 open load / undercurrent (ECUMaster PMU Min current -> UNDERCURRENT, output keeps running): 0x7D00 + o sub 1 A, sub 2 ms
 r = Rig(); v = r.v; switch(r, 0); switch(r, 1)
 dflt = [(r.tool.read(r.base, 0x7D00 + o, 1), r.tool.read(r.base, 0x7D00 + o, 2)) for o in range(8)]

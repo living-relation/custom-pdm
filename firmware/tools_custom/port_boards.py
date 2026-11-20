@@ -20,6 +20,15 @@ NUM_TX = STATUS_MSG + 1
 # inrush limit is checked, after it only the current limit (functions/profet.cpp), so neither needs the other.
 LIMIT_A, LIMIT_B_STUD, LIMIT_B, LIMIT_FAN = 7.5, 31.0, 15.0, 1.0
 fl = lambda v: f'F({v:.1f}f)'
+# Current-sense ratio kILIS = each PROFET's data-sheet typical value (ADR-2026-11-20-kilis; the stock constants 5950 /
+# 35000 read 9.2 % / 3.9 % high). Infineon data sheets: BTS7008-2EPA Rev 1.21 Table 22 kILIS16 5450 +-4.0 % at 5.5 A
+# (P_9.7.1.20; kILIS18 5450 +-3.9 % at 10 A); BTS70012-1ESP Rev 1.21 Table 21 kILIS22 33700 +-4.8 % at 30 A (P_9.7.26.26;
+# 33700 from 7 A up); BTS7004-1EPP Rev 1.11 Table 21 kILIS19 20000 +-5.0 % at 15 A (P_9.7.11.23; 20000 from 2 A up).
+# Custom boards only: stock boards keep the upstream constants (byte-identical stock builds).
+KILIS_7008, KILIS_70012, KILIS_7004 = 5450, 33700, 20000
+def kilis(p):
+    p = rep(p, '#define BTS7008_2EPA_KILIS 5950', f'#define BTS7008_2EPA_KILIS {KILIS_7008} // custom-pdm: Infineon BTS7008-2EPA Rev 1.21 Table 22 typ. (stock 5950)')
+    return rep(p, '#define BTS70012_1ESP_KILIS 35000', f'#define BTS70012_1ESP_KILIS {KILIS_70012} // custom-pdm: Infineon BTS70012-1ESP Rev 1.21 Table 21 typ. (stock 35000)')
 
 def rep(s, old, new, n=1):
     assert s.count(old) == n, (old, s.count(old))
@@ -228,6 +237,7 @@ p = rep(p, '#define NUM_TX_MSGS 37', f'#define NUM_TX_MSGS {NUM_TX} // custom-pd
 p = rep(p, '#define DEVICE_TYPE 0', f'#define DEVICE_TYPE {TYPE_A} // custom-pdm board A (stock dingoPDM = 0)')
 p = p.replace('    IS1 = 0,\n    IS2,\n', '    IS1_2 = 0,\n    AnIn1, // PC2, ADC1_IN12 (old IS2 slot)\n')
 p = p.replace('uint16_t GetAdcRaw(AnalogChannel channel);', 'uint16_t GetAdcRaw(AnalogChannel channel);\nfloat GetAdcVolts(AnalogChannel channel);')
+p = kilis(p)
 (d/'port.h').write_text(p)
 
 c = (d/'port.cpp').read_text()
@@ -339,7 +349,8 @@ p = p.replace('#define NUM_ANALOG_INPUTS 0', '#define NUM_ANALOG_INPUTS 1\n#defi
 p = rep(p, '#define NUM_TX_MSGS 35', f'#define NUM_TX_MSGS {NUM_TX} // custom-pdm: v7 msgs 0-36 + msg {STATUS_MSG}')
 p = rep(p, '#define DEVICE_TYPE 1', f'#define DEVICE_TYPE {TYPE_B} // custom-pdm board B (stock dingoPDM-Max = 1)')
 p = p.replace('#define ADC1_NUM_CHANNELS 7', '#define ADC1_NUM_CHANNELS 12')
-p = p.replace('#define BTS70012_1ESP_KILIS 35000', '#define BTS70012_1ESP_KILIS 35000\n#define BTS7004_1EPP_KILIS 20000 // Infineon BTS7004-1EPP datasheet, typ. at IL(NOM)')
+p = kilis(p)
+p = rep(p, ' (stock 35000)\n', f' (stock 35000)\n#define BTS7004_1EPP_KILIS {KILIS_7004} // custom-pdm: Infineon BTS7004-1EPP Rev 1.11 Table 21 typ.\n')
 p = p.replace('    IS3,\n    IS4,\n', '    IS3,\n    IS4,\n    IS5,\n    IS6,\n    IS7,\n    IS8,\n')
 p = p.replace('    BattVolt,\n', '    BattVolt,\n    AnIn1, // PB1, ADC1_IN9\n')
 p = p.replace('uint16_t GetAdcRaw(AnalogChannel channel);', 'uint16_t GetAdcRaw(AnalogChannel channel);\nfloat GetAdcVolts(AnalogChannel channel);')

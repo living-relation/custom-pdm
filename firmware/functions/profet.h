@@ -32,12 +32,16 @@ struct Config_OutputExt{
   float fMinCurrent;        //A; 0 = no undercurrent check
 };
 
-// IS reading at (or within 1 %) of the 12-bit ADC full scale (4095): the PROFET fault current IIS(FAULT), 4.4 mA min
-// (BTS7008-2EPA P_9.6.1.1, same family for BTS70012-1ESP / BTS7004-1EPP) x the 1.2 kOhm sense resistor = 5.3 V, above
-// VDDA, or a load current the ADC cannot measure (BTS7008 16.4 A, BTS7004 55 A, BTS70012 96 A). Either way it is a
-// hard overcurrent: after the inrush window it trips at once, without the trip time (P1). It does not latch at
-// once: a real inrush above the measurable range reads the same (see docs/feature-parity.md "Found").
-#define PROFET_IS_FULL_SCALE 4054
+// IS reading at the top of the sense chain = "full scale": the PROFET fault current IIS(FAULT), 4.4 mA min (BTS7008-2EPA
+// P_9.6.1.1, BTS70012-1ESP / BTS7004-1EPP P_9.6.4.1) x the 1.2 kOhm sense resistor = 5.3 V, or a load current above the
+// measurable range. Either way it is a hard overcurrent: after the inrush window it trips at once, without the trip time
+// (P1). It does not latch at once: a real inrush above the measurable range reads the same (docs/feature-parity.md "Found").
+// The chain top is the PDZ3.3B zener ahead of the rail-to-rail TLV9004 follower (ADR-2026-11-20-is-buffer), not the ADC:
+// at IIS(FAULT) min only about 0.4 mA reaches the zener (VZ 3.32 V min is specified at 5 mA, rdif up to 1 kOhm at
+// 0.5 mA, -2.4 mV/K), so a fault may read about 2.7 V hot, not 3.3 V; the old 99 % (4054) could miss it. 75 % of the
+// 12-bit range (3071 = 2.475 V at VDDA 3.3 V) sits under that and above every rated reading: BTS7008 11.2 A (rating 7.5 A),
+// BTS7004 41 A (15 A), BTS70012 70 A (31 A) at the data-sheet kILIS (ADR-2026-11-20-kilis). Bench check: TBD.
+#define PROFET_IS_FULL_SCALE 3071
 #endif
 
 //=============================================================================

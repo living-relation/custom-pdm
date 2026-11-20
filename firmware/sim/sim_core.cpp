@@ -394,7 +394,8 @@ static float chanVolts(int ch)
     {
         if (c.is != l) continue;
         // PROFET sense: IS sources IL / kILIS into the sense resistor when DEN is high
-        // (dual parts: for the channel picked by DSEL). A fault drives the sense pin to its maximum.
+        // (dual parts: for the channel picked by DSEL). A fault (IIS(FAULT) 4.4 mA min x 1.2k = 5.3 V) drives the sense
+        // pin past the top of the chain, so it reads vclamp, the same as a load current above the measurable range.
         if (!level(c.den, false)) continue;
         if (c.hasDsel && level(c.dsel, false) != c.dselLevel) continue;
         float il = (level(c.in, false) && c.loadOhms > 0) ? vbat / c.loadOhms : 0;
@@ -548,6 +549,9 @@ API int sim_plant_add(int in, int den, int dsel, int dselLevel, int is, float ki
     c.kilis = kilis; c.rsense = rsense; c.loadOhms = 0; c.vclamp = vclamp; c.fault = 0; plant.push_back(c); return (int)plant.size() - 1;
 }
 API void sim_plant_set(int idx, float loadOhms, int fault) { plant[idx].loadOhms = loadOhms; plant[idx].fault = fault; }
+// top of the IS chain in volts (zener node, rail-to-rail buffer): a fault or an IS current above the measurable range reads
+// this (pdmsim.py Board.set_is_clamp)
+API void sim_plant_clamp(int idx, float vclamp) { plant[idx].vclamp = vclamp; }
 // state for checks
 API int sim_flags() { return fatalFlag | (asleepFlag << 1) | (bootloaderFlag << 2) | (restartFlag << 3); }
 API void sim_counters(uint32_t *out)
