@@ -1,0 +1,160 @@
+(footprint "D_DO-218AB_Vishay_SM8S"
+	(version 20241229)
+	(generator "pcbnew")
+	(generator_version "9.0")
+	(layer "F.Cu")
+	(descr "DO-218AB / DO-218AC (SMPC-like) TVS, Vishay SM8S land pattern, doc 98229 page 5 (IPC-7351): heat-sink pad 9.80 x 10.70, lead pad 2.15 x 2.60, 15.30 overall. Also Bourns SM8S-Q, Panjit SM8H-AU.")
+	(tags "DO-218AB DO-218AC TVS load dump SM8S")
+	(property "Reference" "REF**"
+		(at 4.1 0 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "b2619f67-4562-52fa-82d9-994516cac738")
+		(effects
+			(font
+				(size 1.016 1.016)
+				(thickness 0.1524)
+			)
+		)
+	)
+	(property "Value" "SM8S24CA"
+		(at 0 6.6 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(uuid "57d2b299-6ad2-58f8-99c9-4e62c408e274")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.vishay.com/docs/98229/sm8s10cathrusm8s85ca.pdf"
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "a039a3c4-0732-5634-87c3-c651f9a17186")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6685efb9-068b-50d3-9d1f-be0f6f93c090")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_line
+		(start -6.4 -5.55)
+		(end 5.75 -5.55)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "cec8d0c1-582f-5e42-bf3c-880e39353acf")
+	)
+	(fp_line
+		(start -6.4 5.55)
+		(end 5.75 5.55)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "32129cd3-0c64-5c3a-a378-15b4923df408")
+	)
+	(fp_rect
+		(start -7.75 -5.25)
+		(end 5.75 5.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "d6433d27-c26d-5158-a83d-2e506c227020")
+	)
+	(fp_rect
+		(start 5.75 -1.5)
+		(end 7.75 1.5)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "2a00f153-7135-5848-b164-787f7176942c")
+	)
+	(fp_rect
+		(start -8.25 -5.6)
+		(end 8.25 5.6)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "009491ef-2b96-506f-80ec-18d534fde721")
+	)
+	(pad "1" smd rect
+		(at 6.575 0)
+		(size 2.15 2.6)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(uuid "7e8fdec2-7a9f-5d47-823e-661db84e4848")
+	)
+	(pad "2" smd rect
+		(at -2.75 0)
+		(size 9.8 10.7)
+		(layers "F.Cu" "F.Mask")
+		(uuid "933a228a-fe59-50ab-9e7f-8a70aeea772c")
+	)
+	(pad "" smd rect
+		(at -5.3 -2.775)
+		(size 4.3 4.75)
+		(layers "F.Paste")
+		(uuid "e4a525dd-4907-5553-9f4a-a57e9b164304")
+	)
+	(pad "" smd rect
+		(at -5.3 2.775)
+		(size 4.3 4.75)
+		(layers "F.Paste")
+		(uuid "e945df40-f19e-52ec-ab6a-3a551d30e49b")
+	)
+	(pad "" smd rect
+		(at -0.2 -2.775)
+		(size 4.3 4.75)
+		(layers "F.Paste")
+		(uuid "e24726e0-12b3-5be2-8b1b-c4e6c8bf56ea")
+	)
+	(pad "" smd rect
+		(at -0.2 2.775)
+		(size 4.3 4.75)
+		(layers "F.Paste")
+		(uuid "060258ac-6959-5e4f-a363-db0eed5f685c")
+	)
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/Models/D_DO-218AB_Vishay_SM8S.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

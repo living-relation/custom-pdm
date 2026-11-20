@@ -3,7 +3,8 @@
 # Steps: restore baseline files -> tools\sch_board_b.py -> tools\sch_board_fix.py B -> tools\sch_board_power.py B -> tools\sch_digikey.py B -> tools\sch_bom_fields.py B
 #        -> netlist checks (tools\check_board_b.py) -> ERC summary
 #        -> tools\pcb_board_b.py (parts, outline, zones) -> tools\route_board_b.py (if present) -> tools\tidy_board_b.py
-#        -> tools\wirepads.py pcb J6 (a2b: wire pads in the J6 holes) -> tools\pcb_board_power.py -> tools\pcb_digikey.py -> tools\pcb_bom_fields.py -> tools\pcb_hole_keepout.py -> tools\pcb_feed_board_b.py -> DRC summary + renders.
+#        -> tools\wirepads.py pcb J6 (a2b: wire pads in the J6 holes) -> tools\pcb_board_power.py -> tools\pcb_digikey.py -> tools\pcb_bom_fields.py -> tools\pcb_hole_keepout.py -> tools\pcb_feed_board_b.py -> tools\d2_tvs.py pcb (D2 + clamp copper) -> DRC summary + renders.
+#        (schematic side: tools\d2_tvs.py lib / sch after sch_bom_fields.py: DO-218 D2 footprint)
 param([switch]$SchOnly, [switch]$NoRoute)
 $ErrorActionPreference = "Stop"
 $Repo = Split-Path $PSScriptRoot -Parent
@@ -48,6 +49,10 @@ try {
         if ($LASTEXITCODE) { throw "sch_digikey.py failed" }
         python (Join-Path $Repo "tools\sch_bom_fields.py") B        # 2026-11-16: order fields on every fitted part
         if ($LASTEXITCODE) { throw "sch_bom_fields.py failed" }
+        python (Join-Path $Repo "tools\d2_tvs.py") lib               # ADR-2026-11-20-d2-move: DO-218 load-dump TVS footprint
+        if ($LASTEXITCODE) { throw "d2_tvs.py lib failed" }
+        python (Join-Path $Repo "tools\d2_tvs.py") sch Power.kicad_sch
+        if ($LASTEXITCODE) { throw "d2_tvs.py sch failed" }
     } finally { Pop-Location }
 
     & $Cli sch export netlist (Join-Path $B "dingoPDM-Max.kicad_sch") -o "$Out\board-b.net" | Out-Null
@@ -73,6 +78,7 @@ try {
     Run-Py9 (Join-Path $Repo "tools\pcb_bom_fields.py") $Pcb "$Out\board-b.net"   # 2026-11-16: order fields
     Run-Py9 (Join-Path $Repo "tools\pcb_hole_keepout.py") $Pcb                    # 2026-11-20 pcbverify: no pour under the sink posts
     Run-Py9 (Join-Path $Repo "tools\pcb_feed_board_b.py") $Pcb                   # ADR-2026-11-20-boardb-feed: In1 / In2 +12V, wider B.Cu, stitching
+    Run-Py9 (Join-Path $Repo "tools\d2_tvs.py") pcb $Pcb B                       # ADR-2026-11-20-d2-move: D2 to its new spot + clamp copper
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"

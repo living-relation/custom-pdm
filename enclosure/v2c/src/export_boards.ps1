@@ -4,7 +4,8 @@
 # Default output: <repo root>\.claude\cache\enclosure\boards (git-ignored, outside every worktree, so `git worktree remove` keeps it).
 # KiCad 10.0.7 kicad-cli (STEP export only). Model sources:
 #   ${KICAD6_3DMODEL_DIR} / ${KICAD9_3DMODEL_DIR} -> KiCad 10's own library (STEP; --subst-models swaps the .wrl names for .step)
-#   board A ${KIPRJMOD}/Models -> reference\dingoPDM\DingoPDM\Models (stock dingoPDM models, MIT repo; the repo board folder has none)
+#   board A ${KIPRJMOD}/Models -> reference\dingoPDM\DingoPDM\Models (stock dingoPDM models, MIT repo) + hardware\board-a\Models
+#     (our own models, e.g. D2's DO-218 from tools/d2_model.py)
 #   board B ${KIPRJMOD}/Models -> hardware\board-b-max\Models
 # Known gap: stock dingoPDM-Max points its BTS70012 (PG-TSDSO-24-32) model at C:/Users/cgrant/...; no copy exists, so those
 # 4 packages (about 1 mm tall, board top) export without a body. See export.log.
@@ -33,6 +34,12 @@ foreach ($b in $boards) {
   $base = [IO.Path]::GetFileNameWithoutExtension($b.pcb)
   Copy-Item (Join-Path $wt "$($b.dir)\$base.kicad_pcb"), (Join-Path $wt "$($b.dir)\$base.kicad_pro") $tmp
   if ($b.models) { Copy-Item $b.models (Join-Path $tmp "Models") -Recurse }
+  # models kept in the repo board folder itself (board A's D2 DO-218 model, tools/d2_model.py) join the stock ones
+  $own = Join-Path $wt "$($b.dir)\Models"
+  if ((Test-Path $own) -and ($own -ne $b.models)) {
+    New-Item -ItemType Directory -Force -Path (Join-Path $tmp "Models") | Out-Null
+    Copy-Item (Join-Path $own "*") (Join-Path $tmp "Models") -Force
+  }
   # kicad-cli 10 does not expand the old versioned library variables from the environment, and KiCad 10 ships STEP only:
   # rewrite the model paths in the COPY to absolute KiCad 10 library paths with .step (hardware/ itself is untouched)
   $pf = Join-Path $tmp $b.pcb; $libf = $lib -replace '\\', '/'
