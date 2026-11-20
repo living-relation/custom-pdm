@@ -555,3 +555,34 @@ class pdm_bench:
         s._check(all(x == (0, False) for x in stopped), f'RPM 0 five times: (edges, pin high) {stopped}')
         s._check(step[0] is not None and step[0] <= 23 and all(abs(x - 10) <= 0.03 or abs(x - 5) <= 0.03 for x in step[1]),
                  f'step 3000 -> 6000 RPM: first 5 ms period {step[0]} ms after the new value (budget 23 ms), periods seen {step[1]}')
+
+    # ------------------------------------------------------------------ current read-back and full scale (ADR-2026-11-20-kilis)
+    def current_reads_back_at_the_data_sheet_kilis(s):
+        # the bench plant uses the data sheet's typ. kILIS (pdmsim.py KILIS); loads picked so the whole-amp CAN value
+        # shows a wrong constant: stock 5950 / 35000 would read 6.6 A as 7 and 26.5 A as 27
+        pts = {1: 6.6, 21: 26.5, 17: 12.5}                     # A1 OUT1 BTS7008-2EPA, B OUT1 BTS70012-1ESP, B OUT5 BTS7004-1EPP
+        for g, a in pts.items(): s._load(g, a)
+        s._set_cmd(list(pts)); s._run(400)
+        got = {g: s._status(s.OUT[g][0], (1, 2)).current(s.OUT[g][1]) for g in pts}; on = s._pins_on()
+        s._set_cmd([])
+        for g in pts: s._load(g, s.LIMIT[g] * 0.6)
+        s._run(300)
+        want = {g: int(a) for g, a in pts.items()}
+        s._check(got == want and all(g in on for g in pts), f'CAN OutputCurrent (whole amps) {got}, want {want}; pins on {on}')
+
+    def full_scale_fault_cuts_at_once_with_a_low_sense_top(s):
+        # rail-to-rail IS buffer: the chain tops out at the PDZ3.3B zener, about 2.7 V at the fault current (pdmsim.py
+        # IS_CLAMP_LOW) = 75.8 A read on a BTS70012, under a 100 A inrush limit; PROFET_IS_FULL_SCALE must still see it
+        g = 24; k, o = s.OUT[g]
+        s._x('sysbus.adc1 SenseClamp 2.7', MACH[k])
+        ok_w = all(s._write1(BASE[k], i, sub, v) is not None for i, sub, v in
+                   [(0x7D00 + o, 0, 1000), (0x1000 + o, 3, s.ps.f32(100.0)), (0x1000 + o, 4, 100), (0x1000 + o, 5, 0)])
+        s._load(g, 5.0); s._set_cmd([g]); s._run(500); on_before = g in s._pins_on()
+        s._x(f'sysbus.adc1 SetFault {o} true', MACH[k]); t = 0
+        while g in s._pins_on() and t < 200: s._run(2); t += 2
+        s._run(50); st = s._status(k, (3,)).out_state(o)
+        s._x(f'sysbus.adc1 SetFault {o} false', MACH[k]); s._x('sysbus.adc1 SenseClamp 3.3', MACH[k])
+        s._set_cmd([]); s._load(g, s.LIMIT[g] * 0.6); s._power_cycle(k); s._run(1500)    # RAM-only settings and the latched Fault go
+        again = s._status(k, (3,)).out_state(o)
+        s._check(ok_w and on_before and t <= 6 and st == 3 and again == 0,
+                 f'writes acknowledged {ok_w}; on before {on_before}; IN low {t} ms after the fault (2 ms steps, want <= 6, trip time 1000 ms); state {st} (3 = Fault); after a power cycle {again}')

@@ -182,9 +182,9 @@
 #define ADC1_BUF_DEPTH 1
 
 #define BTS7002_1EPP_KILIS 22950
-#define BTS7008_2EPA_KILIS 5950
-#define BTS70012_1ESP_KILIS 35000
-#define BTS7004_1EPP_KILIS 20000 // Infineon BTS7004-1EPP datasheet, typ. at IL(NOM)
+#define BTS7008_2EPA_KILIS 5450 // custom-pdm: Infineon BTS7008-2EPA Rev 1.21 Table 22 typ. (stock 5950)
+#define BTS70012_1ESP_KILIS 33700 // custom-pdm: Infineon BTS70012-1ESP Rev 1.21 Table 21 typ. (stock 35000)
+#define BTS7004_1EPP_KILIS 20000 // custom-pdm: Infineon BTS7004-1EPP Rev 1.11 Table 21 typ.
 
 #define SLEEP_TIMEOUT 30000
 
