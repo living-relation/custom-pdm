@@ -56,14 +56,31 @@ class Frame:
     def __init__(s, id, data, ide=0, dlc=None, src=None):
         s.id = id; s.ide = ide; s.data = bytes(data) + bytes(8 - len(data)); s.dlc = len(data) if dlc is None else dlc; s.src = src; s.t = 0
 
+# MCU safety (core/safety.h, MCU_SAFETY): option bytes as FLASH_OPTCR shows them (RM0390 3.8.6). Factory: BOR_LEV
+# 11 = BOR off; after the firmware's first start: 00 = BOR level 3. A Board starts with BOR level 3 already set (a
+# board that has been powered before) unless opt=OPT_FACTORY is given. RCC_CSR reset flags (RM0390 6.3.21).
+OPT_FACTORY = 0x0FFFAAED
+OPT_BOR3 = OPT_FACTORY & ~0x0C
+RSTF_POR, RSTF_BOR, RSTF_SFT, RSTF_IWDG = 1 << 27, 1 << 25, 1 << 28, 1 << 29
+LSI_HZ = (17000, 32000, 47000)                  # STM32F446 DS DocID027107 Rev 2 Table 42: min / typ / max
+SAFETY_WDG_MIN_MS = 1000                        # core/safety.h: run timeout at the fastest LSI (>= 2 x the longest gap)
+
 class Board:
-    """One simulated board: real firmware logic + the hardware model around it."""
+    """One simulated board: real firmware logic + the hardware model around it.
+    An MCU reset (the firmware's own NVIC_SystemReset, or the watchdog) restarts the firmware in place (run_until):
+    FRAM, option bytes, loads, inputs and temperatures stay; every pin is back at its reset state meanwhile."""
     n_inst = 0
-    def __init__(s, model, name, sodir, fram=None, fram_size=32768, vbat=13.8, unit=1):
-        Board.n_inst += 1
-        s.model = model; s.name = name; s.connected = True; s.powered = True
-        path = os.path.join(sodir, f"inst{Board.n_inst}_{model['fw']}.so")
-        shutil.copy(os.path.join(sodir, f"{model['fw']}_unit{unit}.so"), path)     # own copy = own globals
+    all = []                                        # every Board made in this run (watchdog summary: watchdog_summary)
+    def __init__(s, model, name, sodir, fram=None, fram_size=32768, vbat=13.8, unit=1, opt=OPT_BOR3, lsi=32000, reset_flags=RSTF_POR | RSTF_BOR):
+        s.model = model; s.name = name; s.connected = True; s.powered = True; s.sodir = sodir; s.unit = unit
+        s.fram_size = fram_size; s.vbat = vbat; s.t0 = 0; s.board_c = 30.0; s.die_c = 30.0; s.vdda = None
+        s.loads = {}; s.clamps = {}; s.analog_pins = {}; s.lsi = lsi; s.resets = []
+        s.dip = {}; s.wire = {}
+        s._load(fram, opt, reset_flags); Board.all.append(s)
+    def _load(s, fram, opt, reset_flags):
+        Board.n_inst += 1; model = s.model
+        path = os.path.join(s.sodir, f"inst{Board.n_inst}_{model['fw']}.so")
+        shutil.copy(os.path.join(s.sodir, f"{model['fw']}_unit{s.unit}.so"), path)     # own copy = own globals
         L = s.L = ctypes.CDLL(path, mode=ctypes.RTLD_LOCAL)
         L.sim_now.restype = ctypes.c_uint64; L.sim_next_event.restype = ctypes.c_uint64
         L.sim_run_until.argtypes = [ctypes.c_uint64]; L.sim_out_current.restype = ctypes.c_float
@@ -73,28 +90,39 @@ class Board:
         L.sim_plant_add.argtypes = [ctypes.c_int] * 5 + [ctypes.c_float] * 3
         L.sim_plant_set.argtypes = [ctypes.c_int, ctypes.c_float, ctypes.c_int]; L.sim_plant_clamp.argtypes = [ctypes.c_int, ctypes.c_float]
         L.sim_fram.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_uint32]
-        s.fram_size = fram_size
-        if fram is not None: L.sim_fram(fram, 1, fram_size)
+        L.sim_opt_set.argtypes = [ctypes.c_uint32]; L.sim_opt_get.restype = ctypes.c_uint32
+        L.sim_set_lsi.argtypes = [ctypes.c_uint32]; L.sim_set_reset_flags.argtypes = [ctypes.c_uint32]
+        L.sim_halt_at.restype = ctypes.c_uint64; L.sim_stall_thread.argtypes = [ctypes.c_char_p]
+        if fram is not None: L.sim_fram(fram, 1, s.fram_size)
         else:
-            buf = ctypes.create_string_buffer(b'\xff' * fram_size, fram_size); L.sim_fram(buf, 1, fram_size)
+            buf = ctypes.create_string_buffer(b'\xff' * s.fram_size, s.fram_size); L.sim_fram(buf, 1, s.fram_size)
+        L.sim_opt_set(opt); L.sim_set_lsi(s.lsi); L.sim_set_reset_flags(reset_flags)
         for o in model['outputs']:
             L.sim_plant_add(line(o[0]), line(o[1]), line(o[2]) if o[2] else -1, o[3], line(o[4]), KILIS[o[5]], RSENSE, IS_CLAMP)
-        s.vbat = vbat; s.t0 = 0; s.board_c = 30.0; s.die_c = 30.0
-        s.set_vbat(vbat)
-        s.dip = {}; s.wire = {}
-        for i in range(len(model['inputs'])): s.set_input(i, 'open', 'off')
+        s.set_vbat(s.vbat)
+        if s.vdda is not None: s.set_vdda(s.vdda)
+        for o, (ohms, fault) in s.loads.items(): s.set_load(o, ohms, fault)
+        for o, v in s.clamps.items(): s.set_is_clamp(o, v)
+        for (a, b), v in s.analog_pins.items(): L.sim_set_pin_volts(a, b, v)
+        for i in range(len(model['inputs'])): s.set_input(i, s.wire.get(i, 'open'), s.dip.get(i, 'off'))
         L.sim_boot()
+    def _mcu_reset(s):
+        """The MCU reset itself (software reset or watchdog): start the firmware again from the moment it happened."""
+        f = s.L.sim_flags(); at = s.t0 + s.L.sim_halt_at(); kind = 'watchdog' if f & 16 else 'software'
+        fram, opt = s.fram(), s.L.sim_opt_get()
+        s.resets.append((at, kind)); s.t0 = at
+        s._load(fram, opt, RSTF_IWDG if kind == 'watchdog' else RSTF_SFT)
     # --- environment
     def set_vbat(s, v):
         s.vbat = v; s.L.sim_set_env(v, s.board_c, s.die_c)
         a, b = pin(s.model['batt']); s.L.sim_set_pin_volts(a, b, v * 4700.0 / (47000.0 + 4700.0))
     def set_vdda(s, v):
-        s.L.sim_set_vdda.argtypes = [ctypes.c_float]; s.L.sim_set_vdda(v)
+        s.vdda = v; s.L.sim_set_vdda.argtypes = [ctypes.c_float]; s.L.sim_set_vdda(v)
     def set_temp(s, board_c, die_c=None):
         """board_c: MCP9808 reading. die_c: STM32 die (internal sensor), unchanged if None."""
         s.board_c = board_c; s.die_c = s.die_c if die_c is None else die_c; s.L.sim_set_env(s.vbat, s.board_c, s.die_c)
-    def set_load(s, out, ohms, fault=0): s.L.sim_plant_set(out, ohms or 0.0, fault)
-    def set_is_clamp(s, out, volts=IS_CLAMP): s.L.sim_plant_clamp(out, volts)   # top of the IS chain (see IS_CLAMP)
+    def set_load(s, out, ohms, fault=0): s.loads[out] = (ohms, fault); s.L.sim_plant_set(out, ohms or 0.0, fault)
+    def set_is_clamp(s, out, volts=IS_CLAMP): s.clamps[out] = volts; s.L.sim_plant_clamp(out, volts)   # top of the IS chain (see IS_CLAMP)
     # --- MCP9808 (sim_core.cpp model)
     def mcp_fail(s, n): s.L.sim_mcp_fail(n)                 # next n reads fail on I2C, -1 = all until mcp_fail(0)
     def mcp_carry(s, held): s.L.sim_mcp_carry(ctypes.c_float(held))   # chip left in shutdown by the last sleep, holding 'held'
@@ -109,7 +137,7 @@ class Board:
         ext = 0 if wire == 'gnd' else 1 if wire == '12v' else (1 if d == 'up' else 0 if d == 'down' else 2)
         a, b = pin(mcu); s.L.sim_set_ext(a, b, ext)
     def set_analog(s, wire_volts):
-        a, b = pin(s.model['analog']); s.L.sim_set_pin_volts(a, b, min(wire_volts * 20.0 / 30.0, 3.3))   # 10k / 20k divider + clamp
+        a, b = pin(s.model['analog']); v = min(wire_volts * 20.0 / 30.0, 3.3); s.analog_pins[(a, b)] = v; s.L.sim_set_pin_volts(a, b, v)   # 10k / 20k divider + clamp
     # --- pins
     def level(s, name): a, b = pin(name); return s.L.sim_get_level(a, b)
     def watch(s, *names):
@@ -132,7 +160,15 @@ class Board:
              'fram_writes', 'config_bytes', 'n_out', 'n_di', 'n_an', 'var_map', 'filter_on', 'tx_pending']
         return dict(zip(k, c))
     def flags(s):
-        f = s.L.sim_flags(); return dict(fatal=bool(f & 1), asleep=bool(f & 2), bootloader=bool(f & 4))
+        f = s.L.sim_flags(); return dict(fatal=bool(f & 1), asleep=bool(f & 2), bootloader=bool(f & 4), restart=bool(f & 8), wdg_reset=bool(f & 16))
+    # --- MCU safety (core/safety.h)
+    def opt(s): return s.L.sim_opt_get()
+    def bor_level_bits(s): return (s.opt() >> 2) & 3                      # 0 = level 3, 3 = off (factory)
+    def wdg(s):
+        c = (ctypes.c_uint64 * 10)(); s.L.sim_wdg_info(c)
+        return dict(zip(['running', 'pr', 'rlr', 'refreshes', 'max_gap_us', 'max_gap_at', 'timeout_us', 'rtc_wut', 'rtc_wakes', 'opt_writes'], c))
+    def wdg_gap_reset(s): s.L.sim_wdg_gap_reset()
+    def stall(s, thread): return s.L.sim_stall_thread(thread.encode())     # 'DeviceThread', 'SlowThread', 'CAN Rx', ...
     def fram(s):
         buf = ctypes.create_string_buffer(s.fram_size); s.L.sim_fram(buf, 0, s.fram_size); return buf.raw
     # --- var map index (mirrors InitVarMap order in core/device.cpp)
@@ -146,7 +182,11 @@ class Board:
     def now(s): return s.t0 + s.L.sim_now()
     def next_event(s): return s.t0 + s.L.sim_next_event() if s.powered else math.inf
     def run_until(s, t):
-        if s.powered: s.L.sim_run_until(max(0, t - s.t0))
+        if not s.powered: return
+        for _ in range(100):
+            s.L.sim_run_until(max(0, t - s.t0))
+            if not (s.L.sim_flags() & (8 | 16)): return
+            s._mcu_reset()                                  # MCU reset: run the rest of the time on the new start
     def bitrate(s): return s.L.sim_can_bitrate() if s.powered else 0
     def tx_peek(s):
         if not s.powered: return None
@@ -156,6 +196,12 @@ class Board:
     def tx_pop(s): s.L.sim_can_tx_pop()
     def rx(s, f):
         if s.powered: s.L.sim_can_rx(f.id, f.ide, f.dlc, (ctypes.c_uint8 * 8)(*f.data))
+
+def watchdog_summary():
+    """Over every Board of this run: unexpected watchdog resets and the longest refresh gap (run timeout) in ms."""
+    resets = [(b.name, t, k) for b in Board.all for t, k in b.resets if k == 'watchdog']
+    gap = max([b.wdg()['max_gap_us'] for b in Board.all] or [0]) / 1000
+    return resets, gap, len(Board.all)
 
 class PyNode:
     """A CAN node written in Python (ECU, PC tool)."""
@@ -234,6 +280,28 @@ class Tool(PyNode):
         """Sleep request (comms/request_msg.cpp: cmd 32 + 'QUIT' on base + 1). The board posts an acknowledge but
         stops in the same device-thread cycle, so the acknowledge may never leave it: do not wait for it."""
         s.rxlog.clear(); s.send(base + 1, bytes([CMD['Sleep']]) + b'QUIT' + bytes(3)); s.bus.run_for(50)
+    def read_all(s, base, ms=3000):
+        """Read All (cmd 10): [(index, sub, value)] in the board's table order and the board's CRC, or None."""
+        s.rxlog.clear(); s.send(base + 1, bytes([10, 0, 0, 0, 0, 0, 0, 0])); vals = []; end = s.bus.now + ms * 1000
+        while s.bus.now < end:
+            s.bus.run(s.bus.now + 1000)
+            for f in s.rxlog:
+                if f.id != base: continue
+                if f.data[0] == 11: vals.append((f.data[1] | f.data[2] << 8, f.data[3], struct.unpack('<I', f.data[4:8])[0]))
+                if f.data[0] == 12: s.rxlog.clear(); return vals, struct.unpack('<I', f.data[4:8])[0]
+            s.rxlog.clear()
+        return None
+    def write_all(s, base, vals, crc, batch=20, gap_ms=2):
+        """Write All as dingoConfig does it (cmd 20, 21 per value, 22 with count + CRC). True = the board applied it."""
+        if s._send_wait(base, bytes([20, 0, 0, 0, 0, 0, 0, 0]), 20) is None: return False
+        for i, (ix, sub, v) in enumerate(vals):
+            s.send(base + 1, bytes([21, ix & 255, ix >> 8, sub]) + struct.pack('<I', v))
+            if i % batch == batch - 1: s.bus.run_for(gap_ms)
+        s.bus.run_for(20)
+        f = s._send_wait(base, bytes([22, len(vals) & 255, len(vals) >> 8, 0]) + struct.pack('<I', crc), 22, ms=500)
+        return bool(f and f.data[3] == 1)
+    def _send_wait(s, base, payload, cmd, ms=100):
+        s.rxlog.clear(); s.send(base + 1, payload); return s._wait(base, cmd, ms)
     def version(s, base):
         s.rxlog.clear(); s.send(base + 1, bytes([CMD['Version'], 0, 0, 0, 0, 0, 0, 0])); f = s._wait(base, CMD['Version'])
         return None if f is None else (f.data[4], f.data[5], (f.data[6] << 8) | f.data[7])
@@ -256,12 +324,18 @@ class Status:
     def die_temp_x10(s): return struct.unpack('<h', s.m[STATUS_MSG][6:8])[0] if STATUS_MSG in s.m else None   # STM32 die, status msg
     def thermal_flags(s): return s.m[3][7] if 3 in s.m else None     # msg 3 byte 7: bit 0 over warn, 1 critical soon, 2 critical
 STATE = ['Off', 'On', 'Overcurrent', 'Fault']
+# MCU safety messages (core/safety.h): type Warning 'R', src Init (MsgSrc::Init = 16), data 0 = what happened
+SRC_INIT = 16
+MSG_WDG_RESET, MSG_BOR_RESET, MSG_BOR_LOW_VBAT, MSG_BOR_FAILED = 1, 2, 3, 4
 
 # ---------------- thermal (Dan r5a / r3c / r7a, docs/firmware-thermal-plan.md) ----------------
 TEMP_INDEX = 0x7F00                                  # custom-pdm thermal parameter block (core/param_defs.h THERMAL_PARAM_BASE)
 TEMP_PARAM = {'warn': 0, 'crit': 1, 'hyst': 2, 'soon': 4}   # sub-index; 3 = critical-exempt output mask
 TEMP_EXEMPT_SUB = 3
-TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6, 'soon': 5}   # expected factory defaults (core/param_defs.h)
+TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6, 'soon': 5}   # expected factory defaults, board A (core/param_defs.h, stock)
+# board B (ADR-2026-11-20-presim-findings item 1): from its FEA sensor map and part ratings (tools/verify_thermal_box.py)
+TEMP_DEFAULT_B = {'warn': 98, 'crit': 104, 'hyst': 6, 'soon': 5}
+def temp_default(model): return TEMP_DEFAULT_B if model['fw'] == 'custompdm_b' else TEMP_DEFAULT
 FLAG_WARN, FLAG_SOON, FLAG_CRIT = 1, 2, 4            # msg 3 byte 7
 # ---------------- wake-up set (Dan B2): param 0x7F00 sub 5, bit i = digital input i may wake; default none ----------------
 WAKE_SUB = 5

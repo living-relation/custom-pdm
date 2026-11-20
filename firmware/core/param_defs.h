@@ -45,7 +45,8 @@
 
 #if THERMAL_LIMIT_PARAMS
 #include "device_config.h"
-// Board temperature limits (MCP9808 reading). Stock values kept until the bench measurements (Dan r6c).
+// Board temperature limits (MCP9808 reading). Stock values kept until the bench measurements (Dan r6c); a board may set
+// its own in port.h (custompdm_b: 98 / 104 C from its FEA sensor map, tools_custom/port_boards.py).
 #ifndef DEFAULT_TEMP_WARN
 #define DEFAULT_TEMP_WARN BOARD_TEMP_WARN
 #endif

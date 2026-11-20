@@ -13,7 +13,7 @@ VBAT = 13.8
 CAL = {0x1FFF7A2A: 1502, 0x1FFF7A2C: 943, 0x1FFF7A2E: 1199}
 BOARDS = [('a1', ps.BOARD_A, 'custompdm_a_unit1.elf'), ('a2', ps.BOARD_A, 'custompdm_a_unit2.elf'), ('b', ps.BOARD_B, 'custompdm_b_unit1.elf')]
 
-L = [f'include @{work}/models/PdmNvicFix.cs', f'include @{work}/models/PdmWriteSpy.cs', f'include @{work}/models/STM32DMA_Circ.cs', f'include @{work}/models/PdmI2C.cs', f'include @{work}/models/PdmAdcCan.cs',
+L = [f'include @{work}/models/PdmNvicFix.cs', f'include @{work}/models/PdmWriteSpy.cs', f'include @{work}/models/STM32DMA_Circ.cs', f'include @{work}/models/PdmI2C.cs', f'include @{work}/models/PdmAdcCan.cs', f'include @{work}/models/PdmSafety.cs',
      'emulation CreateCANHub "bus"', '']
 for name, model, elf in BOARDS:
     L += [f'mach create "{name}"', f'machine LoadPlatformDescription @{work}/stm32f446re.repl',

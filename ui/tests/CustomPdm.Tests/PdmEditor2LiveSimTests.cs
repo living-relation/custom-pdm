@@ -267,8 +267,9 @@ public class PdmEditor2LiveSimTests(Editor2Pdm pdm, ITestOutputHelper output) : 
         var fanOn = loss.Changes("B:1").First() - last;              // then its soft start (PWM ramp, fan preset)
         var pumpOff = loss.Changes("B:2").Single() - last;
         output.WriteLine($"ECU silent: condenser fan ON after {fanOn:F1} ms (on at loss, 0.5 s), fuel pump OFF after {pumpOff:F1} ms (off at loss, 1 s)");
-        Assert.InRange(fanOn, 500, 600);                            // first pulse of the 1 s soft start ramp (100 Hz)
-        Assert.Empty(loss.Changes("B:1").Where(x => x - last > 500 + 1000 + 20)); // full on once the ramp is done
+        Assert.InRange(fanOn, 500, 600);                            // first pulse of the 1 s soft start ramp
+        // full on once the ramp is done: + one PWM period (board B fan soft start at 22 Hz, the freewheel-diode limit, fwsafety)
+        Assert.Empty(loss.Changes("B:1").Where(x => x - last > 500 + 1000 + 1000.0 / 22 + 5));
         Assert.InRange(pumpOff, 1000, 1060);
         Assert.True(loss.At("B:1", loss.End));
         (p.Cmd[1], p.Cmd[2]) = (0, 0);

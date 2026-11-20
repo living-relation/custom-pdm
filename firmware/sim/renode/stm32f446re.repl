@@ -13,11 +13,16 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x80000
 
-flash_controller: MTD.STM32F4_FlashController @ {
+// flash interface + user option bytes (BOR level, models/PdmSafety.cs): factory option bytes = BOR off; kept over a
+// machine Reset (non-volatile), like the chip
+flash_controller: Miscellaneous.PDM_FlashOpt @ {
         sysbus 0x40023C00;
-        sysbus new Bus.BusMultiRegistration { address: 0x1FFFC000; size: 0x100; region: "optionBytes" }
+        sysbus new Bus.BusMultiRegistration { address: 0x1FFFC000; size: 0x10; region: "optionBytes" }
     }
-    flash: flash
+
+// independent watchdog (models/PdmSafety.cs), LSI typ. 32 kHz (DS DocID027107 Table 42)
+iwdg: Miscellaneous.PDM_IWDG @ sysbus 0x40003000
+    frequency: 32000
 
 // system memory + OTP + factory calibration words (VREFINT_CAL 0x1FFF7A2A, TS_CAL 0x1FFF7A2C / 2E)
 rom1: Memory.MappedMemory @ sysbus 0x1FFF0000
@@ -42,8 +47,12 @@ dwt: Miscellaneous.DWT @ sysbus 0xE0001000
 
 pwr: Miscellaneous.STM32_PWR @ sysbus 0x40007000
 
+// RTC clock = LSI (mcuconf.h STM32_RTCSEL_LSI), the same 32 kHz as the IWDG; wake-up timer -> EXTI line 22 (sleep with
+// the watchdog running, core/safety.h)
 rtc: Timers.STM32F4_RTC @ sysbus 0x40002800
+    wakeupTimerFrequency: 32000
     AlarmIRQ -> nvic@41
+    WakeupIRQ -> exti@22
 
 rcc: Miscellaneous.STM32F4_RCC @ sysbus 0x40023800
     rtcPeripheral: rtc
@@ -198,3 +207,5 @@ sysbus:
         // USB OTG FS has no model. GRSTCTL reads "AHB idle, no reset pending" so the ChibiOS core reset returns;
         // everything else at 0x50000000 reads 0, so USB never enumerates (the firmware sees "not connected").
         Tag <0x50000010, 0x50000013> "USB_OTG_FS:GRSTCTL" 0x80000000
+        // DBGMCU_APB1_FZ (IWDG stopped while a debugger halts the core): not modelled, writes ignored
+        Tag <0xE0042008, 0xE004200B> "DBGMCU_APB1_FZ" 0x0

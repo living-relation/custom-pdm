@@ -118,7 +118,13 @@ class pdm_bench:
     def start_bench(s):
         s._x(f'include @{s.resc}'); s._run(10)
         s.vbus_before = {k: (s._n('sysbus ReadDoubleWord 0x40020010', MACH[k]) >> 9) & 1 for k in BASE}    # GPIOA IDR bit 9, before the bench drives it
-        s._settle_inputs(list(BASE)); s._run(1480)
+        s._settle_inputs(list(BASE))
+        # MCU_SAFETY: a fresh board writes BOR level 3 into its option bytes and resets itself about 0.5 s in
+        # (models/PdmSafety.cs); the reset puts Renode's GPIO inputs back at their ODR value, so drive them again
+        # (after its FRAM default-config write, about 0.66 s in); wait for every board's write, then 50 ms for the reset
+        t0 = s.now
+        while s.now < t0 + 1500 and not all(int(s._fl(k, 'ProgramCount'), 0) == 1 for k in BASE): s._run(20)
+        s._run(50); s._settle_inputs(list(BASE)); s._run(max(0, 2190 - (s.now - t0)))   # the second start needs 0.5 s + init
 
     def fresh_boards_answer_on_their_own_ids(s):
         br = {k: s._bitrate(k) for k in BASE}; ver = {k: s._version(BASE[k]) for k in BASE}
@@ -127,7 +133,9 @@ class pdm_bench:
     def no_board_is_in_fatal_error(s):
         f = {k: s._fatal(k) for k in BASE}; st = {k: s._status(k, (0,)) for k in BASE}
         batt = {k: st[k].batt() for k in BASE}
-        s._check(not any(f.values()) and all(b is not None and abs(b - s.vbat) < 0.3 for b in batt.values()), f'fatal {f}, battery volts in status {batt}')
+        why = {k: dict(leds=(s._pin(k, 'PC0'), s._pin(k, 'PC1')), state=st[k].dev_state(), last=s._info(k), bor=s._fl(k, 'BorLevelBits'),
+                       writes=s._fl(k, 'ProgramCount'), wdg=(s._wd(k, 'Running'), s._wd(k, 'Resets'))) for k in BASE}
+        s._check(not any(f.values()) and all(b is not None and abs(b - s.vbat) < 0.3 for b in batt.values()), f'fatal {f}, battery volts in status {batt}; {why}')
 
     def fresh_boards_wrote_default_config_to_fram(s):
         w = {k: s._fram_written(k) for k in BASE}; s.fram_w = w
@@ -144,13 +152,13 @@ class pdm_bench:
 
     def factory_defaults_fan_output_and_temperature_limits(s):
         # fans: board A2 OUT2 (global output 10) is OFF at room temperature (temperature-switched since 2026-11-14);
-        # r5a / r6c: limits 55 / 80 / 6 deg C; s10b exempt mask; s11c critical-soon margin 5 (param block 0x7F00 sub 0-4)
+        # r5a / r6c: limits 55 / 80 / 6 deg C (board B 98 / 104 / 6: its FEA sensor map, ADR-2026-11-20-presim-findings 1); s10b exempt mask; s11c margin 5
         seen = []
         for _ in range(10): s._run(200); seen.append(s._pins_on())
         st = s._status('A2', (3,)).out_state(s.OUT[10][1])
         lim = {k: tuple(s._read1(BASE[k], s.ps.TEMP_INDEX, sub) for sub in (0, 1, 2, 3, 4)) for k in BASE}
         s._check(s.OUT[10] == s.ps.FAN and all(p == [] for p in seen) and st == 0, f'output pins high every 200 ms for 2 s at 30 C: {seen}; A2 OUT2 status {st}')
-        s._check(lim == {'A1': (55, 80, 6, 0, 5), 'A2': (55, 80, 6, 2, 5), 'B': (55, 80, 6, 0, 5)}, f'warn / critical / recovery / critical-exempt mask / critical-soon margin from the boards: {lim}')
+        s._check(lim == {'A1': (55, 80, 6, 0, 5), 'A2': (55, 80, 6, 2, 5), 'B': (98, 104, 6, 0, 5)}, f'warn / critical / recovery / critical-exempt mask / critical-soon margin from the boards: {lim}')
 
     def _fan_steps(s, steps, ms=800):
         out = []
@@ -420,7 +428,8 @@ class pdm_bench:
         # restarted about 620 ms after the request). So the bench halts the CPU where the firmware enters STOP
         # (EnterStopMode, after every sleep step); the pins and the sensor then hold what they hold in STOP mode.
         s._ecu_off(); s._plug('A2', False); s._plug('B', False); s._temp('A1', 33.0); s._run(TIMEOUT_MS + 300)   # policy 'on' output 3 comes on
-        s._x(f'sysbus.cpu AddHook {s._symbol("custompdm_a_unit1.elf", "EnterStopMode()"):#x} "self.IsHalted = True"', 'a1')
+        # MCU_SAFETY boards stop in McuEnterStopWithWdg (STOP with RTC wake-ups refreshing the watchdog, core/safety.h)
+        s._x(f'sysbus.cpu AddHook {s._symbol("custompdm_a_unit1.elf", "McuEnterStopWithWdg(unsigned long)"):#x} "self.IsHalted = True"', 'a1')
         before = (s._pins('A1', den), s._a1_on(), s._pins('A1', s.ps.LEDS), s._mcp('A1', 'Shutdown'), s._mcp('A1', 'AlertEnabled'))
         s._ecu(f'Send {BASE["A1"] + 1:#x} "{(bytes([s.ps.CMD["Sleep"]]) + b"QUIT" + bytes(3)).hex()}"'); s._run(200)
         age0 = s._age_ms('A1'); s._run(500); age1 = s._age_ms('A1'); halted = s._x('sysbus.cpu IsHalted', 'a1')
@@ -437,6 +446,7 @@ class pdm_bench:
         s._temp('A1', 41.5)                              # warmer now; the sensor still holds 33.0 C from before sleep
         # wake-up: the firmware resets the MCU after STOP (NVIC_SystemReset). EXTI wake from STOP is not emulated, so
         # the bench does that MCU reset itself; the MCP9808 gets no power-on reset (models/PdmI2C.cs)
+        s._x(f'sysbus.cpu RemoveHooksAt {s._symbol("custompdm_a_unit1.elf", "McuEnterStopWithWdg(unsigned long)"):#x}', 'a1')
         s._x('machine Reset', 'a1'); s._x('sysbus.cpu IsHalted false', 'a1'); s._settle_inputs(['A1'])
         temps = []; t = 0; den_first = None
         while t < 1500:
@@ -586,3 +596,51 @@ class pdm_bench:
         again = s._status(k, (3,)).out_state(o)
         s._check(ok_w and on_before and t <= 6 and st == 3 and still_off and again == 0,
                  f'writes acknowledged {ok_w}; on before {on_before}; IN low {t} ms after the fault (2 ms steps, want <= 6, trip time 1000 ms); 250 ms later state {st} (3 = Fault), IN still low {still_off}; after a power cycle {again}')
+
+    # ------------------------------------------------------------------ MCU safety (core/safety.h, ADR-2026-11-20-presim-findings item 3)
+    def _fl(s, k, prop): return s._x(f'sysbus.flash_controller {prop}', MACH[k])
+    def _wd(s, k, prop): return s._x(f'sysbus.iwdg {prop}', MACH[k])
+    def _wdf(s, k, prop): return float(s._wd(k, prop).replace(',', '.'))
+
+    def brown_out_level_written_once(s):
+        # models/PdmSafety.cs starts every board with factory option bytes (BOR off, 0x0FFFAAEC); the bench has power
+        # cycled every board at least once since
+        got = {k: (int(s._fl(k, 'BorLevelBits'), 0), int(s._fl(k, 'ProgramCount'), 0), int(s._fl(k, 'FailedUnlocks'), 0)) for k in BASE}
+        s._check(all(v == (0, 1, 0) for v in got.values()), f'(BOR_LEV bits, option-byte writes, failed unlocks) per board {got}: want (0 = level 3, 1, 0)')
+
+    def watchdog_runs_with_no_reset_in_the_whole_run(s):
+        got = {k: dict(run=s._wd(k, 'Running'), pr=int(s._wd(k, 'Prescaler'), 0), rlr=int(s._wd(k, 'ReloadValue'), 0),
+                       resets=int(s._wd(k, 'Resets'), 0), refreshes=int(s._wd(k, 'Refreshes'), 0), gap=s._wdf(k, 'MaxGapMs')) for k in BASE}
+        t_min = {k: (4 << v['pr']) * (v['rlr'] + 1) / s.ps.LSI_HZ[2] * 1000 for k, v in got.items()}
+        logger.info(f'watchdog per board {got}; shortest timeout (LSI 47 kHz) ms {t_min}', also_console=True)
+        s._check(all(v['run'] == 'True' and v['resets'] == 0 and v['refreshes'] > 100 and t_min[k] >= s.ps.SAFETY_WDG_MIN_MS
+                     and 0 < v['gap'] <= t_min[k] / 2 for k, v in got.items()),
+                 f'watchdog running, no reset in the whole bench run (Write / Burn, power cycles, critical, sleep), longest refresh gap on the real binaries <= half the shortest timeout: {got}, {t_min}')
+
+    def stalled_device_loop_resets_the_board(s):
+        # the device loop stalls where it would refresh: a CPU hook halts A1's core at McuWdgRefresh (Renode's hooks
+        # cannot keep one thread spinning; the host sim stalls each thread on its own, s0); the IWDG runs on and must
+        # reset A1, and every output starts off
+        s._ecu_on(); s._set_cmd([1, 2, 4]); s._run(600); before = s._a1_on(); r0 = int(s._wd('A1', 'Resets'), 0)
+        addr = s._symbol('custompdm_a_unit1.elf', 'McuWdgRefresh()'); tmo = s._wdf('A1', 'TimeoutMs')
+        s._x(f'sysbus.cpu AddHook {addr:#x} "self.IsHalted = True"', 'a1'); t0 = s.now
+        while int(s._wd('A1', 'Resets'), 0) == r0 and s.now < t0 + tmo + 1500: s._run(10)
+        t_reset = s.now - t0; s._x(f'sysbus.cpu RemoveHooksAt {addr:#x}', 'a1'); s._x('sysbus.cpu IsHalted false', 'a1')
+        off = s._a1_on(); s._settle_inputs(['A1']); s._run(1500); back = s._a1_on()
+        s._set_cmd([]); s._run(300)
+        s._check(before == [1, 2, 4] and int(s._wd('A1', 'Resets'), 0) == r0 + 1 and abs(t_reset - tmo) <= 300 and off == [] and back == [1, 2, 4],
+                 f'A1 on {before}; watchdog reset {t_reset} ms after the stall (timeout {tmo:.0f} ms at 32 kHz, within one 250 ms slow-thread round); '
+                 f'outputs at the reset {off}; 1.5 s later {back}')
+
+    def sleep_with_the_watchdog_running(s):
+        # STOP as on the chip as far as Renode goes: the RTC wake-up (LSI / 16, WUT 4095 = 2.05 s) ends each WFI, the
+        # firmware refreshes the IWDG (sleep timeout 64 x 4096 / 32 kHz = 8.2 s) and stops again; no reset in 12 s
+        s._ecu_off(); s._plug('A2', False); s._plug('B', False); s._run(TIMEOUT_MS + 300)
+        r0 = int(s._wd('A1', 'Resets'), 0); s._x('sysbus.iwdg ClearStats', 'a1')
+        s._ecu(f'Send {BASE["A1"] + 1:#x} "{(bytes([s.ps.CMD["Sleep"]]) + b"QUIT" + bytes(3)).hex()}"'); s._run(400)
+        age0 = s._age_ms('A1'); s._run(12000); age1 = s._age_ms('A1')
+        got = dict(resets=int(s._wd('A1', 'Resets'), 0) - r0, sleep_refreshes=int(s._wd('A1', 'SleepRefreshes'), 0), timeout_ms=s._wdf('A1', 'TimeoutMs'),
+                   pr=int(s._wd('A1', 'Prescaler'), 0), quiet_ms=(age0, age1))
+        s._x('machine Reset', 'a1'); s._settle_inputs(['A1']); s._plug('A2', True); s._plug('B', True); s._ecu_on(); s._run(1500)
+        s._check(got['resets'] == 0 and got['sleep_refreshes'] >= 5 and got['pr'] == 4 and abs(got['timeout_ms'] - 8192) < 2 and age1 - age0 >= 11900
+                 and not s._fatal('A1'), f'12 s asleep (no status frames): {got}; A1 runs again after the bench wake-up reset: {not s._fatal("A1")}')

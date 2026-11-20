@@ -9,6 +9,7 @@
 #include "mcu_utils.h"
 #include "hardware/mb85rc.h"
 #include "usb.h"
+#include "safety.h"
 #include <ucontext.h>
 #include <vector>
 #include <algorithm>
@@ -23,7 +24,7 @@ static const uint64_t TICK_US = 1000000 / CH_CFG_ST_FREQUENCY;
 struct thread_t
 {
     ucontext_t ctx; void *stack; tfunc_t fn; void *arg; chibios_rt::BaseThread *obj;
-    uint64_t wake; int prio; bool done; bool terminate; bool parked; uint64_t spins;
+    uint64_t wake; int prio; bool done; bool terminate; bool parked; uint64_t spins; const char *name;
 };
 static std::vector<thread_t *> threads;
 static thread_t *cur = nullptr;
@@ -50,7 +51,7 @@ static thread_t *spawn(tfunc_t fn, void *arg, chibios_rt::BaseThread *obj, int p
 }
 thread_t *chThdCreateStatic(void *, size_t, int prio, tfunc_t fn, void *arg) { return spawn(fn, arg, nullptr, prio); }
 chibios_rt::ThreadReference chibios_rt::BaseThread::start(int prio) { ThreadReference r; r.t = spawn(nullptr, nullptr, this, prio); return r; }
-void chRegSetThreadName(const char *) {}
+void chRegSetThreadName(const char *n) { if (cur) cur->name = n; }
 bool chThdShouldTerminateX() { return cur && cur->terminate; }
 void chThdExit(msg_t) { cur->done = true; for (;;) yieldToSched(); }
 void chThdTerminate(thread_t *t) { if (t) t->terminate = true; }
@@ -133,8 +134,48 @@ void chFifoReturnObject(objects_fifo_t *f, void *obj) { f->free.push_back(obj); 
 uint32_t simExtiPending = 0;
 static uint32_t nvicClears = 0;
 void NVIC_ClearPendingIRQ(IRQn_Type) { nvicClears++; }
-static int restartFlag = 0;
-void NVIC_SystemReset() { restartFlag = 1; park(); } // real MCU resets here
+static int restartFlag = 0; static uint64_t haltAt = 0;
+void NVIC_SystemReset() { restartFlag = 1; haltAt = nowUs; park(); } // real MCU resets here
+
+//================================================================== MCU safety models (core/safety.h, MCU_SAFETY)
+// Option bytes (RM0390 3.8.6: FLASH_OPTCR reset value 0x0FFFAAED = factory, BOR_LEV bits 3:2 = 11 = BOR off). Kept
+// by the Python Board across power cycles (non-volatile). optFail: the next n writes do not take.
+static uint32_t optBytes = 0x0FFFAAEDU, optWrites = 0; static int optFail = 0;
+uint32_t McuBorLevel() { return (optBytes >> 2) & 3U; }
+bool McuSetBorLevel(uint32_t level)
+{
+    optWrites++;
+    if (optFail) { optFail--; return false; }
+    optBytes = (optBytes & ~0x0CU) | ((level & 3U) << 2); return McuBorLevel() == (level & 3U);
+}
+// IWDG (RM0390 19): counter clock LSI / (4 << PR), reload RLR, reset when it reaches 0. lsiHz is settable (DS Table 42:
+// 17 / 32 / 47 kHz). PR / RLR written by McuWdgSetTimeout are used from the reload that follows (as the hardware).
+// Refresh gaps are measured while the timeout is the run one (the longest gap = the worst-case loop).
+static uint32_t lsiHz = 32000; static int wdgRunning = 0, wdgResetFlag = 0;
+static uint32_t wdgPr = 0, wdgRlr = 0xFFF, wdgRefreshes = 0; static uint64_t wdgLast = 0, wdgMaxGap = 0, wdgMaxGapAt = 0;
+static uint32_t resetFlags = MCU_RSTF_POR | MCU_RSTF_BOR;     // RCC_CSR at boot (power-on: PORRSTF + BORRSTF)
+static uint32_t rtcWut = 0, rtcWakes = 0; static int stopWithWdg = 0;
+static uint64_t wdgTicks(uint32_t pr, uint32_t rlr) { return (uint64_t)(4U << pr) * (rlr + 1U); }
+static uint64_t wdgDeadline() { return wdgRunning ? wdgLast + wdgTicks(wdgPr, wdgRlr) * 1000000ULL / lsiHz : UINT64_MAX; }
+void McuWdgRefresh()
+{
+    if (!wdgRunning) return;
+    uint64_t gap = nowUs - wdgLast;
+    if (wdgPr == SAFETY_WDG_PR && gap > wdgMaxGap) { wdgMaxGap = gap; wdgMaxGapAt = nowUs; }
+    wdgLast = nowUs; wdgRefreshes++;
+}
+void McuWdgSetTimeout(uint32_t pr, uint32_t rlr) { wdgPr = pr; wdgRlr = rlr; wdgLast = nowUs; }
+void McuWdgStart(uint32_t pr, uint32_t rlr) { wdgRunning = 1; wdgPr = pr; wdgRlr = rlr; wdgLast = nowUs; }
+uint32_t McuResetFlags() { return resetFlags; }
+void McuRtcWakeStop() {}
+void McuSystemReset() { restartFlag = 1; haltAt = nowUs; park(); }
+// STOP with the RTC wake-up (mcu_safety.cpp): the RTC (LSI / 16, every wut + 1 counts) refreshes the IWDG; a
+// watchdog timeout shorter than the RTC period resets the MCU in STOP (sim_run_until).
+void McuEnterStopWithWdg(uint32_t wut) { rtcWut = wut; stopWithWdg = 1; asleepFlag = 1; park(); }
+static bool stopRefreshed() { return stopWithWdg && (uint64_t)(rtcWut + 1U) * 16U < wdgTicks(wdgPr, wdgRlr); }
+// MCU reset by the watchdog: every pin back to its reset state (input, so every PROFET IN is low)
+static void pinsToReset();
+static void wdgFire() { wdgResetFlag = 1; haltAt = nowUs; pinsToReset(); }
 
 //================================================================== GPIO
 struct Pin { uint8_t mode; uint8_t pupd; uint8_t odr; uint8_t ext; uint8_t af; uint8_t event; };
@@ -159,6 +200,7 @@ static Pin *pins()
     return &p[0][0];
 }
 static Pin &pin(ioline_t l) { return pins()[((l >> 4) & 7) * 16 + (l & 15)]; }
+static void pinsToReset() { for (int i = 0; i < 8 * 16; i++) { pins()[i].mode = 0; pins()[i].odr = 0; pins()[i].pupd = 0; } }
 static uint32_t badWrites = 0, floatReads = 0; static ioline_t lastBadWrite = 0, lastFloatRead = 0;
 // Edge log for pin-level timing (sim_watch_pins / sim_edges): every change of a watched output line, in us
 struct EdgeRec { uint64_t t; int idx; int level; };
@@ -461,11 +503,13 @@ static uint64_t nextEvent()
     uint64_t t = UINT64_MAX;
     for (auto th : threads) if (!th->done && !th->parked && th->wake < t) t = th->wake;
     for (auto p : allPwm) { int k; uint64_t e = pwmNextEvent(p, nowUs, &k); if (e < t) t = e; }
+    if (!wdgResetFlag && wdgDeadline() < t) t = wdgDeadline();
     return t;
 }
+static bool halted() { return asleepFlag || bootloaderFlag || restartFlag || wdgResetFlag; }
 API void sim_boot() { pins(); framEnsure(); spawn(mainThread, nullptr, nullptr, NORMALPRIO); }
 API uint64_t sim_now() { return nowUs; }
-API uint64_t sim_next_event() { uint64_t t = nextEvent(); return t < nowUs ? nowUs : t; }
+API uint64_t sim_next_event() { if (halted()) return UINT64_MAX / 2; uint64_t t = nextEvent(); return t < nowUs ? nowUs : t; }
 API void sim_run_until(uint64_t target)
 {
     for (;;)
@@ -475,11 +519,18 @@ API void sim_run_until(uint64_t target)
         {
             thread_t *best = nullptr;
             for (auto th : threads) if (!th->done && !th->parked && th->wake <= nowUs && (!best || th->prio > best->prio)) best = th;
-            if (!best || asleepFlag || bootloaderFlag) break;
+            if (!best || halted()) break;
             cur = best; best->wake = UINT64_MAX; swapcontext(&schedCtx, &best->ctx); cur = nullptr;
             adcRefresh();
         }
-        if (asleepFlag || bootloaderFlag) { nowUs = target; return; }
+        if (!wdgResetFlag && nowUs >= wdgDeadline() && !(asleepFlag && stopRefreshed())) { wdgFire(); return; }
+        if (asleepFlag && !wdgResetFlag && !stopRefreshed() && wdgDeadline() <= target) { nowUs = wdgDeadline(); wdgFire(); return; }
+        if (asleepFlag && stopRefreshed() && target > wdgLast)   // RTC wake-ups in STOP, each a refresh
+        {
+            uint64_t per = (uint64_t)(rtcWut + 1U) * 16U * 1000000ULL / lsiHz;
+            uint64_t n = (target - wdgLast) / per; rtcWakes += (uint32_t)n; wdgLast += n * per; wdgRefreshes += (uint32_t)n;
+        }
+        if (halted()) { nowUs = target; return; }
         uint64_t t = nextEvent();
         if (t > target) { nowUs = target; for (auto p : allPwm) pwmSync(p); adcRefresh(); return; }
         // timer interrupts due at t
@@ -554,7 +605,28 @@ API void sim_plant_set(int idx, float loadOhms, int fault) { plant[idx].loadOhms
 // this (pdmsim.py Board.set_is_clamp)
 API void sim_plant_clamp(int idx, float vclamp) { plant[idx].vclamp = vclamp; }
 // state for checks
-API int sim_flags() { return fatalFlag | (asleepFlag << 1) | (bootloaderFlag << 2) | (restartFlag << 3); }
+API int sim_flags() { return fatalFlag | (asleepFlag << 1) | (bootloaderFlag << 2) | (restartFlag << 3) | (wdgResetFlag << 4); }
+// MCU safety (core/safety.h): option bytes, LSI, reset flags at boot, watchdog statistics, a thread that stops
+API void sim_opt_set(uint32_t v) { optBytes = v; }
+API uint32_t sim_opt_get() { return optBytes; }
+API void sim_opt_fail(int n) { optFail = n; }
+API void sim_set_lsi(uint32_t hz) { lsiHz = hz; }
+API void sim_set_reset_flags(uint32_t f) { resetFlags = f; }
+// out: running, PR, RLR, refreshes, longest refresh gap (us, run timeout only), time of that gap, timeout (us), RTC
+// WUT, RTC wakes in STOP, option-byte writes
+API void sim_wdg_info(uint64_t *out)
+{
+    out[0] = wdgRunning; out[1] = wdgPr; out[2] = wdgRlr; out[3] = wdgRefreshes; out[4] = wdgMaxGap; out[5] = wdgMaxGapAt;
+    out[6] = wdgTicks(wdgPr, wdgRlr) * 1000000ULL / lsiHz; out[7] = rtcWut; out[8] = rtcWakes; out[9] = optWrites;
+}
+API uint64_t sim_halt_at() { return haltAt; }   // time of the last MCU reset (software or watchdog)
+API void sim_wdg_gap_reset() { wdgMaxGap = 0; wdgMaxGapAt = 0; }
+// a thread stuck for ever (an endless loop with interrupts still running): never scheduled again; 0 = no such thread
+API int sim_stall_thread(const char *name)
+{
+    for (auto th : threads) if (th->name && !strcmp(th->name, name) && !th->done) { th->parked = true; return 1; }
+    return 0;
+}
 API void sim_counters(uint32_t *out)
 {
     out[0] = badWrites; out[1] = lastBadWrite; out[2] = floatReads; out[3] = lastFloatRead; out[4] = rxOverruns;

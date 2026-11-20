@@ -15,12 +15,12 @@ firmware fixes of this branch. Not repeated here: the D2 supply TVS (job d2tvs).
    (every current and voltage reading leans on that reference); the chip temperature read 5 C off when the 3.3 V
    rail is 1.5 % off. Both fixed and proven in the simulator (s0 50/50, s1 88/88, s3 110/110, Renode 35/35).
 3. **Real problems for a decision (not changed by me):** (a) board B's own temperature sensor would read 96-110 C
-   in normal hot-day use, above the 80 C "critical" setting, so board B would switch its outputs off; (b) board B's
+   in normal hot-day use, above the 80 C "critical" setting, so board B would switch its outputs off (now 98 / 104 C, fwsafety); (b) board B's
    8 protection diodes short the battery if it is ever connected the wrong way round, and they also overheat if a
-   fan or pump is PWM-driven faster than about 30 Hz; (c) the processor has no brown-out reset set (one setting at
-   flashing fixes it); (d) a horn (or a big solenoid) on a board A output may overload that switch when it turns off.
+   fan or pump is PWM-driven faster than about 30 Hz; (c) the processor has no brown-out reset set (the firmware now
+   sets it itself, fwsafety); (d) a horn (or a big solenoid) on a board A output may overload that switch when it turns off.
 4. **Small hardware items (stock dingoPDM too):** no capacitor on the processor's analog supply (VDDA) and its reset
-   pin, no watchdog, no USB surge protection, the regulator / crystal / some capacitors are 85 C parts in a box that
+   pin, no watchdog (built since, fwsafety), no USB surge protection, the regulator / crystal / some capacitors are 85 C parts in a box that
    can run hotter.
 5. **Needs real hardware (bench list):** load inductances (horn, solenoids, fan motor), the board temperatures at the
    sensors, sleep current, start-up at 6 V, the ADC full-scale with a forced PROFET fault, the CAN sample point of the
@@ -68,7 +68,7 @@ ran items 1-8; DansPC WSL ran the Renode bench (Renode 1.17.0, arm-none-eabi-gcc
 | +3V3 regulated from / >= 2.7 V from | 5.2 V / 4.65 V battery (TSR dropout below 6.5 V ASSUMED 1 V) | PASS / WARN |
 | 6 V crank | +5VP 4.45, +5V 4.16, +3V3 3.25 V: CAN drops out, outputs and MCU stay | WARN |
 | 16 V / 24 V jump start | TSR, LDO, PROFET inside their ratings | PASS |
-| Brown-out | firmware sets no BOR level; factory option byte = BOR off: 1.7-2.7 V unprotected at 144 MHz / 4 wait states | **FAIL** |
+| Brown-out | firmware sets no BOR level; factory option byte = BOR off: 1.7-2.7 V unprotected at 144 MHz / 4 wait states | **FAIL** -> fixed (fwsafety): the firmware writes BOR level 3 once at its first start (>= 10 V battery), host sim s0 + Renode |
 | Reverse battery: logic, PROFETs, inputs, CAN | blocked / data-sheet setup / 2.9 mA / -58 V rating | PASS |
 | Reverse battery: board B freewheel diodes D13-D28 | forward across the reversed battery through the PROFET (stock Max the same); kept fitted by hwprotect (removing them fails the A/C clutch turn-off, see below) | **FAIL** (design choice) |
 | ISO 7637-2 on an input wire | pulses 1 / 2a / 3b fine; 3a puts 216 V over a 0603 4.7k (150 V overload rating, 0.1 us) | PASS / WARN |
@@ -84,12 +84,12 @@ ran items 1-8; DansPC WSL ran the Renode bench (Renode 1.17.0, arm-none-eabi-gcc
 |---|---|---|
 | PWM heat <= DC heat, lamp loads | 100 Hz: 6.8 / 12.5 / 23.8 A; 400 Hz: 5.2 / 7.7 / 12.0 A (BTS7008 / 7004 / 70012) | WARN |
 | PWM heat <= DC heat, motors (hard switching) | 100 Hz: 5.6 / 8.9 / 14.6 A; 400 Hz: 2.8 / 3.3 / 4.6 A | FAIL (7004, 70012) |
-| PWM of fans on board B (BYG23M average current) | radiator fan 25 A, 1 mH: 4.6 A at 100 Hz vs 1.5 A rated; safe up to about 32 Hz | **FAIL** (also condenser fan) |
+| PWM of fans on board B (BYG23M average current) | radiator fan 25 A, 1 mH: 4.6 A at 100 Hz vs 1.5 A rated; safe up to about 32 Hz | **FAIL** (also condenser fan; hardware) -> presets hold board B motor PWM at the diode limit (fwsafety: fans 22 Hz at their 30 A limit, pump 64, motor 60 Hz) until the diodes change |
 | Minimum duty | 4.4-8.4 % at 400 Hz | PASS |
 | Lamp inrush | 55 W halogen 58 A < IL(OVL0) 65 A hot; 65 W 69 A (PROFET retries) | PASS / WARN |
 | Motor inrush 5 x | radiator fan 150 A vs 146 A min hot on BTS70012 | WARN |
 | Short circuit | PROFET trips 65-238 A, up to 7 restarts, then latch; firmware retries 1 s apart | PASS |
-| Parallel pair B OUT3 + OUT4 | one switch takes 60 % with +-20 % RDS (ASSUMED): pair trips at 52 A, not 62 A | WARN |
+| Parallel pair B OUT3 + OUT4 | one switch takes 60 % with +-20 % RDS (ASSUMED): pair trips at 52 A, not 62 A | WARN -> the UI rates a pair 52 A and its presets use it (fwsafety) |
 
 ## 4. MCU / firmware (15 PASS, 5 WARN, 0 FAIL)
 
@@ -98,7 +98,7 @@ match ST's table; all 8 / 12 ADC slots read their own nets; PA4 / PA5 (TC, not 5
 signals; BOOT0 / BOOT1 fine. WARN: board B PA15 (JTDI pull-up at reset) drives PROFET IN7 (glitch << tON(DELAY));
 NRST has no capacitor (both boards, stock). Clocks: VCO 288 MHz, SYSCLK 144, USB 48.00, APB1 36 MHz: PASS. CAN
 1 Mbit/s: 18 tq, sample point 88.9 %, SJW 1, oscillator tolerance +-2778 ppm vs about +-110 ppm crystal, bus up to
-about 40 m: PASS. Watchdog: none (stock): WARN, a behaviour choice. FRAM: written only on a config save: PASS.
+about 40 m: PASS. Watchdog: none (stock): WARN -> built (fwsafety): IWDG 1.00 / 1.47 / 2.77 s at LSI 47 / 32 / 17 kHz, refreshed only when all five essential threads ran (longest gap 251 ms host sim, 362 ms Renode), RTC-refreshed in sleep. FRAM: written only on a config save: PASS.
 Sleep: 6.2 mA (25 C) / 14.1 mA (85 C) for the whole PDM (TSR no-load 1 mA x 3, battery dividers, op-amps): WARN.
 CPU load: not measurable without a cycle model: bench.
 
@@ -115,8 +115,8 @@ firmware: 14.3 % load, car frames <= 0.19 ms queueing, every board's msg 0 exact
 
 | Case | Sink | Lid air | Board B Tj / laminate | Board B MCP9808 | Verdict |
 |---|---|---|---|---|---|
-| car loads (118 A on B), fans on | 69.7 C | 69.3 C | 115 / 112 C | 95.6 C | PASS heat; **FAIL vs the 80 C critical limit** |
-| 150 A on B, fans on | 72.6 C | 74.2 C | 113 / 120 C | 110.5 C | PASS heat; **FAIL vs 80 C** |
+| car loads (118 A on B), fans on | 69.7 C | 69.3 C | 115 / 112 C | 95.6 C | PASS heat; **FAIL vs the 80 C critical limit** -> PASS vs board B's new 98 / 104 C (fwsafety) |
+| 150 A on B, fans on | 72.6 C | 74.2 C | 113 / 120 C | 110.5 C | PASS heat; board B cuts at 104 C (150 A for a long time at a 60 C cabin is above normal use) |
 | 150 A on B, fans failed | 86.7 C | 78.8 C | 127 / **136 C** | 125.7 C | FAIL (laminate > 130 C) |
 | every output at rating (184 A, above the feed limit) | 79-102 C | 92-99 C | up to 164 / 179 C | - | INFO (upper bound) |
 
@@ -145,6 +145,20 @@ PASS. BOM: 0 parts short at JLCPCB without an alternate; 30 of 45 types are exte
 footprint geometry changes since the boards the v2c clash build used (94adcc4): the v2c result holds; re-run after
 the d2tvs DO-218 change.
 
+## Board B temperature limits (job fwsafety, ADR-2026-11-20-presim-findings item 1)
+
+`tools/verify_thermal_box.py` now reads board B's limits from `port_boards.py` and checks them against the sensor ->
+hot-spot map of all 10 modelled cases (`thermal_board_b.py --case car feed150 feed150hi feed150lo rating`, fans on /
+failed, 60 C cabin): laminate = U6 + 9.6 .. 19.0 K, Tj = U6 + 1.7 .. 19.8 K.
+
+| Check | Value | Limit | Verdict |
+|---|---|---|---|
+| Car loads, fans on: U6 vs warn 98 C | 95.6 C (a 70 C cabin: 105.6 C, critical soon + cut) | < 98 C | PASS |
+| Laminate / Tj when U6 reaches critical 104 C (+1 C MCP9808, largest offset) | 124.0 / 124.8 C | <= 130 / 150 C | PASS |
+| STM32F446RET7 / MB85RC64TA (105 C ambient) at U6 104 + 1 C | 105 C | <= 105 C | PASS (binding limit) |
+| TSR 1-2450 / ABM3 / X5R (85 C) at U6 104 + 1 C | 105 C | <= 85 C | FAIL until the >= 105 C grades (hardware job); left at 85 C they would need critical <= 84 C, which trips at the car loads (95.6 C) |
+| Board A | no FEA sensor map; the presim estimate (sink + 15 K, ASSUMED) is about 85 C at the car loads, above its stock 80 C | - | open (needs a board A model or the bench) |
+
 ## Fixes made (firmware, custom boards only; stock dingopdm_v7 .bin md5 identical to main: fbe414ba...)
 
 - `firmware/tools_custom/port_boards.py`: TS / VREFINT sampling 15 -> 112 cycles (12.4 us at 9 MHz, DS Tables 80 /
@@ -156,15 +170,16 @@ the d2tvs DO-218 change.
 
 ## Left for the coordinator (real problems / design choices; data above)
 
-1. Board B MCP9808 at 96-110 C in normal use vs the stock 80 C critical (and 55 C warn): the limits must follow the
-   laminate / Tj limits (ADR-2026-11-20-thermal-limits), about 10-16 K below the laminate hot spot; stock values are
-   kept until the bench (Dan r6c). Also the board B logic area (TSR, crystal, X5R, FRAM) runs above its part ratings.
+1. Board B MCP9808 at 96-110 C in normal use vs the stock 80 C critical (and 55 C warn): done in firmware (fwsafety:
+   98 / 104 C, table above); the board B logic area: crystal and X5R caps now 125 C parts (hwprotect); the TSR still 85 C (footprint change).
 2. Board B freewheel diodes BYG23M: reverse-battery short (FAIL) and PWM of fans above about 30 Hz (FAIL): remove /
    replace with a larger diode / reverse-polarity protection on the feed; the fan presets' 100 Hz soft start.
-3. BOR level 3: program `BOR_LEV = 00` once (STM32CubeProgrammer `-ob BOR_LEV=0` at flashing, or firmware at boot).
+   hwprotect: kept fitted (removing them fails the A/C clutch turn-off); options below and parts-audit 15.4.
+3. BOR level 3: done (fwsafety: the firmware writes it once at boot).
 4. Horn / solenoids on board A outputs (no diode): measure L; move to board B or add a diode at the load.
-5. Hardware adds (stock gaps): VDDA 100 nF + 1 uF, NRST 100 nF, USB ESD array, +3V3 shunt for battery-switched inputs.
-6. Watchdog (behaviour choice: a reset turns all outputs off for about 0.6 s).
+5. Hardware adds (stock gaps): VDDA 100 nF + 1 uF, NRST 100 nF, USB ESD: done (hwprotect, below); +3V3 shunt for
+   battery-switched inputs still open.
+6. Watchdog: done (fwsafety; a reset turns all outputs off for about 0.6 s after the 1.0-2.8 s timeout).
 
 ## hwprotect follow-up (2026-11-20, branch `fix/hw-protect`; ADR-2026-11-20-presim-findings items 1, 2, 4, 5)
 

@@ -10,4 +10,5 @@ Enforcer: the AGENTS.md firmware checks (builds, s0, s1, s3, Renode); s0 board a
 - Do not flash anything: no hardware exists yet. Renode does not emulate STOP: EXTI wake from sleep stays untested in Renode.
 - Every firmware feature or setting is checked against the dingo UI (dingoConfig; docs at corygrant/dingoElec): shown / editable, or the UI change it needs (Dan, 2026-11-14).
 - Never do: assume a stock default (the stock overcurrent retry is None, not "3 tries"); quote a timing measured with identical message timing in every case (the power-up ON pulse first read 4 ms).
+- Watchdog (MCU_SAFETY, `core/safety.h`): every essential thread calls `SAFETY_CHECKIN(<task>)` once per loop and no loop may block longer than half the shortest run timeout (500 ms); a new thread either checks in (add it to `SafetyTask`) or is shown to be non-essential; s0 / s1 / s3 report the longest refresh gap and fail on any watchdog reset (2026-11-20).
 - Sim plants (firmware/sim, Renode models) use data-sheet values (kILIS, thresholds, timings), never copies of firmware constants: a copied 5950 kILIS let a 9 % error pass s0 (2026-11-20).
