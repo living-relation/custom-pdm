@@ -253,3 +253,14 @@ automations:
     enabled: true
     run_cmd: python tools/verify_cpl.py   # any python with pcbnew; needs easyeda.com (403 from DansPC, works from the cloud session)
     owner: claude
+  - id: presim-tolerance
+    script: tools/verify_tolerance.py
+    helpers: [tools/presim_parts.py]
+    trigger: manual                 # pre-order campaign (ADR-2026-11-20-presim, docs/system-verification.md 1)
+    reads: ["firmware/boards/custompdm_*/port.h", "firmware/boards/custompdm_*/port.cpp", "firmware/boards/custompdm_a/cfg/mcuconf.h", firmware/core/param_defs.h, firmware/functions/profet.h]
+    writes: []                      # prints the table; --json <file> for the numbers
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/verify_tolerance.py [--n 20000] [--json out.json]   # numpy; exit 1 on any FAIL
+    owner: claude
