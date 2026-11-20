@@ -259,6 +259,21 @@ public class PdmEditor2Tests
     }
 
     [Fact]
+    public void OnlyByteAlignedCommandsOnAForeignIdAreEcuCommands()
+    {
+        var v = NewPdm();
+        var b = Dev(v, "B");
+        foreach (var (s, id, bit) in new[] { (0, 0x527, 0), (1, 0x3F4, 4) })   // A1's msg 37 ID; a start bit inside a byte
+        {
+            var c = b.CanInputs[s];
+            (c.Enabled, c.Id, c.StartBit, c.BitLength, c.Operator, c.Operand) = (true, id, bit, 8, Operator.Equal, 1.0);
+            b.Outputs[s].Input = PdmFactoryDefaults.CanInState(b, s);
+        }
+        Assert.Empty(PdmEcu.All(v));
+        Assert.Equal(PdmTriggerKind.Hand, PdmTriggers.Of(M(v), 17).Kind);
+    }
+
+    [Fact]
     public void FullBoardRefusesAnEcuOutputAndChangesNothing()
     {
         var v = NewPdm();
