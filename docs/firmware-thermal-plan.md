@@ -1,6 +1,6 @@
 # Firmware thermal protection + fan control: plan (2026-11-13)
 
-Status: option B implemented 2026-11-14 on custom boards only (r5a, r7a, r6c, s10b, s11c, s12a, s13a; section 7): settable limits, self-recovering critical, die temperature on CAN, steady thermal flags + critical-soon warning, temperature-switched fan output (replaces r3c "always on"), load-shed example shipped disabled. Sections 1-6 are the research as written on 2026-11-13. Decisions it serves: e3c (fans fitted, temperature-triggered, limit set in software), "heat targets are guides, firmware thermal protection to plan" (2026-11-12), z1a (three CAN nodes), b2a (F1, two 30 mm Sunon fans), b3a (gap pad k >= 3). Source of truth for state: `STATE.md`; decisions: `DECISIONS.md`.
+Status: option B implemented 2026-11-14 on custom boards only (r5a, r7a, r6c, s10b, s11c, s12a, s13a; section 7): settable limits, self-recovering critical, die temperature on CAN, steady thermal flags + critical-soon warning, temperature-switched fan output (replaces r3c "always on"), load-shed example shipped disabled. Sections 1-6 are the research as written on 2026-11-13. Decisions it serves: e3c (fans fitted, temperature-triggered, limit set in software), "heat targets are guides, firmware thermal protection to plan" (2026-11-12), z1a (three CAN nodes), b2a (F1, two 30 mm Sunon fans), b3a (gap pad k >= 3). Live state: the memory-store STATE (AGENTS.md role table); decisions: `DECISIONS.md`.
 
 ## 1. What temperature information exists today
 

@@ -1,0 +1,12 @@
+# Firmware
+
+Enforcer: the AGENTS.md firmware checks (builds, s0, s1, s3, Renode); s0 board audit; none yet for the rest.
+
+- Board folders are generated: change `firmware/tools_custom/port_boards.py`, re-run it, never hand-edit `firmware/boards/custompdm_*`.
+- Custom features live behind custom options (e.g. `PRO_FEATURES`) so stock builds stay byte-identical: check the stock `dingopdm_v7` .bin md5 against main on every firmware change.
+- CONFIG_VERSION: the high byte counts our param layout, the low byte is upstream's; bump it only when the layout changes; saved configs then fall back to defaults (the tool must Write All).
+- Build from an LF `git archive` of a committed branch (Windows checkout is CRLF); WSL builds in your own scratch folder, never in `~/renode-pdm/src` or the shared `/home/daniel/scratch/ui-sim`; `make clean` between boards in one folder; start WSL jobs from an LF `.sh` file (Never do: `Start-Process wsl ... bash -c "..."` dropped the arguments, 2026-11-15).
+- After any firmware merge, rebuild the shared UI sim `.so` (`/home/daniel/scratch/ui-sim/so`) from main when no job uses it.
+- Do not flash anything: no hardware exists yet. Renode does not emulate STOP: EXTI wake from sleep stays untested in Renode.
+- Every firmware feature or setting is checked against the dingo UI (dingoConfig; docs at corygrant/dingoElec): shown / editable, or the UI change it needs (Dan, 2026-11-14).
+- Never do: assume a stock default (the stock overcurrent retry is None, not "3 tries"); quote a timing measured with identical message timing in every case (the power-up ON pulse first read 4 ms).
