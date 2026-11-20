@@ -11,18 +11,24 @@ VAR = sys.argv[1] if len(sys.argv) > 1 else "F1"
 HB = os.environ.get("HANDBUILT_CAD", os.path.expanduser("~/projects/handbuilt-cad"))
 for d in ("drawing", "tools/render", "tools/checks", "tools"): sys.path.insert(0, os.path.join(HB, d))
 import part, revs
-RUN = os.path.join(os.environ["RUN_DIR"], VAR); PD = os.path.join(RUN, "xref", "parts"); OUT = os.path.join(RUN, "drawings")
+RUN = os.path.join(os.environ["RUN_DIR"], VAR); PD = os.path.join(RUN, "xref", "Parts"); OUT = os.path.join(RUN, "drawings")
 os.makedirs(OUT, exist_ok=True)
 meta = json.load(open(os.path.join(RUN, "meta.json")))
 V2B = datetime.date(2026, 11, 13)
 GEN = ["BREAK SHARP EDGES 0.2-0.4 x 45 DEG UNLESS NOTED.", "INSIDE CORNERS: CUTTER RADIUS ALLOWED WHERE NOT MODELLED.",
        "THREADED HOLES ARE MODELLED AT TAP-DRILL SIZE; THREAD AS NOTED.", "MODEL: build_v2c.py (build123d). THE STEP FILE GOVERNS ALL UNDIMENSIONED GEOMETRY."]
 JOBS = [
-    (f"CPDM-ENC-101-{VAR}", "HEAT SINK / BASE " + VAR, "6061-T6 ALUMINIUM", "B",
-     "v2c: counterbores 8.0; fan wall holes 0.5 lower, notched; fins joined to the fan wall",
+    (f"CPDM-ENC-101-{VAR}", "HEAT SINK / BASE " + VAR, "6061-T6 ALUMINIUM", "C",
+     ["v2c: counterbores 8.0; fan wall holes 0.5 lower, notched; fins joined to the fan wall",
+      "feet now separate (CPDM-ENC-112/113), M3 foot taps; pedestals 3.14 (gap pad 15 %)"],
      ["LID SCREWS: 4.5 THRU, CBORE 8.0 x 5 FROM BELOW (x12).", "M3x0.5 TAP 6 DEEP IN THE 6.0 BOARD BOSSES (TAP DRILL 2.5 x 8).",
-      "FEET: 6.6 THRU (x4), BOLT-THROUGH MOUNTING.", "FAN WALL: M3x0.5 TAP THRU 3 WALL (x8), 28.0 THRU WITH 12 WIDE NOTCH TO THE FIN TIPS (x2), CENTRES Z -23.5 - SIDE SETUP.",
-      "FIN ROOTS: CORNER RADIUS OF THE CUTTER (R0.5 BULL-NOSE) ALLOWED.", "FINISH: TBD (CLEAR ANODISE ASSUMED; MASK PEDESTAL TOPS)."]),
+      "FOOT MOUNTS: 6.6 THRU (x4), BOLT-THROUGH; M3x0.5 TAP 4.5 DEEP, DRILL 2.5 x 6 FROM BELOW (x8).", "FAN WALL: M3x0.5 TAP THRU 3 WALL (x8), 28.0 THRU WITH 12 WIDE NOTCH TO THE FIN TIPS (x2), CENTRES Z -23.5 - SIDE SETUP.",
+      "FIN ROOTS: CORNER RADIUS OF THE CUTTER (R0.5 BULL-NOSE) ALLOWED.", "FINISH: TBD (CLEAR ANODISE ASSUMED; MASK PEDESTAL TOPS).",
+      "PEDESTALS (x7) 3.14 ABOVE THE PLATE TOP: GAP PADS CPDM-ENC-110-1..4 (1.016 FREE) COMPRESS TO 0.86 UNDER THE BOARDS."]),
+    ("CPDM-ENC-112", "FOOT SW / NE", "6061-T6 ALUMINIUM", "A", [],
+     ["6.6 THRU (M6 BOLT-THROUGH, CAR MOUNT).", "3.4 THRU, CBORE 6.5 TO 7.5 BELOW THE TOP FACE (x2) FOR M3 x 12 ISO 4762.", "FIT AFTER THE LID SCREWS (THE FOOT COVERS THE CORNER LID SCREW AREA)."]),
+    ("CPDM-ENC-113", "FOOT SE / NW", "6061-T6 ALUMINIUM", "A", [],
+     ["6.6 THRU (M6 BOLT-THROUGH, CAR MOUNT).", "3.4 THRU, CBORE 6.5 TO 7.5 BELOW THE TOP FACE (x2) FOR M3 x 12 ISO 4762.", "8.0 x 1 DEEP POCKET IN THE TOP FACE CLEARS THE LID SCREW HEAD (SE).", "FIT AFTER THE LID SCREWS."]),
     ("CPDM-ENC-104", "COPPER BAR BATT+", "C110 COPPER", "A", "", ["6.6 THRU (x3) AT THE M6 TERMINALS.", "11.0 THRU AT THE STANDOFF PASS-THROUGHS (INSULATING SLEEVE).", "INSULATING FILM UNDER THE BAR (ASSEMBLY)."]),
     ("CPDM-ENC-105", "COPPER BAR GND", "C110 COPPER", "A", "", ["6.6 THRU (x3) AT THE M6 TERMINALS.", "11.0 THRU AT THE STANDOFF PASS-THROUGHS (INSULATING SLEEVE)."]),
     ("CPDM-ENC-106", "COPPER TERMINAL BOSS M6", "C110 COPPER, HEX BAR AF13", "A", "", ["M6x1 TAP 10 DEEP BOTH ENDS (TAP DRILL 5.0 x 12 TOP / 10 BOTTOM)."]),
@@ -40,10 +46,13 @@ for job in JOBS:
     pn, title, mat, rev, why, notes = job[:6]; proc = job[6] if len(job) > 6 else "machined"
     step = os.path.join(PD, pn + ".stp"); rl = os.path.join(PD, pn + ".REVLOG.md")
     if os.path.exists(rl): os.remove(rl)
-    revs.add_release(rl, "A", "Initial", date=V2B, title=pn)               # v2b release (PR #46)
-    if rev == "B": revs.add_release(rl, "B", why, title=pn)                # this release (v2c)
+    whys = why if isinstance(why, list) else ([why] if why else [])
+    new = pn in ("CPDM-ENC-112", "CPDM-ENC-113")                           # revD: new parts, Rev A today
+    revs.add_release(rl, "A", "Initial", date=None if new else V2B, title=pn)   # v2b release (PR #46) / new part
+    for L_, w_ in zip("BC", whys): revs.add_release(rl, L_, w_, title=pn)    # v2c (B), revD restructure (C)
     spec = dict(file=step, pn=pn, title=title, material=mat, process=proc, notes=notes + (GEN if proc == "machined" else GEN[3:]), project="custom-pdm enclosure v2c")
-    if rev == "B": spec["rev_marks"] = [dict(rev="B", note=1)] + ([dict(rev="B", note=3)] if pn.startswith("CPDM-ENC-101") else [])   # DRAWING-RULES 33: triangle at the changed notes
+    if rev == "B": spec["rev_marks"] = [dict(rev="B", note=1)]   # DRAWING-RULES 33: triangle at the changed notes
+    if rev == "C": spec["rev_marks"] = [dict(rev="B", note=1), dict(rev="B", note=4), dict(rev="C", note=3), dict(rev="C", note=7)]
     try:
         part.make_part(spec, os.path.join(OUT, pn + ".pdf"), os.path.join(OUT, pn + ".dxf"), os.path.join(OUT, pn + "_preview"))
         ck = os.path.join(OUT, pn + ".checks.json")

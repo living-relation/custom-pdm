@@ -31,7 +31,7 @@ REV = "v2c"
 BOARDS = os.environ["BOARDS"]; VENDOR = os.environ["VENDOR"]
 OUT = os.path.join(os.environ.get("RUN_DIR", "/tmp/v2c"), VAR)
 import shutil
-for _d in ("parts", "brep"):                                         # clear stale outputs so the checks see only this build
+for _d in ("Parts", "brep"):                                         # clear stale outputs so the checks see only this build
     shutil.rmtree(os.path.join(OUT, _d), ignore_errors=True); os.makedirs(os.path.join(OUT, _d), exist_ok=True)
 from screwtool_twin import shcs, standoff_mf, row as screw_row
 class _BB:
@@ -78,15 +78,18 @@ def world(nm):
     return Compound([s.moved(l) for l in it["locs"]])
 SCREWS = []  # (size, L, Location) for the head-clearance check
 SCR = {}     # pn -> [locs]
-def screw(size, Lg, loc):
+def screw(size, Lg, loc, grp=""):
+    """grp names the screw's use (fan / feet / lid / board ...): one item per PN + use, so subassemblies and install stages can
+    pick them (revD)"""
     pn = f"ISO4762-{size}x{Lg:g}"
     part(pn, shcs(size, Lg, (0, 0, 0)), f"Socket head cap screw ISO 4762 {size} x {Lg:g}",
          "screw-tool ISO 4762 dims (head-seat origin), cosmetic thread", "steel class 8.8 zinc plated (ASSUMED grade)", "bought", maker="ISO 4762")
-    SCR.setdefault(pn, []).append(loc); SCREWS.append((size, Lg, loc))
+    SCR.setdefault((pn, grp), []).append(loc); SCREWS.append((size, Lg, loc, grp))
 
 # ---------------- driving dimensions ----------------
 P = dict(
-    gap_boards=2.0, ped_h=3.0, pad_t=1.0, plate_t=8.0,
+    gap_boards=2.0, ped_h=3.14, pad_t=0.86, plate_t=8.0,   # revD: Bergquist GAP PAD TGP 3000 0.040" (1.016 free) at 15 % compression = 0.86 between pedestal top 3.14 and board bottom 4.0 (Z_BOT unchanged; revC: ped 3.0 + pad 1.0 = 0 % compression)
+    pad_free_t=1.016, foot_scr_r=8.0,                         # foot_scr_r: 2 x M3 x 12 per foot at r 8 on the foot diagonal (revD feet are separate parts)
     fin_h=30.0, fin_t=2.0, fin_pitch=6.0, fin_edge=10.0,      # Grok's straight fins (F1)
     foot_h=10.0, foot_af=24.0, foot_web_t=4.0, foot_web_L=20.0,  # reinforced feet: hex AF24, 2 webs each, 10 below fin tips
     wall=3.0, edge_clear=10.0,
@@ -197,7 +200,7 @@ pads = []
 for n in ("B", "A1", "A2"):
     for (a, b, c, d) in PED["B" if n == "B" else "A"]:
         (xa, ya), (xb, yb) = W(n, a - 1.5, c - 1.5), W(n, b + 1.5, d + 1.5)
-        sink = sink.fuse(box(xa, xb, ya, yb, 0, P["ped_h"])); pads.append(box(xa, xb, ya, yb, P["ped_h"], Z_BOT))
+        sink = sink.fuse(box(xa, xb, ya, yb, 0, P["ped_h"])); pads.append((min(xa, xb), max(xa, xb), min(ya, yb), max(ya, yb)))
 HOLES_AB = {"H1": (-33.02, 21.59), "H2": (26.67, -21.59), "H3": (-21.082, -21.59), "H4": (26.67, 21.59)}
 HOLES_B = {"H5": (69.044, -10.684), "H6": (69.044, 35.896)}
 BOSS = []
@@ -209,12 +212,12 @@ for n, h, (X, Y) in BOSS: sink = sink.cut(cyl(2.5, (X, Y, Z_BOT - 8.0), 8.01))
 
 # ---------------- feet (reinforced): hex AF24 posts with two webs along the plate edges ----------------
 FEET = [(LX0 + 14, LY0 + 14, 1, 1), (LX0 + 14, LY1 - 14, 1, -1), (LX1 - 14, LY0 + 14, -1, 1), (LX1 - 14, LY1 - 14, -1, -1)]
-feet = None; foot_keepout = []
+feet = None; foot_keepout = []; FOOTSOL = []
 for (X, Y, sx, sy) in FEET:
     f = hexp(P["foot_af"], (X, Y, zfoot), -zfoot - pt + 0.01)
     f = f.fuse(box(X, X + sx * P["foot_web_L"], Y - P["foot_web_t"] / 2, Y + P["foot_web_t"] / 2, zf0, -pt))
     f = f.fuse(box(X - P["foot_web_t"] / 2, X + P["foot_web_t"] / 2, Y, Y + sy * P["foot_web_L"], zf0, -pt))
-    feet = f if feet is None else feet.fuse(f)
+    feet = f if feet is None else feet.fuse(f); FOOTSOL.append(isect(f, box(X - 40, X + 40, Y - 40, Y + 40, zfoot - 1, -pt)))   # revD: each foot's region (below the plate underside) -> its own part
     foot_keepout.append(box(X - 15 * sx, X + sx * (P["foot_web_L"] + 3), Y - 15 * sy, Y + sy * (P["foot_web_L"] + 3), zf0 - 1, -pt))
 # ---------------- fins + fans ----------------
 fe = P["fin_edge"]; fan_info = {}; PRE_SCR = []
@@ -303,15 +306,51 @@ LID_SCREWS += [(X, LY0 + 5.0) for X in (20.0, 66.0, 147.0, 222.0, LX1 - 20.0)]
 LID_SCREWS += [(LX0 + 5.0, (LY0 + LY1) / 2), (LX1 - 5.0, (LY0 + LY1) / 2)]
 for (X, Y) in LID_SCREWS:
     sink = sink.cut(cyl(4.5, (X, Y, -pt - 1), pt + 2)); sink = sink.cut(cyl(P["lid_cb_d"], (X, Y, -pt - 1), 5.0))   # counterbore to Z -4
+# ---------------- revD: feet split off the sink as their own parts (Dan 2026-11-20: they cover the 4 corner lid screws) ----------------
+# Each foot keeps its revC shape and place (hex AF24 post + 2 webs, M6 bolt-through hole; the SE foot keeps the 1 mm lid-screw
+# counterbore pocket). Feet are 180-deg pairs: SW / NE = CPDM-ENC-112, SE / NW = CPDM-ENC-113 (webs mirror each other, so one
+# part number cannot serve all four; the NW instance gets the SE pocket as a dummy 1 mm recess). Each foot: 2 x M3 x 12 ISO 4762
+# from below (head seat 7.5 below the plate: cbore 6.5, clearance 3.4) into M3 taps in the plate (4.5 = 1.5 D thread + 1.5
+# relief, 2 mm floor), on the foot diagonal at r foot_scr_r; the M6 hole stays for the car mount.
+foot_w = [isect(sink, fs) for fs in FOOTSOL]
+sink = sink.cut(Compound(FOOTSOL))
+FOOT_H = -pt - (12.0 - 4.5); FOOT_SCREWS = []
+for i, (X, Y, sx, sy) in enumerate(FEET):
+    u = (sx / math.sqrt(2), sy / math.sqrt(2))
+    for sgn in (1, -1):
+        x, y = X + sgn * P["foot_scr_r"] * u[0], Y + sgn * P["foot_scr_r"] * u[1]
+        sink = sink.cut(cyl(2.5, (x, y, -pt - 0.01), 6.01))                              # M3 tap drill 2.5 x 6 (thread 4.5)
+        foot_w[i] = foot_w[i].cut(cyl(3.4, (x, y, zfoot - 1), -pt - zfoot + 2)).cut(cyl(6.5, (x, y, zfoot - 1), FOOT_H - zfoot + 1))
+        FOOT_SCREWS.append((i, x, y)); screw("M3", 12.0, L(x, y, FOOT_H, rx=180), "feet")
+FOOT_PN = {0: ("CPDM-ENC-112", 0.0), 3: ("CPDM-ENC-112", 180.0), 2: ("CPDM-ENC-113", 0.0), 1: ("CPDM-ENC-113", 180.0)}
+FOOT_VOL = {i: round(one(f).volume, 2) for i, f in enumerate(foot_w)}
+for i, pn_ in ((0, "CPDM-ENC-112"), (2, "CPDM-ENC-113")):
+    X, Y = FEET[i][:2]
+    part(pn_, one(foot_w[i]).moved(Location((-X, -Y, pt))), f"Foot {'SW / NE' if i == 0 else 'SE / NW'} (heat sink)",
+         "hex AF24 x 40 post + 2 webs 4 x 20, M6 bolt-through (car mount), 2 x M3 cbore 6.5 for the foot screws" + ("; 1 mm lid-screw pocket" if i == 2 else ""), "6061-T6 aluminium", "made")
+for pn_, nm_ in (("CPDM-ENC-112", "heat-sink-foot-112"), ("CPDM-ENC-113", "heat-sink-foot-113")):
+    item(nm_, pn_, [L(FEET[i][0], FEET[i][1], -pt, rz=rz) for i, (p_, rz) in FOOT_PN.items() if p_ == pn_], (0.62, 0.62, 0.68))
 made("heat-sink", f"CPDM-ENC-101-{VAR}", sink, (0.72, 0.72, 0.76), f"Heat sink / base {VAR}",
-     "one-piece 3-axis machined base: plate 8, fins, pedestals, tapped bosses, reinforced hex feet", "6061-T6 aluminium")
+     "3-axis machined base: plate 8, fins + fan wall, 7 pedestals 3.14 high under the switch footprints (gap pads on top), "
+     "14 x dia 6 x 4 mm M3 tapped board-mount bosses, 12 lid-screw counterbores, 4 x M6 + 8 x M3 foot mounts (feet CPDM-ENC-112 / -113 separate)", "6061-T6 aluminium")
 if VAR == "F2":
     made("flow-cone-PA12", "CPDM-ENC-111", flow_cone, (0.22, 0.22, 0.25), "Flow cone (F2)", "reverse-velocity-stack flare, M3 heat-set insert", "MJF PA12")
     screw_csk = Solid.make_cone(1.5, 3.0, 1.5, Plane(origin=(0, 0, -1.5))).fuse(cyl(3.0, (0, 0, -12.0), 10.5))
     part("ISO10642-M3x12", screw_csk, "Countersunk socket screw ISO 10642 M3 x 12", "envelope", "steel 8.8 zinc (ASSUMED)", "bought", maker="ISO 10642")
     item("screws_CSK-M3-0.5_x_12_(ISO_10642)", "ISO10642-M3x12", [L(FCX, FCY, 0)], (0.35, 0.35, 0.38))
-made("gap-pads", "CPDM-ENC-110", Compound(pads), (0.95, 0.5, 0.6), "Gap pads (9 pieces, pedestal outlines)",
-     "1.0 mm insulating gap pad, k >= 3 W/mK (b3a), cut to the pedestal outlines; product TBD", "silicone gap pad, k >= 3 W/mK", kind="made-set")
+# revD: gap pads = one part number per pedestal outline (7 pads, 4 outlines), modelled as installed (0.86 = 15 % compression of
+# Bergquist GAP PAD TGP 3000, 0.040" / 1.016 mm, 3.0 W/m-K, > 3000 VAC; TGP 3000 data sheet; deflection range: Parker
+# Chomerics THERM-A-GAP guide "typical deflection ... approximately 5-20%" (no TGP 3000 deflection data published: ASSUMED 15 %))
+PADPN = {}
+for (x0_, x1_, y0_, y1_) in pads:
+    k = (round(x1_ - x0_, 2), round(y1_ - y0_, 2))
+    if k not in PADPN: PADPN[k] = (f"CPDM-ENC-110-{len(PADPN) + 1}", [])
+    PADPN[k][1].append(L((x0_ + x1_) / 2, (y0_ + y1_) / 2, P["ped_h"]))
+for (w_p, h_p), (pn_, locs_) in PADPN.items():
+    part(pn_, box(-w_p / 2, w_p / 2, -h_p / 2, h_p / 2, 0, P["pad_t"]), f"Gap pad {w_p:g} x {h_p:g}",
+         f"Bergquist GAP PAD TGP 3000 0.040 in (1.016 free, {P['pad_t']:g} installed = 15 % compression), cut {w_p:g} x {h_p:g} to the pedestal outline",
+         "Bergquist GAP PAD TGP 3000 (silicone, 3.0 W/m-K, insulating)", "made")
+    item(f"gap-pads-{pn_[9:]}", pn_, locs_, (0.95, 0.5, 0.6))
 
 # ---------------- vendor models ----------------
 def vstep(rel): return import_step(os.path.join(VENDOR, rel))
@@ -332,7 +371,7 @@ if VAR == "F1":
         for dy in (-12, 12):
             for dz in (-12, 12):
                 if (dy, dz) == (-12, -12): continue   # maker STEP: this corner (maker +x / -z) holds the lead-wire retainer, its hole is partly blocked -> 3 screws per fan (the wall keeps its 4th tapped hole, unused)
-                screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90))   # horizontal, head on the fan's east face; maker fan 10.4 thick -> 1.6 mm (3 threads) into the 3 mm wall (was 2.0 with the drawn 10 mm fan); M3 x 14 would poke 0.6 out of the wall into the fins
+                screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90), "fan")   # horizontal, head on the fan's east face; maker fan 10.4 thick -> 1.6 mm (3 threads) into the 3 mm wall (was 2.0 with the drawn 10 mm fan); M3 x 14 would poke 0.6 out of the wall into the fins
 else:
     nf = vstep("noctua_NF-A6x15/NF-A6x15_Public-CAD.stp")
     b = bbx(nf.rotate(Axis.X, 90))
@@ -536,7 +575,7 @@ item("standoffs-M3x25-MF", "CPDM-BUY-301", [L(X, Y, Z_TOP) for (n, h, (X, Y)) in
 for n, h, (X, Y) in SO: screw("M3", 8.0, L(X, Y, z_deck_top))
 so_set = {(n, h) for (n, h, _) in SO} | {("B", "H2"), ("B", "H4")}   # carrier standoffs replace these board screws
 for n, h, (X, Y) in BOSS:
-    if (n, h) not in so_set: screw("M3", 8.0, L(X, Y, Z_TOP))
+    if (n, h) not in so_set: screw("M3", 8.0, L(X, Y, Z_TOP), "board")
 for (X, Y) in in_pts: screw("M3", 8.0, L(X, Y, Z_IN + 1.51))
 
 # ---------------- wiring (flat taped ribbons, ASSUMED harness form) ----------------
@@ -616,12 +655,16 @@ for (X, Y) in LID_SCREWS:
     lid = lid.fuse(isect(cyl(9.0, (X, Y, 0), 11.0), dblock(LX0, LX1, LY0, LY1, 0, 11, r=R)))
 for (X, Y) in LID_SCREWS:
     lid = lid.cut(cyl(5.6, (X, Y, -0.5), 10.5))
-    screw("M4", 12.0, L(X, Y, -pt + 4.0, rx=180))
+    screw("M4", 12.0, L(X, Y, -pt + 4.0, rx=180), "lid")
 made("lid", "CPDM-ENC-102", lid, (0.18, 0.18, 0.2), "Lid", "walls 3.0, draft 6; front turrets for X1/X2/USB-C; OUT1-4 well + wire-way; M4 heat-set inserts", "MJF PA12")
 part("RX-M4x8.1", cyl(5.6, (0, 0, 0), 8.1).cut(cyl(4.0, (0, 0, -0.1), 8.3)), "ruthex heat-set insert M4 x 8.1", "threaded insert OD 5.6 x 8.1 for the lid screw bosses (envelope)", "brass", "bought", maker="ruthex")
 item("heat-set-inserts-M4", "RX-M4x8.1", [L(X, Y, 0.5) for (X, Y) in LID_SCREWS], (0.8, 0.65, 0.25))
-for pn, locs in SCR.items():
-    item("screws_" + pn, pn, locs, (0.35, 0.35, 0.38))
+for (pn, grp), locs in SCR.items():
+    item("screws_" + pn + ("_" + grp if grp else ""), pn, locs, (0.35, 0.35, 0.38))
+# revD: heat-sink subassembly (Dan 2026-11-20): the machined sink and what is fitted to it before anything else. The feet and
+# their screws are NOT in it: they go on after the lid screws (they cover the corner lid screws), so they sit in the top assembly
+SUBASM = {f"CPDM-ENC-120-{VAR}": dict(name=f"Heat-sink subassembly {VAR}", desc="heat sink + gap pads + fans + fan screws + cable-tie anchors",
+          items=[nm for nm in ITEMS if nm == "heat-sink" or nm.startswith(("gap-pads-", "fans-", "tie-points", "screws_ISO4762-M3x12_fan"))])}
 
 # ---------------- export ----------------
 # 1) one STEP per part number (parts/<PN>.stp, in the part's own frame) + the assembly STEP that references them (external
@@ -650,31 +693,55 @@ doc = TDocStd_Document(TCollection_ExtendedString("XmlXCAF"))
 st = XCAFDoc_DocumentTool.ShapeTool_s(doc.Main()); ct = XCAFDoc_DocumentTool.ColorTool_s(doc.Main())
 asm = st.NewShape(); TDataStd_Name.Set_s(asm, TCollection_ExtendedString(ASM))
 lab = {}
+(SPN, SA), = SUBASM.items()                                          # revD: the heat-sink subassembly is its own product / file
+# OCC's multi-file writer keeps a nested assembly inline in the top file, so the subassembly is placed in the top assembly as
+# one product (its world geometry, written to Parts/<SPN>.stp) and that file is then replaced by the real subassembly file,
+# written from its own document (components referencing sibling part files)
+def _xdoc(): d = TDocStd_Document(TCollection_ExtendedString("XmlXCAF")); return d, XCAFDoc_DocumentTool.ShapeTool_s(d.Main()), XCAFDoc_DocumentTool.ColorTool_s(d.Main())
+def _label(st_, ct_, lab_, pn, color):
+    if pn not in lab_:
+        l_ = st_.AddShape(CAT[pn]["shape"].wrapped, False); TDataStd_Name.Set_s(l_, TCollection_ExtendedString(pn)); lab_[pn] = l_
+        ct_.SetColor(l_, Quantity_Color(*color, Quantity_TOC_RGB), XCAFDoc_ColorGen)
+    return lab_[pn]
 for nm, it in ITEMS.items():
-    pn = it["pn"]
-    if pn not in lab:
-        l_ = st.AddShape(CAT[pn]["shape"].wrapped, False); TDataStd_Name.Set_s(l_, TCollection_ExtendedString(pn)); lab[pn] = l_
-        ct.SetColor(l_, Quantity_Color(*it["color"], Quantity_TOC_RGB), XCAFDoc_ColorGen)
-    for loc in it["locs"]: st.AddComponent(asm, lab[pn], loc.wrapped)
+    if nm in SA["items"]: continue
+    for loc in it["locs"]: st.AddComponent(asm, _label(st, ct, lab, it["pn"], it["color"]), loc.wrapped)
+sub_l = st.AddShape(Compound([world(nm) for nm in SA["items"]]).wrapped, False); TDataStd_Name.Set_s(sub_l, TCollection_ExtendedString(SPN))
+st.AddComponent(asm, sub_l, IDENT.wrapped)
 st.UpdateAssemblies()
-XO = os.path.join(OUT, "xref"); shutil.rmtree(XO, ignore_errors=True); os.makedirs(os.path.join(XO, "parts"))
+doc2, st2, ct2 = _xdoc(); sub2 = st2.NewShape(); TDataStd_Name.Set_s(sub2, TCollection_ExtendedString(SPN)); lab2 = {}
+for nm in SA["items"]:
+    for loc in ITEMS[nm]["locs"]: st2.AddComponent(sub2, _label(st2, ct2, lab2, ITEMS[nm]["pn"], ITEMS[nm]["color"]), loc.wrapped)
+st2.UpdateAssemblies()
+XO = os.path.join(OUT, "xref"); shutil.rmtree(XO, ignore_errors=True); os.makedirs(os.path.join(XO, "Parts"))
 cwd = os.getcwd(); os.chdir(XO)
 wr = STEPCAFControl_Writer(); wr.SetNameMode(True); wr.SetColorMode(True)
-assert wr.Transfer(doc, STEPControl_AsIs, "parts/"), "STEP transfer failed"
+assert wr.Transfer(doc, STEPControl_AsIs, "Parts/"), "STEP transfer failed"
 AFILE = f"custom-pdm-enclosure-{REV}-{VAR}-assembly.step"
 assert wr.Write(AFILE) == IFSelect_RetDone, "STEP write failed"
+XS = os.path.join(OUT, "xsub"); shutil.rmtree(XS, ignore_errors=True); os.makedirs(XS); os.chdir(XS)
+wr2 = STEPCAFControl_Writer(); wr2.SetNameMode(True); wr2.SetColorMode(True)
+assert wr2.Transfer(doc2, STEPControl_AsIs, ""), "subassembly STEP transfer failed"
+assert wr2.Write(SPN + ".stp") == IFSelect_RetDone, "subassembly STEP write failed"
 os.chdir(cwd)
+shutil.copyfile(os.path.join(XS, SPN + ".stp"), os.path.join(XO, "Parts", SPN + ".stp")); shutil.rmtree(XS, ignore_errors=True)
 # OCC's multi-file writer puts most of the session's model into EVERY external file (about 140 MB each here), so the part
 # files are rewritten one by one from the part's own shape (same name, same frame); the assembly keeps its references.
 for pn, c in CAT.items():
     s = c["shape"]; s.label = pn; s.color = Color(*next(it["color"] for it in ITEMS.values() if it["pn"] == pn))
-    export_step(s, os.path.join(XO, "parts", pn + ".stp"))
-DESC = {pn: full_desc(pn) for pn in CAT}; DESC[ASM] = ascii_(f"custom-pdm enclosure {REV} {VAR} assembly | external references to parts/*.stp | rev {REV}")
+    export_step(s, os.path.join(XO, "Parts", pn + ".stp"))
+DESC = {pn: full_desc(pn) for pn in CAT}; DESC[ASM] = ascii_(f"custom-pdm enclosure {REV} {VAR} assembly | external references to Parts/*.stp (subassembly + parts) | rev {REV}")
+DESC[SPN] = ascii_(f"{SA['name']} | {SA['desc']} | external references to its sibling part files | rev {REV}")
+# Dan 2026-11-20: top assembly STEP at the root, every part AND subassembly STEP in Parts\ beside it (the subassembly file's
+# references are sibling part files)
+assert "NEXT_ASSEMBLY_USAGE_OCCURRENCE" in open(os.path.join(XO, "Parts", SPN + ".stp"), encoding="latin-1").read(), "subassembly file is not an assembly"
+assert f"'Parts/{SPN}.stp'" in open(os.path.join(XO, AFILE), encoding="latin-1").read(), "top assembly does not reference the subassembly file"
 def set_desc(path):
     t = open(path, encoding="latin-1").read()
     t = re.sub(r"PRODUCT\('([^']*)','([^']*)','[^']*'", lambda m: f"PRODUCT('{m.group(1)}','{m.group(1)}','{DESC.get(m.group(1), '')}'", t)
     open(path, "w", encoding="latin-1").write(t)
-for f in [os.path.join(XO, AFILE)] + [os.path.join(XO, "parts", g) for g in os.listdir(os.path.join(XO, "parts"))]: set_desc(f)
+for f in [os.path.join(XO, AFILE)] + [os.path.join(XO, "Parts", g) for g in os.listdir(os.path.join(XO, "Parts"))]: set_desc(f)
+print("subassembly file", SPN + ".stp", os.path.getsize(os.path.join(XO, "Parts", SPN + ".stp")), "bytes; top", os.path.getsize(os.path.join(XO, AFILE)), flush=True)
 # 2) world-placed BREP per item (checks, renders) + a flat single-file copy of the assembly for viewers (convenience only)
 kids = []
 for nm, it in ITEMS.items():
@@ -689,7 +756,7 @@ bom = sorted(CAT, key=lambda pn: (order.get(CAT[pn]["kind"], 9), pn))
 with open(os.path.join(OUT, f"BOM-{REV}-{VAR}.csv"), "w", newline="") as fh:
     cw = csv.writer(fh); cw.writerow(["part_number", "qty", "name", "maker", "kind", "material", "description", "file", "model_source"])
     for pn in bom:
-        c = CAT[pn]; cw.writerow([pn, qty[pn], c["name"], c["maker"], c["kind"], c["material"], c["desc"], f"parts/{pn}.stp", c["source"]])
+        c = CAT[pn]; cw.writerow([pn, qty[pn], c["name"], c["maker"], c["kind"], c["material"], c["desc"], f"Parts/{pn}.stp", c["source"]])
 def mat4(loc):
     t = loc.wrapped.Transformation()
     return [round(t.Value(r, c), 9) for r in (1, 2, 3) for c in (1, 2, 3, 4)] + [0, 0, 0, 1]
@@ -705,8 +772,9 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, feet=FEET, lid_screws=LID_SCREWS,
             would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], standoffs=[(n, h) for n, h, _ in SO],
             colors={k: it["color"] for k, it in ITEMS.items()}, items={k: dict(pn=it["pn"], n=len(it["locs"])) for k, it in ITEMS.items()},
-            parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn]) for pn, c in CAT.items()},
-            assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l) in SCREWS],
+            parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn], source=c["source"], solids=len(c["shape"].solids())) for pn, c in CAT.items()},
+            foot_vol=FOOT_VOL, foot_screws=FOOT_SCREWS, subassemblies=SUBASM, gap_pads={pn: dict(size=k, n=len(v)) for k, (pn, v) in PADPN.items()},
+            assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, grp=g, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l, g) in SCREWS],
             placements={nm: dict(pn=it["pn"], m=[mat4(l) for l in it["locs"]]) for nm, it in ITEMS.items()},   # 4x4 row-major, mm (Fusion insert)
             invalid_made_parts=INVALID, n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT})
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
