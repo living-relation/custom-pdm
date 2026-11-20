@@ -324,7 +324,7 @@ public class PdmEditor2Tests
         var b = Dev(v, "B");
         var temp = PdmFactoryDefaults.BoardTempVar(b);
         var c = new PdmPwmSpec(true, 100, PdmDutyKind.Curve, Var: temp, Points: [(40, 20), (60, 100)]);
-        Assert.Contains("1 to 400 Hz", PdmPwm.Set(v, 17, c with { FreqHz = 401 }));
+        Assert.Contains("16 to 400 Hz", PdmPwm.Set(v, 17, c with { FreqHz = 401 }));
         Assert.Contains("rise", PdmPwm.Set(v, 17, c with { Points = [(60, 20), (40, 100)] }));
         Assert.Contains("2 to 8 points", PdmPwm.Set(v, 17, c with { Points = [(60, 20)] }));
         Assert.Contains("0 to 100 %", PdmPwm.Set(v, 17, c with { Points = [(40, 20), (60, 120)] }));
@@ -335,6 +335,30 @@ public class PdmEditor2Tests
         Assert.Equal(before, PdmTriggersTests.Raw(v));
         Assert.Null(PdmPwm.Set(v, 21, c with { Duty = PdmDutyKind.Value }));   // a value as the duty: no table
         Assert.Equal(1, b.Outputs[4].DutyCycleDenominator);
+    }
+
+    [Fact]
+    public void TachOutputFrequencyFollowsAValueWithPulsesPerRev()
+    {
+        var v = NewPdm();
+        var a1 = Dev(v, "A1");
+        var s0 = PdmEcu.AddValue(v, "A1", "ECU rpm", 0x3F6, 0, 16, ByteOrder.LittleEndian, false, 1, 0, 1000, out _);
+        var rpm = PdmFactoryDefaults.CanInState(a1, s0) + 1;
+        Assert.Null(PdmPresets.Apply(v, 4, PdmDeviceKind.Tacho));
+        Assert.Equal((1.0, 2.0), (Out(v, 4).Output.CurrentLimit, Out(v, 4).Output.InrushCurrentLimit));
+        var spec = new PdmPwmSpec(true, 100, PdmDutyKind.Fixed, 50, FreqInput: new PdmFreqInput(rpm, 2, 16, 400));
+        Assert.Null(PdmPwm.Set(v, 4, spec));
+        var f = a1.CustomPdm!.PwmFreqInputs[3];
+        Assert.True(f is { Enabled: true, MinHz: 16, MaxHz: 400 });
+        Assert.Equal((rpm, 2.0 / 60), (f.Input, f.Factor));
+        Assert.Equal(spec, PdmPwm.Of(M(v), Out(v, 4)));
+        Assert.Equal("PWM 2 pulses per rev of A1 CAN input 1 'ECU rpm' value (16-400 Hz), 50 %", PdmPwm.Words(M(v), Out(v, 4)));
+        Assert.Contains(M(v).Refs, r => r.Field == "PWM frequency input" && r.Var == rpm);
+        Assert.Contains("16 to 400 Hz", PdmPwm.Set(v, 5, new PdmPwmSpec(true, 15)));
+        Assert.Contains("16 to 1000 Hz", PdmPwm.Set(v, 5, spec with { FreqInput = new PdmFreqInput(rpm, 2, 10, 400) }));
+        Assert.Null(PdmPwm.Set(v, 4, PdmPwmSpec.Off));
+        Assert.False(f.Enabled);
+        Assert.Equal(1.0, f.Factor);
     }
 
     // ================================================================ turn signals + hazards

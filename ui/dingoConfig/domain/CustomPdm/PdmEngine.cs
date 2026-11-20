@@ -286,6 +286,8 @@ public sealed class PdmModel
         if (d.CustomPdm is { } cp)
         {
             Ref(q, dev, "master-retry input", cp.MasterRetryInput);           // P3
+            for (var i = 0; i < cp.PwmFreqInputs.Count && i < d.Outputs.Count; i++)   // PR #105 tach: frequency from input
+                if (cp.PwmFreqInputs[i].Enabled) Ref(q, R(d.Outputs[i]), "PWM frequency input", cp.PwmFreqInputs[i].Input);
             foreach (var t in cp.Tables) Ref(q, R(t), "input", t.Input);      // T1
         }
     }
@@ -605,7 +607,8 @@ public static class PdmEngine
                || d.Wipers is { } w && new[] { w.SlowInput, w.FastInput, w.InterInput, w.OnInput, w.SpeedInput, w.ParkInput, w.SwipeInput, w.WashInput }.Contains(var)
                || d.StarterDisable is { } s && s.Input == var
                || d.MuteCanTxInput == var || d.ForceSleepInput == var
-               || d.CustomPdm is { } cp && (cp.MasterRetryInput == var || cp.Tables.Any(t => t.Input == var));
+               || d.CustomPdm is { } cp && (cp.MasterRetryInput == var || cp.Tables.Any(t => t.Input == var)
+                                            || cp.PwmFreqInputs.Any(f => f.Enabled && f.Input == var));
     }
 
     // ---------------- critical settings (p1 / p3): never changed on the Advanced screen ----------------

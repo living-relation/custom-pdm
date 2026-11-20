@@ -13,11 +13,18 @@ namespace domain.CustomPdm;
 // analog input mV, board temperature, math, counter). Proven in firmware/sim s3 F6 / F7 ("T1 ... drives the fan duty",
 // "fan PWM from coolant temperature", "soft start 1000 ms"). The trigger (when the output is on at all) stays the
 // output's trigger: the curve only sets how hard it runs.
-// Cost: fixed / value 0; curve 1 lookup table of the output's board (4 per board). Read back from the params.
+// Frequency from an input (tach-style output, PR #105, block 0x7C00 + o, PwmFreqInput.cs): the frequency follows a
+// value (e.g. engine RPM from the ECU), Hz = value x pulses per revolution / 60, no pulses below the minimum, held at
+// the maximum (16-1000 Hz); the fixed frequency is 16-400 Hz (below 16 Hz the 16-bit timer at 1 MHz cannot count it).
+// Cost: fixed / value / frequency input 0; curve 1 lookup table of the output's board (4 per board). Read back from the params.
 public enum PdmDutyKind { Fixed, Value, Curve }
 
+// frequency from Var: Hz = Var x PulsesPerRev / 60, between MinHz and MaxHz
+public record PdmFreqInput(int Var, double PulsesPerRev, int MinHz = PwmFreqInput.MinHzLimit, int MaxHz = PwmFreqInput.MaxHzLimit);
+
 public record PdmPwmSpec(bool Enabled, int FreqHz = 100, PdmDutyKind Duty = PdmDutyKind.Fixed, int FixedDuty = 100, int Var = 0,
-    IReadOnlyList<(double X, double Y)>? Points = null, bool SoftStart = false, int SoftStartMs = 1000, int MinDuty = 0)
+    IReadOnlyList<(double X, double Y)>? Points = null, bool SoftStart = false, int SoftStartMs = 1000, int MinDuty = 0,
+    PdmFreqInput? FreqInput = null)
 {
     public static readonly PdmPwmSpec Off = new(false);
 
@@ -25,7 +32,8 @@ public record PdmPwmSpec(bool Enabled, int FreqHz = 100, PdmDutyKind Duty = PdmD
         o is not null && Enabled == o.Enabled && (!Enabled || FreqHz == o.FreqHz && Duty == o.Duty
             && (Duty != PdmDutyKind.Fixed || FixedDuty == o.FixedDuty) && (Duty == PdmDutyKind.Fixed || Var == o.Var)
             && (Duty != PdmDutyKind.Curve || (Points ?? []).SequenceEqual(o.Points ?? []))
-            && SoftStart == o.SoftStart && (!SoftStart || SoftStartMs == o.SoftStartMs) && MinDuty == o.MinDuty);
+            && SoftStart == o.SoftStart && (!SoftStart || SoftStartMs == o.SoftStartMs) && MinDuty == o.MinDuty
+            && FreqInput == o.FreqInput);
 
     public override int GetHashCode() => HashCode.Combine(Enabled, FreqHz, Duty, FixedDuty, Var);
 }
@@ -34,7 +42,10 @@ public record PdmPwmCurve(PdmOutputRow Out, PdmRes Table, LookupTable T);
 
 public static class PdmPwm
 {
-    public const int MaxFreq = 400, DefaultFreq = 100, MaxSoftMs = 10000;
+    public const int MinFreq = PwmFreqInput.MinHzLimit, MaxFreq = 400, DefaultFreq = 100, MaxSoftMs = 10000;
+
+    private static PwmFreqInput? FreqOf(PdmOutputRow o) =>
+        o.Device.CustomPdm is { } cp && o.BoardOutput - 1 < cp.PwmFreqInputs.Count ? cp.PwmFreqInputs[o.BoardOutput - 1] : null;
 
     private static string Num(double x) => x.ToString("0.###", CultureInfo.InvariantCulture);
 
@@ -90,8 +101,9 @@ public static class PdmPwm
         var curve = Curves(m).FirstOrDefault(c => c.Out.Number == o.Number);
         var duty = curve != null ? PdmDutyKind.Curve : x.VariableDutyCycle ? PdmDutyKind.Value : PdmDutyKind.Fixed;
         var pts = curve != null ? Enumerable.Range(0, curve.T.Points).Select(i => (curve.T.X[i], curve.T.Y[i])).ToList() : null;
+        var fi = FreqOf(o) is { Enabled: true } f ? new PdmFreqInput(f.Input, Math.Round(f.PulsesPerRev, 6), f.MinHz, f.MaxHz) : null;
         return new PdmPwmSpec(true, x.Frequency, duty, x.FixedDutyCycle, curve?.T.Input ?? (duty == PdmDutyKind.Value ? x.DutyCycleInput : 0), pts,
-            x.SoftStartEnabled, x.SoftStartEnabled ? x.SoftStartRampTime : 1000, x.MinDutyCycle);
+            x.SoftStartEnabled, x.SoftStartEnabled ? x.SoftStartRampTime : 1000, x.MinDutyCycle, fi);
     }
 
     public static string Words(PdmModel m, PdmOutputRow o)
@@ -107,6 +119,8 @@ public static class PdmPwm
         };
         if (o.Output.VariableDutyCycle && o.Output.DutyCycleDenominator != 1 && s.Duty == PdmDutyKind.Value)
             w += $" / {o.Output.DutyCycleDenominator}";
+        if (s.FreqInput is { } fi)
+            w = w.Replace($"PWM {s.FreqHz} Hz", $"PWM {Num(fi.PulsesPerRev)} pulses per rev of {PdmTriggers.VarText(m, o.Board, fi.Var)} ({fi.MinHz}-{fi.MaxHz} Hz)");
         if (s.MinDuty > 0) w += $", at least {s.MinDuty} %";
         if (s.SoftStart) w += $", soft start {PdmLinks.DelayText(s.SoftStartMs)}";
         return w;
@@ -124,7 +138,15 @@ public static class PdmPwm
         if (PdmTriggers.IsFanOutput(o)) return $"Output {o.Number} runs the PDM's own fans (1 A): leave it full on.";
         if (o.Output.PrimaryOutput >= 0) return $"Output {o.Number} is paired: it follows {o.Board} OUT{o.Output.PrimaryOutput + 1}.";
         if (!s.Enabled) return null;
-        if (s.FreqHz is < 1 or > MaxFreq) return $"The PWM frequency must be 1 to {MaxFreq} Hz (firmware limit; ECUMaster PMU: 4-400 Hz).";
+        if (s.FreqHz is < MinFreq or > MaxFreq) return $"The PWM frequency must be {MinFreq} to {MaxFreq} Hz (below {MinFreq} Hz the 16-bit timer cannot count it; ECUMaster PMU: 4-400 Hz).";
+        if (s.FreqInput is { } fi)
+        {
+            if (FreqOf(o) == null) return $"{o.Board} has no frequency-from-input setting.";
+            if (!ValueChoices(m, o.Board).Any(c => c.Var == fi.Var)) return $"Pick a value of {o.Board} for the frequency (e.g. engine RPM from the ECU).";
+            if (fi.PulsesPerRev <= 0 || fi.PulsesPerRev / 60.0 > PwmFreqInput.FactorMax) return "Pulses per revolution must be above 0 (4-stroke: cylinders / 2).";
+            if (fi.MinHz is < PwmFreqInput.MinHzLimit or > PwmFreqInput.MaxHzLimit || fi.MaxHz is < PwmFreqInput.MinHzLimit or > PwmFreqInput.MaxHzLimit || fi.MaxHz < fi.MinHz)
+                return $"Minimum / maximum frequency: {PwmFreqInput.MinHzLimit} to {PwmFreqInput.MaxHzLimit} Hz, maximum not below minimum.";
+        }
         if (s.FixedDuty is < 0 or > 100 || s.MinDuty is < 0 or > 100) return "Duty values are 0 to 100 %.";
         if (s.SoftStart && s.SoftStartMs is < 1 or > MaxSoftMs) return $"The soft start time must be 1 to {MaxSoftMs} ms.";
         if (s.Duty != PdmDutyKind.Fixed && !ValueChoices(m, o.Board).Any(c => c.Var == s.Var)) return $"Pick a value of {o.Board} for the duty.";
@@ -158,6 +180,12 @@ public static class PdmPwm
         var restore = PdmSnapshot.Take([d]);
         // the old curve's table goes back to fresh values
         if (Curves(m).FirstOrDefault(c => c.Out.Number == output) is { } old) ResetTable(old.T);
+        if (FreqOf(o) is { } f)
+        {
+            var fi = s.Enabled ? s.FreqInput : null;
+            (f.Enabled, f.Input, f.MinHz, f.MaxHz) = (fi != null, fi?.Var ?? 0, fi?.MinHz ?? PwmFreqInput.MinHzLimit, fi?.MaxHz ?? PwmFreqInput.MaxHzLimit);
+            if (fi != null) f.PulsesPerRev = fi.PulsesPerRev; else f.Factor = PwmFreqInput.DefaultFactor;
+        }
         if (!s.Enabled)
         {
             (x.PwmEnabled, x.VariableDutyCycle, x.DutyCycleInput, x.SoftStartEnabled) = (false, false, 0, false);

@@ -22,7 +22,7 @@ namespace domain.CustomPdm;
 //   PdmEcu SetMode); fuel pump off (ECUMaster: pump default 0 "for safety"), fans on, lamps / modules hold, rest off
 // The chosen preset is a PC-side label (project file, CustomPdmSettings.OutputPresets); without one (a fresh PC after
 // Read All) the preset whose values all match is shown.
-public enum PdmDeviceKind { None, RadiatorFan, CondenserFan, FuelPump, Lamp, LedLamp, Horn, AcClutch, Solenoid, Motor, Heater, Module, Other }
+public enum PdmDeviceKind { None, RadiatorFan, CondenserFan, FuelPump, Lamp, LedLamp, Horn, AcClutch, Solenoid, Motor, Heater, Module, Tacho, Other }
 
 public record PdmPreset(PdmDeviceKind Kind, string Name, double MaxSteadyA, double InrushFactor, int InrushMs, int TripMs,
     bool SoftStart, int SoftStartMs, int Trips, int RetryMs, double MinCurrentA, int MinCurrentMs, PdmLinkLoss Loss, string Why);
@@ -60,6 +60,9 @@ public static class PdmPresets
             "resistive: I = V / R (HP Academy), cold element a little higher; off at loss"),
         new(PdmDeviceKind.Module, "ECU / module feed", 5, 2, 100, 50, false, 1000, 5, 1000, 0, 500, PdmLinkLoss.Hold,
             "electronics: small inrush (HP Academy); st185 module fuses 5 A; holds at loss"),
+        new(PdmDeviceKind.Tacho, "Tachometer output", 1, 2, 100, 50, false, 1000, 3, 1000, 0, 500, PdmLinkLoss.Off,
+            "signal to a gauge, about 1 A: the gauge needs a pull-down; a 0-5 V input needs a 4.7 k series resistor + 5.1 V zener; " +
+            "set the frequency from engine RPM in PWM (pulses per rev = cylinders / 2), 50 % duty"),
         new(PdmDeviceKind.Other, "Other", double.MaxValue, 0, 1000, 50, false, 1000, 3, 1000, 0, 500, PdmLinkLoss.Off,
             "the stock values: limit = rating, inrush 50 A for 1 s (DECISIONS o1), 3 trips")
     ];
