@@ -331,6 +331,7 @@ if VAR == "F1":
     for fy in fan_info["y"]:
         for dy in (-12, 12):
             for dz in (-12, 12):
+                if (dy, dz) == (-12, -12): continue   # maker STEP: this corner (maker +x / -z) holds the lead-wire retainer, its hole is partly blocked -> 3 screws per fan (the wall keeps its 4th tapped hole, unused)
                 screw("M3", 12.0, L(fan_info["x"][1], fy + dy, fan_z + dz, ry=90))   # horizontal, head on the fan's east face; maker fan 10.4 thick -> 1.6 mm (3 threads) into the 3 mm wall (was 2.0 with the drawn 10 mm fan); M3 x 14 would poke 0.6 out of the wall into the fins
 else:
     nf = vstep("noctua_NF-A6x15/NF-A6x15_Public-CAD.stp")
@@ -373,7 +374,7 @@ w_ = P["wall"]
 ubm = vstep("AmphenolLTW_UC-00PMFY-SC7001/UC-00PMFY-SC7001-STP.stp")
 U_FL, U_NUT1 = 6.8, 10.8                                            # maker x: flange front face / nut front face
 nut_zone = box(U_FL, U_NUT1 + 0.01, -20, 20, -20, 20).cut(cyl(20.7, (U_FL - 1, 0, 0), U_NUT1 - U_FL + 3, (1, 0, 0)))
-u_nut = isect(ubm, nut_zone); u_body = ubm.cut(nut_zone)
+u_nut = isect(ubm, nut_zone); u_body = ubm.cut(nut_zone).cut(box(U_FL, U_FL + w_, 8.7, 20, -20, 20))   # nut thread ring left in the wall zone: trimmed to the D-flat (8.7)
 assert 600 < u_nut.volume < 1200, ("USB nut split", u_nut.volume)
 ub = Compound(list(u_body.solids()) + list(u_nut.moved(Location((w_, 0, 0))).solids()))
 ub = ub.moved(Plane(origin=(0, U_FL, 0), x_dir=(0, -1, 0), z_dir=(-1, 0, 0)).location)
@@ -556,8 +557,8 @@ for n, x in IN_X.items():
     wires.append(ribbon([(x + 33, DY0 + 2, z_deck_top + 8), (x + 33, DY0 - 8, TZ + 14), (CONN["X2"] + 8, YR, TZ + 14)], 10.0, 3.0))
 usbc = []
 UR = WALL_IN + U_TAIL                                               # cable starts at the bulkhead FPC's Y-beam end (an adapter PCB there is TBD: the maker part ends in Y-beam contacts, not a USB-C socket)
-UX = USB_X - 12.0                                                    # cable runs back south 12 mm west of the FPC (FPC + Y-beam sit x +1.3..+7.4 east of the axis)
-usbc.append(tube([(USB_X, UR, P["usb_z"]), (USB_X, UR + 5.0, P["usb_z"]), (UX, UR + 5.0, P["usb_z"]), (UX, -95.0, P["usb_z"]), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
+UX = USB_X - 12.0; UZ = P["usb_z"] - 3.0                             # cable back south 12 mm west of the FPC (FPC + Y-beam sit x +1.3..+7.4 east of the axis), 3 lower to pass under the input deck (bottom z 30.8)
+usbc.append(tube([(USB_X - 2.5, UR + 0.5, UZ), (USB_X - 2.5, UR + 5.0, UZ), (UX, UR + 5.0, UZ), (UX, -95.0, UZ), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
 for n in ("B", "A1", "A2"):
     X, Y = W(n, -17.0974, 55.7412)
     usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, Z_TOP + 1.6)], 4.0))

@@ -6,7 +6,7 @@ Reads the release folder (REL): parts/<PN>.stp, BOM-v2c-F1.csv, check/meta.json 
 Fusion: project custom-pdm, folder enclosure-v2c (parts in enclosure-v2c/parts), assembly design custom-pdm-enclosure-v2c-F1."""
 import adsk.core, adsk.fusion, os, json, csv, time
 RELREV = globals().get("RELREV", "revC")                            # release folder rev to build from (set RELREV before exec to change)
-REL = rf"C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-v2c\{RELREV}"
+REL = globals().get("REL") or rf"C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-v2c\{RELREV}"   # set REL before exec to read a staging copy of the same files
 VAR = "F1"; PROJECT = "custom-pdm"; FOLDER = "enclosure-v2c"; ASM = f"custom-pdm-enclosure-v2c-{VAR}-{RELREV}"
 app = adsk.core.Application.get()
 def _folder(parent, name):
