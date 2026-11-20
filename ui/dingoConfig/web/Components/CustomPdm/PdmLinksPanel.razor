@@ -68,7 +68,7 @@
             <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">
                 Same board: the output uses the input directly. Other board: one CAN input on the OUTPUT's board listens to the
                 input board's status message 37 (every 100 ms); nothing changes on the input board. When that message stops, each
-                output does what its mode says 1 s after the last frame: off, hold (keeps its last state), on, or condition (follows a
+                output does what its mode says after its loss delay (per output, default 1 s, 0.3 to 10 s): off, hold (keeps its last state), on, or condition (follows a
                 chosen input / condition of the output's board). After power-up every linked output stays off until the input board's
                 first frame (no exception). Hold is off at
                 power-up (nothing to remember). Links are PC edits: Write All sends them, Burn keeps them, Read All shows them again.
@@ -106,6 +106,13 @@
                                             <MudSelectItem T="PdmLinkLoss" Value="@c">@PdmLinks.LossName(c)</MudSelectItem>
                                         }
                                     </MudSelect>
+                                    @if (link.Loss != PdmLinkLoss.Hold)
+                                    {
+                                        @* editor2: the loss delay of this output (its link CAN input's time-out) *@
+                                        <MudNumericField T="int" Value="@link.DelayMs" ValueChanged="@(ms => SetDelay(link, ms))" Label="Loss delay (ms)"
+                                                         Min="@PdmLinks.MinDelayMs" Max="@PdmLinks.MaxDelayMs" Step="100" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                                         Disabled="@busy" Style="max-width: 150px" Class="pdm-row-delay" DebounceInterval="600" />
+                                    }
                                     <MudText Typo="Typo.caption">@link.LossText</MudText>
                                 }
                                 else
@@ -252,6 +259,13 @@
         if (loss == l.Loss) return;
         Done(PdmLinks.SetMode(View, l.Out.Number, loss, loss == PdmLinkLoss.Condition ? l.Cond : 0),
             $"Output {l.Out.Number}: {PdmLinks.LossName(loss)}");
+    }
+
+    // editor2: per-output loss delay
+    private void SetDelay(PdmLink l, int ms)
+    {
+        if (ms == l.DelayMs) return;
+        Done(PdmLinks.SetDelay(View, l.Out.Number, ms), $"Output {l.Out.Number}: loss delay {PdmLinks.DelayText(ms)}");
     }
 
     private void SetCond(PdmLink l, int? cond)

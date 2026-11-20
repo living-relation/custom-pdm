@@ -21,7 +21,8 @@ namespace domain.CustomPdm;
 // restart and a fresh project. A trigger is the editor's when its whole chain has one of the shapes above; anything
 // else is shown in words but is "set by hand" and is only unhooked (never changed) when replaced. Replacing a
 // trigger that is not the editor's own asks "already assigned. Overwrite?" first (g1). Set is all-or-nothing.
-public enum PdmTriggerKind { None, Input, Logic, Threshold, Link, Hand }
+// editor2: Ecu = an ECU command (PdmEcu), Function = part of a function of several outputs (PdmFunctions: turn signals, wiper)
+public enum PdmTriggerKind { None, Input, Logic, Threshold, Link, Hand, Ecu, Function }
 
 public enum PdmLogicOp { And, Or, Nor }
 
@@ -266,6 +267,10 @@ public static class PdmTriggers
         if (link is { Loss: not (null or PdmLinkLoss.Off) } || link is { OldRecipe: true })
             return new PdmTrigger(o, PdmTriggerKind.Link, null, $"IN{link.In.Number} (link: {link.LossText})", [], link);
 
+        // editor2: an ECU command, or part of a function of several outputs (turn signals, wiper)
+        if (PdmEcu.Of(v, o) is { } ecu) return new PdmTrigger(o, PdmTriggerKind.Ecu, null, ecu.Words, [], null);
+        if (PdmFunctions.Of(m, o) is { } fn) return new PdmTrigger(o, PdmTriggerKind.Function, null, fn.Words(o.Number), [], null);
+
         var made = new List<PdmRes>();
         var x = o.Output.Input;
         var spec = default(PdmTriggerSpec);
@@ -410,8 +415,8 @@ public static class PdmTriggers
                 if (t.Above && t.Off >= t.On) return "Off must be below on (on at or above, off at or below).";
                 if (!t.Above && t.Off <= t.On) return "Off must be above on (on at or below, off at or above).";
                 break;
-            case PdmTriggerKind.Link or PdmTriggerKind.Hand:
-                return "Links are set on the Links panel; hand-made triggers on the Advanced screen.";
+            case PdmTriggerKind.Link or PdmTriggerKind.Hand or PdmTriggerKind.Ecu or PdmTriggerKind.Function:
+                return "Links are set on the Links panel, ECU outputs and functions on the Functions panel; hand-made triggers on the Advanced screen.";
         }
         foreach (var term in s.Terms)
         {
@@ -444,6 +449,16 @@ public static class PdmTriggers
     {
         var m = PdmModel.Build(v);
         var t = m.Triggers.Single(x => ReferenceEquals(x.Out.Output, o.Output));
+        if (t.Kind == PdmTriggerKind.Ecu)
+        {
+            PdmEcu.Remove(v, o.Number);
+            return;
+        }
+        if (t.Kind == PdmTriggerKind.Function)
+        {
+            PdmFunctions.Remove(v, o.Number);
+            return;
+        }
         if (t.Link is { CrossBoard: true })
         {
             PdmLinks.Remove(v, o.Number);

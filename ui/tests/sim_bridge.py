@@ -67,6 +67,8 @@ def stdio(so):
             boards[a[1]].set_temp(float(a[2]), float(a[3]) if len(a) > 3 else None)
         elif c == 'AN':
             boards[a[1]].set_analog(float(a[2]))
+        elif c == 'LOAD':   # editor2: LOAD <board> <o> <amps>: a resistive load drawing <amps> at the battery voltage (0 = open)
+            b = boards[a[1]]; amps = float(a[3]); b.set_load(int(a[2]), b.vbat / amps if amps else 0)
         elif c == 'LINK':
             boards[a[1]].connected = a[2].lower() == 'on'
         elif c == 'PIN':   # B4: ground truth of an output, its PROFET IN pin (as s1_system.py pins_on)

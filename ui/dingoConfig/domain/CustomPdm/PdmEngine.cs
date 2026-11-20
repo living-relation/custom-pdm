@@ -51,7 +51,8 @@ public record PdmRef(PdmRes From, string Field, int Var, PdmRes? To, bool Missin
 public enum PdmClaimKind { Free, Reserved, Link, Shared, Trigger, Hand }
 
 // Output = the PDM output number for a Trigger claim
-public record PdmClaim(PdmClaimKind Kind, string Text, int Output = 0);
+// Outputs = the outputs of a function of several outputs (editor2: turn signals, wiper), e.g. ",9,11,"
+public record PdmClaim(PdmClaimKind Kind, string Text, int Output = 0, string? Outputs = null);
 
 public enum PdmProblemKind { OutputDrivenTwice, TwoOwners, MissingRef, LinkSlotByHand, ReservedTouched }
 
@@ -285,6 +286,8 @@ public sealed class PdmModel
         if (d.CustomPdm is { } cp)
         {
             Ref(q, dev, "master-retry input", cp.MasterRetryInput);           // P3
+            for (var i = 0; i < cp.PwmFreqInputs.Count && i < d.Outputs.Count; i++)   // PR #105 tach: frequency from input
+                if (cp.PwmFreqInputs[i].Enabled) Ref(q, R(d.Outputs[i]), "PWM frequency input", cp.PwmFreqInputs[i].Input);
             foreach (var t in cp.Tables) Ref(q, R(t), "input", t.Input);      // T1
         }
     }
@@ -342,6 +345,27 @@ public sealed class PdmModel
                 Claim(new PdmRes(sh.Board.Role, PdmResKind.VirtualInput, sh.Lost), new PdmClaim(PdmClaimKind.Shared, st));
             }
         }
+
+        // editor2: ECU-driven outputs (PdmEcu): command slot + on / condition virtual input, shared ALIVE / SEEN / LOST
+        foreach (var e in PdmEcu.All(v))
+        {
+            var text = $"the ECU command {e.Source} -> output {e.Out.Number}";
+            Claim(new PdmRes(e.Out.Board, PdmResKind.CanInput, e.Slot), new PdmClaim(PdmClaimKind.Link, text));
+            if (e.Virt is { } k) Claim(new PdmRes(e.Out.Board, PdmResKind.VirtualInput, k), new PdmClaim(PdmClaimKind.Link, text));
+            if (e.Shared is { } sh)
+            {
+                var st = $"the shared ALIVE / SEEN / LOST of the ECU stream 0x{e.Id:X3}";
+                Claim(new PdmRes(e.Out.Board, PdmResKind.CanInput, sh.Alive), new PdmClaim(PdmClaimKind.Shared, st));
+                Claim(new PdmRes(e.Out.Board, PdmResKind.CanInput, sh.Seen), new PdmClaim(PdmClaimKind.Shared, st));
+                Claim(new PdmRes(e.Out.Board, PdmResKind.VirtualInput, sh.Lost), new PdmClaim(PdmClaimKind.Shared, st));
+            }
+        }
+
+        // editor2: functions of several outputs (turn signals, wiper) and PWM duty curves (PdmFunctions, PdmPwm)
+        foreach (var f in PdmFunctions.All(this))
+            foreach (var r in f.Made) Claim(r, new PdmClaim(PdmClaimKind.Trigger, f.Text, f.Outputs[0], f.OutputsKey));
+        foreach (var c in PdmPwm.Curves(this))
+            Claim(c.Table, new PdmClaim(PdmClaimKind.Trigger, $"output {c.Out.Number}'s PWM duty curve", c.Out.Number));
 
         // triggers made by the /pdm editor (one output each)
         foreach (var o in v.Outputs)
@@ -488,7 +512,7 @@ public sealed class PdmModel
         if (_claims.TryGetValue(from, out var fc) && fc == c) return true;
         if (from.Kind != PdmResKind.Output || from.Board != to.Board) return false;
         var n = PdmView.OutputNumber(from.Board, from.Index);
-        if (c.Kind == PdmClaimKind.Trigger) return c.Output == n;
+        if (c.Kind == PdmClaimKind.Trigger) return c.Output == n || c.Outputs != null && c.Outputs.Contains($",{n},");
         return c.Text.EndsWith($"-> output {n}"); // a link's own output
     }
 
@@ -583,7 +607,8 @@ public static class PdmEngine
                || d.Wipers is { } w && new[] { w.SlowInput, w.FastInput, w.InterInput, w.OnInput, w.SpeedInput, w.ParkInput, w.SwipeInput, w.WashInput }.Contains(var)
                || d.StarterDisable is { } s && s.Input == var
                || d.MuteCanTxInput == var || d.ForceSleepInput == var
-               || d.CustomPdm is { } cp && (cp.MasterRetryInput == var || cp.Tables.Any(t => t.Input == var));
+               || d.CustomPdm is { } cp && (cp.MasterRetryInput == var || cp.Tables.Any(t => t.Input == var)
+                                            || cp.PwmFreqInputs.Any(f => f.Enabled && f.Input == var));
     }
 
     // ---------------- critical settings (p1 / p3): never changed on the Advanced screen ----------------
