@@ -54,15 +54,15 @@ steps = [
     dict(no=2, title="BOARDS ON THE GAP PADS AND STUDS", subtitle="BOARD SCREWS M3 x 8 INTO THE SINK BOSSES",
          base=SINK, custom=mv(pick("board-"), (0, 0, 40)) + mv(scr("board"), (0, 0, 75))),
     dict(no=3, title="STANDOFFS, COPPER, RISERS, CARRIER, LUGS", subtitle="F-F STANDOFFS SPUN ONTO THE STUDS; M6 / M4 / M3 SCREWS",
-         base=SINK + BOARDS, custom=mv(pick("standoffs-"), (0, 0, 30)) + mv(pick("copper-bar"), (0, 0, 55)) + mv(pick("copper-boss", "screws_M6"), (0, 0, 80))
+         base=SINK + BOARDS, custom=mv(pick("standoffs-"), (0, 0, 30)) + mv(pick("screws_M6"), (0, 0, 40)) + mv(pick("copper-bar"), (0, 0, 55)) + mv(pick("copper-boss"), (0, 0, 95))
          + mv(pick("copper-risers"), (0, 0, 45)) + mv(pick("carrier-"), (0, 0, 95)) + mv(pick("ring-lugs"), (0, 0, 115))
          + mv(pick("screws_ISO4762-M6", "screws_ISO4762-M4x6", "screws_ISO4762-M4x8", "screws_ISO4762-M3x6"), (0, 0, 135))),
     dict(no=4, title="INPUT DECK, INPUT BOARDS, HUB, CONNECTORS, HARNESS", subtitle="DECK SCREWS M3 x 8 INTO THE STANDOFFS",
          base=SINK + BOARDS, custom=mv(pick("input-deck"), (0, 0, 40)) + mv(pick("input-board", "vendor-J2"), (0, 0, 70)) + mv(plain_m3x8, (0, 0, 95))
-         + mv(pick("vendor-hub", "hub-standoffs"), (0, 0, 40)) + mv(pick("vendor-X", "vendor-plug", "panel-", "usbc-"), (0, -60, 0))
+         + mv(pick("vendor-hub", "hub-standoffs"), (0, 0, 40)) + mv(pick("vendor-X", "vendor-plug", "usbc-"), (0, -80, 0)) + mv(pick("panel-washers"), (0, -40, 0)) + mv(pick("panel-nuts"), (0, 25, 0))
          + mv(pick("wires-", "wire-ribbons", "usb-cables"), (0, 0, 60))),
-    dict(no=5, title="LID (HEAT-SET INSERTS FITTED) AND LID SCREWS", subtitle="LID SCREWS M4 x 12 FROM BELOW - BEFORE THE FEET",
-         base=SINK, custom=mv(pick("lid"), (0, 0, 110)) + mv(pick("heat-set-inserts"), (0, 0, 110)) + mv(scr("lid"), (0, 0, -70))),
+    dict(no=5, title="HEAT-SET INSERTS INTO THE LID, LID, LID SCREWS", subtitle="LID SCREWS M4 x 12 FROM BELOW - BEFORE THE FEET",
+         base=SINK, custom=mv(pick("lid"), (0, 0, 130)) + mv(pick("heat-set-inserts"), (0, 0, 60)) + mv(scr("lid"), (0, 0, -70))),
     dict(no=6, title="FEET AND FOOT SCREWS", subtitle="AFTER THE LID SCREWS: THE FEET COVER THE CORNER LID SCREWS",
          base=SINK + [no("lid")], custom=mv(pick("heat-sink-foot"), (0, 0, -45)) + mv(scr("feet"), (0, 0, -95))),
 ]
