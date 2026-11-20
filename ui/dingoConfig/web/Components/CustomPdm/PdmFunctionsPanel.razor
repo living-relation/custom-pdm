@@ -1,0 +1,408 @@
+@using System.Globalization
+@using application.Services
+@using domain.CustomPdm
+@using domain.Enums
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+@inject IDialogService DialogService
+
+@* custom-pdm one-PDM editor, phase 2 (editor2): functions in plain words, all through the conflict engine
+   (domain/CustomPdm/PdmEcu.cs, PdmPwm.cs, PdmFunctions.cs): outputs switched by the ECU, CAN values (numbers from the
+   ECU for levels and curves), PWM (fixed / value / curve duty, soft start, minimum duty, frequency from an input),
+   turn signals + hazards and the wiper. Each shows what it costs on its board; a full board is refused with nothing
+   changed; replacing what an output already has asks "already assigned. Overwrite?" first. PC edits: Write All sends
+   them, Burn keeps them, Read All shows them again. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel @bind-Expanded="_open">
+        <TitleContent>
+            <MudText Typo="Typo.h6">Functions (ECU outputs, PWM / fan curve, turn signals, wiper)</MudText>
+        </TitleContent>
+        <ChildContent>
+            @{
+                var busy = Pdm.Ops.Busy;
+                var m = PdmModel.Build(View);
+                var outs = View.Outputs.Where(o => PdmTriggers.Unsettable(o) == null).ToList();
+                var ins = View.Inputs.Where(r => r.Digital != null).ToList();
+            }
+            <MudText Typo="Typo.caption" Style="display: block" Class="mb-2" id="pdm-fn-use">
+                @foreach (var b in View.Boards)
+                {
+                    <div>@m.Use(b.Role).Summary</div>
+                }
+            </MudText>
+
+            @* ---------------- ECU-driven outputs ---------------- *@
+            <MudText Typo="Typo.subtitle1"><b>Outputs switched by the ECU</b></MudText>
+            <MudText Typo="Typo.caption" Style="display: block">
+                The ECU sends one frame (default ID 0x3F4, every 50 ms), one byte per command: 1 = on, 0 = off. The output follows the
+                ECU only. When the frames stop, each output does what its mode says after its loss delay (off / hold / on / condition);
+                after power-up it stays off until the ECU's first frame.
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                <MudSelect T="int?" Value="@_ecuOut" ValueChanged="@(o => PickEcuOut(o))" Label="Output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 200px" Class="pdm-ecu-out" Disabled="@busy">
+                    @foreach (var o in outs)
+                    {
+                        <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_ecuId" Label="Frame ID (hex)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Class="pdm-ecu-id" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_ecuByte" Label="Byte (0-7)" Min="0" Max="7" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Class="pdm-ecu-byte" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_ecuPeriod" Label="Period (ms)" Min="1" Max="5000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Disabled="@busy" />
+                <MudSelect T="PdmLinkLoss" @bind-Value="_ecuLoss" Label="When the frames stop" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-ecu-loss" Disabled="@busy">
+                    @foreach (var c in PdmLinks.LossChoices)
+                    {
+                        <MudSelectItem T="PdmLinkLoss" Value="@c">@PdmLinks.LossName(c)</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_ecuLoss != PdmLinkLoss.Hold)
+                {
+                    <MudNumericField T="int" @bind-Value="_ecuDelay" Label="Loss delay (ms)" Min="@(3 * _ecuPeriod)" Max="@PdmLinks.MaxDelayMs" Step="50" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 130px" Class="pdm-ecu-delay" Disabled="@busy" />
+                }
+                @if (_ecuLoss == PdmLinkLoss.Condition && _ecuOut is { } eo)
+                {
+                    <MudSelect T="int?" @bind-Value="_ecuCond" Label="Condition" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Disabled="@busy">
+                        @foreach (var c in PdmLinks.CondChoices(View, eo))
+                        {
+                            <MudSelectItem T="int?" Value="@((int?)c.Var)">@c.Text</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _ecuOut == null)" OnClick="SetEcu" Class="pdm-ecu-set">Set</MudButton>
+            </MudStack>
+            @if (_ecuOut is { } eOut && Id(_ecuId) is { } eid)
+            {
+                <MudText Typo="Typo.caption" Class="pdm-ecu-cost">Cost on @View.Outputs.Single(o => o.Number == eOut).Board: @PdmTriggers.CostText(PdmEcu.Cost(View, View.Outputs.Single(o => o.Number == eOut), eid, _ecuLoss, _ecuDelay))</MudText>
+            }
+            @if (PdmEcu.All(View) is { Count: > 0 } ecus)
+            {
+                <MudSimpleTable Dense="true" Class="mt-1 mb-2" id="pdm-ecu-list">
+                    <thead><tr><th>Output</th><th>ECU command</th><th>When the frames stop</th><th>Uses</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var e in ecus)
+                    {
+                        var ee = e;
+                        <tr class="pdm-ecu-row">
+                            <td>@OutText(e.Out)</td>
+                            <td>@e.Source</td>
+                            <td>@e.LossText</td>
+                            <td>@e.Out.Board CAN input @(e.Slot + 1)@(e.Virt is { } k ? $" + virtual input {k + 1}" : "")</td>
+                            <td><MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="@busy" OnClick="@(() => Done(PdmEcu.Remove(View, ee.Out.Number), $"Output {ee.Out.Number}: ECU command removed"))">Remove</MudButton></td>
+                        </tr>
+                    }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @* ---------------- CAN values ---------------- *@
+            <MudText Typo="Typo.subtitle1" Class="mt-3"><b>CAN values (numbers from the ECU or another device)</b></MudText>
+            <MudText Typo="Typo.caption" Style="display: block">
+                e.g. coolant temperature or engine RPM: value = raw x factor + offset. It takes 1 CAN input on its board and shows in the
+                value lists of levels (Output triggers), fan curves and frequency inputs (PWM below). Big endian: the first byte is the
+                most significant one.
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                <MudSelect T="string" @bind-Value="_valBoard" Label="Board" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy">
+                    @foreach (var b in View.Boards)
+                    {
+                        <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudTextField T="string" @bind-Value="_valName" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 160px" Class="pdm-val-name" Disabled="@busy" />
+                <MudTextField T="string" @bind-Value="_valId" Label="Frame ID (hex)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Class="pdm-val-id" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_valByte" Label="First byte" Min="0" Max="7" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_valLen" Label="Bits" Min="1" Max="32" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudSelect T="ByteOrder" @bind-Value="_valOrder" Label="Byte order" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 150px" Disabled="@busy">
+                    <MudSelectItem T="ByteOrder" Value="@ByteOrder.LittleEndian">Little endian</MudSelectItem>
+                    <MudSelectItem T="ByteOrder" Value="@ByteOrder.BigEndian">Big endian</MudSelectItem>
+                </MudSelect>
+                <MudCheckBox T="bool" @bind-Value="_valSigned" Label="Signed" Dense="true" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_valFactor" Label="Factor" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudNumericField T="double" @bind-Value="_valOffset" Label="Offset" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="AddValue" Class="pdm-val-add">Add value</MudButton>
+            </MudStack>
+
+            @* ---------------- PWM ---------------- *@
+            <MudText Typo="Typo.subtitle1" Class="mt-3"><b>PWM (fan speed, dimming, tachometer)</b></MudText>
+            <MudText Typo="Typo.caption" Style="display: block">
+                The output's trigger still says WHEN it is on; PWM says how hard. Duty: fixed, a value (the value is the duty in %), or a
+                curve of a value (2-8 points, in between it is interpolated, outside held at the end points; costs 1 of the board's 4
+                lookup tables). Frequency 16-400 Hz, or from a value (tachometer: pulses per revolution, 16-1000 Hz).
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                <MudSelect T="int?" Value="@_pwmOut" ValueChanged="@(o => PickPwmOut(m, o))" Label="Output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 200px" Class="pdm-pwm-out" Disabled="@busy">
+                    @foreach (var o in View.Outputs.Where(o => !PdmTriggers.IsFanOutput(o) && o.Output.PrimaryOutput < 0))
+                    {
+                        <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_pwmOut is { } po)
+                {
+                    var board = View.Outputs.Single(o => o.Number == po).Board;
+                    var vals = PdmPwm.ValueChoices(m, board);
+                    <MudCheckBox T="bool" @bind-Value="_pwmOn" Label="PWM on" Dense="true" Class="pdm-pwm-on" Disabled="@busy" />
+                    @if (_pwmOn)
+                    {
+                        <MudSelect T="PdmDutyKind" @bind-Value="_duty" Label="Duty" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 140px" Class="pdm-pwm-duty" Disabled="@busy">
+                            <MudSelectItem T="PdmDutyKind" Value="@PdmDutyKind.Fixed">Fixed</MudSelectItem>
+                            <MudSelectItem T="PdmDutyKind" Value="@PdmDutyKind.Value">From a value</MudSelectItem>
+                            <MudSelectItem T="PdmDutyKind" Value="@PdmDutyKind.Curve">Curve of a value</MudSelectItem>
+                        </MudSelect>
+                        @if (_duty == PdmDutyKind.Fixed)
+                        {
+                            <MudNumericField T="int" @bind-Value="_fixed" Label="Duty (%)" Min="0" Max="100" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px" Disabled="@busy" />
+                        }
+                        else
+                        {
+                            <MudSelect T="int" @bind-Value="_dutyVar" Label="Value" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-pwm-var" Disabled="@busy">
+                                @foreach (var c in vals)
+                                {
+                                    <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                        @if (_duty == PdmDutyKind.Curve)
+                        {
+                            <MudTextField T="string" @bind-Value="_points" Label="Points: value -> duty %, e.g. 80:0, 90:40, 100:100" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 300px" Class="pdm-pwm-points" Disabled="@busy" />
+                        }
+                        <MudNumericField T="int" @bind-Value="_freq" Label="Frequency (Hz)" Min="@PdmPwm.MinFreq" Max="@PdmPwm.MaxFreq" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Class="pdm-pwm-freq" Disabled="@(busy || _freqIn)" />
+                        <MudNumericField T="int" @bind-Value="_minDuty" Label="Min duty (%)" Min="0" Max="100" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Disabled="@busy" />
+                        <MudCheckBox T="bool" @bind-Value="_soft" Label="Soft start" Dense="true" Disabled="@busy" />
+                        @if (_soft)
+                        {
+                            <MudNumericField T="int" @bind-Value="_softMs" Label="Ramp (ms)" Min="1" Max="@PdmPwm.MaxSoftMs" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Disabled="@busy" />
+                        }
+                        <MudCheckBox T="bool" @bind-Value="_freqIn" Label="Frequency from a value" Dense="true" Class="pdm-pwm-freqin" Disabled="@busy" />
+                        @if (_freqIn)
+                        {
+                            <MudSelect T="int" @bind-Value="_freqVar" Label="Value (e.g. RPM)" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Disabled="@busy">
+                                @foreach (var c in vals)
+                                {
+                                    <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudNumericField T="double" @bind-Value="_ppr" Label="Pulses per rev" Min="0.01" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Disabled="@busy" />
+                            <MudNumericField T="int" @bind-Value="_fMin" Label="Min Hz" Min="16" Max="1000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                            <MudNumericField T="int" @bind-Value="_fMax" Label="Max Hz" Min="16" Max="1000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                        }
+                    }
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="SetPwm" Class="pdm-pwm-set">Set</MudButton>
+                    <MudText Typo="Typo.caption">Cost: @PdmTriggers.CostText(PdmPwm.Cost(PwmSpec() ?? PdmPwmSpec.Off).ToDictionary(x => x.Key, x => x.Value))</MudText>
+                }
+            </MudStack>
+            @if (View.Outputs.Where(o => o.Output.PwmEnabled).ToList() is { Count: > 0 } pwms)
+            {
+                <MudSimpleTable Dense="true" Class="mt-1 mb-2" id="pdm-pwm-list">
+                    <tbody>
+                    @foreach (var o in pwms)
+                    {
+                        <tr class="pdm-pwm-row"><td>@OutText(o)</td><td>@PdmPwm.Words(m, o)</td></tr>
+                    }
+                    </tbody>
+                </MudSimpleTable>
+            }
+
+            @* ---------------- turn signals + hazards ---------------- *@
+            <MudText Typo="Typo.subtitle1" Class="mt-3"><b>Turn signals and hazards</b></MudText>
+            <MudText Typo="Typo.caption" Style="display: block">
+                One flasher drives both sides, so they always flash in step. Both outputs must be on one board; the switches can be
+                inputs of any board. Cost: 3 virtual inputs + 1 flasher (+ 1 CAN input per switch on another board).
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                <MudSelect T="int?" @bind-Value="_tLo" Label="Left lamps output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 180px" Class="pdm-turn-lo" Disabled="@busy">
+                    @foreach (var o in outs) { <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_tRo" Label="Right lamps output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 180px" Class="pdm-turn-ro" Disabled="@busy">
+                    @foreach (var o in outs) { <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_tL" Label="Left switch" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-turn-l" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">@InText(r)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_tR" Label="Right switch" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-turn-r" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">@InText(r)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_tH" Label="Hazard switch" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="pdm-turn-h" Disabled="@busy">
+                    @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">@InText(r)</MudSelectItem> }
+                </MudSelect>
+                <MudNumericField T="int" @bind-Value="_tOn" Label="On (ms)" Min="1" Max="@PdmTriggers.MaxFlashMs" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_tOff" Label="Off (ms)" Min="1" Max="@PdmTriggers.MaxFlashMs" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 90px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _tLo == null || _tRo == null || _tL == null || _tR == null || _tH == null)" OnClick="SetTurn" Class="pdm-turn-set">Set</MudButton>
+            </MudStack>
+
+            @* ---------------- wiper ---------------- *@
+            <MudText Typo="Typo.subtitle1" Class="mt-3"><b>Wiper</b></MudText>
+            <MudText Typo="Typo.caption" Style="display: block">
+                The board's own wiper function (one per board): the motor-run output runs until the park cam says the blades are home;
+                intermittent wipes once per pause; wash wipes a few times. The park cam must be an input of the motor's board. Cost:
+                that board's wiper (+ 1 CAN input per switch on another board).
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                <MudSelect T="int?" @bind-Value="_wSlowOut" Label="Motor run output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 180px" Class="pdm-wiper-run" Disabled="@busy">
+                    @foreach (var o in outs) { <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem> }
+                </MudSelect>
+                <MudSelect T="int?" @bind-Value="_wFastOut" Label="High speed output" Dense="true" Clearable="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 180px" Disabled="@busy">
+                    @foreach (var o in outs) { <MudSelectItem T="int?" Value="@((int?)o.Number)">@OutText(o)</MudSelectItem> }
+                </MudSelect>
+                @foreach (var (label, idx) in new[] { ("Slow switch", 0), ("Fast switch", 1), ("Intermittent switch", 2), ("Wash switch", 3), ("Park cam", 4) })
+                {
+                    var i = idx;
+                    <MudSelect T="int?" Value="@_w[i]" ValueChanged="@(x => _w[i] = x)" Label="@label" Dense="true" Clearable="@(i is 1 or 2 or 3)" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 150px" Class="@($"pdm-wiper-in{i}")" Disabled="@busy">
+                        @foreach (var r in ins) { <MudSelectItem T="int?" Value="@((int?)r.Number)">@InText(r)</MudSelectItem> }
+                    </MudSelect>
+                }
+                <MudCheckBox T="bool" @bind-Value="_wParkHigh" Label="Park cam on in the park zone" Dense="true" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_wInter" Label="Pause (ms)" Min="100" Max="60000" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Disabled="@busy" />
+                <MudNumericField T="int" @bind-Value="_wWipes" Label="Wipes after wash" Min="0" Max="20" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 110px" Disabled="@busy" />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || _wSlowOut == null || _w[0] == null || _w[4] == null)" OnClick="SetWiper" Class="pdm-wiper-set">Set</MudButton>
+            </MudStack>
+            @if (PdmFunctions.All(m) is { Count: > 0 } fns)
+            {
+                <MudSimpleTable Dense="true" Class="mt-2" id="pdm-fn-list">
+                    <tbody>
+                    @foreach (var f in fns)
+                    {
+                        var ff = f;
+                        @foreach (var n in f.Outputs)
+                        {
+                            <tr class="pdm-fn-row"><td>output @n</td><td>@f.Words(n)</td>
+                                <td><MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="@busy" OnClick="@(() => Done(PdmFunctions.Remove(View, ff.Outputs[0]), $"{ff.Text} removed"))">Remove</MudButton></td></tr>
+                        }
+                    }
+                    </tbody>
+                </MudSimpleTable>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open;
+    // ECU
+    private int? _ecuOut;
+    private string _ecuId = PdmEcu.DefaultId.ToString("X3");
+    private int _ecuByte, _ecuPeriod = PdmEcu.DefaultPeriodMs, _ecuDelay = PdmLinks.TimeoutMs;
+    private PdmLinkLoss _ecuLoss = PdmLinkLoss.Off;
+    private int? _ecuCond;
+    // CAN value
+    private string _valBoard = "B", _valName = "ECU coolant", _valId = "3F5";
+    private int _valByte, _valLen = 16;
+    private ByteOrder _valOrder = ByteOrder.LittleEndian;
+    private bool _valSigned;
+    private double _valFactor = 0.1, _valOffset;
+    // PWM
+    private int? _pwmOut;
+    private bool _pwmOn, _soft, _freqIn;
+    private PdmDutyKind _duty;
+    private int _fixed = 100, _dutyVar, _freq = PdmPwm.DefaultFreq, _minDuty, _softMs = 1000, _freqVar, _fMin = 16, _fMax = 1000;
+    private double _ppr = 2;
+    private string _points = "80:0, 90:40, 100:100";
+    // turn signals
+    private int? _tLo, _tRo, _tL, _tR, _tH;
+    private int _tOn = PdmFunctions.DefaultFlashMs, _tOff = PdmFunctions.DefaultFlashMs;
+    // wiper: slow, fast, intermittent, wash, park
+    private int? _wSlowOut, _wFastOut;
+    private readonly int?[] _w = new int?[5];
+    private bool _wParkHigh = true;
+    private int _wInter = 3000, _wWipes = 3;
+
+    private static string OutText(PdmOutputRow o) => $"output {o.Number} ({o.Board} OUT{o.BoardOutput}){(o.Output.Name.StartsWith("output") ? "" : " " + o.Output.Name)}";
+    private static string InText(PdmInputRow r) => $"IN{r.Number} ({r.Board} IN{r.BoardInput}){(r.Name.StartsWith("digitalInput") ? "" : " " + r.Name)}";
+
+    private static int? Id(string hex) =>
+        int.TryParse(hex.Trim().Replace("0x", "", StringComparison.OrdinalIgnoreCase), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var id) ? id : null;
+
+    private async Task<bool?> Ask(string? taken)
+    {
+        if (taken == null) return false;
+        // DECISIONS g1: never replace something already assigned without asking
+        var yes = await DialogService.ShowMessageBox("Already assigned", taken.EndsWith("Overwrite?") ? taken : $"{taken} Overwrite?", yesText: "Overwrite", cancelText: "Cancel");
+        return yes == true ? true : null;
+    }
+
+    private void Done(string? why, string what)
+    {
+        if (why != null) { Notification.NewError($"Not changed: {why}"); return; }
+        Notification.NewInfo($"{what} (on the PC). Write All sends it to the boards.");
+        StateHasChanged();
+    }
+
+    private void PickEcuOut(int? o)
+    {
+        _ecuOut = o;
+        if (o is not { } n || View.Outputs.FirstOrDefault(r => r.Number == n) is not { } row) return;
+        if (PdmEcu.Of(View, row) is { } e) (_ecuId, _ecuByte, _ecuLoss, _ecuDelay, _ecuCond) = (e.Id.ToString("X3"), e.Byte, e.Loss, e.DelayMs, e.Cond == 0 ? null : e.Cond);
+        else _ecuLoss = PdmPresets.DefaultLoss(View, row);   // the output's preset says what it should do at loss
+    }
+
+    private async Task SetEcu()
+    {
+        if (_ecuOut is not { } n) return;
+        if (Id(_ecuId) is not { } id) { Notification.NewError("The frame ID is a hex number, e.g. 3F4."); return; }
+        var ow = await Ask(PdmEcu.Conflict(View, n));
+        if (ow == null) return;
+        Done(PdmEcu.Set(View, n, id, _ecuByte, _ecuLoss, _ecuDelay, _ecuCond ?? 0, ow.Value, _ecuPeriod),
+            $"Output {n}: ECU 0x{id:X3} byte {_ecuByte}");
+    }
+
+    private void AddValue()
+    {
+        if (Id(_valId) is not { } id) { Notification.NewError("The frame ID is a hex number, e.g. 3F5."); return; }
+        var s = PdmEcu.AddValue(View, _valBoard, _valName, id, _valByte, _valLen, _valOrder, _valSigned, _valFactor, _valOffset, PdmLinks.TimeoutMs, out var why);
+        Done(why, s >= 0 ? $"{_valBoard} CAN input {s + 1}: '{_valName}' = 0x{id:X3} from byte {_valByte}, {_valLen} bits, x {_valFactor} + {_valOffset}" : "");
+    }
+
+    private void PickPwmOut(PdmModel m, int? o)
+    {
+        _pwmOut = o;
+        if (o is not { } n) return;
+        var s = PdmPwm.Of(m, View.Outputs.Single(r => r.Number == n));
+        (_pwmOn, _freq, _duty, _fixed, _dutyVar, _soft, _softMs, _minDuty) = (s.Enabled, s.Enabled ? s.FreqHz : PdmPwm.DefaultFreq, s.Duty, s.FixedDuty, s.Var, s.SoftStart, s.SoftStartMs, s.MinDuty);
+        if (s.Points is { } p) _points = string.Join(", ", p.Select(x => $"{x.X.ToString(CultureInfo.InvariantCulture)}:{x.Y.ToString(CultureInfo.InvariantCulture)}"));
+        _freqIn = s.FreqInput != null;
+        if (s.FreqInput is { } fi) (_freqVar, _ppr, _fMin, _fMax) = (fi.Var, fi.PulsesPerRev, fi.MinHz, fi.MaxHz);
+    }
+
+    private PdmPwmSpec? PwmSpec()
+    {
+        if (!_pwmOn) return PdmPwmSpec.Off;
+        List<(double, double)>? pts = null;
+        if (_duty == PdmDutyKind.Curve)
+        {
+            pts = [];
+            foreach (var part in _points.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var xy = part.Split(':');
+                if (xy.Length != 2 || !double.TryParse(xy[0], CultureInfo.InvariantCulture, out var x) || !double.TryParse(xy[1], CultureInfo.InvariantCulture, out var y)) return null;
+                pts.Add((x, y));
+            }
+        }
+        return new PdmPwmSpec(true, _freq, _duty, _fixed, _dutyVar, pts, _soft, _softMs, _minDuty,
+            _freqIn ? new PdmFreqInput(_freqVar, _ppr, _fMin, _fMax) : null);
+    }
+
+    private void SetPwm()
+    {
+        if (_pwmOut is not { } n) return;
+        if (PwmSpec() is not { } s) { Notification.NewError("Points are value:duty pairs, e.g. 80:0, 90:40, 100:100."); return; }
+        Done(PdmPwm.Set(View, n, s), $"Output {n}: {PdmPwm.Words(PdmModel.Build(View), View.Outputs.Single(o => o.Number == n))}");
+    }
+
+    private async Task SetTurn()
+    {
+        var spec = new PdmTurnSpec(_tLo!.Value, _tRo!.Value, PdmTerm.In(_tL!.Value), PdmTerm.In(_tR!.Value), PdmTerm.In(_tH!.Value), _tOn, _tOff);
+        var ow = await Ask(PdmFunctions.Conflict(View, PdmFunctions.Turn, spec.LeftOut, spec.RightOut));
+        if (ow == null) return;
+        Done(PdmFunctions.SetTurn(View, spec, ow.Value), $"Turn signals on outputs {spec.LeftOut} / {spec.RightOut}");
+    }
+
+    private async Task SetWiper()
+    {
+        PdmTerm? T(int i) => _w[i] is { } n ? PdmTerm.In(n) : null;
+        var spec = new PdmWiperSpec(_wSlowOut!.Value, _wFastOut ?? 0, T(0)!, T(1), T(2), _w[4]!.Value, _wParkHigh, T(3), _wWipes, _wInter);
+        var ow = await Ask(PdmFunctions.Conflict(View, PdmFunctions.WiperKind, spec.SlowOut, spec.FastOut));
+        if (ow == null) return;
+        Done(PdmFunctions.SetWiper(View, spec, ow.Value), $"Wiper on output {spec.SlowOut}{(spec.FastOut > 0 ? $" / {spec.FastOut}" : "")}");
+    }
+}
