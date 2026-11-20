@@ -25,9 +25,10 @@ Model (finite volume, one node per cell and copper layer; cell = --res mm):
     R_sys x P_box, R_sys = 0.47 K/W with the F1 fans (74.6 C at 31.1 W, docs/enclosure-v2c.md 4) or 0.98 K/W fans
     off on a wall (90.6 C at 31.1 W). P_box = board B drivers + copper + joints, + bars / contacts / harness
     (docs/heat-analysis.md 3: 3.2 W at 150 A, x (I / 150)^2) + the A boards (car case only, their share of the feed).
-  * Limits: driver Tj = board top under the pad + P x RthJC max <= 150 C (Infineon); laminate (any copper / FR-4
-    node) <= 130 C (FR-4 UL relative thermal index, the usual long-term limit; JLCPCB FR-4 Tg 135-155 C); the
-    copper loss must not lift the hot spot more than 10 K (same rule as verify_copper).
+  * Limits (pass / fail): driver Tj = board top under the pad + P x RthJC max <= 150 C (Infineon); laminate (any
+    copper / FR-4 node) <= 130 C (FR-4 UL relative thermal index, the usual long-term limit; JLCPCB FR-4 Tg 135-155
+    C). Reported, not a pass / fail limit here: how much the copper loss lifts the hot spot (verify_copper's
+    no-sink 10 K rule is a layout-fault screen; here the real limits above already include the copper heat).
 
 Cases (board B outputs OUT1-4 BTS70012 31 A, OUT5-8 BTS7004 15 A):
   rating      every output at its rating (184 A: above the 150 A feed limit; the PR #109 upper bound)
@@ -72,7 +73,7 @@ G_PIN = 0.5
 G_BAR = K_CU * 20e-3 * 5e-3 / 113.4e-3
 DT_A1 = 15.0
 T_CABIN = 60.0
-LIMITS = dict(tj=150.0, laminate=130.0, copper_rise=10.0)
+LIMITS = dict(tj=150.0, laminate=130.0)
 
 
 def case_currents(name):
@@ -382,8 +383,7 @@ def run_case(board, th, diel, case, a, T, plots=None):
                hottest_chip=hot["ref"], tj_max=hot["tj"],
                feed=[dict(net=r["net"], I=round(r["I"], 1), drop_mv=round(r["drop_mv"], 1), p_w=round(r["power_w"], 2))
                      for r in rs])
-    out["pass"] = dict(tj=out["tj_max"] <= LIMITS["tj"], laminate=out["laminate_max"] <= LIMITS["laminate"],
-                       copper_rise=out["copper_rise_max"] <= LIMITS["copper_rise"])
+    out["pass"] = dict(tj=out["tj_max"] <= LIMITS["tj"], laminate=out["laminate_max"] <= LIMITS["laminate"])
     if plots:
         plot(plots, case, a, T, Tn, dcu, out, board)
     return out
@@ -458,15 +458,14 @@ def main():
               f"{r['p_joints']:.2f} W (box {r['p_box']:.1f} W) -> sink {r['t_sink']} C | Tj max {r['tj_max']} C "
               f"({r['hottest_chip']}) {'ok' if r['pass']['tj'] else 'FAIL'} | laminate max {r['laminate_max']} C at "
               f"{r['laminate_at']} {r['laminate_layer']} {'ok' if r['pass']['laminate'] else 'FAIL'} | copper I2R "
-              f"lifts it {r['copper_rise_at_hot']} K (max {r['copper_rise_max']} K) "
-              f"{'ok' if r['pass']['copper_rise'] else 'FAIL'}")
+              f"lifts it {r['copper_rise_at_hot']} K (max {r['copper_rise_max']} K)")
         print("            chips Tj: " + ", ".join(f"{c['ref']} {c['tj']}" for c in r["chips"]) +
               " | feed: " + ", ".join(f"{f['net']} {f['drop_mv']} mV {f['p_w']} W" for f in r["feed"] if f["net"] == "+12V"))
     if a.json:
         with open(a.json, "w") as f:
             json.dump(res, f, indent=1, default=str)
     print("RESULT", "PASS" if not fails else f"FAIL ({fails})",
-          f"(limits: Tj <= {LIMITS['tj']} C, laminate <= {LIMITS['laminate']} C, copper rise <= {LIMITS['copper_rise']} K)")
+          f"(limits: Tj <= {LIMITS['tj']} C, laminate <= {LIMITS['laminate']} C)")
     return 1 if fails else 0
 
 

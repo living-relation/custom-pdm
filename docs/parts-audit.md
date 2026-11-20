@@ -177,7 +177,7 @@ Per PDM = 2 x A + 1 x B.
 | MB85RC64TA (was MB85RC256V until 2026-11-11) | RAMXEED MB85RC64TAPNF-G-AWERE2 | 1 | 1 | 3 | C43379785 (was MB85RC256V C47538: **gone**) | P4, C2b, section 9 |
 | MCP9808 | Microchip MCP9808T-E/MS | 1 | 1 | 3 | C129490: 516, 2.12 | Mouser 21,642 at 1.40 |
 | MCP2562FD-E/SN (was PCA82C250 until 2026-11-11) | Microchip MCP2562FD-E/SN | 1 | 1 | 3 | C124016 (was PCA82C250T/YM,118, C7439) | P3, C3, section 9 |
-| LM2902PWR (TSSOP-14; was LM324 until 2026-11-14) | TI LM2902PWR | 2 | 2 | 6 | see CSV; was LM324PWR C7942: 112,900, 0.15 | sense buffers; swap: section 11 |
+| TLV9004IPWR (TSSOP-14; LM324 until 2026-11-14, LM2902PWR until 2026-11-20) | TI TLV9004IPWR | 2 | 2 | 6 | see CSV; was LM2902PWR C46864 | sense buffers, rail-to-rail; section 14 |
 | TLV1117LV33DCYR (was LD1117S33CTR until 2026-11-14) | TI TLV1117LV33DCYR | 1 | 1 | 3 | C15578: **0** (2026-11-14); was LD1117 C35879: 17,135, 0.16 | P11, section 10 |
 | VXO7805-500-M (U1) | CUI VXO7805-500-M-TR | 1 | 1 | 3 | C5137464: **0** | P1, C1 |
 | OKI-78SR-5/1.5-W36H-C | Murata, same | 1 | 1 | 3 | C266374: **0** | P1, C1: alternative to U1 |
@@ -187,7 +187,8 @@ Per PDM = 2 x A + 1 x B.
 | NUP2105LT1G (CAN protection) | DOWO "NUP2105LT1G" | 1 | 1 | 3 | C2976509: 32,220, 0.05 | P12 |
 | Schottky, SOD-123 | Nexperia PMEG10010ELRX (100 V, 1 A) | 3 | 3 | 9 | C179426: 4,080, 0.14 | reverse-battery, 5 V and USB diodes |
 | BYG23M (flyback) | Vishay BYG23M-E3/TR | 0 | 8 | 8 | C141573: 19,145, 0.18 | one per board B output |
-| 3.3 V zener, SOD-323 | Nexperia PDZ3.3B,115 | 5 | 9 | 19 | C426855: 5,350, 0.20 | clamps on sense and battery-sense lines |
+| 3.3 V zener, SOD-323 | Nexperia PDZ3.3B,115 | 1 | 1 | 3 | C426855 | battery-sense clamp D1 (IS clamps are PDZ5.1B since 2026-11-20, section 14) |
+| 5.1 V zener, SOD-323 | Nexperia PDZ5.1B,115 | 4 | 8 | 16 | C85392 | IS-chain clamps (A D9 D12 D13 D14, B D14 D16 D18 D20-D24); section 14 |
 | BAT54S | Nexperia BAT54S,215 | 2 | 2 | 6 | C47546: 264,340, 0.02 | plus 27 on the input boards |
 | LED green / red 0805 | OSRAM LG R971 / LS R976 | 1 + 2 fitted (+1 green DNP) | 1 + 2 fitted (+1 green DNP) | 3 + 6 | C2899888: 7,080; C2899997: 10,190 | green power LED (A D3, B D5) DNP since 2026-11-14, section 10 |
 | Ferrite bead 0805 | Murata BLM21PG221SN1D | 1 | 1 | 3 | C85840: 27,660 | |
@@ -450,7 +451,8 @@ Per PDM = 2 x A + 1 x B + 3 x input board. "short" = JLCPCB stock below one PDM'
 | Maker MPN | LCSC | JLCPCB type | JLCPCB stock | Per PDM | Boards | Approved alternates |
 |---|---|---|---|---|---|---|
 | YAGEO CC0805KRX7R9BB104 | C49678 | basic | 23699183 | 52 | A B | - |
-| Nexperia PDZ3.3B,115 | C426855 | ext | 5561 | 19 | A B | - |
+| Nexperia PDZ3.3B,115 | C426855 | ext | 5561 | 3 | A B | - |
+| Nexperia PDZ5.1B,115 | C85392 | ext | LCSC 6230 (2026-11-20) | 16 | A B | - |
 | YAGEO RT0805DRD0747KL | C327035 | ext | 52 | 3 | A B | UNI-ROYAL 0805W8F4702T5E (1 %, LCSC C17713, basic) |
 | UNI-ROYAL 0805W8F4701T5E | C17673 | basic | 4625794 | 92 | A B | - |
 | Murata GRM21BR6YA106KE43L | C162422 | ext | 14573 | 3 | A B | - |
@@ -484,7 +486,7 @@ Per PDM = 2 x A + 1 x B + 3 x input board. "short" = JLCPCB stock below one PDM'
 | Microchip MCP9808T-E/MS | C129490 | ext | 503 | 3 | A B | - |
 | Samsung Electro-Mechanics CL21B103KBANNNC | C1710 | basic | 2133107 | 14 | A B | - |
 | Nexperia BAT54S,215 | C47546 | ext | 238920 | 33 | A B IN | onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND) |
-| Texas Instruments LM2902PWR | C46864 | ext | 89645 | 6 | A B | - |
+| Texas Instruments TLV9004IPWR (was LM2902PWR C46864) | C2058050 | ext | LCSC 2190 (2026-11-20) | 6 | A B | Microchip MCP6004T-E/ST |
 | KEMET C0805C473K5RAC7800 | C3879816 | ext | 7957 | 16 | A B | KEMET C0805C473K5RACTU (same part, other reel code; DK 399-C0805C473K5RACTUCT-ND) |
 | YAGEO CC0805GRNPO0BN221 | C576920 | ext | 3366 | 16 | A B | - |
 | UNI-ROYAL 0805W8F1201T5E | C17379 | basic | 1366298 | 16 | A B | YAGEO RC0805FR-071K2L (DK 311-1.20KCRCT-ND) |
@@ -528,3 +530,40 @@ The two parts (maker data; estimate: clamp = VBR max + Rd x I, Rd from the data-
 Decision: D2 = 5.0SMDJ24CA on A and B (same DO-214AB footprint, no copper change). MPN = DOWO 5.0SMDJ24CA (LCSC C284111, JLCPCB extended, 4,224 in stock; the LCSC column is the fitted part, C6c); approved alternate Littelfuse 5.0SMDJ24CA (Digi-Key F5634CT-ND). Rest of the +12 V rail at up to 35 V: TSR 1-2450 input 6.5-36 V (LCSC listing), C3 35 V, 47 nF / 100 nF 50 V: all within rating. Unchanged and not covered by the switch data sheets either way: pulse 1 drives VS to about -30 V (old part about -26 V) for about 2 ms against the -16 V / 2 min reverse rating.
 
 Sources: Infineon BTS7008-2EPA / BTS7004-1EPP / BTS70012-1ESP data sheets (links in section 12); Littelfuse 5.0SMDJ data sheet (https://littelfuse.com/~/media/electronics/datasheets/tvs_diodes/littelfuse_tvs_diode_5_0smdj_datasheet.pdf.pdf); BORN SMCJ data sheet (LCSC C152086); JLCPCB part page C284111; Digi-Key 5.0SMDJ24CA (https://www.digikey.com/en/products/detail/littelfuse-inc/5-0SMDJ24CA/3307005); Analog Devices "Low quiescent current surge stopper ... ISO 7637-2 and ISO 16750-2" (https://www.analog.com/en/resources/technical-articles/low-quiescent-current-surge-stopper-robust-automotive-supply-protection.html) and "LTspice: models of ISO 7637-2 & ISO 16750-2 transients" (https://www.analog.com/en/resources/technical-articles/ltspice-models-of-iso-7637-2-iso-16750-2-transients.html); Nexperia IAN50007 (https://www.nexperia.com/applications/interactive-app-notes/IAN50007_Conducted_battery_line_transients).
+
+## 14. IS buffer, IS clamp zener and input TVS (2026-11-20, branch `fix/hw-sense-tvs-feed`, job hwfix)
+
+ADR-2026-11-20-is-buffer, ADR-2026-11-20-is-fullscale (PR #112) follow-up, ADR-2026-11-20-tvs-loaddump. Proof:
+`tools/verify_spice.py` (rows in `docs/pcb-verification.md`).
+
+### 14.1 Sense buffer U7 / U12 (A), U7 / U22 (B): LM2902PWR -> TI TLV9004IPWR (fitted)
+
+| | LM2902PWR (before) | TLV9004IPWR (fitted) |
+|---|---|---|
+| Input range on 3.3 V | 0 to VCC-1.5 V (25 C) / VCC-2 V (-40..125 C) (TI SLOS066AE 6.8) | (V-)-0.1 to (V+)+0.1 V, rail-to-rail in and out, swing 20 mV max from the rails at RL 10 k (TI SBOS833R 7.5) |
+| TA | -40 to 125 C | -40 to 125 C (SBOS833R 7.3) |
+| Pinout, TSSOP-14 (PW) | 1 OUT1, 2 IN1-, 3 IN1+, 4 V+, 5 IN2+, 6 IN2-, 7 OUT2, 8 OUT3, 9 IN3-, 10 IN3+, 11 V-, 12 IN4+, 13 IN4-, 14 OUT4 (SLOS066AE Table 5-1) | identical, pin for pin (SBOS833R Table 6-5) |
+| Input overdrive | - | diode-clamped to the rails, <= 10 mA (SBOS833R 7.1 note 2): 4.7 k in front keeps it <= 0.34 mA at IIS(SAT) 15 mA |
+| Order | LCSC C46864 | LCSC C2058050 (TI, 2,190 in stock 2026-11-20, 0.25 USD at 5), Digi-Key 296-51827-1-ND (product page 2026-11-20); approved alternate Microchip MCP6004T-E/ST (RRIO, VDD-25 mV swing, E grade -40 to 125 C, same TSSOP-14 pinout: Microchip DS20001733) |
+
+Symbol: stays the generic `Amplifier_Operational:LM324` quad (same pins); KiCad 9 / 10 ship TLV9004 only as `TLV9004xRUCR` (X2QFN numbering). Value / MPN / LCSC / Digi-Key / Datasheet / Alternates carry the part.
+
+### 14.2 IS-chain clamp zeners: PDZ3.3B -> Nexperia PDZ5.1B,115 (fitted; D1 battery sense stays PDZ3.3B)
+
+Why: with the rail-to-rail buffer the clamp no longer has to sit at the 3.3 V rail; the TLV9004 input diodes take the overdrive. The 3.3 V zener's knee is soft (PDZ-B series Table 2: rdif <= 1000 Ohm at 0.5 mA, 95 Ohm at 5 mA; IR <= 5 uA at 1 V; SZ -2.4 mV/K): in the softest data-sheet corner a PROFET fault (IIS(FAULT) 4.4 mA min) reads only 2.31 V at 125 C, under the firmware fault level 2.475 V (PROFET_IS_FULL_SCALE 3071, ADR-2026-11-20-is-fullscale). PDZ5.1B (VZ 4.96-5.20 V at 5 mA, rdif <= 60 / 250 Ohm at 5 / 0.5 mA, IR <= 2 uA at 1.5 V, SZ +0.3 mV/K): a fault reads 3.28 V (4070 counts, the op-amp rail) at -40 / 25 / 125 C in both corners (margin +0.805 V), no leakage error at rated current (readings at rating 0.0 %), op-amp input current 0.25-0.34 mA at IIS(SAT) 15 mA. Infineon's own list asks for a 7 V Z-diode at the IS line (BTS7008-2EPA Table 24, DZ1). Order: LCSC C85392 (Nexperia, 6,230 in stock 2026-11-20), Digi-Key 1727-5155-1-ND (product page 2026-11-20), same SOD-323 footprint.
+
+### 14.3 Input TVS D2 (A and B): load-dump part chosen, NOT fitted (footprint: report to the coordinator)
+
+| Part | Package | Suppressed load dump B (35 V, Ri 0.5 / 2 / 4 Ohm, 400 ms) | Pulse 2a (+112 V, 2 Ohm) | Verdict |
+|---|---|---|---|---|
+| 5.0SMDJ24CA (fitted) | DO-214AB | 12-123 J vs a 10/1000 us rating of about 7 J (no long-pulse rating) | 33.5-34.9 V | FAIL |
+| Vishay SM8S24CA (HM3: AEC-Q101), bidirectional | DO-218AB / AC | 31-327 W for 400 ms vs 622 W allowed (Vishay doc 98647 fig. 1: 6.6 kW 1 ms, 5.2 kW 10 ms, 1.9 kW 100 ms, extrapolated with the 10-100 ms slope to 1.04 kW at 400 ms; derated linearly to 0 at 175 C from an 85 C start, doc 98229 fig. 3) | 32.4-34.0 V | PASS |
+| Littelfuse 5.0SMDJ33CA (Infineon DZ2 "33 V TVS") | DO-214AB | stays off (VBR 36.7 V min): 0.01 J | 44.0-46.0 V (> 35 V VBAT(LD); PROFET GND current through RGND 47R 0.23-0.28 A) | FAIL (clamp) |
+
+Independent evidence for the DO-218AB class: Panjit's AEC-Q101 SM8H24CAS-AU (same VBR 26.7-29.5 V, 6.6 kW) is tested to ISO 16750-2 test A, the UNsuppressed load dump (Us 101 V, Ri 0.5 Ohm, td 400 ms, 10 pulses at 1 min), clamping at 33.2 V max (Panjit "Automotive-Grade Bidirectional Load Dump TVS" flyer, Rev 03, 2025-05). No DO-214AB part survives 100+ J for 400 ms. DOWO's SM8S24CA (LCSC C557518) is rated only 3.65 kW at 10/10000 us (its LCSC data sheet) against Vishay's 5.2 kW, so it is not an approved equal.
+Chosen part (when the footprint is settled): Vishay SM8S24CAHM3/I (Digi-Key product 18869881); approved alternates Bourns SM8S24CA-Q (Digi-Key product 9920516), Panjit SM8H24CAS-AU.
+Footprint: the DO-218 pad pattern (9.8 x 10.7 mm tab + 2.15 x 2.6 mm lead, 15.3 mm long; Vishay doc 98229 mounting pad layout) needs about 16.5 x 11.5 mm with courtyard; at D2 (-33.66, 30.59, 4.2 mm from the board edge on A and B) only 7.6 mm is free across (C2 at +3.5 mm, J1's courtyard at +3.4 mm). It fits only if D2 moves (free 16.5 x 11.5 mm sites: A around (24.9, -12.5) .. (24.9, 8.5); B around (36-39, -14 .. -9)) or C2 / J1 move, and the part is about 5 mm tall (lid clearance). Not done: footprint / part moves need the coordinator and the enclosure job first.
+Pulse 1 (-150 V, 10 Ohm, 2 ms), every bidirectional part: -29 to -32 V on +12V vs the PROFETs' -16 V 2-minute reverse rating; their GND-VS path breaks down at 16-30 V (-VS(REV), P_6.4.0.9) and the fitted RGND 47 Ohm (Infineon Table 24, already on every switch, with CVSGND 47 nF) then carries up to about 0.3 A for the pulse (IGND abs max 50 mA static). The data sheets give no pulse rating; a unidirectional TVS (forward clamp about -1 V) would short a reverse-connected battery, so no sourced standard fix keeps reverse-battery survival: WARN kept, noted in BACKLOG.
+
+Sources: TI SBOS833R (TLV900x, Nov 2021); TI SLOS066AE; Microchip DS20001733L (MCP6001/2/4); Nexperia PDZ-B series data sheet (2004-03-22 / NXP); Infineon BTS7008-2EPA Rev 1.20, BTS7004-1EPP, BTS70012-1ESP Rev 1.21 (Tables 3, 24, P_4.1.0.3 / .5 / .9, P_6.4.0.9, P_8.6.0.6 / .7, P_9.6.x); Vishay SM8S10CA thru SM8S85CA doc 98229 (rev 23-Jan-2026), SM8S10AHM3 thru SM8S43AHM3 doc 98647 (rev 16-Jan-2024); Littelfuse 5.0SMDJ data sheet; Panjit load-dump TVS flyer (panjit.com.tw); LCSC product pages C2058050, C85392, C557518, C3720850, C2990549 (read 2026-11-20).
+
