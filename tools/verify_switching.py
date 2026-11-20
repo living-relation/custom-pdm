@@ -83,8 +83,9 @@ def pwm_motor_diode():
         add("PWM into a motor (board B)", f"{name} ({board} OUT{out}, {i} A, L {l_hi * 1e3:g} mH ASSUMED): BYG23M "
             "average current", ", ".join(f"{f} Hz {a:.1f} A" for f, a in rows), f"IF(AV) {lim} A (TA 65 C)",
             "FAIL" if rows[2][1] > lim else "PASS",
-            f"continuous PWM is only safe up to about {fmax} Hz with this L; the fan presets' soft start (100 Hz, 1 s) "
-            "and a fan curve at 100-400 Hz overload D13 .. D28 (SMA, RthJA 125 K/W). A design choice: a larger "
+            f"continuous PWM is only safe up to about {fmax} Hz with this L; a fan curve at 100-400 Hz overloads D13 .. D28 "
+            "(SMA, RthJA 125 K/W); the /pdm presets hold board B motor PWM and the fan soft start at PdmPresets.MaxPwmHz "
+            "(same model, preset current limit: fans 22 Hz; job fwsafety) until the diodes change. A design choice: a larger "
             "freewheel diode (e.g. a 10-15 A Schottky, footprint change) on the PWM'd board B outputs, or PWM only below "
             "that frequency (bench: measure the fan's L and current decay)")
 

@@ -72,6 +72,11 @@ public class PdmEditor2Tests
         foreach (var (k, n, hz) in new[] { (PdmDeviceKind.RadiatorFan, 17, 22), (PdmDeviceKind.CondenserFan, 18, 22), (PdmDeviceKind.FuelPump, 19, 64),
                      (PdmDeviceKind.Motor, 23, 60), (PdmDeviceKind.RadiatorFan, 21, 90), (PdmDeviceKind.Lamp, 17, 400), (PdmDeviceKind.RadiatorFan, 1, 400) })
             Assert.Equal(hz, PdmPresets.MaxPwmHz(Out(v, n), k));
+        // a fresh fan output: the soft start is made at 22 Hz straight away (nothing to correct, no note)
+        var n17 = new List<string>();
+        Assert.Null(PdmPresets.Apply(v, 17, PdmDeviceKind.RadiatorFan, n17));
+        Assert.Equal(22, Out(v, 17).Output.Frequency);
+        Assert.DoesNotContain(n17, s => s.StartsWith("PWM frequency"));
         // a fan curve at 100 Hz on B OUT3 is held at 64 Hz by the fuel pump preset, and shows as changed when set back
         var x = Out(v, 19).Output;
         (x.PwmEnabled, x.VariableDutyCycle, x.FixedDutyCycle, x.Frequency) = (true, false, 60, 100);
