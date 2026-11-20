@@ -48,7 +48,9 @@ public record PdmRes(string Board, PdmResKind Kind, int Index)
 // From reads variable Var in its field Field. To = the resource that owns Var (null: a system variable, or Missing)
 public record PdmRef(PdmRes From, string Field, int Var, PdmRes? To, bool Missing);
 
-public enum PdmClaimKind { Free, Reserved, Link, Shared, Trigger, Hand }
+// Value (editor2b): a /pdm value or system function (counter, math, level, CAN value, keypad button, starter,
+// master retry, CAN output, PdmValues): anything may read it, only its own editor changes it
+public enum PdmClaimKind { Free, Reserved, Link, Shared, Trigger, Hand, Value }
 
 // Output = the PDM output number for a Trigger claim
 // Outputs = the outputs of a function of several outputs (editor2: turn signals, wiper), e.g. ",9,11,"
@@ -367,6 +369,11 @@ public sealed class PdmModel
         foreach (var c in PdmPwm.Curves(this))
             Claim(c.Table, new PdmClaim(PdmClaimKind.Trigger, $"output {c.Out.Number}'s PWM duty curve", c.Out.Number));
 
+        // editor2b: values and system functions (PdmValues)
+        foreach (var f in PdmValues.All(this))
+            foreach (var r in f.Made.Where(r => Allocatable.Contains(r.Kind)))
+                Claim(r, new PdmClaim(PdmClaimKind.Value, f.Words));
+
         // triggers made by the /pdm editor (one output each)
         foreach (var o in v.Outputs)
         {
@@ -561,7 +568,7 @@ public sealed class PdmModel
             var mine = _claims.Where(c => c.Key.Board == board && c.Key.Kind == k).Select(c => c.Value.Kind).ToList();
             return new PdmKindUse(k, mine.Count, mine.Count(x => x == PdmClaimKind.Free), mine.Count(x => x == PdmClaimKind.Reserved),
                 mine.Count(x => x is PdmClaimKind.Link or PdmClaimKind.Shared), mine.Count(x => x == PdmClaimKind.Trigger),
-                mine.Count(x => x == PdmClaimKind.Hand));
+                mine.Count(x => x is PdmClaimKind.Hand or PdmClaimKind.Value));
         }).ToList());
     }
 }

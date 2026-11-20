@@ -116,8 +116,10 @@ public static class PdmTriggers
                 };
             case Output o:
                 var on = PdmView.OutputNumber(role, q.Device.Outputs.IndexOf(o));
-                return $"output {on} {e.PropertyName.ToLowerInvariant()}";
-        }
+                return $"output {on} {e.PropertyName.ToLowerInvariant()}";        }
+        // editor2b: a level used as a signal says what it is
+        if (first && e.Owner is VirtualInput lv && PdmValues.IsLevelLatch(q.Device, lv, out var lon, out var loff))
+            return $"level ({PdmValues.LevelWords(m, role, lon, loff)})";
         var r = m.ResOf(e.Owner);
         var name = e.GetName();
         var text = r?.Text ?? name;
@@ -322,8 +324,10 @@ public static class PdmTriggers
             var r = m.ResOf(e.Owner!);
             var ok = e.Owner switch
             {
-                CanInput or Condition => r != null && m.ClaimOf(r).Kind == PdmClaimKind.Hand,
-                AnalogInput or Output => true,
+                CanInput or Condition => r != null && m.ClaimOf(r).Kind is PdmClaimKind.Hand or PdmClaimKind.Value,
+                VirtualInput => r != null && m.ClaimOf(r).Kind == PdmClaimKind.Value,   // editor2b: a level as a signal
+                AnalogInput => true,
+                Output => true,
                 domain.Devices.Functions.Keypad.KeypadMaster k => k.Enabled,
                 _ => false
             };
@@ -344,7 +348,7 @@ public static class PdmTriggers
             {
                 null => e.GetName() is "Battery Voltage" or "Temperature" || e.GetName().StartsWith("Table "),
                 AnalogInput => e.PropertyName is "Millivolts" or "Pos",
-                CanInput c => e.PropertyName == "Value" && m.ResOf(c) is { } r && m.ClaimOf(r).Kind == PdmClaimKind.Hand,
+                CanInput c => e.PropertyName == "Value" && m.ResOf(c) is { } r && m.ClaimOf(r).Kind is PdmClaimKind.Hand or PdmClaimKind.Value,
                 MathBlock or Counter => true,
                 _ => false
             };
