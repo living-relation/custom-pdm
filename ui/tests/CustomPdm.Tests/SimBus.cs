@@ -20,10 +20,12 @@ public sealed class SimBus : IDisposable
         var win = Path.Combine(dir.FullName, "ui", "tests", "sim_bridge.py");
         var wsl = "/mnt/" + char.ToLowerInvariant(win[0]) + win[2..].Replace('\\', '/');
         var so = Environment.GetEnvironmentVariable("CUSTOMPDM_SIM_SO")!;
-        _p = Process.Start(new ProcessStartInfo("wsl.exe", $"-e python3 {wsl} {so} --stdio")
-        {
-            RedirectStandardInput = true, RedirectStandardOutput = true, UseShellExecute = false
-        })!;
+        // custom-pdm editor2: on Linux (CI, cloud) the bridge runs directly, on Windows through WSL
+        var start = OperatingSystem.IsWindows()
+            ? new ProcessStartInfo("wsl.exe", $"-e python3 {wsl} {so} --stdio")
+            : new ProcessStartInfo("python3", $"{win} {so} --stdio");
+        (start.RedirectStandardInput, start.RedirectStandardOutput, start.UseShellExecute) = (true, true, false);
+        _p = Process.Start(start)!;
     }
 
     public List<(int Id, byte[] Data)> Cmd(string line)

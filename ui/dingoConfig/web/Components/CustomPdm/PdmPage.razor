@@ -141,6 +141,7 @@
         <PdmSettingsPanel View="@_view" />
         <PdmTriggersPanel View="@_view" />
         <PdmLinksPanel View="@_view" />
+        <PdmFunctionsPanel View="@_view" />
 
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
         <MudGrid Class="mb-4">
@@ -226,6 +227,33 @@
                 <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Output.Name)" CellStyle="min-width: 160px">
                     <EditTemplate>
                         <MudTextField @bind-Value="context.Item.Output.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
+                    </EditTemplate>
+                </TemplateColumn>
+                @* editor2: device preset per output (domain/CustomPdm/PdmPresets.cs); every value stays editable *@
+                <TemplateColumn Title="Device" Sortable="false" CellStyle="min-width: 210px">
+                    <EditTemplate>
+                        @{
+                            var row = context.Item;
+                            var kind = PdmPresets.KindOf(_view, row);
+                            var changed = kind == PdmDeviceKind.None ? [] : PdmPresets.Changed(_view, row, kind);
+                            var pro = row.Device.CustomPdm?.OutputProtection.ElementAtOrDefault(row.BoardOutput - 1);
+                        }
+                        <MudSelect T="PdmDeviceKind" Value="@kind" ValueChanged="@(k => ApplyPreset(row, k))" Dense="true" Variant="Variant.Outlined"
+                                   Margin="Margin.Dense" Disabled="@(busy || PdmTriggers.IsFanOutput(row) || row.Output.PrimaryOutput >= 0)"
+                                   Class="@($"pdm-preset pdm-preset-{row.Number}")">
+                            <MudSelectItem T="PdmDeviceKind" Value="@PdmDeviceKind.None">(none)</MudSelectItem>
+                            @foreach (var p in PdmPresets.All)
+                            {
+                                <MudSelectItem T="PdmDeviceKind" Value="@p.Kind">@p.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        @if (changed.Count > 0)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined" Class="@($"pdm-preset-changed-{row.Number}")">preset changed: @string.Join(", ", changed)</MudChip>
+                        }
+                        <MudText Typo="Typo.caption" Style="display: block">
+                            @PdmPresets.TripsText(row.Output.ResetMode == ResetMode.None ? 1 : row.Output.ResetCountLimit, row.Output.ResetTime)@(pro != null ? $"; trip {pro.TripTime} ms{(pro.MinCurrent > 0 ? $"; open-load below {pro.MinCurrent:0.##} A" : "")}" : "")
+                        </MudText>
                     </EditTemplate>
                 </TemplateColumn>
                 <PropertyColumn Property="x => x.Output.State" Title="State" Editable="false">
@@ -443,6 +471,20 @@
     // Stock rules (OutputsGrid / DigitalInputsGrid), plus: locked while a PDM run is active
     private bool Locked(Output o) => Pdm.Ops.Busy || !o.Enabled || o.PrimaryOutput >= 0;
     private bool Locked(DigitalInput i) => Pdm.Ops.Busy || !i.Enabled;
+
+    // editor2: fill the output from a device preset (PdmPresets); the notes say what else it did
+    private void ApplyPreset(PdmOutputRow row, PdmDeviceKind k)
+    {
+        var notes = new List<string>();
+        if (PdmPresets.Apply(_view, row.Number, k, notes) is { } why)
+        {
+            Notification.NewError($"Preset not applied: {why}");
+            return;
+        }
+        _refreshCounter++;
+        if (k != PdmDeviceKind.None)
+            Notification.NewInfo($"Output {row.Number}: {PdmPresets.Of(k).Name} ({PdmPresets.Of(k).Why}){(notes.Count > 0 ? "; " + string.Join("; ", notes) : "")}. Write All sends it to the boards.");
+    }
 
     // Same limits and messages as the stock grids
     private void OnCurrentLimitChanged(PdmOutputRow row, double value)
