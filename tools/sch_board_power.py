@@ -54,7 +54,7 @@ OPAMP = ("TLV9004IPWR", "C2058050", "296-51827-1-ND", "Texas Instruments", "TLV9
 OPAMP_OLD_LCSC = "C7942"                                 # TI LM324PWR
 OPAMP_UNITS = {"A": {"U7": 4, "U12": 3}, "B": {"U7": 5, "U22": 5}}[BOARD]   # units placed today (A: U7 unit 1 and
 OPAMP_REFS = set(OPAMP_UNITS)                                                # U12 units 1 / 2 are not placed)
-IS_ZENER = ("5.1V", "C85392", "", "Nexperia", "PDZ5.1B,115",
+IS_ZENER = ("5.1V", "C85392", "1727-5155-1-ND", "Nexperia", "PDZ5.1B,115",
             "https://assets.nexperia.com/documents/data-sheet/PDZ-B_SER.pdf")
 IS_ZENER_OLD_LCSC = "C426855"                           # Nexperia PDZ3.3B,115
 IS_ZENERS = {"A": {"D9", "D12", "D13", "D14"},
