@@ -5,8 +5,12 @@ Boards on one CAN bus at 1 Mbit/s (factory defaults): A1 = custompdm_a unit 1 (b
 
   python3 sim_bridge.py <so dir> --stdio            lock-step line protocol for the ui/tests C# tests
   python3 sim_bridge.py <so dir> --slcan-tcp 3333   real time, SLCAN over TCP: dingoConfig adapter "SLCAN TCP",
-                                                    port localhost:3333, bit rate 1000K; IN / LINK lines (as below)
-                                                    written to <so dir>/ctl<port> act while a PC is connected
+                                                    port localhost:3333, bit rate 1000K; play lines (IN, LINK,
+                                                    LOAD, TEMP, AN, RESTART, T, TXP: see play_ctl) written to
+                                                    <so dir>/ctl<port> act while a PC is connected; the app's /pdm
+                                                    Simulator panel sends the same lines in band as "!<line>\r"
+                                                    ("!HELLO" is answered "!SIM custom-pdm", a play line "!OK ..."
+                                                    or "!ERR ...")
 
 stdio commands (one per line, every reply ends with a line "OK"):
   T <id hex> <data hex>       PC tool sends a standard frame
@@ -102,8 +106,36 @@ def stdio(so):
         sys.stdout.write('OK\n'); sys.stdout.flush()
 
 
+def play_ctl(a, so, bus, tool, boards, periodic):
+    """uiwalk: one line of <so dir>/ctl<port> (real-time bridge), so the play UI can be exercised without the tests:
+    IN <board> <i> <open|gnd|12v> [dip]   LINK <board> <on|off>   LOAD <board> <o> <amps>   TEMP <board> <C> [die C]
+    AN <board> <volts>   RESTART <board> ...   T <id hex> <data hex>   TXP <id hex> <data hex|off> [period ms]
+    (i and o count from 0, as in the --stdio protocol). Returns False for a line it does not know."""
+    if not a: return False
+    c = a[0].upper()
+    if c == 'IN' and len(a) >= 4: boards[a[1]].set_input(int(a[2]), a[3], a[4] if len(a) > 4 else None)
+    elif c == 'LINK' and len(a) == 3: boards[a[1]].connected = a[2].lower() == 'on'
+    elif c == 'LOAD' and len(a) == 4:
+        b = boards[a[1]]; amps = float(a[3]); b.set_load(int(a[2]), b.vbat / amps if amps else 0)
+    elif c == 'TEMP' and len(a) >= 3: boards[a[1]].set_temp(float(a[2]), float(a[3]) if len(a) > 3 else None)
+    elif c == 'AN' and len(a) == 3: boards[a[1]].set_analog(float(a[2]))
+    elif c == 'RESTART' and len(a) >= 2:
+        for k in a[1:]:
+            old = boards[k]; m, u = BOARDS[k]
+            nb = ps.Board(m, k, so, fram=old.fram(), unit=u); nb.t0 = bus.now; nb.connected = old.connected
+            for i, w in old.wire.items(): nb.set_input(i, w, old.dip.get(i))
+            bus.nodes[bus.nodes.index(old)] = nb; boards[k] = nb
+    elif c == 'T' and len(a) == 3: tool.send(int(a[1], 16), bytes.fromhex(a[2]))
+    elif c == 'TXP' and len(a) >= 3:
+        if a[2].lower() == 'off': periodic.pop(int(a[1], 16), None)
+        else: periodic[int(a[1], 16)] = [bytes.fromhex(a[2]), int(float(a[3]) * 1000) if len(a) > 3 else 50000, bus.now]
+    else: return False
+    return True
+
+
 def slcan_tcp(so, port):
     bus, tool, boards, out = make_bus(so)
+    periodic = {}   # id -> [data, period us, next time us]
     ctl = os.path.join(so, f'ctl{port}')
     srv = socket.socket(); srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     srv.bind(('0.0.0.0', port)); srv.listen(1)
@@ -126,15 +158,27 @@ def slcan_tcp(so, port):
                             n = int(line[4], 16); tool.send(int(line[1:4], 16), bytes.fromhex(line[5:5 + 2 * n]))
                         elif line[:1] == 'S' and line[1:] in rates:
                             tool._bitrate = rates[line[1:]]
+                        elif line[:1] == '!':   # uipolish: a play line from the app's /pdm Simulator panel, in band
+                            a = line[1:].split()
+                            if a and a[0].upper() == 'HELLO':
+                                conn.sendall(b'!SIM custom-pdm\r'); continue
+                            try: ok = play_ctl(a, so, bus, tool, boards, periodic)
+                            except (KeyError, ValueError, IndexError, ZeroDivisionError): ok = False
+                            print(f'app {line[1:]} {"at" if ok else "refused at"} {bus.now / 1000:.1f} ms', flush=True)
+                            conn.sendall((('!OK ' if ok else '!ERR ') + line[1:] + '\r').encode()); continue
                         conn.sendall(b'\r')
                 if os.path.exists(ctl):   # w1: IN / LINK lines written to <so dir>/ctl<port> act at once (browser checks)
                     with open(ctl) as fh: lines = fh.read().splitlines()
                     os.remove(ctl)
                     for raw in lines:
                         a = raw.split()
-                        if len(a) >= 4 and a[0].upper() == 'IN': boards[a[1]].set_input(int(a[2]), a[3], a[4] if len(a) > 4 else None)
-                        elif len(a) == 3 and a[0].upper() == 'LINK': boards[a[1]].connected = a[2].lower() == 'on'
+                        try:
+                            if not play_ctl(a, so, bus, tool, boards, periodic): continue
+                        except (KeyError, ValueError, IndexError) as e:   # a typo in a ctl line must not stop the bridge
+                            print(f'ctl {raw} refused: {e!r}', flush=True); continue
                         print(f'ctl {raw} at {bus.now / 1000:.1f} ms', flush=True)
+                for i, p in periodic.items():   # uiwalk: TXP frames (an ECU stand-in) on the bus clock
+                    while bus.now >= p[2]: tool.send(i, p[0]); p[2] += p[1]
                 # real time: run the bus up to the wall clock (it lags if the PC is slower)
                 out.clear(); bus.run(s0 + int((time.monotonic() - t0) * 1e6))
                 if out:

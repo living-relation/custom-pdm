@@ -5,6 +5,8 @@
 #   -NoSim            app only (real hardware later): no sim build, no bridge
 #   -Rebuild          build the sim .so files again even if they look current
 #   -InstallShortcut  (re)create the Desktop shortcut "PDM UI.lnk" pointing at the main checkout
+#   -NoAutoConnect    do not connect the CAN adapter at start (default: the app connects to the simulator bridge by
+#                     itself; with -NoSim it connects to the adapter of the last successful Connect)
 #   -SelfTest         check the helper functions (starts nothing)
 # No admin rights, no installs. Windows PowerShell 5. ASCII only.
 [CmdletBinding()]
@@ -15,6 +17,7 @@ param(
     [switch]$InstallShortcut,
     [switch]$SelfTest,
     [switch]$NoBrowser,
+    [switch]$NoAutoConnect,
     [int]$Port = 5000,
     [int]$BridgePort = 3333,
     [string]$SoDir = '/home/daniel/scratch/ui-play/so',
@@ -165,6 +168,14 @@ function Build-Sim([string]$stamp) {
     if ($LASTEXITCODE -ne 0) { Fail 'The simulator build failed. The lines above say why.' }
 }
 
+function Get-AppArgs([string]$proj, [string]$url, [bool]$sim, [int]$bridgePort, [bool]$autoConnect) {
+    # The app reads --PdmAutoConnect:* (ui/dingoConfig/domain/CustomPdm/PdmAutoConnect.cs) and connects at start.
+    $a = @('run', '--no-build', '--project', "`"$proj`"", '--', '--urls', $url)
+    if (-not $autoConnect) { return $a }
+    if ($sim) { return $a + @('--PdmAutoConnect:Adapter', '"SLCAN TCP"', '--PdmAutoConnect:Port', "localhost:$bridgePort", '--PdmAutoConnect:BitRate', '1000K') }
+    return $a + @('--PdmAutoConnect:Last', 'true')
+}
+
 function Invoke-SelfTest {
     function Check([string]$name, [bool]$ok) { if ($ok) { Say "  ok    $name" } else { Say "  FAIL  $name"; $script:bad++ } }
     $script:bad = 0
@@ -180,6 +191,10 @@ function Invoke-SelfTest {
     Check 'missing pid entry'          (-not (Test-PidEntry $null))
     Check 'main checkout has ui'       (Test-Path (Join-Path (Get-MainCheckout) 'ui'))
     Check 'pid file is per port'       ($PidFile -like "*ui-launcher-$Port.json")
+    $sa = (Get-AppArgs 'p.csproj' 'http://localhost:5000' $true 3333 $true) -join ' '
+    Check 'sim start connects by itself' ($sa -like '*--PdmAutoConnect:Adapter "SLCAN TCP" --PdmAutoConnect:Port localhost:3333 --PdmAutoConnect:BitRate 1000K')
+    Check 'no-sim start uses the last adapter' (((Get-AppArgs 'p.csproj' 'u' $false 3333 $true) -join ' ') -like '*--PdmAutoConnect:Last true')
+    Check '-NoAutoConnect adds no flag'  (((Get-AppArgs 'p.csproj' 'u' $true 3333 $false) -join ' ') -notlike '*PdmAutoConnect*')
     if ($script:bad) { Fail "$($script:bad) self-test check(s) failed." }
     Say 'Self-test passed.'
 }
@@ -238,7 +253,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Say "Starting the app on $AppUrl (minimised window) ..."
 $ap = Start-Process -FilePath 'dotnet' -WindowStyle Minimized -PassThru -WorkingDirectory $RepoRoot `
-    -ArgumentList @('run', '--no-build', '--project', "`"$proj`"", '--', '--urls', $AppUrl)
+    -ArgumentList (Get-AppArgs $proj $AppUrl (-not $NoSim) $BridgePort (-not $NoAutoConnect))
 $appEntry = New-PidEntry $ap
 Save-Pids $appEntry $bridgeEntry
 
@@ -255,7 +270,9 @@ if (-not $ok) {
 }
 
 Say "The app is up: $PdmUrl"
-if (-not $NoSim) { Say "Simulated boards: in the app pick adapter 'SLCAN TCP', port localhost:$BridgePort, 1000K, then connect." }
+if ($NoAutoConnect) { if (-not $NoSim) { Say "Simulated boards: in the app pick adapter 'SLCAN TCP', port localhost:$BridgePort, 1000K, then connect." } }
+elseif (-not $NoSim) { Say "The app connects to the simulated boards by itself (SLCAN TCP localhost:$BridgePort, 1000K): press New PDM, or open a project file." }
+else { Say 'The app connects to the adapter of the last successful Connect by itself (if there is one).' }
 if (-not $NoBrowser) { Start-Process $PdmUrl }
 Say "To stop it: `"Start PDM UI.cmd`" -Stop"
 exit 0

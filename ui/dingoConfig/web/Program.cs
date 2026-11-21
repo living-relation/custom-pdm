@@ -70,6 +70,7 @@ builder.Services.AddSingleton<ConfigFileManager>();
 builder.Services.AddSingleton<DeviceManager>();
 builder.Services.AddSingleton<PdmOpsService>(sp => new PdmOpsService(sp.GetRequiredService<DeviceManager>()) // custom-pdm: /pdm Read All / Write All / Burn
     { AdapterConnected = () => sp.GetRequiredService<ICommsAdapterManager>().IsConnected, AutoRead = true }); // custom-pdm p2a: read boards on connect
+builder.Services.AddSingleton<PdmSimService>(); // custom-pdm: /pdm Simulator panel (only with the simulator bridge)
 builder.Services.AddSingleton<CanMsgLogger>();
 builder.Services.AddSingleton<SystemLogger>();
 builder.Services.AddSingleton<SimPlayback>();
@@ -80,6 +81,7 @@ builder.Services.AddSingleton<UserPreferencesManager>();
 
 // Add background services
 builder.Services.AddHostedService<CommsDataPipeline>();
+builder.Services.AddHostedService<web.Services.PdmAutoConnectService>(); // custom-pdm: --PdmAutoConnect:* launch flags (uiwalk)
 
 // Add GlobalLogger to logging pipeline using factory to avoid creating duplicate singleton
 builder.Logging.Services.AddSingleton<ILoggerProvider>(sp =>

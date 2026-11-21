@@ -30,6 +30,9 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
     public event EventHandler<DeviceEventArgs>? DeviceRemoved;
     public event Action<int>? ConfigTraffic; // custom-pdm: BaseId of a board a frame was sent to / a config reply came from (PdmOps Write All wait)
 
+    // custom-pdm: frames built in domain/CustomPdm (PdmFaults: the Reset faults writes) go out the stock way
+    public void SendCustomPdmFrames(List<DeviceCanFrame> frames) => _batchTransmitCallback?.Invoke(frames);
+
     public void SetBatchTransmitCallback(Action<List<DeviceCanFrame>> callback)
     {
         _batchTransmitCallback = callback;

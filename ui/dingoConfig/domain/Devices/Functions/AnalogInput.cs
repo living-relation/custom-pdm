@@ -23,8 +23,18 @@ public class AnalogInput : IDeviceFunction
     }
 
     [JsonPropertyName("enabled")] public bool Enabled { get; set; }
-    [JsonPropertyName("switch")] public AnalogSwitch Switch { get; set; }
-    [JsonPropertyName("rotary")] public RotarySwitch Rotary { get; set; }
+    // custom-pdm: (uiwalk 2026-11-21) Params follow the Switch / Rotary of a loaded project file. Stock built them once
+    // in the constructor, so after File > Open they still read the constructor's objects (threshold 0, step 0,
+    // max position 0) and a Write All sent step 0, which the firmware refuses (range 1e-6 to 1e9): the write failed.
+    [JsonPropertyName("switch")] public AnalogSwitch Switch { get; set { field = value; RefreshParams(); } }
+    [JsonPropertyName("rotary")] public RotarySwitch Rotary { get; set { field = value; RefreshParams(); } }
+
+    private void RefreshParams() // custom-pdm: same list object, so a holder of Params sees the new ones
+    {
+        if (Params == null || Switch == null || Rotary == null) return;
+        Params.Clear();
+        Params.AddRange(InitParams());
+    }
     
     [JsonIgnore][Plotable(displayName:"Millivolts")] public double Millivolts { get; set; }
     

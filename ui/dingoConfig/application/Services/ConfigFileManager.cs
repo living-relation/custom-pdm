@@ -103,6 +103,7 @@ public class ConfigFileManager(ILogger<ConfigFileManager> logger, FwDeviceDefMan
             if (!string.IsNullOrEmpty(directory))
                 Directory.CreateDirectory(directory);
 
+            domain.CustomPdm.PdmProjectFile.MarkForSave(devices); // custom-pdm: which boards hold a complete set (writable when loaded)
             var config = new ConfigFile()
             {
                 Devices = devices.OfType<FwDevice>().ToList(),
@@ -162,6 +163,7 @@ public class ConfigFileManager(ILogger<ConfigFileManager> logger, FwDeviceDefMan
             allDevices.AddRange(config.DbcDevices);
             allDevices.AddRange(config.BlinkMarineKeypads);
             allDevices.AddRange(config.GrayhillKeypads);
+            domain.CustomPdm.PdmProjectFile.MarkLoaded(allDevices); // custom-pdm: boards saved with a complete set are writable
 
             logger.LogInformation($"Loaded {allDevices.Count} devices from {fileName}");
             return allDevices;
