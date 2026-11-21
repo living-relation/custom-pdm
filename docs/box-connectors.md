@@ -24,7 +24,7 @@ OUT1-4 copper risers on T1-T4 (REDCUBE 74650074R body is 3.0 mm tall; layout in 
 | X2 | HDP24-24-47SE-L017 (sockets) | HDP26-24-47PE-L015 (pins) | 24-47: 42 x size 20, 5 x size 16 | inputs, analog, CAN, signal GND |
 | - | copper bosses / risers through the lid | ring terminals | - | 150 A battery feed (+12 V) and chassis ground on M6 copper bosses; board B OUT1-4 (31 A each) on M4 copper offset risers on T1-T4 (b4a, d1a; parts in `docs/enclosure-v2b.md`) |
 
-## X1 - outputs: boards A1 and A2 (size 16, 16 AWG) and board B OUT5-8 (size 12, 14 AWG)
+## X1 - outputs: boards A1 and A2 (size 16, 16 AWG) and board B OUT5-8 (size 12, 12 AWG GXL inside the box: ADR-2026-11-21-boutwire)
 
 Insert 24-21. Size 12 cavities are B, D, E, G (inner big ring), and the other 17 are size 16. Outputs go around the outer ring, clockwise from H in the rear view.
 

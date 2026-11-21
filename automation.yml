@@ -343,3 +343,15 @@ automations:
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_dfm.py [--json out.json]'   # needs git (board v2c export commit)
     owner: claude
+  - id: enclosure-harness
+    script: harness/src/enclosure_harness.py
+    helpers: []
+    trigger: manual                 # harness/circuit-list.md; the xlsx is the source of truth (wirelist only fills it once)
+    reads: [harness/enclosure-wire-list.xlsx]   # route geometry copied from enclosure/v2c/src/build_v2c.py rev D (ROUTE table in the script)
+    writes: [harness/enclosure-wire-list.csv, harness/enclosure.harness, harness/enclosure.harnesslib]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python harness/src/enclosure_harness.py build
+    check_cmd: python harness/src/enclosure_harness.py check
+    owner: claude
