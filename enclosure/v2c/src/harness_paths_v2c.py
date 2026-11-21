@@ -37,7 +37,7 @@ USB (revF): the hub sits under X2 with its upstream socket to the east (build_v2
   plug into the hub. U2-U4 = 4-core pigtails, OD 3.0 ASSUMED, right-angle plug at the board, open end at the hub pads (the cable
   ends at the hub edge; pad order TBD). Cable bend radius >= 4 x OD (the spec's cable flex test bends at 3.7 x OD, 3.8.1.4).
 Bend radius: wires 3 x OD, cables 4 x OD, on the centre line; table(strict=True) fails a tighter bend.
-Usage: python harness_paths_v2c.py table <meta.json> <out.json> | lengths <harness_paths.json> [--write]
+Usage: python harness_paths_v2c.py table <meta.json> <out.json> | lengths <harness_paths.json> [--write] [--update]
 """
 import os, sys, csv, json, math
 
@@ -282,8 +282,10 @@ def sleeve_solids(G):
     return out, round(tot, 1)
 
 # ---------------- lengths vs the wire list ----------------
-def lengths(tab, write=False):
-    """modelled length + service loop, up to 5 mm -> the CSV Length column where it says TBD; rows that differ > 10 % are listed"""
+def lengths(tab, write=False, update=False):
+    """modelled length + service loop, up to 5 mm -> the CSV Length column where it says TBD; rows that differ > 10 % are listed.
+    update (revF): a row that differs by more than 10 % gets the rule length too, except bought lengths (the fan's factory leads,
+    the bought USB cable U1), which only stay listed."""
     path = csv_path(); raw = open(path, newline="", encoding="utf-8").read(); nl = "\r\n" if "\r\n" in raw else "\n"
     import re
     rows = list(csv.reader(raw.splitlines())); hdr = rows[0]; iL = hdr.index("Length (mm)"); iW = hdr.index("Wire ID"); iN = hdr.index("Notes")
@@ -299,6 +301,10 @@ def lengths(tab, write=False):
             if r[iN] == n0: r[iN] = (n0 + "; " if n0 else "") + note
         else:
             st = "ok" if abs(float(r[iL]) - rule) <= 0.10 * float(r[iL]) else "DIFF"
+            if st == "DIFF" and update and not d.get("fixed") and by[r[iW]] != "U1":
+                note = f"route: CPDM-HAR-200 model {d['length']:g} mm (harness_paths_v2c.py) + 2 x 15 loop"; old = r[iL]; r[iL] = str(rule); st = f"updated {old} -> {rule}"
+                n0 = r[iN]; r[iN] = re.sub(r"route: CPDM-HAR-200 model [\d.]+ mm \(harness_paths_v2c\.py\) \+ 2 x 15 loop", note, r[iN])
+                if r[iN] == n0: r[iN] = (n0 + "; " if n0 else "") + "revF " + note
         rep.append(dict(wire=r[iW], solid=by[r[iW]], model=d["length"], rule=rule, csv=r[iL], status=st))
     if write:
         import io
@@ -311,7 +317,7 @@ if __name__ == "__main__":
         m = json.load(open(sys.argv[2])); tab = table(G_from_meta(m))
         json.dump(tab, open(sys.argv[3], "w"), indent=0); print(len(tab), "solids", sum(len(d["rows"]) for d in tab.values()), "rows")
     elif cmd == "lengths":
-        tab = json.load(open(sys.argv[2])); rep, filled = lengths(tab, "--write" in sys.argv)
+        tab = json.load(open(sys.argv[2])); rep, filled = lengths(tab, "--write" in sys.argv, "--update" in sys.argv)
         for x in rep:
-            if x["status"] != "ok": print(x)
-        print("rows", len(rep), "filled", filled, "differ > 10 %:", sum(x["status"] == "DIFF" for x in rep))
+            if x["status"] != "ok": print(x["wire"], x["solid"], "model", x["model"], "rule", x["rule"], "csv", x["csv"], x["status"])
+        print("rows", len(rep), "filled", filled, "updated", sum(x["status"].startswith("updated") for x in rep), "still differ > 10 % (bought lengths):", sum(x["status"] == "DIFF" for x in rep))

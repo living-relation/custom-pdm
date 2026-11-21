@@ -42,6 +42,10 @@ import os, sys, json, math
 from build123d import *
 from OCP.gp import gp_Trsf, gp_Vec
 VAR = sys.argv[1] if len(sys.argv) > 1 else "F1"
+# Rev F (2026-11-21, jobs wires2-4): USB hub under X2 on 4 x ISO 4762 M2.5 x 12, right-angle USB-C plugs at the three boards; X1 / X2
+#   wires end on the real TE cavity map (cavity_maps_v2c.json); the loom is laid by harness_comb_v2c.py (+ hand data) under the
+#   reduced rules of wirecheck_v2c.py (wire-on-wire is counted, only gross pile-ups fail); wire-end parts: T5-T8 ring lugs,
+#   Micro-Fit 43025-1200 / JST GHR-12V-S housings and splices (drawn best guesses), TE RNF-100 fan-lead sleeve.
 REV = "v2c"
 BOARDS = os.environ["BOARDS"]; VENDOR = os.environ["VENDOR"]
 OUT = os.path.join(os.environ.get("RUN_DIR", "/tmp/v2c"), VAR)
@@ -757,25 +761,27 @@ if VAR == "F1":
     for i_ in range(6):
         for zz_ in (-1.5, 1.5): mf = mf.cut(cyl(2.2, (-7.5 + 3.0 * i_, -1.0, zz_), 11.0, (0, 1, 0)))
     part("43025-1200", one(mf), "Molex Micro-Fit 3.0 receptacle housing 2x6 (input board J2 plug)", "Molex 43025-1200; DRAWN best guess (outside part of the mated housing, cavities on the 3.0 grid); "
-         "maker STEP not reachable from this job: swap in molex.com 430251200 STEP", "PA (UL94V-0)", "bought-drawn", maker="Molex", source="pin grid: KiCad footprint Molex_Micro-Fit_3.0_43045-1200_2x06; envelope ASSUMED")
+         "BEST-GUESS FROM DATASHEET (pin grid 3.0 x 3.0; outer envelope ASSUMED); maker STEP not reachable from this job: swap in molex.com 430251200 STEP", "PA (UL94V-0)", "bought-drawn", maker="Molex",
+         source="Molex Micro-Fit 3.0 43025 series, molex.com/en-us/products/part-detail/430251200; pin grid: KiCad footprint Molex_Micro-Fit_3.0_43045-1200_2x06; envelope ASSUMED")
     item("microfit-housings-43025-1200", "43025-1200", [L(x_ + 16.5, -88.5, ZI_ + 4.32) for x_ in IN_X.values()], (0.12, 0.12, 0.12))
     # JST GH receptacle housings GHR-12V-S on the six GH links' ends (board A J6, board B J7, input board J1). DRAWN best guess: a
     # block, width B = 16.25 (JST GH catalogue table, GHR-12V-S: A 13.75, B 16.25), depth 4.05 and thickness 2.0 ASSUMED; the
     # headers are not in the board STEPs. Local frame: row along x, the wires leave towards -y, 1.5 behind the wire ends.
     gh_ = box(-8.125, 8.125, -1.5, 2.55, -1.0, 1.0)
     part("GHR-12V-S", one(gh_), "JST GH receptacle housing 12 way (GH link plug)", "JST GHR-12V-S; DRAWN best guess (block 16.25 x 4.05 x 2.0; width from the JST GH catalogue table, depth and "
-         "thickness ASSUMED); swap in the maker model when one is at hand", "PA 66 (UL94V-0)", "bought-drawn", maker="JST", source="JST GH catalogue (eGH): GHR-12V-S A 13.75 / B 16.25; envelope ASSUMED")
+         "thickness ASSUMED), BEST-GUESS FROM DATASHEET; swap in the maker model when one is at hand", "PA 66 (UL94V-0)", "bought-drawn", maker="JST",
+         source="JST GH connector catalogue eGH (mouser.com/datasheet/2/564/eGH-3476810.pdf): GHR-12V-S A 13.75 / B 16.25; depth and thickness ASSUMED")
     item("gh-housings-GHR-12V-S", "GHR-12V-S", [Pos(X0[n_] + 1.9, -31.774, Z_TOP + 1.0) * Rot(0, 0, -90) for n_ in ("A1", "A2")] + [Pos(76.144, -77.874, Z_TOP + 6.3) * Rot(0, 0, 90) * Rot(-90, 0, 0)]
          + [Pos(x_ + 24.0, -16.5, ZI_ + 1.0) * Rot(0, 0, 180) for x_ in IN_X.values()], (0.92, 0.92, 0.88))
     # CAN splices SP1 / SP2 (TE Raychem D-436-37 sealed crimp splice) and fan splices SP3 / SP4 (solder splice + adhesive heat
     # shrink): simple bought parts, DRAWN as labelled best-guess cylinders (no maker model fetched); positions from the path table.
     SPL = HP.SPLICE
     part("D-436-37", cyl(SPL["d"], (-SPL["L"] / 2, 0, 0), SPL["L"], (1, 0, 0)), "TE Raychem D-436-37 sealed crimp splice (CAN SP1 / SP2)",
-         f"DRAWN best guess: cylinder dia {SPL['d']:g} x {SPL['L']:g}; 20-16 AWG, 2 wires per side (harness/enclosure-connectors.csv); confirm on TE drawing D-436-0037", "nylon / crimp barrel", "bought-drawn",
-         maker="TE Connectivity (Raychem)", source="harness/enclosure-connectors.csv SP1 / SP2; envelope ASSUMED")
+         f"DRAWN best guess: cylinder dia {SPL['d']:g} x {SPL['L']:g}; 20-16 AWG, 2 wires per side (harness/enclosure-connectors.csv); BEST-GUESS FROM DATASHEET (envelope ASSUMED: confirm on TE drawing D-436-0037)", "nylon / crimp barrel", "bought-drawn",
+         maker="TE Connectivity (Raychem)", source="TE Raychem D-436-37, te.com (customer drawing D-436-0037 not read in this job); harness/enclosure-connectors.csv SP1 / SP2; envelope ASSUMED")
     item("splices-CAN-D-436-37", "D-436-37", [L(SPL["x"], y_, SPL["z"]) for y_ in SPL["y"].values()], (0.75, 0.15, 0.15))
     part("GENERIC-SOLDER-SPLICE", cyl(SPL["fan_d"], (0, 0, 0), SPL["fan_z"][1] - SPL["fan_z"][0]), "Solder splice + adhesive heat shrink (fan SP3 / SP4)",
-         f"DRAWN best guess: cylinder dia {SPL['fan_d']:g} x {SPL['fan_z'][1] - SPL['fan_z'][0]:g}; Dan's library part (2 x 28 AWG fan leads + 1 x 20 AWG)", "solder sleeve, polyolefin", "bought-drawn",
+         f"DRAWN best guess: cylinder dia {SPL['fan_d']:g} x {SPL['fan_z'][1] - SPL['fan_z'][0]:g}; Dan's library part (2 x 28 AWG fan leads + 1 x 20 AWG); BEST-GUESS FROM DATASHEET does not apply (generic part, no maker sheet): envelope ASSUMED", "solder sleeve, polyolefin", "bought-drawn",
          maker="generic (Dan's library part)", source="harness/enclosure-connectors.csv SP3 / SP4; envelope ASSUMED")
     item("splices-fan-solder", "GENERIC-SOLDER-SPLICE", [L(GLAND["at"][0] + s_ * SPL["fan_dx"], GLAND["at"][1], SPL["fan_z"][0]) for s_ in (-1, 1)], (0.3, 0.3, 0.32))
     # fan-lead sleeve (BACKLOG 2026-11-20: the UL1571 80 C leads lie in the fin bay of the 85 C sink -> a >= 125 C sleeve from the
@@ -783,7 +789,7 @@ if VAR == "F1":
     # TE RNF-100 data sheet), shrunk loosely over the lead bundle (2.4 across): drawn ID 3.0 / OD 4.02, two cut lengths under the plate.
     sl_, slL_ = HP.sleeve_solids(HG)
     part(HP.SLEEVE["pn"], Compound(sl_), "TE Raychem RNF-100 3/16 heat-shrink sleeve over the fan leads", f"RNF-100-3/16-0-SP, -55..135 C, two cut lengths = {slL_:g} mm (fan 2 leads between the fans; all four leads to the cord grip), "
-         "drawn ID 3.0 / OD 4.02 (wall 0.51 recovered)", "radiation cross-linked polyolefin", "bought-drawn", maker="TE Connectivity (Raychem)", source="TE RNF-100 data sheet (size 3/16: 4.8 / 2.4 / 0.51; -55..135 C)")
+         "drawn ID 3.0 / OD 4.02 (wall 0.51 recovered), BEST-GUESS FROM DATASHEET (a shrunk sleeve has no maker model)", "radiation cross-linked polyolefin", "bought-drawn", maker="TE Connectivity (Raychem)", source="TE RNF-100 data sheet (size 3/16: 4.8 / 2.4 / 0.51; -55..135 C)")
     item("fan-lead-sleeve", HP.SLEEVE["pn"], [IDENT], (0.05, 0.05, 0.05))
     assert bbx(Compound(sl_)).zmin > -P["plate_t"] - P["fin_h"] - P["foot_h"], "fan-lead sleeve below the feet"
     WIRE_ENDS = dict(microfit="43025-1200 x 3 (drawn)", can_splices=dict(pn="D-436-37", at=[(SPL["x"], y_, SPL["z"]) for y_ in SPL["y"].values()]), fan_splices="GENERIC-SOLDER-SPLICE x 2",

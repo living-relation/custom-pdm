@@ -76,7 +76,8 @@ REV_ROWS = [("A", "Initial", datetime.date(2026, 11, 13)),
             ("B", "v2c: rebuilt from own sources (KiCad board STEPs, maker CAD); every part its own STEP with PN", None),
             ("C", "Maker CAD for the Sunon fan, Phoenix 3240083 ring lug and LTW bulkhead", None),
             ("D", "Separate feet, gap pads, heat-sink subassembly; fan wall 6.0; CnLinko USB-C bulkhead; standoffs on set-screw studs; board-boss taps 6.5; screw-on 168 C tie mounts; fan-lead cord grip; ruthex maker STEP; install-order sheets", None),
-            ("E", "Real round 3-D wires: harness subassembly CPDM-HAR-200 (one solid per wire ID) replaces the ribbon / USB placeholders; boards with the 5 V module", None)]
+            ("E", "Real round 3-D wires: harness subassembly CPDM-HAR-200 (one solid per wire ID) replaces the ribbon / USB placeholders; boards with the 5 V module", None),
+            ("F", "USB hub under X2 on M2.5 screws, right-angle USB-C plugs at the boards; real X1 / X2 cavity map; loom re-laid; wire-end parts (T5-T8 lugs, Micro-Fit / GH housings, splices, fan-lead sleeve)", None)]
 for L_, d_, dt in REV_ROWS: revs.add_release(rl, L_, d_, date=dt, title=APN)
 spec = dict(items=items, title=f"ENCLOSURE ASSEMBLY {VAR}", pn=APN, project="custom-pdm enclosure v2c", revlog=rl, source="build_v2c.py (build123d)",
             open_hide=[no("lid"), no("heat-set-inserts-M4")] + [no(nm) for nm in scr("lid")], open_label="TRIMETRIC - LID REMOVED",
