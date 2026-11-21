@@ -1,0 +1,472 @@
+{
+  "version": 1.3,
+  "kind": "library",
+  "currency": "$",
+  "wireParts": [
+    {
+      "id": "wp_gxl16_rd",
+      "partNumber": "J1128-GXL-16-RED",
+      "description": "WIRE, ELECTRICAL, 16 AWG, RED, GXL CROSS-LINKED POLYETHYLENE (XLPE), SAE J1128, -40 TO 125 C, OD 2.70-2.90 MM (IEWC SAE J1128 SHEET)",
+      "color": "Red",
+      "gauge": {
+        "value": 16,
+        "unit": "AWG"
+      },
+      "manufacturer": "SAE J1128",
+      "diameter": {
+        "value": 2.8,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "wp_gxl12_rd",
+      "partNumber": "J1128-GXL-12-RED",
+      "description": "WIRE, ELECTRICAL, 12 AWG, RED, GXL CROSS-LINKED POLYETHYLENE (XLPE), SAE J1128, -40 TO 125 C, OD 3.50-3.80 MM (IEWC SAE J1128 SHEET)",
+      "color": "Red",
+      "gauge": {
+        "value": 12,
+        "unit": "AWG"
+      },
+      "manufacturer": "SAE J1128",
+      "diameter": {
+        "value": 3.65,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_9",
+      "partNumber": "M22759/16-20-9",
+      "description": "WIRE, ELECTRICAL, 20 AWG, WHITE, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "White",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_7",
+      "partNumber": "M22759/16-20-7",
+      "description": "WIRE, ELECTRICAL, 20 AWG, VIOLET, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Violet",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_0",
+      "partNumber": "M22759/16-20-0",
+      "description": "WIRE, ELECTRICAL, 20 AWG, BLACK, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Black",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_4",
+      "partNumber": "M22759/16-20-4",
+      "description": "WIRE, ELECTRICAL, 20 AWG, YELLOW, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Yellow",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_5",
+      "partNumber": "M22759/16-20-5",
+      "description": "WIRE, ELECTRICAL, 20 AWG, GREEN, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Green",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_2",
+      "partNumber": "M22759/16-20-2",
+      "description": "WIRE, ELECTRICAL, 20 AWG, RED, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Red",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "wp_ul1571_28_rd",
+      "partNumber": "UL1571 28AWG RED (Sunon factory lead)",
+      "description": "WIRE, LEAD, UL1571 28 AWG, RED, PVC 80 C, FACTORY LEAD OF THE SUNON MF30101V1 FAN (PART OF THE FAN, NOT BOUGHT)",
+      "color": "Red",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "Sunon"
+    },
+    {
+      "id": "wp_ul1571_28_bk",
+      "partNumber": "UL1571 28AWG BLACK (Sunon factory lead)",
+      "description": "WIRE, LEAD, UL1571 28 AWG, BLACK, PVC 80 C, FACTORY LEAD OF THE SUNON MF30101V1 FAN (PART OF THE FAN, NOT BOUGHT)",
+      "color": "Black",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "Sunon"
+    },
+    {
+      "id": "wp_gh28_wh",
+      "partNumber": "TBD 28 AWG >=105 C WHITE (JST GH)",
+      "description": "WIRE, 28 AWG, WHITE, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "White",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_rd",
+      "partNumber": "TBD 28 AWG >=105 C RED (JST GH)",
+      "description": "WIRE, 28 AWG, RED, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Red",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_bk",
+      "partNumber": "TBD 28 AWG >=105 C BLACK (JST GH)",
+      "description": "WIRE, 28 AWG, BLACK, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Black",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_vt",
+      "partNumber": "TBD 28 AWG >=105 C VIOLET (JST GH)",
+      "description": "WIRE, 28 AWG, VIOLET, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Violet",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    }
+  ],
+  "connectorParts": [
+    {
+      "id": "cp_hd34_24_21sn",
+      "partNumber": "HD34-24-21SN",
+      "manufacturer": "TE DEUTSCH",
+      "url": "https://www.te.com/en/product-HD34-24-21SN.html",
+      "description": "CONNECTOR, RECEPTACLE, HD30, SHELL 24, 21 POS (17 X SIZE 16, 4 X SIZE 12), SOCKET CONTACTS, N SEAL, FLANGE / JAM NUT",
+      "gender": "Female",
+      "numberOfCavities": 21,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "custom",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "P",
+          "R",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W",
+          "X"
+        ]
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_hdp12s",
+              "rule": {
+                "gaugeFromPart": true
+              }
+            },
+            {
+              "id": "a2",
+              "type": "ContactPart",
+              "partId": "n2P7k5Wp2TRezmHgd1q87",
+              "rule": {
+                "gaugeFromPart": true
+              }
+            },
+            {
+              "id": "a3",
+              "type": "CavityPlugPart",
+              "partId": "F6dRxdC4XlgPgmxZh_zyn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_hdp24_24_47se",
+      "partNumber": "HDP24-24-47SE-L017",
+      "manufacturer": "TE DEUTSCH",
+      "url": "https://www.te.com/en/product-HDP24-24-47SE-L017.html",
+      "description": "CONNECTOR, RECEPTACLE, HDP20, SHELL 24, 47 POS (42 X SIZE 20, 5 X SIZE 16), SOCKET CONTACTS, E SEAL",
+      "gender": "Female",
+      "numberOfCavities": 47,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_0462_201_20141"
+            },
+            {
+              "id": "a2",
+              "type": "CavityPlugPart",
+              "partId": "pl_sz20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_43025_1200",
+      "partNumber": "43025-1200",
+      "manufacturer": "Molex",
+      "url": "https://www.molex.com/en-us/products/part-detail/430251200",
+      "description": "CONNECTOR, RECEPTACLE HOUSING, MICRO-FIT 3.0, 2 X 6, 12 POS, DUAL ROW",
+      "gender": "Female",
+      "numberOfCavities": 12,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_43030_0007"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_ghr_12v_s",
+      "partNumber": "GHR-12V-S",
+      "manufacturer": "JST",
+      "description": "CONNECTOR, HOUSING, GH 1.25 MM, 12 POS",
+      "gender": "Female",
+      "numberOfCavities": 12,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_sshl_002t"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "contactParts": [
+    {
+      "id": "n2P7k5Wp2TRezmHgd1q87",
+      "partNumber": "0462-201-1631",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 16, GOLD, 16-20 AWG, 13 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Gold",
+      "minGauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 16,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_hdp12s",
+      "partNumber": "0462-210-1231",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 12, GOLD, 12-14 AWG, 25 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "minGauge": {
+        "value": 14,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 12,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_0462_201_20141",
+      "partNumber": "0462-201-20141",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 20, NICKEL, 20 AWG, 7.5 A",
+      "url": "https://www.te.com/en/product-0462-201-20141.html",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Silver",
+      "minGauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 20,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_43030_0007",
+      "partNumber": "43030-0007",
+      "manufacturer": "Molex",
+      "description": "CONTACT, SOCKET, CRIMP, MICRO-FIT 3.0, TIN, 20-24 AWG, INSULATION 1.85 MM MAX, 5 A",
+      "url": "https://www.molex.com/en-us/products/part-detail/430300007",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Silver",
+      "minGauge": {
+        "value": 24,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 20,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_sshl_002t",
+      "partNumber": "SSHL-002T-P0.2",
+      "manufacturer": "JST",
+      "description": "CONTACT, SOCKET, CRIMP, GH 1.25 MM, 26-30 AWG, 1 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "minGauge": {
+        "value": 30,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 26,
+        "unit": "AWG"
+      }
+    }
+  ],
+  "terminalParts": [
+    {
+      "id": "tp_3240083",
+      "partNumber": "3240083",
+      "manufacturer": "Phoenix Contact",
+      "type": "Ring",
+      "size": "M4",
+      "description": "RING CABLE LUG C-RC 6/M4 DIN, NON-INSULATED, 2.6-6 MM2, M4 (ID 4.3), MAX STRIP 9 MM",
+      "url": "https://www.phoenixcontact.com/us/products/3240083",
+      "minGauge": {
+        "value": 2.6,
+        "unit": "Metric"
+      },
+      "maxGauge": {
+        "value": 6,
+        "unit": "Metric"
+      }
+    }
+  ],
+  "spliceParts": [
+    {
+      "id": "spp_d436_37",
+      "partNumber": "D-436-37",
+      "manufacturer": "TE Connectivity (Raychem)",
+      "description": "SPLICE, CRIMP, IN-LINE, SEALED, AS81824/1 (M81824/1-2), 20-16 AWG WIRES, 1058-2680 CMA PER SIDE, MAX 2 WIRES PER SIDE"
+    },
+    {
+      "id": "HP4pP__XZ40Qy8PCarkKn",
+      "partNumber": "GENERIC SOLDER SPLICE",
+      "manufacturer": "generic",
+      "description": "SPLICE, SOLDERED, ADHESIVE HEATSHRINK OVER"
+    }
+  ],
+  "cavityPlugParts": [
+    {
+      "id": "pl_sz20",
+      "partNumber": "0413-204-2005",
+      "manufacturer": "TE DEUTSCH",
+      "description": "PLUG, SEALING, CAVITY, SIZE 20, RED"
+    },
+    {
+      "id": "F6dRxdC4XlgPgmxZh_zyn",
+      "partNumber": "114017",
+      "manufacturer": "TE DEUTSCH",
+      "description": "PLUG, SEALING, CAVITY, SIZE 16, WHITE"
+    }
+  ]
+}

@@ -1,0 +1,4561 @@
+{
+  "version": 1.3,
+  "currency": "$",
+  "lengthUnit": "mm",
+  "gaugeUnit": "AWG",
+  "wires": [
+    {
+      "id": "w001",
+      "identLabel": "W001",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_8"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_h"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd"
+    },
+    {
+      "id": "w002",
+      "identLabel": "W002",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_7"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_j"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w002_p1",
+          "schematicPosition": {
+            "x": 570,
+            "y": 270
+          }
+        },
+        {
+          "id": "w002_p2",
+          "schematicPosition": {
+            "x": 570,
+            "y": 210
+          }
+        }
+      ]
+    },
+    {
+      "id": "w003",
+      "identLabel": "W003",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_10"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_k"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd"
+    },
+    {
+      "id": "w004",
+      "identLabel": "W004",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_9"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_l"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w004_p1",
+          "schematicPosition": {
+            "x": 630,
+            "y": 330
+          }
+        },
+        {
+          "id": "w004_p2",
+          "schematicPosition": {
+            "x": 630,
+            "y": 270
+          }
+        }
+      ]
+    },
+    {
+      "id": "w005",
+      "identLabel": "W005",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_6"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_m"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w005_p1",
+          "schematicPosition": {
+            "x": 540,
+            "y": 360
+          }
+        },
+        {
+          "id": "w005_p2",
+          "schematicPosition": {
+            "x": 540,
+            "y": 180
+          }
+        }
+      ]
+    },
+    {
+      "id": "w006",
+      "identLabel": "W006",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_5"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_n"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w006_p1",
+          "schematicPosition": {
+            "x": 480,
+            "y": 390
+          }
+        },
+        {
+          "id": "w006_p2",
+          "schematicPosition": {
+            "x": 480,
+            "y": 150
+          }
+        }
+      ]
+    },
+    {
+      "id": "w007",
+      "identLabel": "W007",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_4"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_p"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w007_p1",
+          "schematicPosition": {
+            "x": 420,
+            "y": 420
+          }
+        },
+        {
+          "id": "w007_p2",
+          "schematicPosition": {
+            "x": 420,
+            "y": 120
+          }
+        }
+      ]
+    },
+    {
+      "id": "w008",
+      "identLabel": "W008",
+      "source": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_3"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_r"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w008_p1",
+          "schematicPosition": {
+            "x": 360,
+            "y": 450
+          }
+        },
+        {
+          "id": "w008_p2",
+          "schematicPosition": {
+            "x": 360,
+            "y": 90
+          }
+        }
+      ]
+    },
+    {
+      "id": "w009",
+      "identLabel": "W009",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_8"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_s"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w009_p1",
+          "schematicPosition": {
+            "x": 360,
+            "y": 480
+          }
+        },
+        {
+          "id": "w009_p2",
+          "schematicPosition": {
+            "x": 360,
+            "y": 720
+          }
+        }
+      ]
+    },
+    {
+      "id": "w010",
+      "identLabel": "W010",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_10"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_u"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w010_p1",
+          "schematicPosition": {
+            "x": 420,
+            "y": 540
+          }
+        },
+        {
+          "id": "w010_p2",
+          "schematicPosition": {
+            "x": 420,
+            "y": 780
+          }
+        }
+      ]
+    },
+    {
+      "id": "w011",
+      "identLabel": "W011",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_9"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_v"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w011_p1",
+          "schematicPosition": {
+            "x": 480,
+            "y": 570
+          }
+        },
+        {
+          "id": "w011_p2",
+          "schematicPosition": {
+            "x": 480,
+            "y": 750
+          }
+        }
+      ]
+    },
+    {
+      "id": "w012",
+      "identLabel": "W012",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_6"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_w"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w012_p1",
+          "schematicPosition": {
+            "x": 390,
+            "y": 600
+          }
+        },
+        {
+          "id": "w012_p2",
+          "schematicPosition": {
+            "x": 390,
+            "y": 660
+          }
+        }
+      ]
+    },
+    {
+      "id": "w013",
+      "identLabel": "W013",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_5"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_x"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd"
+    },
+    {
+      "id": "w014",
+      "identLabel": "W014",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_4"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_a"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w014_p1",
+          "schematicPosition": {
+            "x": 300,
+            "y": 30
+          }
+        },
+        {
+          "id": "w014_p2",
+          "schematicPosition": {
+            "x": 300,
+            "y": 600
+          }
+        }
+      ]
+    },
+    {
+      "id": "w015",
+      "identLabel": "W015",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_3"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_c"
+      },
+      "color": "Red",
+      "partId": "wp_gxl16_rd",
+      "layoutPoints": [
+        {
+          "id": "w015_p1",
+          "schematicPosition": {
+            "x": 390,
+            "y": 90
+          }
+        },
+        {
+          "id": "w015_p2",
+          "schematicPosition": {
+            "x": 390,
+            "y": 570
+          }
+        }
+      ]
+    },
+    {
+      "id": "w016",
+      "identLabel": "W016",
+      "source": {
+        "id": "c_b_t5",
+        "handle": "Terminal"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_b"
+      },
+      "color": "Red",
+      "partId": "wp_gxl12_rd",
+      "layoutPoints": [
+        {
+          "id": "w016_p1",
+          "schematicPosition": {
+            "x": 330,
+            "y": 60
+          }
+        },
+        {
+          "id": "w016_p2",
+          "schematicPosition": {
+            "x": 330,
+            "y": 1200
+          }
+        }
+      ]
+    },
+    {
+      "id": "w017",
+      "identLabel": "W017",
+      "source": {
+        "id": "c_b_t6",
+        "handle": "Terminal"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_d"
+      },
+      "color": "Red",
+      "partId": "wp_gxl12_rd",
+      "layoutPoints": [
+        {
+          "id": "w017_p1",
+          "schematicPosition": {
+            "x": 450,
+            "y": 120
+          }
+        },
+        {
+          "id": "w017_p2",
+          "schematicPosition": {
+            "x": 450,
+            "y": 1290
+          }
+        }
+      ]
+    },
+    {
+      "id": "w018",
+      "identLabel": "W018",
+      "source": {
+        "id": "c_b_t7",
+        "handle": "Terminal"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_e"
+      },
+      "color": "Red",
+      "partId": "wp_gxl12_rd",
+      "layoutPoints": [
+        {
+          "id": "w018_p1",
+          "schematicPosition": {
+            "x": 510,
+            "y": 150
+          }
+        },
+        {
+          "id": "w018_p2",
+          "schematicPosition": {
+            "x": 510,
+            "y": 1380
+          }
+        }
+      ]
+    },
+    {
+      "id": "w019",
+      "identLabel": "W019",
+      "source": {
+        "id": "c_b_t8",
+        "handle": "Terminal"
+      },
+      "target": {
+        "id": "c_x1",
+        "handle": "c_x1_g"
+      },
+      "color": "Red",
+      "partId": "wp_gxl12_rd",
+      "layoutPoints": [
+        {
+          "id": "w019_p1",
+          "schematicPosition": {
+            "x": 600,
+            "y": 210
+          }
+        },
+        {
+          "id": "w019_p2",
+          "schematicPosition": {
+            "x": 600,
+            "y": 1470
+          }
+        }
+      ]
+    },
+    {
+      "id": "w020",
+      "identLabel": "W020",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_7"
+      },
+      "target": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_12"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w020_p1",
+          "schematicPosition": {
+            "x": 630,
+            "y": 960
+          }
+        },
+        {
+          "id": "w020_p2",
+          "schematicPosition": {
+            "x": 630,
+            "y": 360
+          }
+        }
+      ]
+    },
+    {
+      "id": "w021",
+      "identLabel": "W021",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_8"
+      },
+      "target": {
+        "id": "c_a1_j3",
+        "handle": "c_a1_j3_11"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w021_p1",
+          "schematicPosition": {
+            "x": 570,
+            "y": 990
+          }
+        },
+        {
+          "id": "w021_p2",
+          "schematicPosition": {
+            "x": 570,
+            "y": 330
+          }
+        }
+      ]
+    },
+    {
+      "id": "w022",
+      "identLabel": "W022",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_15"
+      },
+      "target": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_12"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w022_p1",
+          "schematicPosition": {
+            "x": 360,
+            "y": 1200
+          }
+        },
+        {
+          "id": "w022_p2",
+          "schematicPosition": {
+            "x": 360,
+            "y": 840
+          }
+        }
+      ]
+    },
+    {
+      "id": "w023",
+      "identLabel": "W023",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_16"
+      },
+      "target": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_11"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w023_p1",
+          "schematicPosition": {
+            "x": 300,
+            "y": 1230
+          }
+        },
+        {
+          "id": "w023_p2",
+          "schematicPosition": {
+            "x": 300,
+            "y": 810
+          }
+        }
+      ]
+    },
+    {
+      "id": "w024",
+      "identLabel": "W024",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_23"
+      },
+      "target": {
+        "id": "c_b_j6",
+        "handle": "c_b_j6_4"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w024_p1",
+          "schematicPosition": {
+            "x": 540,
+            "y": 1440
+          }
+        },
+        {
+          "id": "w024_p2",
+          "schematicPosition": {
+            "x": 540,
+            "y": 1080
+          }
+        }
+      ]
+    },
+    {
+      "id": "w025",
+      "identLabel": "W025",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_24"
+      },
+      "target": {
+        "id": "c_b_j6",
+        "handle": "c_b_j6_3"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w025_p1",
+          "schematicPosition": {
+            "x": 420,
+            "y": 1470
+          }
+        },
+        {
+          "id": "w025_p2",
+          "schematicPosition": {
+            "x": 420,
+            "y": 1050
+          }
+        }
+      ]
+    },
+    {
+      "id": "w026",
+      "identLabel": "W026",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_9"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_1"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w026_p1",
+          "schematicPosition": {
+            "x": 390,
+            "y": 1020
+          }
+        },
+        {
+          "id": "w026_p2",
+          "schematicPosition": {
+            "x": 390,
+            "y": 1590
+          }
+        }
+      ]
+    },
+    {
+      "id": "w027",
+      "identLabel": "W027",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_10"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_2"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w027_p1",
+          "schematicPosition": {
+            "x": 480,
+            "y": 1050
+          }
+        },
+        {
+          "id": "w027_p2",
+          "schematicPosition": {
+            "x": 480,
+            "y": 1620
+          }
+        }
+      ]
+    },
+    {
+      "id": "w028",
+      "identLabel": "W028",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_11"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_3"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w028_p1",
+          "schematicPosition": {
+            "x": 570,
+            "y": 1080
+          }
+        },
+        {
+          "id": "w028_p2",
+          "schematicPosition": {
+            "x": 570,
+            "y": 1650
+          }
+        }
+      ]
+    },
+    {
+      "id": "w029",
+      "identLabel": "W029",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_12"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_4"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w029_p1",
+          "schematicPosition": {
+            "x": 630,
+            "y": 1110
+          }
+        },
+        {
+          "id": "w029_p2",
+          "schematicPosition": {
+            "x": 630,
+            "y": 1680
+          }
+        }
+      ]
+    },
+    {
+      "id": "w030",
+      "identLabel": "W030",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_13"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_5"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w030_p1",
+          "schematicPosition": {
+            "x": 660,
+            "y": 1140
+          }
+        },
+        {
+          "id": "w030_p2",
+          "schematicPosition": {
+            "x": 660,
+            "y": 1710
+          }
+        }
+      ]
+    },
+    {
+      "id": "w031",
+      "identLabel": "W031",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_14"
+      },
+      "target": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_9"
+      },
+      "color": "Violet",
+      "partId": "m16_20_7",
+      "layoutPoints": [
+        {
+          "id": "w031_p1",
+          "schematicPosition": {
+            "x": 690,
+            "y": 1170
+          }
+        },
+        {
+          "id": "w031_p2",
+          "schematicPosition": {
+            "x": 690,
+            "y": 1830
+          }
+        }
+      ]
+    },
+    {
+      "id": "w032",
+      "identLabel": "W032",
+      "source": {
+        "id": "c_in1_j2",
+        "handle": "c_in1_j2_10"
+      },
+      "target": {
+        "id": "c_x2",
+        "handle": "c_x2_35"
+      },
+      "color": "Black",
+      "partId": "m16_20_0",
+      "layoutPoints": [
+        {
+          "id": "w032_p1",
+          "schematicPosition": {
+            "x": 780,
+            "y": 1800
+          }
+        },
+        {
+          "id": "w032_p2",
+          "schematicPosition": {
+            "x": 780,
+            "y": 1860
+          }
+        }
+      ]
+    },
+    {
+      "id": "w033",
+      "identLabel": "W033",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_17"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_1"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w033_p1",
+          "schematicPosition": {
+            "x": 300,
+            "y": 1260
+          }
+        },
+        {
+          "id": "w033_p2",
+          "schematicPosition": {
+            "x": 300,
+            "y": 2070
+          }
+        }
+      ]
+    },
+    {
+      "id": "w034",
+      "identLabel": "W034",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_18"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_2"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w034_p1",
+          "schematicPosition": {
+            "x": 330,
+            "y": 1290
+          }
+        },
+        {
+          "id": "w034_p2",
+          "schematicPosition": {
+            "x": 330,
+            "y": 2100
+          }
+        }
+      ]
+    },
+    {
+      "id": "w035",
+      "identLabel": "W035",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_19"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_3"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w035_p1",
+          "schematicPosition": {
+            "x": 360,
+            "y": 1320
+          }
+        },
+        {
+          "id": "w035_p2",
+          "schematicPosition": {
+            "x": 360,
+            "y": 2130
+          }
+        }
+      ]
+    },
+    {
+      "id": "w036",
+      "identLabel": "W036",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_20"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_4"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w036_p1",
+          "schematicPosition": {
+            "x": 450,
+            "y": 1350
+          }
+        },
+        {
+          "id": "w036_p2",
+          "schematicPosition": {
+            "x": 450,
+            "y": 2160
+          }
+        }
+      ]
+    },
+    {
+      "id": "w037",
+      "identLabel": "W037",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_21"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_5"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w037_p1",
+          "schematicPosition": {
+            "x": 720,
+            "y": 1380
+          }
+        },
+        {
+          "id": "w037_p2",
+          "schematicPosition": {
+            "x": 720,
+            "y": 2190
+          }
+        }
+      ]
+    },
+    {
+      "id": "w038",
+      "identLabel": "W038",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_22"
+      },
+      "target": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_9"
+      },
+      "color": "Violet",
+      "partId": "m16_20_7",
+      "layoutPoints": [
+        {
+          "id": "w038_p1",
+          "schematicPosition": {
+            "x": 510,
+            "y": 1410
+          }
+        },
+        {
+          "id": "w038_p2",
+          "schematicPosition": {
+            "x": 510,
+            "y": 2310
+          }
+        }
+      ]
+    },
+    {
+      "id": "w039",
+      "identLabel": "W039",
+      "source": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_10"
+      },
+      "target": {
+        "id": "c_x2",
+        "handle": "c_x2_36"
+      },
+      "color": "Black",
+      "partId": "m16_20_0",
+      "layoutPoints": [
+        {
+          "id": "w039_p1",
+          "schematicPosition": {
+            "x": 810,
+            "y": 1830
+          }
+        },
+        {
+          "id": "w039_p2",
+          "schematicPosition": {
+            "x": 810,
+            "y": 2340
+          }
+        }
+      ]
+    },
+    {
+      "id": "w040",
+      "identLabel": "W040",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_25"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_1"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w040_p1",
+          "schematicPosition": {
+            "x": 420,
+            "y": 1500
+          }
+        },
+        {
+          "id": "w040_p2",
+          "schematicPosition": {
+            "x": 420,
+            "y": 2550
+          }
+        }
+      ]
+    },
+    {
+      "id": "w041",
+      "identLabel": "W041",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_26"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_2"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w041_p1",
+          "schematicPosition": {
+            "x": 540,
+            "y": 1530
+          }
+        },
+        {
+          "id": "w041_p2",
+          "schematicPosition": {
+            "x": 540,
+            "y": 2580
+          }
+        }
+      ]
+    },
+    {
+      "id": "w042",
+      "identLabel": "W042",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_27"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_3"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w042_p1",
+          "schematicPosition": {
+            "x": 600,
+            "y": 1560
+          }
+        },
+        {
+          "id": "w042_p2",
+          "schematicPosition": {
+            "x": 600,
+            "y": 2610
+          }
+        }
+      ]
+    },
+    {
+      "id": "w043",
+      "identLabel": "W043",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_28"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_4"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w043_p1",
+          "schematicPosition": {
+            "x": 750,
+            "y": 1590
+          }
+        },
+        {
+          "id": "w043_p2",
+          "schematicPosition": {
+            "x": 750,
+            "y": 2640
+          }
+        }
+      ]
+    },
+    {
+      "id": "w044",
+      "identLabel": "W044",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_29"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_5"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w044_p1",
+          "schematicPosition": {
+            "x": 390,
+            "y": 1620
+          }
+        },
+        {
+          "id": "w044_p2",
+          "schematicPosition": {
+            "x": 390,
+            "y": 2670
+          }
+        }
+      ]
+    },
+    {
+      "id": "w045",
+      "identLabel": "W045",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_30"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_6"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w045_p1",
+          "schematicPosition": {
+            "x": 480,
+            "y": 1650
+          }
+        },
+        {
+          "id": "w045_p2",
+          "schematicPosition": {
+            "x": 480,
+            "y": 2700
+          }
+        }
+      ]
+    },
+    {
+      "id": "w046",
+      "identLabel": "W046",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_31"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_7"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w046_p1",
+          "schematicPosition": {
+            "x": 570,
+            "y": 1680
+          }
+        },
+        {
+          "id": "w046_p2",
+          "schematicPosition": {
+            "x": 570,
+            "y": 2730
+          }
+        }
+      ]
+    },
+    {
+      "id": "w047",
+      "identLabel": "W047",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_32"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_8"
+      },
+      "color": "White",
+      "partId": "m16_20_9",
+      "layoutPoints": [
+        {
+          "id": "w047_p1",
+          "schematicPosition": {
+            "x": 630,
+            "y": 1710
+          }
+        },
+        {
+          "id": "w047_p2",
+          "schematicPosition": {
+            "x": 630,
+            "y": 2760
+          }
+        }
+      ]
+    },
+    {
+      "id": "w048",
+      "identLabel": "W048",
+      "source": {
+        "id": "c_x2",
+        "handle": "c_x2_33"
+      },
+      "target": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_9"
+      },
+      "color": "Violet",
+      "partId": "m16_20_7",
+      "layoutPoints": [
+        {
+          "id": "w048_p1",
+          "schematicPosition": {
+            "x": 660,
+            "y": 1740
+          }
+        },
+        {
+          "id": "w048_p2",
+          "schematicPosition": {
+            "x": 660,
+            "y": 2790
+          }
+        }
+      ]
+    },
+    {
+      "id": "w049",
+      "identLabel": "W049",
+      "source": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_10"
+      },
+      "target": {
+        "id": "c_x2",
+        "handle": "c_x2_37"
+      },
+      "color": "Black",
+      "partId": "m16_20_0",
+      "layoutPoints": [
+        {
+          "id": "w049_p1",
+          "schematicPosition": {
+            "x": 690,
+            "y": 1860
+          }
+        },
+        {
+          "id": "w049_p2",
+          "schematicPosition": {
+            "x": 690,
+            "y": 2820
+          }
+        }
+      ]
+    },
+    {
+      "id": "w050",
+      "identLabel": "W050",
+      "source": {
+        "id": "c_in3_j2",
+        "handle": "c_in3_j2_11"
+      },
+      "target": {
+        "id": "c_x2",
+        "handle": "c_x2_38"
+      },
+      "color": "Black",
+      "partId": "m16_20_0",
+      "layoutPoints": [
+        {
+          "id": "w050_p1",
+          "schematicPosition": {
+            "x": 780,
+            "y": 1890
+          }
+        },
+        {
+          "id": "w050_p2",
+          "schematicPosition": {
+            "x": 780,
+            "y": 2850
+          }
+        }
+      ]
+    },
+    {
+      "id": "w059",
+      "identLabel": "W059",
+      "source": {
+        "id": "c_a2_j3",
+        "handle": "c_a2_j3_7"
+      },
+      "target": {
+        "id": "c_sp3",
+        "handle": "Splice"
+      },
+      "color": "Red",
+      "partId": "m16_20_2"
+    },
+    {
+      "id": "w060",
+      "identLabel": "W060",
+      "source": {
+        "id": "c_in2_j2",
+        "handle": "c_in2_j2_11"
+      },
+      "target": {
+        "id": "c_sp4",
+        "handle": "Splice"
+      },
+      "color": "Black",
+      "partId": "m16_20_0"
+    },
+    {
+      "id": "w061",
+      "identLabel": "W061",
+      "source": {
+        "id": "c_sp3",
+        "handle": "Splice"
+      },
+      "target": {
+        "id": "c_fan1",
+        "handle": "c_fan1_p"
+      },
+      "color": "Red",
+      "partId": "wp_ul1571_28_rd",
+      "excludeFromBom": true
+    },
+    {
+      "id": "w062",
+      "identLabel": "W062",
+      "source": {
+        "id": "c_fan1",
+        "handle": "c_fan1_m"
+      },
+      "target": {
+        "id": "c_sp4",
+        "handle": "Splice"
+      },
+      "color": "Black",
+      "partId": "wp_ul1571_28_bk",
+      "excludeFromBom": true
+    },
+    {
+      "id": "w063",
+      "identLabel": "W063",
+      "source": {
+        "id": "c_sp3",
+        "handle": "Splice"
+      },
+      "target": {
+        "id": "c_fan2",
+        "handle": "c_fan2_p"
+      },
+      "color": "Red",
+      "partId": "wp_ul1571_28_rd",
+      "excludeFromBom": true
+    },
+    {
+      "id": "w064",
+      "identLabel": "W064",
+      "source": {
+        "id": "c_fan2",
+        "handle": "c_fan2_m"
+      },
+      "target": {
+        "id": "c_sp4",
+        "handle": "Splice"
+      },
+      "color": "Black",
+      "partId": "wp_ul1571_28_bk",
+      "excludeFromBom": true
+    },
+    {
+      "id": "w065",
+      "identLabel": "W065",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_1"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_1"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w066",
+      "identLabel": "W066",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_2"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_2"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w067",
+      "identLabel": "W067",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_3"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_3"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w068",
+      "identLabel": "W068",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_4"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_4"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w069",
+      "identLabel": "W069",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_5"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_5"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w070",
+      "identLabel": "W070",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_9"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_9"
+      },
+      "color": "Violet",
+      "partId": "wp_gh28_vt"
+    },
+    {
+      "id": "w071",
+      "identLabel": "W071",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_10"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_10"
+      },
+      "color": "Red",
+      "partId": "wp_gh28_rd"
+    },
+    {
+      "id": "w072",
+      "identLabel": "W072",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_11"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_11"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    },
+    {
+      "id": "w073",
+      "identLabel": "W073",
+      "source": {
+        "id": "c_a1_j6",
+        "handle": "c_a1_j6_12"
+      },
+      "target": {
+        "id": "c_in1_j1",
+        "handle": "c_in1_j1_12"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    },
+    {
+      "id": "w074",
+      "identLabel": "W074",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_1"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_1"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w075",
+      "identLabel": "W075",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_2"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_2"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w076",
+      "identLabel": "W076",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_3"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_3"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w077",
+      "identLabel": "W077",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_4"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_4"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w078",
+      "identLabel": "W078",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_5"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_5"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w079",
+      "identLabel": "W079",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_9"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_9"
+      },
+      "color": "Violet",
+      "partId": "wp_gh28_vt"
+    },
+    {
+      "id": "w080",
+      "identLabel": "W080",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_10"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_10"
+      },
+      "color": "Red",
+      "partId": "wp_gh28_rd"
+    },
+    {
+      "id": "w081",
+      "identLabel": "W081",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_11"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_11"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    },
+    {
+      "id": "w082",
+      "identLabel": "W082",
+      "source": {
+        "id": "c_a2_j6",
+        "handle": "c_a2_j6_12"
+      },
+      "target": {
+        "id": "c_in2_j1",
+        "handle": "c_in2_j1_12"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    },
+    {
+      "id": "w083",
+      "identLabel": "W083",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_1"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_1"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w084",
+      "identLabel": "W084",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_2"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_2"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w085",
+      "identLabel": "W085",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_3"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_3"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w086",
+      "identLabel": "W086",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_4"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_4"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w087",
+      "identLabel": "W087",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_5"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_5"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w088",
+      "identLabel": "W088",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_6"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_6"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w089",
+      "identLabel": "W089",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_7"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_7"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w090",
+      "identLabel": "W090",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_8"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_8"
+      },
+      "color": "White",
+      "partId": "wp_gh28_wh"
+    },
+    {
+      "id": "w091",
+      "identLabel": "W091",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_9"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_9"
+      },
+      "color": "Violet",
+      "partId": "wp_gh28_vt"
+    },
+    {
+      "id": "w092",
+      "identLabel": "W092",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_10"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_10"
+      },
+      "color": "Red",
+      "partId": "wp_gh28_rd"
+    },
+    {
+      "id": "w093",
+      "identLabel": "W093",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_11"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_11"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    },
+    {
+      "id": "w094",
+      "identLabel": "W094",
+      "source": {
+        "id": "c_b_j7",
+        "handle": "c_b_j7_12"
+      },
+      "target": {
+        "id": "c_in3_j1",
+        "handle": "c_in3_j1_12"
+      },
+      "color": "Black",
+      "partId": "wp_gh28_bk"
+    }
+  ],
+  "connectors": [
+    {
+      "id": "c_x1",
+      "label": "X1",
+      "schematicPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "layoutPosition": {
+        "x": 360,
+        "y": 420
+      },
+      "cavities": [
+        {
+          "id": "c_x1_a"
+        },
+        {
+          "id": "c_x1_b"
+        },
+        {
+          "id": "c_x1_c"
+        },
+        {
+          "id": "c_x1_d"
+        },
+        {
+          "id": "c_x1_e"
+        },
+        {
+          "id": "c_x1_f"
+        },
+        {
+          "id": "c_x1_g"
+        },
+        {
+          "id": "c_x1_h"
+        },
+        {
+          "id": "c_x1_j"
+        },
+        {
+          "id": "c_x1_k"
+        },
+        {
+          "id": "c_x1_l"
+        },
+        {
+          "id": "c_x1_m"
+        },
+        {
+          "id": "c_x1_n"
+        },
+        {
+          "id": "c_x1_p"
+        },
+        {
+          "id": "c_x1_r"
+        },
+        {
+          "id": "c_x1_s"
+        },
+        {
+          "id": "c_x1_t"
+        },
+        {
+          "id": "c_x1_u"
+        },
+        {
+          "id": "c_x1_v"
+        },
+        {
+          "id": "c_x1_w"
+        },
+        {
+          "id": "c_x1_x"
+        }
+      ],
+      "partId": "cp_hd34_24_21sn",
+      "width": 180
+    },
+    {
+      "id": "c_x2",
+      "label": "X2",
+      "schematicPosition": {
+        "x": 0,
+        "y": 750
+      },
+      "layoutPosition": {
+        "x": 600,
+        "y": 420
+      },
+      "cavities": [
+        {
+          "id": "c_x2_1",
+          "cavityPlugPartId": "F6dRxdC4XlgPgmxZh_zyn"
+        },
+        {
+          "id": "c_x2_2",
+          "signal": "CAN_H"
+        },
+        {
+          "id": "c_x2_3",
+          "signal": "CAN_L"
+        },
+        {
+          "id": "c_x2_4",
+          "cavityPlugPartId": "F6dRxdC4XlgPgmxZh_zyn"
+        },
+        {
+          "id": "c_x2_5",
+          "cavityPlugPartId": "F6dRxdC4XlgPgmxZh_zyn"
+        },
+        {
+          "id": "c_x2_6",
+          "cavityPlugPartId": "F6dRxdC4XlgPgmxZh_zyn"
+        },
+        {
+          "id": "c_x2_7",
+          "signal": "A1_IN1"
+        },
+        {
+          "id": "c_x2_8",
+          "signal": "A1_IN2"
+        },
+        {
+          "id": "c_x2_9",
+          "signal": "A1_IN3"
+        },
+        {
+          "id": "c_x2_10",
+          "signal": "A1_IN4"
+        },
+        {
+          "id": "c_x2_11",
+          "signal": "A1_IN5"
+        },
+        {
+          "id": "c_x2_12",
+          "signal": "A1_IN6"
+        },
+        {
+          "id": "c_x2_13",
+          "signal": "A1_IN7"
+        },
+        {
+          "id": "c_x2_14",
+          "signal": "A1_AN"
+        },
+        {
+          "id": "c_x2_15",
+          "signal": "A2_IN1"
+        },
+        {
+          "id": "c_x2_16",
+          "signal": "A2_IN2"
+        },
+        {
+          "id": "c_x2_17",
+          "signal": "A2_IN3"
+        },
+        {
+          "id": "c_x2_18",
+          "signal": "A2_IN4"
+        },
+        {
+          "id": "c_x2_19",
+          "signal": "A2_IN5"
+        },
+        {
+          "id": "c_x2_20",
+          "signal": "A2_IN6"
+        },
+        {
+          "id": "c_x2_21",
+          "signal": "A2_IN7"
+        },
+        {
+          "id": "c_x2_22",
+          "signal": "A2_AN"
+        },
+        {
+          "id": "c_x2_23",
+          "signal": "B_IN1"
+        },
+        {
+          "id": "c_x2_24",
+          "signal": "B_IN2"
+        },
+        {
+          "id": "c_x2_25",
+          "signal": "B_IN3"
+        },
+        {
+          "id": "c_x2_26",
+          "signal": "B_IN4"
+        },
+        {
+          "id": "c_x2_27",
+          "signal": "B_IN5"
+        },
+        {
+          "id": "c_x2_28",
+          "signal": "B_IN6"
+        },
+        {
+          "id": "c_x2_29",
+          "signal": "B_IN7"
+        },
+        {
+          "id": "c_x2_30",
+          "signal": "B_IN8"
+        },
+        {
+          "id": "c_x2_31",
+          "signal": "B_IN9"
+        },
+        {
+          "id": "c_x2_32",
+          "signal": "B_IN10"
+        },
+        {
+          "id": "c_x2_33",
+          "signal": "B_AN"
+        },
+        {
+          "id": "c_x2_34",
+          "cavityPlugPartId": "F6dRxdC4XlgPgmxZh_zyn"
+        },
+        {
+          "id": "c_x2_35"
+        },
+        {
+          "id": "c_x2_36"
+        },
+        {
+          "id": "c_x2_37"
+        },
+        {
+          "id": "c_x2_38"
+        },
+        {
+          "id": "c_x2_39"
+        },
+        {
+          "id": "c_x2_40"
+        },
+        {
+          "id": "c_x2_41"
+        },
+        {
+          "id": "c_x2_42"
+        },
+        {
+          "id": "c_x2_43"
+        },
+        {
+          "id": "c_x2_44"
+        },
+        {
+          "id": "c_x2_45"
+        },
+        {
+          "id": "c_x2_46"
+        },
+        {
+          "id": "c_x2_47"
+        }
+      ],
+      "partId": "cp_hdp24_24_47se",
+      "width": 180
+    },
+    {
+      "id": "c_a1_j3",
+      "label": "A1-J3",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 0
+      },
+      "layoutPosition": {
+        "x": 510,
+        "y": 150
+      },
+      "cavities": [
+        {
+          "id": "c_a1_j3_1",
+          "designation": "1"
+        },
+        {
+          "id": "c_a1_j3_2",
+          "designation": "2"
+        },
+        {
+          "id": "c_a1_j3_3",
+          "designation": "3",
+          "signal": "A1_OUT8"
+        },
+        {
+          "id": "c_a1_j3_4",
+          "designation": "4",
+          "signal": "A1_OUT7"
+        },
+        {
+          "id": "c_a1_j3_5",
+          "designation": "5",
+          "signal": "A1_OUT6"
+        },
+        {
+          "id": "c_a1_j3_6",
+          "designation": "6",
+          "signal": "A1_OUT5"
+        },
+        {
+          "id": "c_a1_j3_7",
+          "designation": "7",
+          "signal": "A1_OUT2"
+        },
+        {
+          "id": "c_a1_j3_8",
+          "designation": "8",
+          "signal": "A1_OUT1"
+        },
+        {
+          "id": "c_a1_j3_9",
+          "designation": "9",
+          "signal": "A1_OUT4"
+        },
+        {
+          "id": "c_a1_j3_10",
+          "designation": "10",
+          "signal": "A1_OUT3"
+        },
+        {
+          "id": "c_a1_j3_11",
+          "designation": "11"
+        },
+        {
+          "id": "c_a1_j3_12",
+          "designation": "12"
+        }
+      ]
+    },
+    {
+      "id": "c_a2_j3",
+      "label": "A2-J3",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 480
+      },
+      "layoutPosition": {
+        "x": 720,
+        "y": 150
+      },
+      "cavities": [
+        {
+          "id": "c_a2_j3_1",
+          "designation": "1"
+        },
+        {
+          "id": "c_a2_j3_2",
+          "designation": "2"
+        },
+        {
+          "id": "c_a2_j3_3",
+          "designation": "3",
+          "signal": "A2_OUT8"
+        },
+        {
+          "id": "c_a2_j3_4",
+          "designation": "4",
+          "signal": "A2_OUT7"
+        },
+        {
+          "id": "c_a2_j3_5",
+          "designation": "5",
+          "signal": "A2_OUT6"
+        },
+        {
+          "id": "c_a2_j3_6",
+          "designation": "6",
+          "signal": "A2_OUT5"
+        },
+        {
+          "id": "c_a2_j3_7",
+          "designation": "7",
+          "signal": "FAN_12V"
+        },
+        {
+          "id": "c_a2_j3_8",
+          "designation": "8",
+          "signal": "A2_OUT1"
+        },
+        {
+          "id": "c_a2_j3_9",
+          "designation": "9",
+          "signal": "A2_OUT4"
+        },
+        {
+          "id": "c_a2_j3_10",
+          "designation": "10",
+          "signal": "A2_OUT3"
+        },
+        {
+          "id": "c_a2_j3_11",
+          "designation": "11"
+        },
+        {
+          "id": "c_a2_j3_12",
+          "designation": "12"
+        }
+      ]
+    },
+    {
+      "id": "c_b_j6",
+      "label": "B-J6",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 960
+      },
+      "layoutPosition": {
+        "x": 150,
+        "y": 150
+      },
+      "cavities": [
+        {
+          "id": "c_b_j6_1",
+          "designation": "1"
+        },
+        {
+          "id": "c_b_j6_2",
+          "designation": "2"
+        },
+        {
+          "id": "c_b_j6_3",
+          "designation": "3"
+        },
+        {
+          "id": "c_b_j6_4",
+          "designation": "4"
+        }
+      ]
+    },
+    {
+      "id": "c_in1_j2",
+      "label": "IN1-J2",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 1560
+      },
+      "layoutPosition": {
+        "x": 540,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_in1_j2_1"
+        },
+        {
+          "id": "c_in1_j2_2"
+        },
+        {
+          "id": "c_in1_j2_3"
+        },
+        {
+          "id": "c_in1_j2_4"
+        },
+        {
+          "id": "c_in1_j2_5"
+        },
+        {
+          "id": "c_in1_j2_6"
+        },
+        {
+          "id": "c_in1_j2_7"
+        },
+        {
+          "id": "c_in1_j2_8"
+        },
+        {
+          "id": "c_in1_j2_9"
+        },
+        {
+          "id": "c_in1_j2_10",
+          "signal": "SIG_GND",
+          "global": true
+        },
+        {
+          "id": "c_in1_j2_11"
+        },
+        {
+          "id": "c_in1_j2_12"
+        }
+      ],
+      "partId": "cp_43025_1200"
+    },
+    {
+      "id": "c_in2_j2",
+      "label": "IN2-J2",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 2040
+      },
+      "layoutPosition": {
+        "x": 720,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_in2_j2_1"
+        },
+        {
+          "id": "c_in2_j2_2"
+        },
+        {
+          "id": "c_in2_j2_3"
+        },
+        {
+          "id": "c_in2_j2_4"
+        },
+        {
+          "id": "c_in2_j2_5"
+        },
+        {
+          "id": "c_in2_j2_6"
+        },
+        {
+          "id": "c_in2_j2_7"
+        },
+        {
+          "id": "c_in2_j2_8"
+        },
+        {
+          "id": "c_in2_j2_9"
+        },
+        {
+          "id": "c_in2_j2_10",
+          "signal": "SIG_GND",
+          "global": true
+        },
+        {
+          "id": "c_in2_j2_11",
+          "signal": "FAN_GND"
+        },
+        {
+          "id": "c_in2_j2_12"
+        }
+      ],
+      "partId": "cp_43025_1200"
+    },
+    {
+      "id": "c_in3_j2",
+      "label": "IN3-J2",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 2520
+      },
+      "layoutPosition": {
+        "x": 330,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_in3_j2_1"
+        },
+        {
+          "id": "c_in3_j2_2"
+        },
+        {
+          "id": "c_in3_j2_3"
+        },
+        {
+          "id": "c_in3_j2_4"
+        },
+        {
+          "id": "c_in3_j2_5"
+        },
+        {
+          "id": "c_in3_j2_6"
+        },
+        {
+          "id": "c_in3_j2_7"
+        },
+        {
+          "id": "c_in3_j2_8"
+        },
+        {
+          "id": "c_in3_j2_9"
+        },
+        {
+          "id": "c_in3_j2_10",
+          "signal": "SIG_GND",
+          "global": true
+        },
+        {
+          "id": "c_in3_j2_11",
+          "signal": "SIG_GND",
+          "global": true
+        },
+        {
+          "id": "c_in3_j2_12"
+        }
+      ],
+      "partId": "cp_43025_1200"
+    },
+    {
+      "id": "c_a1_j6",
+      "label": "A1-J6",
+      "schematicPosition": {
+        "x": 0,
+        "y": 3810
+      },
+      "layoutPosition": {
+        "x": 390,
+        "y": 150
+      },
+      "cavities": [
+        {
+          "id": "c_a1_j6_1",
+          "signal": "A1_IN3_MCU"
+        },
+        {
+          "id": "c_a1_j6_2",
+          "signal": "A1_IN4_MCU"
+        },
+        {
+          "id": "c_a1_j6_3",
+          "signal": "A1_IN5_MCU"
+        },
+        {
+          "id": "c_a1_j6_4",
+          "signal": "A1_IN6_MCU"
+        },
+        {
+          "id": "c_a1_j6_5",
+          "signal": "A1_IN7_MCU"
+        },
+        {
+          "id": "c_a1_j6_6"
+        },
+        {
+          "id": "c_a1_j6_7"
+        },
+        {
+          "id": "c_a1_j6_8"
+        },
+        {
+          "id": "c_a1_j6_9",
+          "signal": "A1_AN_MCU"
+        },
+        {
+          "id": "c_a1_j6_10",
+          "signal": "+3V3_A1"
+        },
+        {
+          "id": "c_a1_j6_11",
+          "signal": "GND_A1"
+        },
+        {
+          "id": "c_a1_j6_12",
+          "signal": "GND_A1"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_a2_j6",
+      "label": "A2-J6",
+      "schematicPosition": {
+        "x": 0,
+        "y": 4320
+      },
+      "layoutPosition": {
+        "x": 630,
+        "y": 150
+      },
+      "cavities": [
+        {
+          "id": "c_a2_j6_1",
+          "signal": "A2_IN3_MCU"
+        },
+        {
+          "id": "c_a2_j6_2",
+          "signal": "A2_IN4_MCU"
+        },
+        {
+          "id": "c_a2_j6_3",
+          "signal": "A2_IN5_MCU"
+        },
+        {
+          "id": "c_a2_j6_4",
+          "signal": "A2_IN6_MCU"
+        },
+        {
+          "id": "c_a2_j6_5",
+          "signal": "A2_IN7_MCU"
+        },
+        {
+          "id": "c_a2_j6_6"
+        },
+        {
+          "id": "c_a2_j6_7"
+        },
+        {
+          "id": "c_a2_j6_8"
+        },
+        {
+          "id": "c_a2_j6_9",
+          "signal": "A2_AN_MCU"
+        },
+        {
+          "id": "c_a2_j6_10",
+          "signal": "+3V3_A2"
+        },
+        {
+          "id": "c_a2_j6_11",
+          "signal": "GND_A2"
+        },
+        {
+          "id": "c_a2_j6_12",
+          "signal": "GND_A2"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_b_j7",
+      "label": "B-J7",
+      "schematicPosition": {
+        "x": 0,
+        "y": 4830
+      },
+      "layoutPosition": {
+        "x": 270,
+        "y": 270
+      },
+      "cavities": [
+        {
+          "id": "c_b_j7_1",
+          "signal": "B_IN3_MCU"
+        },
+        {
+          "id": "c_b_j7_2",
+          "signal": "B_IN4_MCU"
+        },
+        {
+          "id": "c_b_j7_3",
+          "signal": "B_IN5_MCU"
+        },
+        {
+          "id": "c_b_j7_4",
+          "signal": "B_IN6_MCU"
+        },
+        {
+          "id": "c_b_j7_5",
+          "signal": "B_IN7_MCU"
+        },
+        {
+          "id": "c_b_j7_6",
+          "signal": "B_IN8_MCU"
+        },
+        {
+          "id": "c_b_j7_7",
+          "signal": "B_IN9_MCU"
+        },
+        {
+          "id": "c_b_j7_8",
+          "signal": "B_IN10_MCU"
+        },
+        {
+          "id": "c_b_j7_9",
+          "signal": "B_AN_MCU"
+        },
+        {
+          "id": "c_b_j7_10",
+          "signal": "+3V3_B"
+        },
+        {
+          "id": "c_b_j7_11",
+          "signal": "GND_B"
+        },
+        {
+          "id": "c_b_j7_12",
+          "signal": "GND_B"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_in1_j1",
+      "label": "IN1-J1",
+      "schematicPosition": {
+        "x": 600,
+        "y": 3810
+      },
+      "layoutPosition": {
+        "x": 510,
+        "y": 120
+      },
+      "cavities": [
+        {
+          "id": "c_in1_j1_1"
+        },
+        {
+          "id": "c_in1_j1_2"
+        },
+        {
+          "id": "c_in1_j1_3"
+        },
+        {
+          "id": "c_in1_j1_4"
+        },
+        {
+          "id": "c_in1_j1_5"
+        },
+        {
+          "id": "c_in1_j1_6"
+        },
+        {
+          "id": "c_in1_j1_7"
+        },
+        {
+          "id": "c_in1_j1_8"
+        },
+        {
+          "id": "c_in1_j1_9"
+        },
+        {
+          "id": "c_in1_j1_10"
+        },
+        {
+          "id": "c_in1_j1_11"
+        },
+        {
+          "id": "c_in1_j1_12"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_in2_j1",
+      "label": "IN2-J1",
+      "schematicPosition": {
+        "x": 600,
+        "y": 4320
+      },
+      "layoutPosition": {
+        "x": 720,
+        "y": 120
+      },
+      "cavities": [
+        {
+          "id": "c_in2_j1_1"
+        },
+        {
+          "id": "c_in2_j1_2"
+        },
+        {
+          "id": "c_in2_j1_3"
+        },
+        {
+          "id": "c_in2_j1_4"
+        },
+        {
+          "id": "c_in2_j1_5"
+        },
+        {
+          "id": "c_in2_j1_6"
+        },
+        {
+          "id": "c_in2_j1_7"
+        },
+        {
+          "id": "c_in2_j1_8"
+        },
+        {
+          "id": "c_in2_j1_9"
+        },
+        {
+          "id": "c_in2_j1_10"
+        },
+        {
+          "id": "c_in2_j1_11"
+        },
+        {
+          "id": "c_in2_j1_12"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_in3_j1",
+      "label": "IN3-J1",
+      "schematicPosition": {
+        "x": 600,
+        "y": 4830
+      },
+      "layoutPosition": {
+        "x": 300,
+        "y": 120
+      },
+      "cavities": [
+        {
+          "id": "c_in3_j1_1"
+        },
+        {
+          "id": "c_in3_j1_2"
+        },
+        {
+          "id": "c_in3_j1_3"
+        },
+        {
+          "id": "c_in3_j1_4"
+        },
+        {
+          "id": "c_in3_j1_5"
+        },
+        {
+          "id": "c_in3_j1_6"
+        },
+        {
+          "id": "c_in3_j1_7"
+        },
+        {
+          "id": "c_in3_j1_8"
+        },
+        {
+          "id": "c_in3_j1_9"
+        },
+        {
+          "id": "c_in3_j1_10"
+        },
+        {
+          "id": "c_in3_j1_11"
+        },
+        {
+          "id": "c_in3_j1_12"
+        }
+      ],
+      "partId": "cp_ghr_12v_s"
+    },
+    {
+      "id": "c_fan1",
+      "label": "FAN1",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 3000
+      },
+      "layoutPosition": {
+        "x": 810,
+        "y": 270
+      },
+      "cavities": [
+        {
+          "id": "c_fan1_p",
+          "designation": "+"
+        },
+        {
+          "id": "c_fan1_m",
+          "designation": "-",
+          "signal": "FAN_GND"
+        }
+      ]
+    },
+    {
+      "id": "c_fan2",
+      "label": "FAN2",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 3180
+      },
+      "layoutPosition": {
+        "x": 810,
+        "y": 180
+      },
+      "cavities": [
+        {
+          "id": "c_fan2_p",
+          "designation": "+"
+        },
+        {
+          "id": "c_fan2_m",
+          "designation": "-",
+          "signal": "FAN_GND"
+        }
+      ]
+    },
+    {
+      "id": "c_u1_a",
+      "label": "U1-A",
+      "schematicPosition": {
+        "x": 0,
+        "y": 2280
+      },
+      "layoutPosition": {
+        "x": 780,
+        "y": 390
+      },
+      "cavities": [
+        {
+          "id": "c_u1_a_vbus",
+          "designation": "VBUS",
+          "signal": "USB_VBUS"
+        },
+        {
+          "id": "c_u1_a_dp",
+          "designation": "D+",
+          "signal": "USB_D+"
+        },
+        {
+          "id": "c_u1_a_dm",
+          "designation": "D-",
+          "signal": "USB_D-"
+        },
+        {
+          "id": "c_u1_a_gnd",
+          "designation": "GND",
+          "signal": "USB_GND"
+        },
+        {
+          "id": "c_u1_a_cc",
+          "designation": "CC",
+          "signal": "USB_CC"
+        }
+      ]
+    },
+    {
+      "id": "c_u1_b",
+      "label": "U1-B",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 3360
+      },
+      "layoutPosition": {
+        "x": 90,
+        "y": 390
+      },
+      "cavities": [
+        {
+          "id": "c_u1_b_vbus",
+          "designation": "VBUS"
+        },
+        {
+          "id": "c_u1_b_dp",
+          "designation": "D+"
+        },
+        {
+          "id": "c_u1_b_dm",
+          "designation": "D-"
+        },
+        {
+          "id": "c_u1_b_gnd",
+          "designation": "GND"
+        },
+        {
+          "id": "c_u1_b_cc",
+          "designation": "CC"
+        }
+      ]
+    },
+    {
+      "id": "c_hub_p1",
+      "label": "HUB-P1",
+      "schematicPosition": {
+        "x": 0,
+        "y": 5340
+      },
+      "layoutPosition": {
+        "x": 60,
+        "y": 360
+      },
+      "cavities": [
+        {
+          "id": "c_hub_p1_5v",
+          "designation": "5V",
+          "signal": "USB_VBUS"
+        },
+        {
+          "id": "c_hub_p1_dp",
+          "designation": "D+",
+          "signal": "USB_D+"
+        },
+        {
+          "id": "c_hub_p1_dm",
+          "designation": "D-",
+          "signal": "USB_D-"
+        },
+        {
+          "id": "c_hub_p1_gnd",
+          "designation": "GND",
+          "signal": "USB_GND"
+        }
+      ]
+    },
+    {
+      "id": "c_hub_p2",
+      "label": "HUB-P2",
+      "schematicPosition": {
+        "x": 0,
+        "y": 5640
+      },
+      "layoutPosition": {
+        "x": 90,
+        "y": 360
+      },
+      "cavities": [
+        {
+          "id": "c_hub_p2_5v",
+          "designation": "5V",
+          "signal": "USB_VBUS"
+        },
+        {
+          "id": "c_hub_p2_dp",
+          "designation": "D+",
+          "signal": "USB_D+"
+        },
+        {
+          "id": "c_hub_p2_dm",
+          "designation": "D-",
+          "signal": "USB_D-"
+        },
+        {
+          "id": "c_hub_p2_gnd",
+          "designation": "GND",
+          "signal": "USB_GND"
+        }
+      ]
+    },
+    {
+      "id": "c_hub_p3",
+      "label": "HUB-P3",
+      "schematicPosition": {
+        "x": 0,
+        "y": 5940
+      },
+      "layoutPosition": {
+        "x": 120,
+        "y": 360
+      },
+      "cavities": [
+        {
+          "id": "c_hub_p3_5v",
+          "designation": "5V",
+          "signal": "USB_VBUS"
+        },
+        {
+          "id": "c_hub_p3_dp",
+          "designation": "D+",
+          "signal": "USB_D+"
+        },
+        {
+          "id": "c_hub_p3_dm",
+          "designation": "D-",
+          "signal": "USB_D-"
+        },
+        {
+          "id": "c_hub_p3_gnd",
+          "designation": "GND",
+          "signal": "USB_GND"
+        }
+      ]
+    },
+    {
+      "id": "c_u2_b",
+      "label": "U2-B",
+      "schematicPosition": {
+        "x": 600,
+        "y": 5340
+      },
+      "layoutPosition": {
+        "x": 120,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_u2_b_vbus",
+          "designation": "VBUS"
+        },
+        {
+          "id": "c_u2_b_dp",
+          "designation": "D+"
+        },
+        {
+          "id": "c_u2_b_dm",
+          "designation": "D-"
+        },
+        {
+          "id": "c_u2_b_gnd",
+          "designation": "GND"
+        },
+        {
+          "id": "c_u2_b_cc",
+          "designation": "CC",
+          "notConnected": true
+        }
+      ]
+    },
+    {
+      "id": "c_u3_b",
+      "label": "U3-B",
+      "schematicPosition": {
+        "x": 600,
+        "y": 5640
+      },
+      "layoutPosition": {
+        "x": 450,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_u3_b_vbus",
+          "designation": "VBUS"
+        },
+        {
+          "id": "c_u3_b_dp",
+          "designation": "D+"
+        },
+        {
+          "id": "c_u3_b_dm",
+          "designation": "D-"
+        },
+        {
+          "id": "c_u3_b_gnd",
+          "designation": "GND"
+        },
+        {
+          "id": "c_u3_b_cc",
+          "designation": "CC",
+          "notConnected": true
+        }
+      ]
+    },
+    {
+      "id": "c_u4_b",
+      "label": "U4-B",
+      "schematicPosition": {
+        "x": 600,
+        "y": 5940
+      },
+      "layoutPosition": {
+        "x": 660,
+        "y": 300
+      },
+      "cavities": [
+        {
+          "id": "c_u4_b_vbus",
+          "designation": "VBUS"
+        },
+        {
+          "id": "c_u4_b_dp",
+          "designation": "D+"
+        },
+        {
+          "id": "c_u4_b_dm",
+          "designation": "D-"
+        },
+        {
+          "id": "c_u4_b_gnd",
+          "designation": "GND"
+        },
+        {
+          "id": "c_u4_b_cc",
+          "designation": "CC",
+          "notConnected": true
+        }
+      ]
+    }
+  ],
+  "terminals": [
+    {
+      "id": "c_b_t5",
+      "label": "B-T5",
+      "type": "Ring",
+      "partId": "tp_3240083",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 1200
+      },
+      "layoutPosition": {
+        "x": 360,
+        "y": 60
+      },
+      "signal": "B_OUT5"
+    },
+    {
+      "id": "c_b_t6",
+      "label": "B-T6",
+      "type": "Ring",
+      "partId": "tp_3240083",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 1290
+      },
+      "layoutPosition": {
+        "x": 360,
+        "y": 150
+      },
+      "signal": "B_OUT6"
+    },
+    {
+      "id": "c_b_t7",
+      "label": "B-T7",
+      "type": "Ring",
+      "partId": "tp_3240083",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 1380
+      },
+      "layoutPosition": {
+        "x": 360,
+        "y": 210
+      },
+      "signal": "B_OUT7"
+    },
+    {
+      "id": "c_b_t8",
+      "label": "B-T8",
+      "type": "Ring",
+      "partId": "tp_3240083",
+      "schematicPosition": {
+        "x": 1500,
+        "y": 1470
+      },
+      "layoutPosition": {
+        "x": 360,
+        "y": 270
+      },
+      "signal": "B_OUT8"
+    }
+  ],
+  "cables": [
+    {
+      "id": "cab_u1",
+      "label": "USB U1",
+      "schematicPosition": {
+        "x": 600,
+        "y": 2280
+      },
+      "cores": [
+        {
+          "id": "w095",
+          "source": {
+            "id": "c_u1_a",
+            "handle": "c_u1_a_vbus"
+          },
+          "target": {
+            "id": "c_u1_b",
+            "handle": "c_u1_b_vbus"
+          },
+          "color": "Red",
+          "identLabel": "W095"
+        },
+        {
+          "id": "w096",
+          "source": {
+            "id": "c_u1_a",
+            "handle": "c_u1_a_dp"
+          },
+          "target": {
+            "id": "c_u1_b",
+            "handle": "c_u1_b_dp"
+          },
+          "color": "Green",
+          "identLabel": "W096"
+        },
+        {
+          "id": "w097",
+          "source": {
+            "id": "c_u1_a",
+            "handle": "c_u1_a_dm"
+          },
+          "target": {
+            "id": "c_u1_b",
+            "handle": "c_u1_b_dm"
+          },
+          "color": "White",
+          "identLabel": "W097"
+        },
+        {
+          "id": "w098",
+          "source": {
+            "id": "c_u1_a",
+            "handle": "c_u1_a_gnd"
+          },
+          "target": {
+            "id": "c_u1_b",
+            "handle": "c_u1_b_gnd"
+          },
+          "color": "Black",
+          "identLabel": "W098"
+        },
+        {
+          "id": "w099",
+          "source": {
+            "id": "c_u1_a",
+            "handle": "c_u1_a_cc"
+          },
+          "target": {
+            "id": "c_u1_b",
+            "handle": "c_u1_b_cc"
+          },
+          "color": "Gray",
+          "identLabel": "W099"
+        }
+      ]
+    },
+    {
+      "id": "cab_u2",
+      "label": "USB U2",
+      "schematicPosition": {
+        "x": 300,
+        "y": 5340
+      },
+      "cores": [
+        {
+          "id": "w100",
+          "source": {
+            "id": "c_hub_p1",
+            "handle": "c_hub_p1_5v"
+          },
+          "target": {
+            "id": "c_u2_b",
+            "handle": "c_u2_b_vbus"
+          },
+          "color": "Red",
+          "identLabel": "W100"
+        },
+        {
+          "id": "w101",
+          "source": {
+            "id": "c_hub_p1",
+            "handle": "c_hub_p1_dp"
+          },
+          "target": {
+            "id": "c_u2_b",
+            "handle": "c_u2_b_dp"
+          },
+          "color": "Green",
+          "identLabel": "W101"
+        },
+        {
+          "id": "w102",
+          "source": {
+            "id": "c_hub_p1",
+            "handle": "c_hub_p1_dm"
+          },
+          "target": {
+            "id": "c_u2_b",
+            "handle": "c_u2_b_dm"
+          },
+          "color": "White",
+          "identLabel": "W102"
+        },
+        {
+          "id": "w103",
+          "source": {
+            "id": "c_hub_p1",
+            "handle": "c_hub_p1_gnd"
+          },
+          "target": {
+            "id": "c_u2_b",
+            "handle": "c_u2_b_gnd"
+          },
+          "color": "Black",
+          "identLabel": "W103"
+        }
+      ]
+    },
+    {
+      "id": "cab_u3",
+      "label": "USB U3",
+      "schematicPosition": {
+        "x": 300,
+        "y": 5640
+      },
+      "cores": [
+        {
+          "id": "w104",
+          "source": {
+            "id": "c_hub_p2",
+            "handle": "c_hub_p2_5v"
+          },
+          "target": {
+            "id": "c_u3_b",
+            "handle": "c_u3_b_vbus"
+          },
+          "color": "Red",
+          "identLabel": "W104"
+        },
+        {
+          "id": "w105",
+          "source": {
+            "id": "c_hub_p2",
+            "handle": "c_hub_p2_dp"
+          },
+          "target": {
+            "id": "c_u3_b",
+            "handle": "c_u3_b_dp"
+          },
+          "color": "Green",
+          "identLabel": "W105"
+        },
+        {
+          "id": "w106",
+          "source": {
+            "id": "c_hub_p2",
+            "handle": "c_hub_p2_dm"
+          },
+          "target": {
+            "id": "c_u3_b",
+            "handle": "c_u3_b_dm"
+          },
+          "color": "White",
+          "identLabel": "W106"
+        },
+        {
+          "id": "w107",
+          "source": {
+            "id": "c_hub_p2",
+            "handle": "c_hub_p2_gnd"
+          },
+          "target": {
+            "id": "c_u3_b",
+            "handle": "c_u3_b_gnd"
+          },
+          "color": "Black",
+          "identLabel": "W107"
+        }
+      ]
+    },
+    {
+      "id": "cab_u4",
+      "label": "USB U4",
+      "schematicPosition": {
+        "x": 300,
+        "y": 5940
+      },
+      "cores": [
+        {
+          "id": "w108",
+          "source": {
+            "id": "c_hub_p3",
+            "handle": "c_hub_p3_5v"
+          },
+          "target": {
+            "id": "c_u4_b",
+            "handle": "c_u4_b_vbus"
+          },
+          "color": "Red",
+          "identLabel": "W108"
+        },
+        {
+          "id": "w109",
+          "source": {
+            "id": "c_hub_p3",
+            "handle": "c_hub_p3_dp"
+          },
+          "target": {
+            "id": "c_u4_b",
+            "handle": "c_u4_b_dp"
+          },
+          "color": "Green",
+          "identLabel": "W109"
+        },
+        {
+          "id": "w110",
+          "source": {
+            "id": "c_hub_p3",
+            "handle": "c_hub_p3_dm"
+          },
+          "target": {
+            "id": "c_u4_b",
+            "handle": "c_u4_b_dm"
+          },
+          "color": "White",
+          "identLabel": "W110"
+        },
+        {
+          "id": "w111",
+          "source": {
+            "id": "c_hub_p3",
+            "handle": "c_hub_p3_gnd"
+          },
+          "target": {
+            "id": "c_u4_b",
+            "handle": "c_u4_b_gnd"
+          },
+          "color": "Black",
+          "identLabel": "W111"
+        }
+      ]
+    }
+  ],
+  "twistedWires": [
+    {
+      "id": "tw_tp1",
+      "label": "TP1",
+      "schematicPosition": {
+        "x": 900,
+        "y": 780
+      },
+      "wires": [
+        {
+          "id": "w051",
+          "identLabel": "W051",
+          "source": {
+            "id": "c_x2",
+            "handle": "c_x2_2"
+          },
+          "target": {
+            "id": "c_sp1",
+            "handle": "Splice"
+          },
+          "color": "Yellow",
+          "partId": "m16_20_4"
+        },
+        {
+          "id": "w052",
+          "identLabel": "W052",
+          "source": {
+            "id": "c_x2",
+            "handle": "c_x2_3"
+          },
+          "target": {
+            "id": "c_sp2",
+            "handle": "Splice"
+          },
+          "color": "Green",
+          "partId": "m16_20_5"
+        }
+      ]
+    },
+    {
+      "id": "tw_tp2",
+      "label": "TP2",
+      "schematicPosition": {
+        "x": 1290,
+        "y": 960
+      },
+      "wires": [
+        {
+          "id": "w053",
+          "identLabel": "W053",
+          "source": {
+            "id": "c_sp1",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_b_j6",
+            "handle": "c_b_j6_2"
+          },
+          "color": "Yellow",
+          "partId": "m16_20_4"
+        },
+        {
+          "id": "w054",
+          "identLabel": "W054",
+          "source": {
+            "id": "c_sp2",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_b_j6",
+            "handle": "c_b_j6_1"
+          },
+          "color": "Green",
+          "partId": "m16_20_5"
+        }
+      ]
+    },
+    {
+      "id": "tw_tp3",
+      "label": "TP3",
+      "schematicPosition": {
+        "x": 1290,
+        "y": 0
+      },
+      "wires": [
+        {
+          "id": "w055",
+          "identLabel": "W055",
+          "source": {
+            "id": "c_sp1",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_a1_j3",
+            "handle": "c_a1_j3_2"
+          },
+          "color": "Yellow",
+          "partId": "m16_20_4"
+        },
+        {
+          "id": "w056",
+          "identLabel": "W056",
+          "source": {
+            "id": "c_sp2",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_a1_j3",
+            "handle": "c_a1_j3_1"
+          },
+          "color": "Green",
+          "partId": "m16_20_5"
+        }
+      ]
+    },
+    {
+      "id": "tw_tp4",
+      "label": "TP4",
+      "schematicPosition": {
+        "x": 1290,
+        "y": 480
+      },
+      "wires": [
+        {
+          "id": "w057",
+          "identLabel": "W057",
+          "source": {
+            "id": "c_sp1",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_a2_j3",
+            "handle": "c_a2_j3_2"
+          },
+          "color": "Yellow",
+          "partId": "m16_20_4"
+        },
+        {
+          "id": "w058",
+          "identLabel": "W058",
+          "source": {
+            "id": "c_sp2",
+            "handle": "Splice"
+          },
+          "target": {
+            "id": "c_a2_j3",
+            "handle": "c_a2_j3_1"
+          },
+          "color": "Green",
+          "partId": "m16_20_5"
+        }
+      ]
+    }
+  ],
+  "splices": [
+    {
+      "id": "c_sp1",
+      "label": "SP1",
+      "partId": "spp_d436_37",
+      "locationId": "bp_x2",
+      "schematicPosition": {
+        "x": 1080,
+        "y": 780
+      },
+      "layoutPosition": {
+        "x": 600,
+        "y": 360
+      }
+    },
+    {
+      "id": "c_sp2",
+      "label": "SP2",
+      "partId": "spp_d436_37",
+      "locationId": "bp_x2",
+      "schematicPosition": {
+        "x": 1080,
+        "y": 840
+      },
+      "layoutPosition": {
+        "x": 600,
+        "y": 360
+      }
+    },
+    {
+      "id": "c_sp3",
+      "label": "SP3",
+      "partId": "HP4pP__XZ40Qy8PCarkKn",
+      "locationId": "bp_fan",
+      "schematicPosition": {
+        "x": 1350,
+        "y": 3000
+      },
+      "layoutPosition": {
+        "x": 840,
+        "y": 360
+      }
+    },
+    {
+      "id": "c_sp4",
+      "label": "SP4",
+      "partId": "HP4pP__XZ40Qy8PCarkKn",
+      "locationId": "bp_fan",
+      "schematicPosition": {
+        "x": 1350,
+        "y": 3210
+      },
+      "layoutPosition": {
+        "x": 840,
+        "y": 360
+      }
+    }
+  ],
+  "bundles": [
+    {
+      "id": "bn_a1_1",
+      "sourceId": "c_a1_j3",
+      "targetId": "bp_a1",
+      "length": {
+        "value": 64.9,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_a1_2",
+      "sourceId": "bp_a1",
+      "targetId": "c_x1",
+      "length": {
+        "value": 50.9,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_a1_3",
+      "sourceId": "bp_a1",
+      "targetId": "bp_x2",
+      "label": "A1 IN / CAN: route TBD",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_a2_1",
+      "sourceId": "c_a2_j3",
+      "targetId": "bp_a2",
+      "length": {
+        "value": 65.3,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_a2_2",
+      "sourceId": "bp_a2",
+      "targetId": "bp_a2v",
+      "length": {
+        "value": 58.4,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_a2_3",
+      "sourceId": "bp_a2v",
+      "targetId": "c_x1",
+      "length": {
+        "value": 51.4,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_a2_4",
+      "sourceId": "bp_a2",
+      "targetId": "bp_x2",
+      "label": "A2 IN / CAN: route TBD",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_b_1",
+      "sourceId": "c_b_j6",
+      "targetId": "bp_b",
+      "length": {
+        "value": 74.3,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_b_2",
+      "sourceId": "bp_b",
+      "targetId": "bp_x2",
+      "length": {
+        "value": 146.6,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_x2",
+      "sourceId": "bp_x2",
+      "targetId": "c_x2",
+      "length": {
+        "value": 27.3,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_t_x1",
+      "sourceId": "bp_t",
+      "targetId": "c_x1",
+      "length": {
+        "value": 26.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_in1",
+      "sourceId": "c_in1_j2",
+      "targetId": "c_x2",
+      "length": {
+        "value": 43.4,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_in2",
+      "sourceId": "c_in2_j2",
+      "targetId": "c_x2",
+      "length": {
+        "value": 47.2,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_in3",
+      "sourceId": "c_in3_j2",
+      "targetId": "c_x2",
+      "length": {
+        "value": 108.6,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_fan1",
+      "sourceId": "c_fan1",
+      "targetId": "bp_fan",
+      "label": "pass-through TBD",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_fan2",
+      "sourceId": "c_fan2",
+      "targetId": "bp_fan"
+    },
+    {
+      "id": "bn_fan3",
+      "sourceId": "bp_fan",
+      "targetId": "c_a2_j3"
+    },
+    {
+      "id": "bn_fan4",
+      "sourceId": "bp_fan",
+      "targetId": "c_in2_j2"
+    },
+    {
+      "id": "bn_gh_a1",
+      "sourceId": "c_a1_j6",
+      "targetId": "c_in1_j1",
+      "label": "not modelled",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_gh_a2",
+      "sourceId": "c_a2_j6",
+      "targetId": "c_in2_j1",
+      "label": "not modelled",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_gh_b",
+      "sourceId": "c_b_j7",
+      "targetId": "c_in3_j1",
+      "label": "not modelled",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_u1",
+      "sourceId": "c_u1_a",
+      "targetId": "c_u1_b",
+      "length": {
+        "value": 249.5,
+        "unit": "mm"
+      },
+      "label": "USB U1",
+      "middleLabel": true
+    },
+    {
+      "id": "bn_u2",
+      "sourceId": "c_hub_p1",
+      "targetId": "c_u2_b",
+      "length": {
+        "value": 18.5,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_u3",
+      "sourceId": "c_hub_p2",
+      "targetId": "c_u3_b",
+      "length": {
+        "value": 110.2,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_u4",
+      "sourceId": "c_hub_p3",
+      "targetId": "c_u4_b",
+      "length": {
+        "value": 184.6,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_t5",
+      "sourceId": "c_b_t5",
+      "targetId": "bp_t",
+      "length": {
+        "value": 97.0,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_t6",
+      "sourceId": "c_b_t6",
+      "targetId": "bp_t",
+      "length": {
+        "value": 73.8,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_t7",
+      "sourceId": "c_b_t7",
+      "targetId": "bp_t",
+      "length": {
+        "value": 50.5,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "bn_t8",
+      "sourceId": "c_b_t8",
+      "targetId": "bp_t",
+      "length": {
+        "value": 27.2,
+        "unit": "mm"
+      }
+    }
+  ],
+  "branchPoints": [
+    {
+      "id": "bp_a1",
+      "label": "A1",
+      "layoutPosition": {
+        "x": 510,
+        "y": 330
+      }
+    },
+    {
+      "id": "bp_a2",
+      "label": "A2",
+      "layoutPosition": {
+        "x": 720,
+        "y": 330
+      }
+    },
+    {
+      "id": "bp_a2v",
+      "label": "A2V",
+      "layoutPosition": {
+        "x": 540,
+        "y": 330
+      }
+    },
+    {
+      "id": "bp_t",
+      "label": "T",
+      "layoutPosition": {
+        "x": 330,
+        "y": 330
+      }
+    },
+    {
+      "id": "bp_b",
+      "label": "B",
+      "layoutPosition": {
+        "x": 150,
+        "y": 360
+      }
+    },
+    {
+      "id": "bp_x2",
+      "label": "X2",
+      "layoutPosition": {
+        "x": 600,
+        "y": 360
+      }
+    },
+    {
+      "id": "bp_fan",
+      "label": "FAN",
+      "layoutPosition": {
+        "x": 840,
+        "y": 360
+      }
+    }
+  ],
+  "schematicNotes": [
+    {
+      "id": "sn_1",
+      "schematicPosition": {
+        "x": 0,
+        "y": -150
+      },
+      "width": 360,
+      "color": "Yellow",
+      "text": "custom-pdm enclosure INSIDE harness. Source of truth: harness/enclosure-wire-list.xlsx (built by harness/src/enclosure_harness.py). Box connectors left, boards / devices right. Board pads, fan leads and hub pads are device ends (no part)."
+    }
+  ],
+  "layoutNotes": [
+    {
+      "id": "ln_1",
+      "layoutPosition": {
+        "x": 0,
+        "y": -120
+      },
+      "width": 360,
+      "color": "Yellow",
+      "text": "Top view of the box, north up, from enclosure/v2c build_v2c.py rev D (3 px = 1 mm). Bundle lengths = model routes (no loops); unlabelled-length bundles are not in the model (TBD). Fan pass-through BP FAN: TBD (enclosure job)."
+    }
+  ],
+  "wireParts": [
+    {
+      "id": "wp_gxl16_rd",
+      "partNumber": "J1128-GXL-16-RED",
+      "description": "WIRE, ELECTRICAL, 16 AWG, RED, GXL CROSS-LINKED POLYETHYLENE (XLPE), SAE J1128, -40 TO 125 C, OD 2.70-2.90 MM (IEWC SAE J1128 SHEET)",
+      "color": "Red",
+      "gauge": {
+        "value": 16,
+        "unit": "AWG"
+      },
+      "manufacturer": "SAE J1128",
+      "diameter": {
+        "value": 2.8,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "wp_gxl12_rd",
+      "partNumber": "J1128-GXL-12-RED",
+      "description": "WIRE, ELECTRICAL, 12 AWG, RED, GXL CROSS-LINKED POLYETHYLENE (XLPE), SAE J1128, -40 TO 125 C, OD 3.50-3.80 MM (IEWC SAE J1128 SHEET)",
+      "color": "Red",
+      "gauge": {
+        "value": 12,
+        "unit": "AWG"
+      },
+      "manufacturer": "SAE J1128",
+      "diameter": {
+        "value": 3.65,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_9",
+      "partNumber": "M22759/16-20-9",
+      "description": "WIRE, ELECTRICAL, 20 AWG, WHITE, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "White",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_7",
+      "partNumber": "M22759/16-20-7",
+      "description": "WIRE, ELECTRICAL, 20 AWG, VIOLET, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Violet",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_0",
+      "partNumber": "M22759/16-20-0",
+      "description": "WIRE, ELECTRICAL, 20 AWG, BLACK, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Black",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_4",
+      "partNumber": "M22759/16-20-4",
+      "description": "WIRE, ELECTRICAL, 20 AWG, YELLOW, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Yellow",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_5",
+      "partNumber": "M22759/16-20-5",
+      "description": "WIRE, ELECTRICAL, 20 AWG, GREEN, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Green",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "m16_20_2",
+      "partNumber": "M22759/16-20-2",
+      "description": "WIRE, ELECTRICAL, 20 AWG, RED, ETFE (TEFZEL) INSULATED, TIN PLATED COPPER, 150 C, 600 V",
+      "color": "Red",
+      "gauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "manufacturer": "M22759",
+      "diameter": {
+        "value": 1.52,
+        "unit": "mm"
+      }
+    },
+    {
+      "id": "wp_ul1571_28_rd",
+      "partNumber": "UL1571 28AWG RED (Sunon factory lead)",
+      "description": "WIRE, LEAD, UL1571 28 AWG, RED, PVC 80 C, FACTORY LEAD OF THE SUNON MF30101V1 FAN (PART OF THE FAN, NOT BOUGHT)",
+      "color": "Red",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "Sunon"
+    },
+    {
+      "id": "wp_ul1571_28_bk",
+      "partNumber": "UL1571 28AWG BLACK (Sunon factory lead)",
+      "description": "WIRE, LEAD, UL1571 28 AWG, BLACK, PVC 80 C, FACTORY LEAD OF THE SUNON MF30101V1 FAN (PART OF THE FAN, NOT BOUGHT)",
+      "color": "Black",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "Sunon"
+    },
+    {
+      "id": "wp_gh28_wh",
+      "partNumber": "TBD 28 AWG >=105 C WHITE (JST GH)",
+      "description": "WIRE, 28 AWG, WHITE, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "White",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_rd",
+      "partNumber": "TBD 28 AWG >=105 C RED (JST GH)",
+      "description": "WIRE, 28 AWG, RED, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Red",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_bk",
+      "partNumber": "TBD 28 AWG >=105 C BLACK (JST GH)",
+      "description": "WIRE, 28 AWG, BLACK, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Black",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    },
+    {
+      "id": "wp_gh28_vt",
+      "partNumber": "TBD 28 AWG >=105 C VIOLET (JST GH)",
+      "description": "WIRE, 28 AWG, VIOLET, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)",
+      "color": "Violet",
+      "gauge": {
+        "value": 28,
+        "unit": "AWG"
+      },
+      "manufacturer": "TBD"
+    }
+  ],
+  "connectorParts": [
+    {
+      "id": "cp_hd34_24_21sn",
+      "partNumber": "HD34-24-21SN",
+      "manufacturer": "TE DEUTSCH",
+      "url": "https://www.te.com/en/product-HD34-24-21SN.html",
+      "description": "CONNECTOR, RECEPTACLE, HD30, SHELL 24, 21 POS (17 X SIZE 16, 4 X SIZE 12), SOCKET CONTACTS, N SEAL, FLANGE / JAM NUT",
+      "gender": "Female",
+      "numberOfCavities": 21,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "custom",
+        "labels": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "P",
+          "R",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W",
+          "X"
+        ]
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_hdp12s",
+              "rule": {
+                "gaugeFromPart": true
+              }
+            },
+            {
+              "id": "a2",
+              "type": "ContactPart",
+              "partId": "n2P7k5Wp2TRezmHgd1q87",
+              "rule": {
+                "gaugeFromPart": true
+              }
+            },
+            {
+              "id": "a3",
+              "type": "CavityPlugPart",
+              "partId": "F6dRxdC4XlgPgmxZh_zyn"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_hdp24_24_47se",
+      "partNumber": "HDP24-24-47SE-L017",
+      "manufacturer": "TE DEUTSCH",
+      "url": "https://www.te.com/en/product-HDP24-24-47SE-L017.html",
+      "description": "CONNECTOR, RECEPTACLE, HDP20, SHELL 24, 47 POS (42 X SIZE 20, 5 X SIZE 16), SOCKET CONTACTS, E SEAL",
+      "gender": "Female",
+      "numberOfCavities": 47,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_0462_201_20141"
+            },
+            {
+              "id": "a2",
+              "type": "CavityPlugPart",
+              "partId": "pl_sz20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_43025_1200",
+      "partNumber": "43025-1200",
+      "manufacturer": "Molex",
+      "url": "https://www.molex.com/en-us/products/part-detail/430251200",
+      "description": "CONNECTOR, RECEPTACLE HOUSING, MICRO-FIT 3.0, 2 X 6, 12 POS, DUAL ROW",
+      "gender": "Female",
+      "numberOfCavities": 12,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_43030_0007"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cp_ghr_12v_s",
+      "partNumber": "GHR-12V-S",
+      "manufacturer": "JST",
+      "description": "CONNECTOR, HOUSING, GH 1.25 MM, 12 POS",
+      "gender": "Female",
+      "numberOfCavities": 12,
+      "hasShell": false,
+      "designationStrategy": {
+        "type": "sequential"
+      },
+      "configurations": [
+        {
+          "id": "cfg",
+          "accessories": [
+            {
+              "id": "a1",
+              "type": "ContactPart",
+              "partId": "ct_sshl_002t"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "contactParts": [
+    {
+      "id": "n2P7k5Wp2TRezmHgd1q87",
+      "partNumber": "0462-201-1631",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 16, GOLD, 16-20 AWG, 13 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Gold",
+      "minGauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 16,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_hdp12s",
+      "partNumber": "0462-210-1231",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 12, GOLD, 12-14 AWG, 25 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "minGauge": {
+        "value": 14,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 12,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_0462_201_20141",
+      "partNumber": "0462-201-20141",
+      "manufacturer": "TE DEUTSCH",
+      "description": "CONTACT, SOCKET, SOLID, SIZE 20, NICKEL, 20 AWG, 7.5 A",
+      "url": "https://www.te.com/en/product-0462-201-20141.html",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Silver",
+      "minGauge": {
+        "value": 20,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 20,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_43030_0007",
+      "partNumber": "43030-0007",
+      "manufacturer": "Molex",
+      "description": "CONTACT, SOCKET, CRIMP, MICRO-FIT 3.0, TIN, 20-24 AWG, INSULATION 1.85 MM MAX, 5 A",
+      "url": "https://www.molex.com/en-us/products/part-detail/430300007",
+      "type": "Crimp",
+      "gender": "Socket",
+      "contactColor": "Silver",
+      "minGauge": {
+        "value": 24,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 20,
+        "unit": "AWG"
+      }
+    },
+    {
+      "id": "ct_sshl_002t",
+      "partNumber": "SSHL-002T-P0.2",
+      "manufacturer": "JST",
+      "description": "CONTACT, SOCKET, CRIMP, GH 1.25 MM, 26-30 AWG, 1 A",
+      "type": "Crimp",
+      "gender": "Socket",
+      "minGauge": {
+        "value": 30,
+        "unit": "AWG"
+      },
+      "maxGauge": {
+        "value": 26,
+        "unit": "AWG"
+      }
+    }
+  ],
+  "terminalParts": [
+    {
+      "id": "tp_3240083",
+      "partNumber": "3240083",
+      "manufacturer": "Phoenix Contact",
+      "type": "Ring",
+      "size": "M4",
+      "description": "RING CABLE LUG C-RC 6/M4 DIN, NON-INSULATED, 2.6-6 MM2, M4 (ID 4.3), MAX STRIP 9 MM",
+      "url": "https://www.phoenixcontact.com/us/products/3240083",
+      "minGauge": {
+        "value": 2.6,
+        "unit": "Metric"
+      },
+      "maxGauge": {
+        "value": 6,
+        "unit": "Metric"
+      }
+    }
+  ],
+  "spliceParts": [
+    {
+      "id": "spp_d436_37",
+      "partNumber": "D-436-37",
+      "manufacturer": "TE Connectivity (Raychem)",
+      "description": "SPLICE, CRIMP, IN-LINE, SEALED, AS81824/1 (M81824/1-2), 20-16 AWG WIRES, 1058-2680 CMA PER SIDE, MAX 2 WIRES PER SIDE"
+    },
+    {
+      "id": "HP4pP__XZ40Qy8PCarkKn",
+      "partNumber": "GENERIC SOLDER SPLICE",
+      "manufacturer": "generic",
+      "description": "SPLICE, SOLDERED, ADHESIVE HEATSHRINK OVER"
+    }
+  ],
+  "cavityPlugParts": [
+    {
+      "id": "pl_sz20",
+      "partNumber": "0413-204-2005",
+      "manufacturer": "TE DEUTSCH",
+      "description": "PLUG, SEALING, CAVITY, SIZE 20, RED"
+    },
+    {
+      "id": "F6dRxdC4XlgPgmxZh_zyn",
+      "partNumber": "114017",
+      "manufacturer": "TE DEUTSCH",
+      "description": "PLUG, SEALING, CAVITY, SIZE 16, WHITE"
+    }
+  ]
+}
