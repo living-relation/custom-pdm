@@ -46,6 +46,12 @@ public class PdmView
     public List<PdmOutputRow> OverRating => Outputs.Where(o => o.OverRating).ToList();
     public bool Any => Boards.Count > 0;
 
+    // uifix (BACKLOG 2026-11-21): the board a panel shows when it wants `wanted`: wanted when this view has it, else
+    // the first board other than `not` (null: none). A view can lack a board: a project without B, or the 10 Hz
+    // refresh of another /pdm tab that builds its view while "New PDM" is still adding A1, A2 and B one by one.
+    public string? RoleOr(string wanted, string? not = null) =>
+        Boards.Any(b => b.Role == wanted && b.Role != not) ? wanted : Boards.FirstOrDefault(b => b.Role != not)?.Role;
+
     // B2: true when both views hold the same device objects in the same roles. The /pdm page then keeps its rows
     // through the live refresh, so a cell that is being edited (and the sort order) is not thrown away 10 times a second.
     public bool SameBoards(PdmView other) =>

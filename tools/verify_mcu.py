@@ -316,8 +316,8 @@ def watchdog_fram_sleep():
                 ("TLV1117LV IQ", P.TLV1117LV["iq"], P.TLV1117LV["iq"])]
     i33_25 = sum(x[1] for x in items_33)
     i33_85 = sum(x[2] for x in items_33)
-    eff = 0.5                                   # ASSUMED TSR efficiency at a few mW out
-    tsr_nl = P.TSR["i_noload"]
+    eff = 0.5                                   # ASSUMED 5 V module efficiency at a few mW out
+    tsr_nl = P.LMZM23601["i_noload"]            # hw5v: LMZM23601V5 (was the TSR 1-2450, 1 mA)
     div = v / 51.7e3
     prof = {"A": 4 * P.PROFET["BTS7008-2EPA"]["ivs_off_85"], "B": 4 * P.PROFET["BTS70012-1ESP"]["ivs_off_85"] + 4 * P.PROFET["BTS7004-1EPP"]["ivs_off_85"]}
     tot = {}
@@ -328,11 +328,11 @@ def watchdog_fram_sleep():
     pdm85 = 2 * tot[("A", "85")] + tot[("B", "85")]
     days = 25.0 / pdm25 / 24                     # 50 Ah battery to 50 %
     add("Sleep current", "whole PDM asleep (3 boards), from the battery at 13 V (data-sheet max values)",
-        f"{pdm25 * 1e3:.1f} mA at 25 C, {pdm85 * 1e3:.1f} mA at 85 C; per board A {tot[('A', '25')] * 1e3:.2f} mA: TSR no-load "
-        f"{tsr_nl * 1e3:.1f} mA, battery divider {div * 1e3:.2f} mA, 3V3 parts {i33_25 * 1e3:.2f} mA at 3.3 V (amps "
+        f"{pdm25 * 1e3:.1f} mA at 25 C, {pdm85 * 1e3:.1f} mA at 85 C; per board A {tot[('A', '25')] * 1e3:.2f} mA: 5 V module no-load "
+        f"{tsr_nl * 1e3:.3f} mA, battery divider {div * 1e3:.2f} mA, 3V3 parts {i33_25 * 1e3:.2f} mA at 3.3 V (amps "
         f"{8 * P.TLV9004['iq'] * 1e3:.2f} mA)", "<= 1 mA per module (usual OEM target); whole car budget about 20-50 mA",
-        "WARN", f"a 50 Ah battery reaches 50 % in about {days:.0f} days at 25 C; biggest items: the TSR's own 1 mA "
-        "no-load draw x 3, the 47k / 4.7k divider x 3 and the always-on op-amps; the input boards' pull-ups add "
+        "WARN", f"a 50 Ah battery reaches 50 % in about {days:.0f} days at 25 C; biggest items: "
+        "the 47k / 4.7k divider x 3 and the always-on op-amps; the input boards' pull-ups add "
         "0.33 mA per input held low. Bench: measure the PDM's sleep current")
     add("CPU load", "worst-case main-loop time with every feature on", "not measured: the host sim has no cycle model "
         "and ChibiOS idles without WFI (Renode instruction counts include the idle loop)", "DeviceThread loop = work + "

@@ -23,7 +23,7 @@
                 var vals = PdmTriggers.ValueChoices(m, _board);
             }
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
-                <MudSelect T="string" @bind-Value="_board" Label="Board for counters / math / levels / values / keypad / CAN out" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 360px" Class="pdm-val-board" Disabled="@busy">
+                <MudSelect T="string" Value="@_board" ValueChanged="@((string r) => PickBoard(r))" Label="Board for counters / math / levels / values / keypad / CAN out" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 360px" Class="pdm-val-board" Disabled="@busy">
                     @foreach (var b in View.Boards) { <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem> }
                 </MudSelect>
                 <MudText Typo="Typo.caption">@m.Use(_board).Summary</MudText>
@@ -74,7 +74,7 @@
 
             <MudText Typo="Typo.subtitle2" Class="mt-2"><b>Value of another board</b> (1 CAN input): reads that board's own status frame</MudText>
             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                <MudSelect T="string" @bind-Value="_rFrom" Label="From board" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Disabled="@busy">
+                <MudSelect T="string" Value="@_rFrom" ValueChanged="@((string r) => PickFrom(r))" Label="From board" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 120px" Disabled="@busy">
                     @foreach (var b in View.Boards.Where(b => b.Role != _board)) { <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem> }
                 </MudSelect>
                 <MudSelect T="string" @bind-Value="_rSig" Label="Value" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 260px" Class="pdm-rem-sig" Disabled="@busy">
@@ -157,6 +157,31 @@
     private string? _rSig;
     private string _kNode = "28", _sOuts = "", _oId = "6A0";
     private ByteOrder _oOrder = ByteOrder.LittleEndian;
+
+    // uifix (BACKLOG 2026-11-21): the view may lack a board (another tab's refresh while New PDM adds A1, A2, B one
+    // by one; a project without B): the boards shown stay inside it (PdmView.RoleOr), else m.Board(_board) throws.
+    // The picked ones (_pickBoard, _pickFrom) come back once the view has them.
+    private string _pickBoard = "B", _pickFrom = "A1";
+
+    protected override void OnParametersSet() => KeepBoards();
+
+    private void KeepBoards()
+    {
+        _board = View.RoleOr(_pickBoard) ?? _pickBoard;
+        _rFrom = View.RoleOr(_pickFrom, not: _board) ?? _pickFrom;
+    }
+
+    private void PickBoard(string role)
+    {
+        _pickBoard = role;
+        KeepBoards();
+    }
+
+    private void PickFrom(string role)
+    {
+        _pickFrom = role;
+        KeepBoards();
+    }
 
     private static int? Hex(string s) =>
         int.TryParse(s.Trim().Replace("0x", "", StringComparison.OrdinalIgnoreCase), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var x) ? x : null;

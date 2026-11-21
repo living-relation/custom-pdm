@@ -56,6 +56,10 @@ try {
         if ($LASTEXITCODE) { throw "d2_tvs.py sch failed" }
         python (Join-Path $Repo "tools\hw_protect.py") sch B          # hwprotect: NRST / VDDA caps, USB ESD, 125 C parts, freewheel diodes DNP
         if ($LASTEXITCODE) { throw "hw_protect.py sch failed" }
+        python (Join-Path $Repo "tools\hw_5v_module.py") lib          # hw5v: 125 C 5 V module (TI SIL0010A land pattern)
+        if ($LASTEXITCODE) { throw "hw_5v_module.py lib failed" }
+        python (Join-Path $Repo "tools\hw_5v_module.py") sch B        # hw5v: LMZM23601V5 + caps in place of the TSR U13
+        if ($LASTEXITCODE) { throw "hw_5v_module.py sch failed" }
     } finally { Pop-Location }
 
     & $Cli sch export netlist (Join-Path $B "dingoPDM-Max.kicad_sch") -o "$Out\board-b.net" | Out-Null
@@ -82,7 +86,8 @@ try {
     Run-Py9 (Join-Path $Repo "tools\pcb_hole_keepout.py") $Pcb                    # 2026-11-20 pcbverify: no pour under the sink posts
     Run-Py9 (Join-Path $Repo "tools\pcb_feed_board_b.py") $Pcb                   # ADR-2026-11-20-boardb-feed: In1 / In2 +12V, wider B.Cu, stitching
     Run-Py9 (Join-Path $Repo "tools\d2_tvs.py") pcb $Pcb B                       # ADR-2026-11-20-d2-move: D2 to its new spot + clamp copper
-    Run-Py9 (Join-Path $Repo "tools\hw_protect.py") pcb $Pcb "$Out\board-b.net" B   # hwprotect: new parts placed + connected (last stage)
+    Run-Py9 (Join-Path $Repo "tools\hw_protect.py") pcb $Pcb "$Out\board-b.net" B   # hwprotect: new parts placed + connected
+    Run-Py9 (Join-Path $Repo "tools\hw_5v_module.py") pcb $Pcb "$Out\board-b.net" B   # hw5v: TSR out, 125 C module in its outline (last stage)
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"

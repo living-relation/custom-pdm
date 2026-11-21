@@ -115,22 +115,18 @@ public class PdmLinkedTests
             PdmOps.BlockedReason(PdmOpKind.WriteAll, hand, true, _ => true));
     }
 
-    // ---------------- temperature limits, one set for the three boards (u1a) ----------------
+    // ---------------- temperature limits (u1a; ADR-2026-11-20-temp-onepdm) ----------------
+    // The one-set hot-spot entry and its per-board conversion: PdmThermalTests. Here: the per-board view and the sensor
+    // value ranges (firmware core/param_defs.h) the conversion is checked against.
 
     [Fact]
-    public void TempLimitsSetOnAllThreeBoards()
+    public void TempLimitsByBoardShowEachBoardsSensorValues()
     {
         var v = NewPdm();
-        // fwsafety: board B ships with its own limits (98 / 104, its FEA sensor map), so a New PDM starts with them differing
-        Assert.True(PdmLinked.TempLimitsDiffer(v));
+        // fwsafety: board B ships with its own limits (98 / 104, its FEA sensor map), board A the stock 55 / 80
         Assert.Equal([(55, 80), (55, 80), (98, 104)], PdmLinked.TempLimitsByBoard(v).Select(t => (t.Limits.Warn, t.Limits.Crit)));
         Dev(v, "B").CustomPdm!.TempWarn = 60;
         Assert.Equal([55, 55, 60], PdmLinked.TempLimitsByBoard(v).Select(t => t.Limits.Warn));
-
-        Assert.Null(PdmLinked.SetTempLimits(v, new PdmTempLimits(58, 85, 4, 7)));
-        Assert.False(PdmLinked.TempLimitsDiffer(v));
-        Assert.All(v.Boards, b => Assert.Equal(new PdmTempLimits(58, 85, 4, 7), PdmTempLimits.Of(b.Device)));
-        Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.IsValid()));
     }
 
     [Theory]
@@ -140,12 +136,8 @@ public class PdmLinkedTests
     [InlineData(55, 80, 0, 5, "Recovery hysteresis must be 1 to 30 C.")]
     [InlineData(55, 80, 31, 5, "Recovery hysteresis must be 1 to 30 C.")]
     [InlineData(55, 80, 6, 31, "Critical-soon margin must be 0 to 30 C.")]
-    public void BadTempLimitsRefusedAndNothingChanged(int warn, int crit, int hyst, int margin, string why)
-    {
-        var v = NewPdm();
-        Assert.Equal(why, PdmLinked.SetTempLimits(v, new PdmTempLimits(warn, crit, hyst, margin)));
-        Assert.All(v.Boards, b => Assert.Equal(b.Role == "B" ? new PdmTempLimits(98, 104, 6, 5) : new PdmTempLimits(55, 80, 6, 5), PdmTempLimits.Of(b.Device)));
-    }
+    public void SensorLimitRanges(int warn, int crit, int hyst, int margin, string why) =>
+        Assert.Equal(why, new PdmTempLimits(warn, crit, hyst, margin).Problem());
 
     // ---------------- fan on / off: 6 params on A2 that move together ----------------
 

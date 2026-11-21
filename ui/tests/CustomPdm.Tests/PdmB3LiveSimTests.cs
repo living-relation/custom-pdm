@@ -96,7 +96,7 @@ public class PdmB3LiveSimTests(ITestOutputHelper output)
         var rig = BootNew(bus);
         var svc = Service(rig);
         var view = svc.BuildView();
-        Assert.Null(PdmLinked.SetTempLimits(view, new PdmTempLimits(60, 90, 4, 7)));
+        Assert.Null(PdmThermal.Set(view, new PdmHotSpotLimits(115, 122, 4, 7))); // B 95 / 102, A kept (temp-onepdm)
         Assert.Null(PdmLinked.SetFanThresholds(rig.A2, new PdmFanThresholds(50, 44)));
         Assert.Null(Run(rig, svc, PdmOpKind.WriteAll));
         Assert.Equal(AllOk, States(svc));
@@ -108,8 +108,8 @@ public class PdmB3LiveSimTests(ITestOutputHelper output)
         Assert.Null(Run(pc2, svc2, PdmOpKind.ReadAll));
         Assert.Equal(AllOk, States(svc2));
         var v2 = svc2.BuildView();
-        Assert.False(PdmLinked.TempLimitsDiffer(v2));
-        Assert.All(pc2.All, d => Assert.Equal(new PdmTempLimits(60, 90, 4, 7), PdmTempLimits.Of(d)));
+        Assert.All(pc2.All, d => Assert.Equal(d.DeviceTypeId == 15 ? new PdmTempLimits(95, 102, 4, 7) : new PdmTempLimits(55, 80, 6, 5), PdmTempLimits.Of(d)));
+        Assert.Equal(new PdmHotSpotLimits(115, 122, 4, 7), PdmThermal.Current(v2));
         Assert.Equal(new PdmFanThresholds(50, 44), PdmLinked.FanThresholds(pc2.A2));
         Assert.Empty(PdmLinked.FanRemoteIdProblems(v2));
     }
