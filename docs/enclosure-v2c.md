@@ -2,7 +2,7 @@
 
 Status: v2c build of 2026-11-16 (F1, the pick), branch `feat/enclosure-v2c`. Claude owns the enclosure design (Dan, `DECISIONS.md` 2026-11-16). Decisions behind the shape: `DECISIONS.md` 2026-11-12 (enclosure lines, h2a, v1-v5, A1a; Dan's v2b review: b1a, b2a, b3a, b4a and the OUT1-4 wire-way) and 2026-11-13 (c1b, d1a, e1a: OUT1-4 copper offset risers in a G10 carrier). Results, not decisions. Sections 1-6 describe v2b; v2c is v2b except the changes in section 0.
 Scripts: `enclosure/v2c/src/` (build123d, WSL; `automation.yml` ids `enclosure-v2c-build`, `enclosure-v2c-render`). Inputs (board STEPs from our KiCad, maker CAD): `enclosure/v2c/vendor/README.md`.
-Release (handbuilt-cad publish-to-models layout, assembly rev B = second release after v2b): `C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-v2c\revB\` (assembly STEP with external references to `parts\<part number>.stp`, per-part rev logs, drawings of the made parts generated from the models by `src/drawings_v2c.py` (handbuilt-cad drawing engine), BOM, checks, review views, sources). Never edit a drawing: change `build_v2c.py`, rebuild, regenerate.
+Release (handbuilt-cad publish-to-models layout): rev C (2026-11-20, maker CAD for the last three drawn bought parts; see section 0b) in `C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure-revD\revC\`; rev B (second release after v2b) in `...\revB\` (assembly STEP with external references to `parts\<part number>.stp`, per-part rev logs, drawings of the made parts generated from the models by `src/drawings_v2c.py` (handbuilt-cad drawing engine), BOM, checks, review views, sources). Never edit a drawing: change `build_v2c.py`, rebuild, regenerate.
 Fusion: project `custom-pdm`, folder `enclosure-v2b`, designs `custom-pdm-enclosure-v2b-F1` v4 / `-F2` (v2b); the v2c Fusion state is in section 8.
 
 ## 0. v2c (2026-11-16): what changed vs v2b
@@ -25,6 +25,17 @@ Rebuilt without Grok's pack: board STEPs exported from our KiCad boards (`export
 
 Checks (F1): interference / near-miss of every part pair: section 5; bare-metal and head rule: section 5b; BOM / part files: `bomcheck_v2c.py` 0 fails (127 components, 40 part numbers, all external references with PN + description); CNC: section 7. Same-net head rule (new, `lugcheck_v2c.py`): every socket head against every bare-metal feature beyond its bearing face, same net included, >= 0.5 mm: v2b build 14 findings (OUT2 / OUT4 foot screws 0.02 / 0.03 mm, 12 lid-screw counterbores 0.25 mm), v2c 0 of 35 heads.
 Fusion: see section 8 (open items) for the state of the Fusion update.
+
+## 0b. Rev C (2026-11-20): maker CAD for the last drawn bought parts
+
+| Part | Rev B (drawn) | Rev C (maker CAD, `enclosure/v2c/vendor/README.md`) | Effect |
+|---|---|---|---|
+| Sunon MF30101V1-1000U-A99 fans | spec drawing, 10 thick, bore + blades | DigiKey "Manufacturer Provided" STEP: solid envelope 30 x 30 x 10.4 | fan east face +0.4; 3 x M3 x 12 per fan (the maker model's 4th corner holds the lead-wire retainer, hole partly blocked; the sink's 4th tapped hole stays, unused); 1.6 mm (3 threads) into the 3 mm wall |
+| Phoenix 3240083 ring lugs | 17.5 ring-to-barrel-end, barrel OD 6.0 | phoenixcontact.com STEP: 14.0, OD 5.6 | OUT1-4 wire ends follow; lug-lug min 8.16 (was 6.12), lug-other screw 5.09, lug-riser 4.56 |
+| Amphenol LTW UC-00PMFY-SC7001 | catalogue: square flange, 29.3 body | amphenolltw.com STEP + drawing rev C: round flange 25 inside, nut AF 25.4 outside (moved out by the wall in the build), FPC 47 to a 44-pin Y-beam | USB cable starts at the FPC end, 3 lower to pass under the input deck; see section 8 for the Y-beam |
+
+Checks (revC build): BOM 0 fails (125 components, 40 PNs); head rule 0 of 33; clearance as rev B plus one new overlap: input deck vs the straight-modelled FPC Y-beam end (17.4 mm3); made parts byte-identical to rev B in their STEP data (drawings, CNC, mass unchanged).
+
 Heat: internal I2R heat (bars, joints, contacts, harness) was left out of the model and is optimistic, not conservative: estimate and effect in `docs/heat-analysis.md` section 3.
 
 ## 1. What it is
@@ -106,14 +117,14 @@ Both Fusion designs (`custom-pdm-enclosure-v2b-F1` v4, `-F2` v3, saved 2026-11-1
 | Panel nuts X1 / X2 | TE 2411-001-2405 | TE customer view model (v2c; v2b drew it, 6 thick ASSUMED, the real nut is 6.35) |
 | Lock washers X1 / X2 | TE 2414-001-2486 | TE customer view model (v2c, new) |
 | Input-board J2 | Molex 43045-1200 | Molex STEP AP242 (molex.com, v2c, new) |
-| USB-C bulkhead | Amphenol LTW UC-00PMFY-SC7001 | modelled from the UC series catalogue (no maker STEP reachable) |
+| USB-C bulkhead | Amphenol LTW UC-00PMFY-SC7001 | Amphenol LTW maker STEP + 2D drawing rev C (amphenolltw.com, revC; revB drew it from the catalogue). Round housing flange dia 25 inside, hex nut AF 25.4 outside (the build moves the maker's nut out by the 3 mm wall), FPC tail 47 mm to a 44-pin Y-beam contact (see section 8) |
 | USB hub | Adafruit 5997 (CH334F, 4 port) | Adafruit_CAD_Parts STEP (MIT) |
-| Fans F1 | 2 x Sunon MF30101V1-1000U-A99 (30 x 30 x 10) | modelled from Sunon spec D03033580G-01 (maker model is on DigiKey behind its model-download agreement, not accepted) |
+| Fans F1 | 2 x Sunon MF30101V1-1000U-A99 (30 x 30 x 10) | Sunon maker STEP via DigiKey "Manufacturer Provided" (agreement accepted 2026-11-20, revC): solid envelope 30 x 30 x 10.4, no bore / blades (fit only) |
 | Fan F2 | Noctua NF-A6x15 PWM (60 x 60 x 15) | Noctua public CAD STEP |
 | Boards A1, A2, B, input boards | this repo | v2c: STEPs exported from our KiCad by `enclosure/v2c/src/export_boards.ps1` (J3 / J6 are wire pads, a1a / a2b); v2b used Grok's pack copies |
 | Heat-set inserts | ruthex RX-M4x8.1 | envelope OD 5.6 x 8.1 |
 | Screws | ISO 4762 / threaded rod | build123d fasteners (screw_dimensions.csv) |
-| OUT1-4 ring lugs | Phoenix Contact 3240083 = C-RC 6/M4 DIN (M4, 6 mm2 / 10 AWG, non-insulated; M4 kept: the lug screw goes into copper, not into the REDCUBE) | modelled from catalogue dims 8.0 x 17.5 x 0.99, barrel OD 6 ASSUMED (phoenixcontact.com CAD download sits behind an anti-robot check) |
+| OUT1-4 ring lugs | Phoenix Contact 3240083 = C-RC 6/M4 DIN (M4, 6 mm2 / 10 AWG, non-insulated; M4 kept: the lug screw goes into copper, not into the REDCUBE) | Phoenix Contact maker STEP (phoenixcontact.com product page Downloads > CAD data, simplified model, revC): 8.0 wide, 1.0 thick, ring centre to barrel end 14.0, barrel OD 5.6 (revB drew 17.5 / 6.0 from catalogue dims) |
 | OUT1-4 wires | 10 AWG GXL (31 A each) | OD 4.2 ASSUMED |
 | Copper bosses BATT / GND (custom, 3-axis mill) | hex AF 13 x 15, M6 female both ends, C110 copper | this build |
 | Copper offset risers OUT1-4 (custom, 3-axis mill) | C110; foot arm R3.75 x 4 thick (v2c; v2b R4) with M4 clearance hole on the T centre, seat column dia 8, seat 8.5 mm from the T centre (v2c), R0.5 column-root fillet, M4 tapped 10 deep; height 10.27 (OUT2 / OUT4, CPDM-ENC-107) and 20.27 (OUT1 / OUT3, CPDM-ENC-108); from 12 x 20 flat bar (low) and 25 x 20 bar (high), 2 setups (top profile + holes, flip and face to height); no undercuts | this build |
@@ -182,7 +193,8 @@ Not yet modelled: the sharp vertical inside corners in the table get the cutter 
 ## 8. Open items
 
 - Fusion: the v2c Fusion design with linked components (one Fusion design per part number, inserted by reference, part number + description set) is NOT made: this session had no Fusion tools. `enclosure/v2c/src/fusion_v2c.py` does it from the release folder under the Fusion lock (upload parts, set properties, build `custom-pdm-enclosure-v2c-F1`).
-- Still drawn from maker drawings: Sunon MF30101V1-1000U-A99 (the maker model is on DigiKey behind DigiKey's model-download agreement: Dan to accept or download), Amphenol LTW UC-00PMFY-SC7001 (no maker CAD found), Phoenix 3240083 (phoenixcontact.com download behind an anti-robot check: Dan to download). Swap each in `build_v2c.py` when the file is in `$VENDOR`.
+- Drawn bought parts: none left since rev C (2026-11-20).
+- USB-C bulkhead inner end (found rev C): UC-00PMFY-SC7001 ends in an FPC (47 mm) with a 44-pin Y-beam contact that presses onto PCB pads (maker drawing "Recommended PCB Layout"), not a USB-C socket. The "bulkhead -> USB cable -> hub" route needs an adapter PCB at the Y-beam end (or a bulkhead variant with a socket / cable); the straight-modelled FPC also reaches 11 mm under the input deck. Pick the fix before the harness / board order.
 - Before a CNC quote: model the vertical inside-corner radii (section 7), pick the sink finish (clear anodise ASSUMED), put tolerances on the critical features (riser seat / foot holes, carrier key slots, sink pedestal tops), thread callouts are drawing notes (no cosmetic threads in the STEP).
 - Heat: internal I2R heat estimate added (`docs/heat-analysis.md` section 3); the air under the lid is not modelled.
 - F2 (Noctua) not rebuilt for v2c (F1 is the pick; the Noctua CAD was not re-downloaded): F2 stays at its v2b state (Fusion `-F2`, renders `enclosure-v2b-F2-*`).

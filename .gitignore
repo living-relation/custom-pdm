@@ -44,3 +44,6 @@ firmware/.dep/
 ui/**/[Bb]in/
 ui/**/[Oo]bj/
 TestResults/
+
+# harness: optional Excel copy of the CSV master (enclosure_harness.py xlsx)
+harness/*.generated.xlsx

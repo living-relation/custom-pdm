@@ -1,0 +1,14 @@
+Kind,Code,Name,Used for
+colour,RD,Red,"switched +12 V outputs, fan supply, +3.3 V, USB VBUS"
+colour,WH,White,"digital inputs, USB D-"
+colour,VT,Violet,analog inputs (0-5 V)
+colour,BK,Black,"SIG_GND, fan return, GND, USB GND"
+colour,YE,Yellow,CAN_H
+colour,GN,Green,"CAN_L, USB D+"
+colour,GY,Gray,USB CC core (cable maker colour TBD)
+wire family,J1128-GXL-16/12,"SAE J1128 GXL, 125 C",X1 size 16 / 12 cavities (N seal needs OD 2.54-3.40 / 3.40-4.32 mm)
+wire family,M22759/16-20,"ETFE, 150 C","20 AWG: X2 (E seal 1.02-2.41 mm), Micro-Fit (insulation <= 1.85 mm), CAN, fans"
+wire family,UL1571 28,PVC 80 C,Sunon factory fan leads only
+wire family,28 AWG (TBD),>= 105 C,JST GH links
+rule,Labels,,printed heat-shrink sleeve at each end: '<wire ID> <signal> ><far end>'
+rule,Length rule,,"model route + 20 mm X1/X2 fan-out + 2 x 15 mm service loop, rounded up to 5 mm; TBD = not in the model"

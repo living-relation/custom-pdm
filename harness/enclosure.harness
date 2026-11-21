@@ -4076,7 +4076,7 @@
       },
       "width": 360,
       "color": "Yellow",
-      "text": "custom-pdm enclosure INSIDE harness. Source of truth: harness/enclosure-wire-list.xlsx (built by harness/src/enclosure_harness.py). Box connectors left, boards / devices right. Board pads, fan leads and hub pads are device ends (no part)."
+      "text": "custom-pdm enclosure INSIDE harness. Source of truth: harness/enclosure-wire-list.csv (built by harness/src/enclosure_harness.py). Box connectors left, boards / devices right. Board pads, fan leads and hub pads are device ends (no part)."
     }
   ],
   "layoutNotes": [

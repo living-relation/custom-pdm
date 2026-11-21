@@ -26,6 +26,19 @@ def shcs(size, L, at, down=True):
     sc = head.fuse(shank).solid()
     if not down: sc = sc.rotate(Axis.X, 180)
     return sc.translate(Vector(*at))
+def bhcs(size, L, at):
+    """button head hex-drive screw ISO 7380-1 (screw_dimensions.csv family 'Button ISO 7380-1'), HEAD_SEAT origin, head up.
+    Dome drawn as a cylinder dk x k with a 0.8 k top fillet (simplified; SR Fasteners draws the real dome in Fusion)."""
+    r = row("Button ISO 7380-1", size)
+    d = float(size[1:]); dk = float(r["dk_max"]); k = float(r["k_max"]); s = float(r["s_hex"]); t = float(r["t_socket_min"])
+    lengths = [float(v) for v in r["lengths"].split()]
+    assert L in lengths, f"{size} x {L} not a stock ISO 7380-1 length in the screw tool table: {lengths}"
+    head = Solid.make_cylinder(dk / 2, k)
+    head = head.fillet(0.8 * k, head.edges().sort_by(Axis.Z)[-1:])
+    head = head.cut(_hexprism(s, t + 0.01, k - t)).solid()
+    shank = Solid.make_cylinder(d / 2, L, Plane(origin=(0, 0, 0), z_dir=(0, 0, -1)))
+    shank = shank.chamfer(min(0.1 * d, 0.5), None, shank.edges().sort_by(Axis.Z)[:1])
+    return head.fuse(shank).solid().translate(Vector(*at))
 def standoff_mf(af, L, d, male_len, female_depth, at):
     """Generic male-female hex standoff: body L from at[2] upward, male thread (nominal dia) below."""
     body = _hexprism(af, L).cut(Solid.make_cylinder(d * 0.42, female_depth + 0.1, Plane(origin=(0, 0, L - female_depth))))

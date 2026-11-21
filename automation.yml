@@ -196,7 +196,8 @@ automations:
               enclosure/v2c/src/inspect_vendor.py, enclosure/v2c/src/bg.sh, enclosure/v2c/src/bbox_parts.py,
               enclosure/v2c/src/mass_v2c.py, enclosure/v2c/src/screwtool_twin.py, enclosure/v2c/src/lugcheck_v2c.py,
               enclosure/v2c/src/bomcheck_v2c.py, enclosure/v2c/src/cnc_v2c.sh, enclosure/v2c/src/export_boards.ps1,
-              enclosure/v2c/src/compare_v2b.py, enclosure/v2c/src/drawings_v2c.py, enclosure/v2c/src/fusion_v2c.py]
+              enclosure/v2c/src/compare_v2b.py, enclosure/v2c/src/drawings_v2c.py, enclosure/v2c/src/fusion_v2c.py,
+              enclosure/v2c/src/asm_drawing_v2c.py]
     trigger: manual
     reads: ["enclosure/v2c/src/*.py", "hardware/*/*.kicad_pcb"]   # plus board / vendor STEPs in <repo root>/.claude/cache/enclosure (not in git, see enclosure/v2c/vendor/README.md)
     writes: []                      # STEP/BREP/meta/check JSON go to WSL ~/scratch/encl-v2c/runs (not in git)
@@ -356,13 +357,13 @@ automations:
     owner: claude
   - id: enclosure-harness
     script: harness/src/enclosure_harness.py
-    helpers: []
-    trigger: manual                 # harness/circuit-list.md; the xlsx is the source of truth (wirelist only fills it once)
-    reads: [harness/enclosure-wire-list.xlsx]   # route geometry copied from enclosure/v2c/src/build_v2c.py rev D (ROUTE table in the script)
-    writes: [harness/enclosure-wire-list.csv, harness/enclosure.harness, harness/enclosure.harnesslib]
+    helpers: [harness/src/wiring_diagram.py]
+    trigger: manual                 # harness/circuit-list.md; the three CSVs are the master (Dan 2026-11-21), nothing writes them
+    reads: [harness/enclosure-wire-list.csv, harness/enclosure-connectors.csv, harness/enclosure-key.csv]   # route geometry copied from enclosure/v2c/src/build_v2c.py rev D (ROUTE table in the script)
+    writes: [harness/enclosure.harness, harness/enclosure.harnesslib, harness/enclosure-wiring-diagram.svg, harness/enclosure-wiring-diagram-sheet2.svg, harness/enclosure-wiring-diagram-sheet3.svg, harness/enclosure-wiring-diagram.pdf]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python harness/src/enclosure_harness.py build
+    run_cmd: python harness/src/enclosure_harness.py build && python harness/src/enclosure_harness.py diagram   # optional Excel copy (git-ignored): ... xlsx
     check_cmd: python harness/src/enclosure_harness.py check
     owner: claude
