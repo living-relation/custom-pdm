@@ -94,7 +94,7 @@ def rounded(pts, R):
 # ---------------- the rules: ends + first path of every wire ----------------
 PX = {1: -11.11, 2: -6.67, 3: -2.22, 4: 2.22, 5: 6.67, 6: 11.11, 7: 11.11, 8: 6.67, 9: 2.22, 10: -2.22, 11: -6.67, 12: -11.11}   # board A J3 pads (KiCad x)
 A2_LANE = {8: (-104.9, 12.6), 9: (-102.0, 12.6), 10: (-99.1, 12.6), 6: (-104.9, 15.4), 5: (-102.0, 15.4), 4: (-99.1, 15.4), 3: (-96.2, 15.4)}
-SPLICE = dict(x=185.0, y={"SP1": -111.0, "SP2": -116.0}, z=58.5, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
+SPLICE = dict(x=191.0, y={"SP1": -111.0, "SP2": -116.0}, z=12.6, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
 STUB = 10.0                                    # straight wire behind a box connector's rear end before the first bend (mm)
 T58_ANG = {"T5": 240.0, "T6": 240.0, "T7": 235.0, "T8": 240.0}   # ring-lug barrel directions (deg from +X): south-west, where the lanes to X1 come from
 def t58_mouth(G, k):

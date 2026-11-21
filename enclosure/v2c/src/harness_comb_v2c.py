@@ -83,10 +83,10 @@ class Loom:
             ks = [k for k in s.obs if k != w]; P = np.concatenate([s.obs[k][0] for k in ks]); Rr = np.concatenate([np.full(len(s.obs[k][0]), s.obs[k][1]) for k in ks])
             own = np.concatenate([np.full(len(s.obs[k][0]), i) for i, k in enumerate(ks)]); s._t = (w, cKDTree(P), Rr, own, ks)
         return s._t[1:]
-    def check(s, w, pts, od, rmul, part=PART, exempt=EXEMPT, who=False):
+    def check(s, w, pts, od, rmul, part=PART, exempt=(EXEMPT, EXEMPT), who=False):
         R = rmul * od; r = od / 2; P, S, rmin, L = samples(pts, R)
         if rmin < R - 1e-6: return "bend"
-        mid = (S > exempt) & (S < L - exempt)
+        mid = (S > exempt[0]) & (S < L - exempt[1])
         if s.F is not None and mid.any():
             dd = s.F.dist(P[mid])
             if (dd < r + part).any(): return "part" + (" at %.0f %.0f %.0f gap %.2f" % (*P[mid][int(dd.argmin())], dd.min() - r) if who else "")
@@ -103,14 +103,14 @@ def end_info(G, row, pts, at_from):
     if c in ("X1", "X2"): return dict(kind="conn", lead=[P], x=P[0], z=P[2], dir=1, y0=G["REAR"][c] + STUB)
     if c.endswith("-J3"): return dict(kind="pad", lead=[P], x=P[0], z=None, dir=-1, y0=P[1], pad=c + "." + (row["From pin"] if at_from else row["To pin"]))
     if c == "B-J6":                                               # the four pads sit between the OUT risers: both pad columns leave south through the 3.9 mm gap at x 35.1..39.0
-        p = int(row["From pin"] if at_from else row["To pin"]); return dict(kind="pad", lead=[P], pre=(P[0], P[1]), x=36.1 if p in (1, 3) else 37.75, z=None, dir=-1, y0=-40.0, pad=c + "." + str(p))
+        p = int(row["From pin"] if at_from else row["To pin"]); return dict(kind="pad", lead=[P], pre=(P[0], P[1]), x=36.35 if p in (1, 3) else 38.1, z=None, dir=-1, y0=-40.0, ex=24.0, pad=c + "." + str(p))
     if c.endswith("-J2"): return dict(kind="mf", lead=[P], x=P[0], z=P[2], dir=-1, y0=MF_REAR - MF_STRAIGHT)
     if c.startswith("SP") and abs(Q[1] - P[1]) < 1e-6 and abs(Q[2] - P[2]) < 1e-6: return dict(kind="splice", lead=[P, Q], x=Q[0], z=Q[2], dir=0, y0=P[1])
     return dict(kind="fixed")
 def lane_z(e, od):
     """lane height above the board for a pad wire: the pad row nearer the bay (south) runs low, the other row above it"""
     c, p = e["pad"].split("."); p = int(p)
-    if c == "B-J6": return 12.2 if p <= 2 else 10.5
+    if c == "B-J6": return {1: 11.95, 3: 10.3, 2: 12.75, 4: 11.1}[p]         # two columns, staggered heights, under the OUT carrier (z 13.77)
     return 14.4 if p > 6 else 17.35
 
 def mids(xa, za, xb, zb, R, zgrid, simple, keep="a"):
@@ -162,8 +162,8 @@ def candidates(ea, eb, od, R, nplanes=5):
             for q in [-96.0 - pitch * k for k in range(4)]:
                 for m_ in (0.5, 6.0, 12.0):
                     for span in (16.0, 24.0, 32.0):
-                        x2 = eb["x"] + sg * (2 * R + m_)
-                        yield la + [(ea["x"], q, za), (x2 + sg * span, q, za), (x2, p, zb), (eb["x"], p, zb)] + lb[::-1]
+                        x2 = eb["x"] + sg * (2 * R + m_); x1 = max(x2 + span, 150.0) if sg > 0 else x2 - span   # the low run stays east of board A1's signal lanes (x 140..145)
+                        yield la + [(ea["x"], q, za), (x1, q, za), (x2, p, zb), (eb["x"], p, zb)] + lb[::-1]
     for simple in (True, False):
         for p in one:
             for m in mids(ea["x"], za, eb["x"], zb, R, zgrid, simple, keep):
@@ -174,7 +174,7 @@ def candidates(ea, eb, od, R, nplanes=5):
         (a0, a1), (b0, b1) = rng(ea), rng(eb)
         for p in planes(a0, a1, False):
             for q in planes(b0, min(b1, p - 2 * R), True)[:4]:
-                for zv in sorted(zgrid, key=lambda t: abs(t - zb)):
+                for zv in sorted(zgrid, key=lambda t: (t < zb, abs(t - zb))):   # loop up first (overhead), then down
                     if abs(zv - zb) < 2 * R: continue
                     for m in mids(ea["x"], za, eb["x"], zv, R, zgrid, True, "b"):
                         pts = la + [(ea["x"], p, za)] + [(x, p, z) for x, z in m] + [(eb["x"], p, zv), (eb["x"], q, zv), (eb["x"], q, zb)] + lb[::-1]
@@ -207,7 +207,7 @@ def plan(G, field, hand=None, order=None, log=print):
     for w in todo:
         d = T[w]; n = 0; got = None; tally = {}
         for pts in candidates(E[w][0], E[w][1], d["od"], d["rmul"] * d["od"]):
-            n += 1; r = L.check(w, pts, d["od"], d["rmul"], who=n <= 40)
+            n += 1; r = L.check(w, pts, d["od"], d["rmul"], exempt=(E[w][0].get("ex", EXEMPT), E[w][1].get("ex", EXEMPT)), who=n <= 40)
             if r is None: got = pts; break
             tally[r] = tally.get(r, 0) + 1
         if got: L.place(w, got, d["od"])

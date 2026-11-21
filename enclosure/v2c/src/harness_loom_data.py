@@ -27,9 +27,10 @@ def hand(G):
 def order(G):
     """X1 16 AWG wires: board A2's first (their cavities are X1's east side: nearest plane), each group from the east; then the X2 wires, highest cavity
     first; then the splice-to-pad wires."""
-    rows = HP.read_rows(); x1 = []; x2 = []
+    rows = HP.read_rows(); x1 = []; x2 = []; sp = []
     for r in rows:
         e = {r["From connector"]: r["From pin"], r["To connector"]: r["To pin"]}
+        if any(k in ("SP1", "SP2") for k in e) and "X2" not in e: sp.append(r["Wire ID"])
         if "X1" in e and r["AWG"] == "16": x1.append((0 if any(k.startswith("A2") for k in e) else 1, -HP.CAV["X1"][e["X1"]]["x"], r["Wire ID"]))
-        if "X2" in e: x2.append((-HP.CAV["X2"][e["X2"]]["y"], r["Wire ID"]))
-    return [t[-1] for t in sorted(x1)] + [w for _, w in sorted(x2)]
+        if "X2" in e: x2.append((0 if any(k.endswith("-J2") for k in e) else 1, -HP.CAV["X2"][e["X2"]]["y"], r["Wire ID"]))
+    return sp + [t[-1] for t in sorted(x1)] + [t[-1] for t in sorted(x2)]
