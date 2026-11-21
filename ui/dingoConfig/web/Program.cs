@@ -80,6 +80,7 @@ builder.Services.AddSingleton<UserPreferencesManager>();
 
 // Add background services
 builder.Services.AddHostedService<CommsDataPipeline>();
+builder.Services.AddHostedService<web.Services.PdmAutoConnectService>(); // custom-pdm: --PdmAutoConnect:* launch flags (uiwalk)
 
 // Add GlobalLogger to logging pipeline using factory to avoid creating duplicate singleton
 builder.Logging.Services.AddSingleton<ILoggerProvider>(sp =>

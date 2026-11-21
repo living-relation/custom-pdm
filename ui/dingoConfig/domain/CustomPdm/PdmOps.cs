@@ -22,6 +22,8 @@ public enum PdmStepState { Waiting, Running, Ok, Failed, NotDone }
 
 public record PdmBoardResult(string Role, PdmStepState State, string Text);
 
+public record PdmEarlierRun(PdmOpKind Op, IReadOnlyList<PdmBoardResult> Results);
+
 public class PdmOpsLinks
 {
     public required Func<FwDevice, bool> SendReadAll { get; init; }   // false = not sent
@@ -78,6 +80,35 @@ public class PdmOps(PdmOpsLinks links)
     public PdmOpKind? LastOp { get; private set; }
     public bool LastOnConnect { get; private set; } // the last run was a read on connect (PdmAutoRead)
 
+    // uiwalk (2026-11-21): the Write All / Burn the user pressed, kept when a read on connect that follows it takes
+    // over the result lines (a slow bus drops a board for a moment during a long write, and the page then showed
+    // only "Read on connect: read OK"). Gone with the next run the user starts.
+    public PdmEarlierRun? Earlier { get; private set; }
+
+    // uiwalk: the board in work and how long it has been at it (a Write All shows no other progress)
+    public (string Role, TimeSpan For)? Running(DateTime now)
+    {
+        var step = _current;
+        return Busy && step != null ? (step.Role, now - step.Begun) : null;
+    }
+
+    public static string ElapsedText(TimeSpan t) =>
+        t.TotalSeconds < 60 ? $"{Math.Max(0, (int)t.TotalSeconds)} s" : $"{(int)t.TotalMinutes} min {t.Seconds:00} s";
+
+    // uiwalk: a new project (New PDM, file open) must not show the result lines of the boards of the project before
+    public bool ClearResults()
+    {
+        lock (_lock)
+        {
+            if (Busy) return false;
+            _results.Clear();
+            LastOp = null;
+            LastOnConnect = false;
+            Earlier = null;
+            return true;
+        }
+    }
+
     // One line per board (A1, A2, B) for the last operation
     public IReadOnlyList<PdmBoardResult> Results
     {
@@ -125,6 +156,9 @@ public class PdmOps(PdmOpsLinks links)
             if (BlockedReason(op, view, adapterConnected) is { } blocked) return blocked;
 
             _steps.Clear();
+            if (onConnect == null) Earlier = null;
+            else if (!LastOnConnect && LastOp is PdmOpKind.WriteAll or PdmOpKind.Burn && _results.Count > 0)
+                Earlier = new PdmEarlierRun(LastOp.Value, Roles.Where(_results.ContainsKey).Select(r => _results[r]).ToList());
             if (onConnect == null || LastOp != PdmOpKind.ReadAll) _results.Clear();
             var boards = Roles.Select(r => view.Boards.FirstOrDefault(b => b.Role == r))
                 .Where(b => onConnect == null || (b != null && onConnect.Contains(b.Role))).ToList();

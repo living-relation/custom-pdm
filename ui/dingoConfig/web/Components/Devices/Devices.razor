@@ -166,7 +166,8 @@
     else if (!_devices.Any())
     {
         <MudAlert Severity="Severity.Warning">
-            No devices configured. Click "Add Device" to create one.
+            No devices configured. Click "Add Device" to create one. @* custom-pdm: uiwalk, the one-PDM way in *@
+            For the custom PDM (A1, A2 and B at once) use <MudLink Href="pdm">PDM &gt; New PDM</MudLink>.
         </MudAlert>
     }
     else
