@@ -50,7 +50,9 @@ for i, a in enumerate(lugs):
     res["lug_riser"].append((k, round(min(dist(a, r) for r in ris if not (abs(bb(r)[1][2] - sk[2]) < 0.6 and min(abs(cxy(r)[0] - sk[0]), 99) < 6 and abs(cxy(r)[1] - sk[1]) < 6)), 2)))
 for k, v in res.items(): print(k, v)
 # ---- 2) head rule ----
-ROWS = [r for r in csv.DictReader(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "screw_dimensions.csv"))) if r["family"] == "SHCS ISO 4762"]
+ALLROWS = list(csv.DictReader(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "screw_dimensions.csv"))))
+ROWS = [r for r in ALLROWS if r["family"] == "SHCS ISO 4762"]
+BROWS = [r for r in ALLROWS if r["family"] == "Button ISO 7380-1" and r["k_max"]]   # revD: ISO 7380-1 tie-mount screws (item name ...ISO7380-...)
 METAL = ("copper", "ring-lugs", "screws_", "standoffs", "standoff-studs", "heat-sink", "heat-set", "panel-nuts", "panel-washers")
 metal = [(n, s) for n in BR if n.startswith(METAL) for s in SOL[n]]     # same solid objects as scr, so 'is' finds the screw itself
 def big(lo, hi):
@@ -66,7 +68,8 @@ heads = []
 for n, s in scr:
     (x0, y0, z0), (x1, y1, z1) = bb(s); ext = [x1 - x0, y1 - y0, z1 - z0]; i = ext.index(max(ext))
     dk = max(e for j, e in enumerate(ext) if j != i)
-    row = min(ROWS, key=lambda r: abs(float(r["dk_max"]) - dk))
+    rows = BROWS if "ISO7380" in n else ROWS
+    row = min(rows, key=lambda r: abs(float(r["dk_max"]) - dk))
     if abs(float(row["dk_max"]) - dk) > 0.3: continue                       # not a socket-head screw (stud, csk ...)
     k = float(row["k_max"]); lo_, hi_ = [x0, y0, z0][i], [x1, y1, z1][i]
     head_hi = slab_ext(s, i, hi_ - 0.4) > slab_ext(s, i, lo_ + 0.4)

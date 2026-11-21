@@ -22,10 +22,11 @@ def stage_of_item(nm):
         if nm.startswith(pre): return i
     return None
 def stage_of_screw(s):
-    return {"fan": 0, "lid": 2, "feet": 3}.get(s.get("grp", ""), 1)
+    return {"fan": 0, "tie": 0, "lid": 2, "feet": 3}.get(s.get("grp", ""), 1)
+FAMILY = {"4762": "SHCS ISO 4762", "7380": "Button ISO 7380-1"}
 res = dict(blocked_by_feet=[], fails=[], screws=0)
 for s in meta["screws"]:
-    r = screw_row("SHCS ISO 4762", s["size"]); dk, k = float(r["dk_max"]), float(r["k_max"])
+    r = screw_row(FAMILY[s.get("fam", "4762")], s["size"]); dk, k = float(r["dk_max"]), float(r["k_max"])
     at, ax = Vector(*s["at"]), Vector(*s["axis"])                                      # axis: seat -> head
     path = Solid.make_cylinder(dk / 2, 120.0, Plane(origin=at + ax * (k + 0.05), z_dir=ax))
     st = stage_of_screw(s); res["screws"] += 1
