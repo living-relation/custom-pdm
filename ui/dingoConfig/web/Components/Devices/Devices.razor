@@ -180,9 +180,13 @@
                             <CardHeaderContent>
                                 <MudStack Row="true">
                                     <MudIcon Icon="@GetDeviceIcon(device)" Size="Size.Large"/>
-                                    <MudText Typo="Typo.body2">
-                                        @(Utils.FormatId(device.BaseId, UserPrefs.Preferences.IdFormat))
-                                    </MudText>
+                                    @* custom-pdm: the card shows the device name (A1 / A2 / B were told apart only by ID) *@
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.subtitle1" Class="device-card-name">@device.Name</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            @(Utils.FormatId(device.BaseId, UserPrefs.Preferences.IdFormat))
+                                        </MudText>
+                                    </MudStack>
                                 </MudStack>
                             </CardHeaderContent>
                             <CardHeaderActions>

@@ -637,6 +637,13 @@ public class FwDevice : IDeviceConfigurable
                     Name, BaseId, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6]);
                 break;
             case MessageType.Warning:
+                // custom-pdm: our boot warnings (src Init, firmware core/safety.h) in words, CustomPdmBootMessages
+                if (CustomPdm != null && CustomPdmBootMessages.Words(type, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6]) is { } words)
+                {
+                    Logger.LogWarning("{Name} ID: {BaseId}, Src: {MessageSrc} {I} {I1} {I2}: {Words}",
+                        Name, BaseId, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6], words);
+                    break;
+                }
                 Logger.LogWarning("{Name} ID: {BaseId}, Src: {MessageSrc} {I} {I1} {I2}", 
                     Name, BaseId, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6]);
                 break;
