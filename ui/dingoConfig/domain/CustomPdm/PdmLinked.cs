@@ -7,7 +7,8 @@ namespace domain.CustomPdm;
 // custom-pdm route B, phase B3 (docs/ui-route-b-plan.md): settings that are set ONCE for the PDM on /pdm.
 // Every change here is a PC edit only: it reaches the boards with the /pdm Write All (PdmOps), and is kept over a
 // power cycle only after Burn. Base IDs are the exception, see PdmOpsService.ChangeBaseId.
-// - Temperature limits (param block 0x7F00 subs 0-2 and 4): one set for all three boards (u1a, 2026-11-16).
+// - Temperature limits (param block 0x7F00 subs 0-2 and 4): one hot-spot set for the PDM (u1a, 2026-11-16), converted
+//   per board (ADR-2026-11-20-temp-onepdm, PdmThermal.cs).
 // - Fan on / off thresholds: the fan logic on A2 (port_boards.py, PdmFactoryDefaults) holds each threshold three
 //   times: condition FAN_COND0 (A2's own sensor), and the operand of two CAN inputs (A1 and B board temperature).
 //   On = condition FAN_COND0 + CAN inputs FAN_CANIN0 / + 2, off = condition FAN_COND0 + 1 + CAN inputs + 1 / + 3.
@@ -58,16 +59,8 @@ public static class PdmLinked
     public static IReadOnlyList<(string Role, PdmTempLimits Limits)> TempLimitsByBoard(PdmView v) =>
         v.Boards.Where(b => b.Device.CustomPdm != null).Select(b => (b.Role, PdmTempLimits.Of(b.Device)!)).ToList();
 
-    public static bool TempLimitsDiffer(PdmView v) => TempLimitsByBoard(v).Select(t => t.Limits).Distinct().Count() > 1;
-
-    // null = set on every board of the view; else why not (nothing changed)
-    public static string? SetTempLimits(PdmView v, PdmTempLimits t)
-    {
-        if (t.Problem() is { } why) return why;
-        foreach (var c in v.Boards.Select(b => b.Device.CustomPdm).OfType<CustomPdmSettings>())
-            (c.TempWarn, c.TempCrit, c.TempCritHyst, c.TempCritSoonMargin) = (t.Warn, t.Crit, t.Hyst, t.Margin);
-        return null;
-    }
+    // ADR-2026-11-20-temp-onepdm: the one set is a hot-spot set converted per board (PdmThermal.Set); there is no
+    // "same raw value on every board" setter any more (it put board A's 55 / 80 on board B).
 
     // ---------------- fan thresholds (A2) ----------------
 
