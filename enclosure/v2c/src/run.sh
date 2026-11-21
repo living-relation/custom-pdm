@@ -10,7 +10,7 @@ WT="${WT:-$(cd "$SRC/../../.." && pwd)}"
 case "$WT" in */.claude/worktrees/*) ROOT="${WT%%/.claude/worktrees/*}";; *) ROOT="$WT";; esac
 SCR="${SCR:-$HOME/scratch/encl-v2c}"                  # set SCR for a separate scratch (src copy, logs, runs) per job
 mkdir -p "$SCR/src" "$SCR/logs" "$SCR/runs"
-for f in "$SRC"/*.py "$SRC"/*.csv; do tr -d '\r' < "$f" > "$SCR/src/$(basename "$f")"; done
+for f in "$SRC"/*.py "$SRC"/*.csv "$SRC"/*.json; do tr -d '\r' < "$f" > "$SCR/src/$(basename "$f")"; done
 export CAD_PY=~/.venvs/handbuilt-cad/bin/python RUN_DIR="${RUN_DIR:-$SCR/runs}" WT="$WT"
 export BOARDS="${BOARDS:-$ROOT/.claude/cache/enclosure/boards}" VENDOR="${VENDOR:-$ROOT/.claude/cache/enclosure/vendor}"
 export CAD_HOME="${CAD_HOME:-$HOME/projects/handbuilt-cad}" RENDER_DIR="${RENDER_DIR:-$SCR/renders}"

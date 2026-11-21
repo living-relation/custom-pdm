@@ -1,34 +1,38 @@
-"""Harness check (revE): every wire / cable solid of CPDM-HAR-200 against every other part of the build, and against the other wires.
-Rule (cad.md): an insulated wire may TOUCH plastic and other wires; it may not pass THROUGH anything (board, screw, standoff,
-bar, lid, connector body ...). FAILS (exit 1) on a wire-vs-part overlap volume above TOL that is not in ALLOWED.
-ALLOWED: the four fan leads inside the cord grip (the maker model is solid: it grips them).
-Wire-vs-wire overlaps are listed in the report (fan-out zones behind X1 / X2), they do not fail the check.
-Usage: $CAD_PY wirecheck_v2c.py F1   (RUN_DIR; WIRE_PRE=<runs dir> = check the table against another run's breps
-before a build: the table is then made from that run's meta.json)  -> <run>/<VAR>/wirecheck.json"""
-import os, sys, json, glob, itertools
-from multiprocessing import Pool
+"""Harness check (revF): every wire / cable solid of CPDM-HAR-200 against every other part of the build, against the other wires,
+and against the box's free space.
+Rule (cad.md): an insulated wire may TOUCH plastic and other wires; it may not pass THROUGH anything. FAILS (exit 1) on:
+  1. a wire-vs-part overlap above TOL (mm3) that is not ALLOWED (a wire inside its own end part: the fan leads in the cord grip
+     and in their sleeve, a spliced wire in its splice, a T5-T8 wire in its lug barrel);
+  2. revF: a wire-vs-wire overlap above TOL_WW (mm3; touching is fine: two tangent round wires share no volume);
+  3. revF: a wire outside the box's free space. The placed parts' surfaces are voxelised (1 mm), the air outside the closed box
+     is flood-filled from a corner, and a wire centre-line point in that outside air fails. The fan leads may be below the plate,
+     inside the sink's footprint and above the feet's underside (they run in the fin bay to the cord grip);
+  4. a bend below the wire's radius (3 x OD; USB cables 4 x OD).
+Usage: $CAD_PY wirecheck_v2c.py F1   (RUN_DIR)  -> <run>/<VAR>/wirecheck.json"""
+import os, sys, json, glob, math
+import numpy as np
 from build123d import import_brep
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCP.GProp import GProp_GProps
 from OCP.BRepGProp import BRepGProp
 import harness_paths_v2c as HP
-VAR = sys.argv[1]; PRE = os.environ.get("WIRE_PRE"); RUN = PRE or os.environ["RUN_DIR"]; OUT = os.path.join(RUN, VAR)
-TOL = 0.05                                               # mm3
-ALLOWED = {(w, "fan-lead-gland") for w in ("W061", "W062", "W063", "W064")}
+VAR = sys.argv[1]; RUN = os.environ["RUN_DIR"]; OUT = os.path.join(RUN, VAR)
+TOL = 0.05; TOL_WW = 0.10                                # mm3
+FAN = ("W061", "W062", "W063", "W064")
 SKIP = ("harness-", "wire-ribbons", "usb-cables", "vendor-plug")
+def allowed(w, nm, d):
+    if w in FAN and nm in ("fan-lead-gland", "fan-lead-sleeve", "splices-fan-solder"): return True
+    if nm.startswith("splices-CAN") and any(s in d["desc"] for s in ("SP1.", "SP2.")): return True
+    if nm.startswith("splices-fan") and any(s in d["desc"] for s in ("SP3.", "SP4.")): return True
+    if nm == "ring-lugs-T5-8" and "B-T" in d["desc"]: return True
+    return False
 def bb(s): b = s.bounding_box(); return (b.min.X, b.min.Y, b.min.Z, b.max.X, b.max.Y, b.max.Z)
 def hit(a, b, g=0.0): return not (a[3] + g < b[0] or b[3] + g < a[0] or a[4] + g < b[1] or b[4] + g < a[1] or a[5] + g < b[2] or b[5] + g < a[2])
 def vol(a, b):
     c = BRepAlgoAPI_Common(a.wrapped, b.wrapped); c.Build()
     if not c.IsDone(): return -1.0
     p = GProp_GProps(); BRepGProp.VolumeProperties_s(c.Shape(), p); return p.Mass()
-def table():
-    f = os.path.join(OUT, "harness_paths.json")
-    if os.path.exists(f) and not PRE: return json.load(open(f))
-    m = json.load(open(os.path.join(OUT, "meta.json")))
-    ends = m.get("harness_ends") or dict(REAR={k: bb(import_brep(glob.glob(os.path.join(OUT, "brep", f"vendor-{k}-*.brep"))[0]))[4] for k in ("X1", "X2")},
-                                         USB_REAR=bb(import_brep(os.path.join(OUT, "brep", "usbc-bulkhead-LP-16-C05SX-02-101.brep")))[4])
-    return HP.table(HP.G_from_meta(m, ends["REAR"], ends["USB_REAR"]))
+def table(): return json.load(open(os.path.join(OUT, "harness_paths.json")))
 T = W = P = None
 def load():
     global T, W, P
@@ -44,21 +48,58 @@ def work(w):
     for nm, sols in P.items():
         v = sum(max(vol(s, so), 0.0) for so, sb in sols if hit(b, sb))
         if v > TOL: res.append((w, nm, round(v, 2)))
-    ww = [(w, o, round(v, 2)) for o in W if o > w and hit(b, W[o][1]) for v in [vol(s, W[o][0])] if v > TOL]
+    ww = [(w, o, round(v, 2)) for o in W if o > w and hit(b, W[o][1]) for v in [vol(s, W[o][0])] if v > TOL_WW]
     return res, ww
+def centre_line(d, step=0.5):
+    out = []
+    for s in d["segs"]:
+        if s[0] == "L":
+            a, b = np.array(s[1]), np.array(s[2]); n = max(1, int(np.linalg.norm(b - a) / step)); out.append(a + (b - a) * (np.arange(n + 1) / n)[:, None])
+        else:
+            p1, p2, c = np.array(s[1]), np.array(s[2]), np.array(s[4]); v1, v2 = p1 - c, p2 - c; th = math.acos(max(-1.0, min(1.0, float(v1 @ v2) / (np.linalg.norm(v1) * np.linalg.norm(v2)))))
+            n = max(2, int(s[5] * th / step)); q = np.arange(n + 1) / n
+            out.append(c + (np.sin((1 - q) * th)[:, None] * v1 + np.sin(q * th)[:, None] * v2) / max(math.sin(th), 1e-9))
+    return np.concatenate(out)
+def free_space(T):
+    """wire centre-line points in the air OUTSIDE the closed box -> {wire: count}; also how the box closed"""
+    import harness_route_v2c as HR
+    from scipy import ndimage
+    pts, _, _ = HR.surface_points(OUT, spacing=0.6, zmin=-2.0); m = json.load(open(os.path.join(OUT, "meta.json")))
+    lo = pts.min(0) - 3.0; n = np.ceil((pts.max(0) + 3.0 - lo)).astype(int) + 1; shell = np.zeros(n, bool); ix = np.floor(pts - lo).astype(int); shell[ix[:, 0], ix[:, 1], ix[:, 2]] = True
+    floor = int(math.floor(-2.0 - lo[2])) + 1; shell[:, :, :floor] = True          # the plate closes the box from below (points are kept above z -2 only)
+    for grow in (0, 1):
+        sh = ndimage.binary_dilation(shell, iterations=grow) if grow else shell
+        lab, k = ndimage.label(~sh); outside = lab[0, 0, n[2] - 1]; inside_pts = 0; bad = {}; tot = 0
+        for w, d in T.items():
+            c = centre_line(d); c = c[c[:, 2] > 0.5] if w in FAN else c
+            if not len(c): continue
+            j = np.floor(c - lo).astype(int); ok = ((j >= 0) & (j < n)).all(1); l = np.where(ok, lab[np.clip(j[:, 0], 0, n[0] - 1), np.clip(j[:, 1], 0, n[1] - 1), np.clip(j[:, 2], 0, n[2] - 1)], outside)
+            nb = int((l == outside).sum()); tot += len(c)
+            if nb: bad[w] = nb
+        if sum(bad.values()) < 0.5 * tot: break                                    # the box is closed at this voxel shell
+    sb = m["sink_bbox"] if "sink_bbox" in m else None; low = {}
+    for w in FAN:
+        c = centre_line(T[w]); c = c[c[:, 2] <= 0.5]; zmin = -(m["P"]["plate_t"] + m["P"]["fin_h"] + m["P"]["foot_h"])
+        x0, x1 = (m["P"]["edge_clear"] * -1.0, 1e9) if sb is None else (sb[0], sb[3]) if len(sb) == 6 else (-10.0, 1e9)
+        nb = int(((c[:, 2] < zmin) | (c[:, 0] < -10.0) | (c[:, 0] > 270.2) | (c[:, 1] < -130.0) | (c[:, 1] > 10.0)).sum())
+        if nb: low[w] = nb
+    return bad, low, dict(voxel_mm=1.0, shell_grown=grow, closed=sum(bad.values()) < 0.5 * tot, components=int(k))
 if __name__ == "__main__":
     import multiprocessing                                # spawn: a forked OCC process can hang on a lock taken before the fork
     T = table()
     with multiprocessing.get_context("spawn").Pool(int(os.environ.get("NPROC", "12")), initializer=load) as pool: out = pool.map(work, sorted(T), chunksize=2)
     parts = [x for r, _ in out for x in r]; wires = [x for _, r in out for x in r]
-    fails = [x for x in parts if (x[0], x[1]) not in ALLOWED]
-    rep = dict(solids=len(T), rows=sum(len(d["rows"]) for d in T.values()), wire_part_overlaps=parts, fails=fails, wire_wire_overlaps=wires,
-               min_r_over_od={w: d["r_over_od"] for w, d in T.items() if d["r_over_od"] < 3.0}, total_length_mm=round(sum(d["length"] for d in T.values()), 0))
+    fails = [x for x in parts if not allowed(x[0], x[1], T[x[0]])]
+    outside, low, fs = free_space(T)
+    tight = {w: d["r_over_od"] for w, d in T.items() if d["r_over_od"] < d["rmul"] - 1e-6}
+    rep = dict(solids=len(T), rows=sum(len(d["rows"]) for d in T.values()), wire_part_overlaps=parts, fails=fails, wire_wire_overlaps=wires, outside_free_space=outside, fan_leads_outside_fin_bay=low,
+               free_space=fs, bend_below_min=tight, total_length_mm=round(sum(d["length"] for d in T.values()), 0), tol=dict(part=TOL, wire=TOL_WW))
     json.dump(rep, open(os.path.join(OUT, "wirecheck.json"), "w"), indent=1)
-    for x in fails: print("FAIL wire through part", x)
     by = {}
-    for w, nm, v in fails: by.setdefault(nm, []).append(w)
-    for nm, ws in sorted(by.items()): print("  ", nm, len(ws), " ".join(ws))
-    print("wire-wire overlaps:", len(wires), " ".join(f"{a}/{b}:{v:g}" for a, b, v in wires[:60]))
-    print("solids", rep["solids"], "rows", rep["rows"], "allowed", len(parts) - len(fails), "bend < 3 x OD:", rep["min_r_over_od"], "fails:", len(fails))
-    sys.exit(1 if fails else 0)
+    for w, nm, v in fails: by.setdefault(nm, []).append(f"{w}:{v:g}")
+    for nm, ws in sorted(by.items()): print("FAIL wire through part", nm, len(ws), " ".join(ws)[:300])
+    print("wire-wire overlaps:", len(wires), " ".join(f"{a}/{b}:{v:g}" for a, b, v in sorted(wires, key=lambda t: -t[2])[:40]))
+    print("outside the free space:", outside, low, fs)
+    nfail = len(fails) + len(wires) + len(outside) + len(low) + len(tight) + (0 if fs["closed"] else 1)
+    print("solids", rep["solids"], "rows", rep["rows"], "allowed", len(parts) - len(fails), "bend below min:", tight, "FAILS:", nfail)
+    sys.exit(1 if nfail else 0)
