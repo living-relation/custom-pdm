@@ -24,7 +24,7 @@ Schematic (text edits, like the other sch_*.py stages; refs, footprints and nets
       C10 VCAP_1 and C15 +3V3 4.7 uF X5R -> Samsung CL21B475KAFNNNE 4.7 uF 25 V X7R (LCSC C98195)
     U13 TSR 1-2450 stays (-40..85 C): no 5 V converter rated above 85-90 C fits the SIP-3 TSR footprint or the two
     DNP converter footprints (Traco TSR 1 / TSR 1E 85 C, RECOM R-78K 90 C; docs/parts-audit.md section 11): needs a
-    footprint change (reported, not done here).
+    footprint change (reported, not done here; done by the later stage tools/hw_5v_module.py, job hw5v 2026-11-21).
   * Board B freewheel diodes D13 D15 D17 D19 D25-D28 (BYG23M, GND -> PF_OUT) stay fitted (FREEWHEEL_DNP False).
     Infineon BTS70012-1ESP / BTS7004-1EPP data sheets 8.4.1: "The reverse current through the output stage must be
     limited by the connected load": a diode from GND to OUT shorts a reversed battery. Removing them moves the A/C
@@ -481,7 +481,8 @@ def later_refs(netfile):
         ref = blk[:blk.index('"')]
         fp = re.search(r'\(footprint\s+"([^"]*)"\)', blk)
         comps[ref] = {"footprint": fp.group(1) if fp else "", "value": re.search(r'\(value\s+"([^"]*)"\)', blk).group(1)}
-    return set(find_roles(comps, padnet).values())
+    import hw_5v_module                                  # hw5v: the 5 V module stage runs after this one
+    return set(find_roles(comps, padnet).values()) | hw_5v_module.later_refs(netfile)
 
 
 def pcb(path, netfile, board):
