@@ -43,7 +43,8 @@ SENSOR_ERR = 1.0                             # MCP9808 +-1 C max at -40..125 C (
 # board B logic-area parts at its MCP9808 reading (verify_thermal_box part table): rating C. The 85 C ones are to be
 # replaced by >= 105 C grades (ADR-2026-11-20-presim-findings item 1, hardware job).
 LOGIC_PARTS = [("STM32F446RET7 (ambient, suffix 7)", 105.0), ("MB85RC64TA FRAM", 105.0),
-               ("Traco TSR 1-2450 / ABM3 crystal / X5R caps (85 C grades, to be replaced)", 85.0)]
+               ("ABM3 crystal / X5R caps (85 C grades, to be replaced)", 85.0),
+               ("TI LMZM23601V5 5 V module (hw5v; TJ 125 C less its own ~0.2 W x PsiJB 20 K/W)", 121.0)]
 
 
 def board_b_limits():
@@ -56,7 +57,7 @@ def board_b_limits():
 
 CRIT_C = float(board_b_limits()[1])
 # parts rated below the board limit (docs/parts-audit.md section 10 table): name, rating C, where it sits
-RATED = [("Traco TSR 1-2450 (A U15, B U13)", 85.0, "board"), ("Abracon ABM3 crystal Y1", 85.0, "board"),
+RATED = [("TI LMZM23601V5 5 V module (hw5v; TJ 125 C - 4 K own heat)", 121.0, "board"), ("Abracon ABM3 crystal Y1", 85.0, "board"),
          ("X5R capacitors (A C3 C4 C6 C14 C38, B C3 C4 C6 C10 C15)", 85.0, "board"),
          ("Omron A6S DIP switches (input boards)", 70.0, "air"), ("MB85RC64TA FRAM", 105.0, "board"),
          ("STM32F446RET7 (ambient)", 105.0, "board"), ("MCP2562FD / MCP9808 / TLV9004 / TLV1117LV", 125.0, "board")]

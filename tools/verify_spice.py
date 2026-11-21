@@ -387,9 +387,9 @@ meas tran etvs integ pt
 
 # ------------------------------------------------------------------ 3. 3V3 start-up
 def startup(keep):
-    deck = """* 12 V -> D19 -> TSR 1-2450 (5 V, 1 A max, soft start ~1 ms ASSUMED) -> D18 PMEG2010 -> +5V (2 x 47u + 100n) -> TLV1117LV33 -> +3V3
+    deck = """* 12 V -> D19 -> LMZM23601V5 (5 V; enable 1.0 ms, fastest soft start 1.8 ms, SNVSAQ4C 6.5; hw5v) -> D18 PMEG2010 -> +5V (2 x 47u + 100n) -> TLV1117LV33 -> +3V3
 Vbat b 0 PWL(0 0 1m 13.5)
-Btsr p5 0 V = min(5, max(0, (time-1.2m)/1m*5))
+Btsr p5 0 V = min(5, max(0, (time-1.0m)/1.8m*5))
 Rtsr p5 p5o 0.05
 D18 p5o v5 dsch
 C41 v5 0 47u
@@ -416,6 +416,92 @@ meas tran v5max max v(v5)
     m = ngspice(deck, "startup", keep)
     add("3V3 start-up", "+3V3 rises monotonic, no overshoot", f"max {m['v3max']:.3f} V", "<= 3.6 V (STM32 VDD max)",
         m["v3max"] <= 3.6, f"reaches 3.0 V at {m['t3v0'] * 1e3:.2f} ms after power")
+
+
+# ------------------------------------------------------------------ 3b. 5 V module (hw5v): TI LMZM23601V5 in place of the TSR
+# TI SNVSAQ4C (rev C, March 2023): VIN 4-36 V recommended, 40 V abs max (6.1 / 6.3); UVLO 3.5 V rising (6.5);
+# turn-on delay 0.7 ms at 12 V, soft start 1.8 min / 3.5 typ ms (6.5); low-side (valley) current limit 1.0 min /
+# 1.2 typ A, high-side 1.45 min A (6.5); max duty 93 % (fixed 5 V), HS RDS(on) 220 mOhm + inductor DCR 390 mOhm (6.5);
+# MODE low = auto PFM with diode emulation (no negative inductor current, 7.3.7.2). The LMZM23600 (0.5 A, SNVSB53C)
+# has a 0.5 A min valley limit. TI's own model is a PSpice transient model (encrypted): this is an AVERAGED
+# current-mode model with an ASSUMED loop (proportional, 10 A/V, 2 us current lag); it checks the energy / current
+# budget and the rails, not TI's real loop.
+M5 = dict(ilim=1.0, ilim_0p5=0.5, ten=1.0e-3, tss=(1.8e-3, 3.5e-3), dmax=0.93, rdrop=0.61, kp=10.0, tau=2e-6, eff=0.85,
+          vin_rec=36.0, vin_abs=40.0)
+# 2 x 4.7 uF 50 V X7R 0805 at 13.5-34 V: ~3 uF each left (DC bias, ASSUMED); output 22 uF 10 V X7R x 2 (new C_out + C4):
+# ~12 uF each at 5 V (ASSUMED, stability case) or 22 uF each (nominal, inrush case); +5V 2 x 47 uF + 100 nF nominal.
+M5_DECK = """* hw5v: 12 V -> D3 / D19 -> +12P (2 x 4.7u) -> LMZM23601V5 (averaged) -> +5VP (C_out + C4) -> D4 / D18 -> +5V
+Vbat b 0 {vbat}
+D3 b p12 dsch
+Cin p12 0 6u
+Brefe refe 0 V = min(5*min(1, max(0, (time-{ten})/{tss})), {dmax}*V(p12) - {rdrop}*V(il))
+Bcmd c 0 V = max(0, min({ilim}, {kp}*(V(refe)-V(p5))))
+Rl c il 1
+Cl il 0 {tau}
+Bout 0 p5 I = V(il)
+Bin p12 0 I = V(p5)*V(il)/({eff}*max(V(p12), 1))
+Cout p5 0 {cout}
+D4 p5 v5 dsch
+C41 v5 0 47u
+C42 v5 0 47u
+C5 v5 0 100n
+{load}
+.model dsch D(IS=5e-6 N=1.05 RS=0.05)
+.tran 1u {tstop}
+.control
+run
+{meas}
+.endc
+.end
+"""
+
+
+def module5v(keep):
+    grp = "5V module"
+    ldo = """Bldo l3 0 V = min(3.3, max(0, V(v5) - 0.45))
+Rldo l3 v3 0.05
+C6 v3 0 10u
+C14 v3 0 4.7u
+Cdec v3 0 4u
+Rmcu v3 0 22
+Rcan v5 0 66"""
+    # (a) start-up, nominal caps (most charge), fastest soft start (most current): the current the loop asks for
+    for tss in M5["tss"]:
+        deck = M5_DECK.format(vbat="PWL(0 0 1m 13.5)", ten=M5["ten"], tss=tss, dmax=M5["dmax"], rdrop=M5["rdrop"],
+                              ilim=10.0, kp=M5["kp"], tau=M5["tau"], eff=M5["eff"], cout="44u", load=ldo, tstop="12m",
+                              meas="meas tran ilpk max v(il)\nmeas tran t3v0 when v(v3)=3.0 rise=1\n"
+                                   "meas tran v5max max v(v5)\nmeas tran v3max max v(v3)")
+        m = ngspice(deck, f"m5_start_{int(tss * 1e4)}", keep)
+        add(grp, f"start-up, soft start {tss * 1e3:.1f} ms: inductor current asked for", f"{m['ilpk']:.2f} A",
+            f"<= {M5['ilim']:.1f} A (LMZM23601 valley limit min)", m["ilpk"] <= M5["ilim"],
+            f"nominal 157 uF on +5VP / +5V / +3V3 + CAN 70 mA + 3V3 150 mA; the 0.5 A LMZM23600 would "
+            f"{'also fit' if m['ilpk'] <= M5['ilim_0p5'] else 'hit its 0.5 A limit'}; +3V3 at 3.0 V after "
+            f"{m['t3v0'] * 1e3:.2f} ms")
+        add(grp, f"start-up, soft start {tss * 1e3:.1f} ms: overshoot", f"+5V {m['v5max']:.2f} / +3V3 {m['v3max']:.2f} V",
+            "+5V <= 5.5 V (MCP2562FD VDD max), +3V3 <= 3.6 V", m["v5max"] <= 5.5 and m["v3max"] <= 3.6)
+    # (b) load step on +5V 0.02 -> 0.22 A -> 0.02 A (1 us edges), DC-bias output caps (least capacitance)
+    step = "Iload v5 0 PWL(0 0 4m 0 4.01m 0.02 6m 0.02 6.001m 0.22 8m 0.22 8.001m 0.02)"   # load after start-up
+    deck = M5_DECK.format(vbat="PWL(0 0 1m 13.5)", ten=M5["ten"], tss=M5["tss"][1], dmax=M5["dmax"], rdrop=M5["rdrop"],
+                          ilim=M5["ilim"], kp=M5["kp"], tau=M5["tau"], eff=M5["eff"], cout="24u", load=step, tstop="10m",
+                          meas="meas tran v5pre find v(v5) at=5.9m\nmeas tran v5min min v(v5) from=6m to=7.9m\n"
+                               "meas tran v5max max v(v5) from=8m to=9.9m\nmeas tran v5pmin min v(p5) from=6m to=7.9m")
+    m = ngspice(deck, "m5_step", keep)
+    add(grp, "load step +5V 0.02 -> 0.22 -> 0.02 A (1 us)", f"+5V {m['v5min']:.3f} .. {m['v5max']:.3f} V",
+        ">= 4.5 V (MCP2562FD VDD min), <= 5.5 V", m["v5min"] >= 4.5 and m["v5max"] <= 5.5,
+        f"before {m['v5pre']:.3f} V; +5VP min {m['v5pmin']:.3f} V; loop ASSUMED (averaged model)")
+    # (c) input transients at the clamp levels of verify_spice section 2 (SM8S24CA, VBR max corner): ISO 7637-2
+    # pulse 2a peak 34.0 V on +12V (50 us) and the ISO 16750-2 suppressed load dump 31.3 V (held 20 ms here, 400 ms real)
+    for name, pwl in (("pulse 2a clamp, 34.0 V for 50 us", "PWL(0 0 1m 13.5 6m 13.5 6.001m 34 6.05m 34 6.06m 13.5)"),
+                      ("load dump clamp, 31.3 V (5 ms rise)", "PWL(0 0 1m 13.5 6m 13.5 11m 31.3 31m 31.3 36m 13.5)")):
+        deck = M5_DECK.format(vbat=pwl, ten=M5["ten"], tss=M5["tss"][1], dmax=M5["dmax"], rdrop=M5["rdrop"],
+                              ilim=M5["ilim"], kp=M5["kp"], tau=M5["tau"], eff=M5["eff"], cout="24u",
+                              load="Iload v5 0 PWL(0 0 4m 0 4.01m 0.22)", tstop="40m",
+                              meas="meas tran p12max max v(p12)\nmeas tran v5pmax max v(p5) from=5m to=40m\n"
+                                   "meas tran v5pmin min v(p5) from=5m to=40m")
+        m = ngspice(deck, f"m5_line_{name.split()[0]}", keep)
+        add(grp, f"input {name}: module VIN", f"{m['p12max']:.1f} V",
+            f"<= {M5['vin_rec']:.0f} V recommended, {M5['vin_abs']:.0f} V abs max (SNVSAQ4C 6.1 / 6.3)",
+            m["p12max"] <= M5["vin_rec"], f"+5VP {m['v5pmin']:.3f} .. {m['v5pmax']:.3f} V at 0.22 A")
 
 
 # ------------------------------------------------------------------ 4. input board
@@ -513,7 +599,7 @@ def main():
     ap.add_argument("--zener", default="PDZ5.1B", choices=sorted(ZENER_PARTS), help="IS-chain zener (PDZ3.3B = before)")
     ap.add_argument("--tvs", nargs="+", default=["SM8S24CA"], choices=sorted(TVS),
                     help="input TVS part(s) to check (first = fitted)")
-    ap.add_argument("--only", nargs="*", help="groups to run: is tvs startup input can")
+    ap.add_argument("--only", nargs="*", help="groups to run: is tvs startup module5v input can")
     a = ap.parse_args()
     if not a.ngspice:
         raise SystemExit("ngspice not found: install it or pass --ngspice / set NGSPICE")
@@ -521,7 +607,7 @@ def main():
     global ZENER
     ZENER = a.zener
     os.makedirs(a.keep, exist_ok=True)
-    run = set(a.only or ["is", "tvs", "startup", "input", "can"])
+    run = set(a.only or ["is", "tvs", "startup", "module5v", "input", "can"])
     if "is" in run:
         is_chain(a.keep, a.opamp)
     if "tvs" in run:
@@ -529,6 +615,8 @@ def main():
             tvs(a.keep, part)
     if "startup" in run:
         startup(a.keep)
+    if "module5v" in run:
+        module5v(a.keep)
     if "input" in run:
         input_board(a.keep)
     if "can" in run:
