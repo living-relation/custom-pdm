@@ -15,3 +15,4 @@ Enforcer: `dotnet test ui\tests\CustomPdm.Tests` (unit + live sim), mutation run
 - Live sim test classes need `[Collection("sim")]` (else `SlcanBridgeTests` fails in parallel). Run live tests against a sim `.so` built from the same firmware as the branch.
 - Never stop Dan's play app (main checkout, port 5000) or its bridge (port 3333); start your own app with `-- --urls http://localhost:<port>` and your own bridge port and `.so` copy.
 - Never write one board's sensor temperature limits onto another board: PdmThermal converts the one hot-spot set per board; a board without a thermal model keeps its own factory limits (ADR-2026-11-21-temp-onepdm-ui).
+- A /pdm panel picks its board through `PdmView.RoleOr` (never a hard-coded board name): other open tabs can see a half-built PDM (Never do: the Values panel defaulted to board B and crashed every other tab on New PDM, 2026-11-21). Panel tests use bUnit.
