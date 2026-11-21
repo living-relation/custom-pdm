@@ -9,18 +9,22 @@ Two steps (revF):
   2. harness_comb_v2c.py (the loom builder: fixed shapes in flat planes, no relaxation; hand data in harness_loom_data.py) gives
      each wire its path clear of the parts and of the other wires, every bend >= the wire's radius, and writes
      harness_routes_v2c.json (committed data). table(G) uses a stored route when its two ends still equal the rule's ends; a
-     moved end makes the build fail until the loom builder is run again.
+     moved end makes the build fail until the loom builder is run again; a wire without a stored route keeps its rule path.
+  Scope (coordinator 2026-11-21): the model shows where the loom runs, that it fits, the lengths, and that nothing is impossible.
+  It does NOT keep every wire off every other wire: wirecheck_v2c.py counts and lists wire-on-wire pairs and fails only a wire
+  through a part (beyond 0.3 mm), a wire outside the box, a bend below the minimum and a gross pile-up.
 
 Ends (sources):
   X1 / X2: REAL cavity maps (revF), cavity_maps_v2c.json: IDs from TE customer drawing 0425-014-2400 rev H (all views = rear /
     grommet end; HD34-24-21S and HDP24-24-47S socket views; the 24-47 numbers follow the drawing's numbering line), positions
     from the rear cavity faces of the TE customer-view STEP models (21 / 47 faces at model z -39.4 / -39.2; the fit of the drawing
     to the 24-47 faces is 0.05 mm, so drawing up = model +y = world +Z, main key up). Seen from inside the box (the rear view) the
-    viewer's right is world -X. A wire ends on the cavity face and leaves straight for 6 mm past the connector's rear end.
+    viewer's right is world -X. A wire ends on the cavity face and leaves straight for STUB = 10 mm past the connector's rear end
+    (ASSUMED shop rule: keep the wire straight behind the rear seal before the first bend; no TE figure found yet, TBD).
   board A J3 / J6, board B J6 / J7, input board J1 / J2: pad positions read from the .kicad_pcb files (A J3 pads +/-11.11 / 6.67 /
     2.22 at y -/+4.56; A J6 pads x -30.55, y -8.375 + 1.25 (p - 1); B J6 +/-1.5; B J7 pads (40.244, 51.475 - 1.25 (p - 1));
     input board J1 pads (58.15, 30.875 - 1.25 (p - 1)), J2 pads (10 / 13, 24 - 3 (p - 1))), placed with build_v2c.py W().
-  Micro-Fit 43025-1200 and JST GHR-12V-S housings, the CAN / fan splices and the T5-T8 ring lugs are parts of the build (revF,
+  Micro-Fit 43025-1200 and JST GHR-12V-S housings (drawn best guesses), the CAN / fan splices and the T5-T8 ring lugs are parts of the build (revF,
     build_v2c.py "wire ends"); a wire ends in its housing cavity (Micro-Fit: 9.0 behind the header face, rows 2.82 / 5.82 above
     the board; GH: at the pad row), in its splice or at the lug barrel mouth (Phoenix 3240083: 14 from the ring centre).
 OD: enclosure_harness.py WP (GXL16 2.80, GXL12 3.65, M22759/16-20 1.52); ASSUMED where WP has none: 28 AWG 0.90 (JST GH
@@ -94,7 +98,7 @@ def rounded(pts, R):
 # ---------------- the rules: ends + first path of every wire ----------------
 PX = {1: -11.11, 2: -6.67, 3: -2.22, 4: 2.22, 5: 6.67, 6: 11.11, 7: 11.11, 8: 6.67, 9: 2.22, 10: -2.22, 11: -6.67, 12: -11.11}   # board A J3 pads (KiCad x)
 A2_LANE = {8: (-104.9, 12.6), 9: (-102.0, 12.6), 10: (-99.1, 12.6), 6: (-104.9, 15.4), 5: (-102.0, 15.4), 4: (-99.1, 15.4), 3: (-96.2, 15.4)}
-SPLICE = dict(x=191.0, y={"SP1": -111.0, "SP2": -116.0}, z=12.6, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
+SPLICE = dict(x=147.0, y={"SP1": -113.0, "SP2": -117.5}, z=14.0, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
 STUB = 10.0                                    # straight wire behind a box connector's rear end before the first bend (mm)
 T58_ANG = {"T5": 240.0, "T6": 240.0, "T7": 235.0, "T8": 240.0}   # ring-lug barrel directions (deg from +X): south-west, where the lanes to X1 come from
 def t58_mouth(G, k):
@@ -145,8 +149,8 @@ def initial(G):
         z1 = ZI + 1.0
         if n == "B":
             y = -84.749 + 1.25 * (p - 1); xc = 70.7 - 0.92 * (p - 1); xi = IN_X["IN3"] + 30.875 - 1.25 * (p - 1)
-            return [(76.144, y, ZT + 6.3), (76.144, y, 15.5), (xc, y - 0.5 * (76.144 - xc), 15.5), (xc + 1.0, -92.3, 15.5), (xc + 1.0, -92.3, 48.1), (xc + 1.0, -86.0, 48.1), (xi, -62.0, 48.1),
-                    (xi, -13.3, 48.1), (xi, -13.3, z1), (xi, -16.5, z1)]
+            return [(76.144, y, ZT + 6.3), (76.144, y, 15.5), (xc, y - 0.5 * (76.144 - xc), 15.5), (xc + 1.5, -92.3, 15.5), (xc + 1.5, -92.3, 48.6), (xc + 1.5, -86.0, 48.6), (xi, -62.0, 48.6),
+                    (xi, -13.3, 48.6), (xi, -13.3, z1), (xi, -16.5, z1)]   # revF: riser 0.5 off the lid step, run 0.5 higher over IN3's Micro-Fit header
         y = -24.899 - 1.25 * (p - 1); xr = X0[n] - 1.0
         xk = {"A1": 127.5, "A2": 232.5}[n] + 0.95 * rank; yn = -1.9 - 0.95 * rank if n == "A1" else -9.5 + 0.95 * rank
         xi = IN_X["IN1" if n == "A1" else "IN2"] + 30.875 - 1.25 * (p - 1)
@@ -235,11 +239,11 @@ def table(G, strict=True, use_routes=True):
         if rt and same_ends(rt, d["pts"]): d["pts"] = [tuple(p) for p in rt]; d["routed"] = True
         else:
             d["routed"] = False
-            if use_routes and not d["fixed"]: stale.append(w)
+            if use_routes and not d["fixed"] and rt: stale.append(w)
         finish(d)
         if d["rmin"] < d["rmul"] * d["od"] - 1e-6: tight.append((w, d["r_over_od"]))
     if strict:
-        assert not stale, ("no stored route for these wires' ends: run harness_comb_v2c.py (enclosure/v2c/src) and commit harness_routes_v2c.json", stale[:12], len(stale))
+        assert not stale, ("a stored route no longer fits these wires' ends: run harness_comb_v2c.py (enclosure/v2c/src) and commit harness_routes_v2c.json", stale[:12], len(stale))
         assert not tight, ("bend radius below the wire's minimum", tight)
     return R
 

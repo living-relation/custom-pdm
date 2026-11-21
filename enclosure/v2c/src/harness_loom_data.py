@@ -17,11 +17,20 @@ def hand(G):
     def lane(k, x):                                               # lug mouth -> the lane's corner point at x
         A, u = HP.t58_mouth(G, k); s = (A[0] - x) / -u[0]; return A, (x, A[1] + s * u[1], A[2])
     zb = G["TTOP"] + 2.8
-    xb, zB = cav("B"); A, C = lane("T5", 82.0);  H["W016"] = [A, C, (82.0, PT, zb), (82.0, PT, zB), (xb, PT, zB), (xb, cy, zB)]
+    xb, zB = cav("B"); A, C = lane("T5", 82.0);  H["W016"] = [A, C, (82.0, PT, zb), (82.0, PT, zB - 1.0), (xb, PT, zB), (xb, cy, zB)]   # revF hand offset: the west run falls 1.0 towards x 82 (level at z 38.4 it dipped 0.24 into IN3's Micro-Fit housing)
     xd, zD = cav("D"); xl = xd - 15.3; A, C = lane("T6", xl); H["W017"] = [A, C, (xl, PT, zb), (xd, PT, zD), (xd, cy, zD)]
     xe, zE = cav("E"); xl = xe - 15.3; A, C = lane("T7", xl); H["W018"] = [A, C, (xl, PT, zb), (xe, PT, zE), (xe, cy, zE)]
     xg, zG = cav("G"); A, u = HP.t58_mouth(G, "T8"); C = HP.add(A, u, 3.0)
     H["W019"] = [A, C, (C[0], -108.85, zb), (125.0, -108.85, zb), (125.0, PT, zb), (xg, PT, zG), (xg, cy, zG)]
+    # revF hand nudges (coordinator 2026-11-21: only where a rule / builder path fails a wirecheck rule)
+    T = HP.initial(G)
+    a, b = T["W006"]["pts"][0], T["W006"]["pts"][-1]              # A1-J3.5 -> X1.N: its ramp in plane -92.9 lay on W040's level run for 20 mm; one plane north
+    H["W006"] = [a, (a[0], a[1], 17.2), (a[0], -90.0, 17.2), (b[0], -90.0, b[2]), b]
+    for w, xo, yo in (("W055", 126.5, -103.5), ("W056", 124.5, -101.5)):   # CAN stubs splice (west end) -> board A1 pads 2 / 1: flat nested hairpins east of X1
+        p = T[w]["pts"]; s0, s1, pad = p[0], p[1], p[-1]
+        H[w] = [s0, s1, (xo, s1[1], s1[2]), (xo, yo, s1[2]), (pad[0], yo, 17.2), (pad[0], pad[1], 17.2), pad]
+    p = T["W053"]["pts"]; s0, s1, pad = p[0], p[1], p[-1]         # CAN_H splice -> board B J6.2: west along the front strip beside W054, north in the J6 lane (x 38.1, between the OUT risers)
+    H["W053"] = [s0, s1, (38.1, s1[1], 12.75), (38.1, -40.0, 12.75), (pad[0], pad[1], 12.75), pad]
     return H
 
 def order(G):

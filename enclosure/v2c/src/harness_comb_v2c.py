@@ -19,6 +19,11 @@ from scipy.spatial import cKDTree
 import harness_paths_v2c as HP
 GAP = 0.08; PART = 0.55; STEP = 0.5; STUB = 10.0; MF_STRAIGHT = 4.0; MF_REAR = -89.6; EXEMPT = 9.0
 SKIP = ("harness-",); NOFIELD = ("splices-CAN", "vendor-plug")
+# revF (coordinator, 2026-11-21): real wires lie against each other, so a wire that finds no shape clear of every other wire is
+# placed in the same shapes with a softer wire rule: pass 1 = wires may share up to 0.4 x the smaller OD (below wirecheck's
+# pile-up limit of half a diameter), pass 2 = no gross pile-up (wirecheck's rule, a little stricter), pass 3 = clear of the parts
+# only, pass 4 = clear of the parts with a smaller margin.
+PASSES = ((0.0, True, PART), (0.4, True, PART), (0.0, "pile", PART), (0.0, False, PART), (0.0, False, 0.25))[:int(os.environ.get("COMB_PASSES", "5"))]
 
 # ---------------- parts: surface points and distance field ----------------
 def tri_points(V, T, spacing):
@@ -83,17 +88,23 @@ class Loom:
             ks = [k for k in s.obs if k != w]; P = np.concatenate([s.obs[k][0] for k in ks]); Rr = np.concatenate([np.full(len(s.obs[k][0]), s.obs[k][1]) for k in ks])
             own = np.concatenate([np.full(len(s.obs[k][0]), i) for i, k in enumerate(ks)]); s._t = (w, cKDTree(P), Rr, own, ks)
         return s._t[1:]
-    def check(s, w, pts, od, rmul, part=PART, exempt=(EXEMPT, EXEMPT), who=False):
+    def check(s, w, pts, od, rmul, part=PART, exempt=(EXEMPT, EXEMPT), who=False, soft=0.0, wires=True):
         R = rmul * od; r = od / 2; P, S, rmin, L = samples(pts, R)
         if rmin < R - 1e-6: return "bend"
         mid = (S > exempt[0]) & (S < L - exempt[1])
         if s.F is not None and mid.any():
             dd = s.F.dist(P[mid])
             if (dd < r + part).any(): return "part" + (" at %.0f %.0f %.0f gap %.2f" % (*P[mid][int(dd.argmin())], dd.min() - r) if who else "")
+        if not wires: return None
+        if wires == "pile": return "pile" if s.pile(w, P, S, L, r) > 8.0 else None   # only a gross pile-up counts
         t, Rr, own, ks = s.tree(w); d, i = t.query(P, k=8, distance_upper_bound=r + 2.3 + GAP); ok = np.isfinite(d); i = np.minimum(i, len(Rr) - 1)
-        bad = ok & (d < r + Rr[i] + GAP)
+        bad = ok & (d < r + Rr[i] + GAP - soft * 2.0 * np.minimum(r, Rr[i]))
         if bad.any(): return "wire " + ",".join(sorted({ks[j] for j in own[i[bad]]})[:4]) if who else "wire"
         return None
+    def pile(s, w, P, S, L, r):
+        """mm of this path that lies deeper than (nearly) half the smaller diameter in a placed wire, away from this wire's ends"""
+        t, Rr, own, ks = s.tree(w); d, i = t.query(P, k=8, distance_upper_bound=r + 2.3 + GAP); ok = np.isfinite(d); i = np.minimum(i, len(Rr) - 1)
+        return float(((ok & (d < r + Rr[i] - 0.9 * np.minimum(r, Rr[i]))).any(1) & (S > 20.0) & (S < L - 20.0)).sum() * STEP)
     def place(s, w, pts, od): P, S, rmin, L = samples(pts, 3.0 * od if w[0] == "W" else 4.0 * od); s.set_obs(w, P, od / 2); s.path[w] = [tuple(round(float(c), 4) for c in p) for p in pts]
 
 # ---------------- ends ----------------
@@ -110,8 +121,8 @@ def end_info(G, row, pts, at_from):
 def lane_z(e, od):
     """lane height above the board for a pad wire: the pad row nearer the bay (south) runs low, the other row above it"""
     c, p = e["pad"].split("."); p = int(p)
-    if c == "B-J6": return {1: 11.95, 3: 10.3, 2: 12.75, 4: 11.1}[p]         # two columns, staggered heights, under the OUT carrier (z 13.77)
-    return 14.4 if p > 6 else 17.35
+    if c == "B-J6": return {1: 11.95, 3: 10.4, 2: 12.75, 4: 11.1}[p]         # two columns, staggered heights, under the OUT carrier (z 13.77)
+    return 14.3 if p > 6 else 17.2                                  # 0.6 under the BATT bar (underside z 19.2), 2.9 between the two rows' lanes
 
 def mids(xa, za, xb, zb, R, zgrid, simple, keep="a"):
     """in-plane way points (x, z) between two plane points, simplest first. keep = the end whose height the long run keeps"""
@@ -204,14 +215,24 @@ def plan(G, field, hand=None, order=None, log=print):
         r = L.check(w, T[w]["pts"], T[w]["od"], T[w]["rmul"], who=True)
         if r: L.why[w] = "rule path: " + r
     todo = [w for w in (order or sorted(T)) if E.get(w)] + [w for w in sorted(T) if E[w] and w not in (order or [])]
-    for w in todo:
-        d = T[w]; n = 0; got = None; tally = {}
-        for pts in candidates(E[w][0], E[w][1], d["od"], d["rmul"] * d["od"]):
-            n += 1; r = L.check(w, pts, d["od"], d["rmul"], exempt=(E[w][0].get("ex", EXEMPT), E[w][1].get("ex", EXEMPT)), who=n <= 40)
-            if r is None: got = pts; break
-            tally[r] = tally.get(r, 0) + 1
-        if got: L.place(w, got, d["od"])
-        else: L.why[w] = f"no shape in {n} tries: " + "; ".join(f"{k} x{v}" for k, v in sorted(tally.items(), key=lambda t: -t[1])[:7])
+    L.soft = {}
+    for ip, (soft, wires, part) in enumerate(PASSES):                # every wire gets the strict pass first; the softer passes only see what is left
+        left = [w for w in todo if w not in L.path]; log("pass", ip, "tries", len(left), "wires:", " ".join(left))
+        for w in left:
+            d = T[w]; got = None; n = 0; tally = {}
+            for pts in candidates(E[w][0], E[w][1], d["od"], d["rmul"] * d["od"]):
+                n += 1; r = L.check(w, pts, d["od"], d["rmul"], part=part, exempt=(E[w][0].get("ex", EXEMPT), E[w][1].get("ex", EXEMPT)), who=n <= 40, soft=soft, wires=wires)
+                if r is None and wires is False:                   # parts-only passes: of the shapes clear of the parts, the one that lies least on other wires
+                    P_, S_, _, L_ = samples(pts, d["rmul"] * d["od"]); sc = L.pile(w, P_, S_, L_, d["od"] / 2)
+                    if got is None or sc < best: got, best = pts, sc
+                    if sc <= 8.0: break
+                    continue
+                if r is None: got = pts; break
+                tally[r] = tally.get(r, 0) + 1
+            if got:
+                L.place(w, got, d["od"]); L.why.pop(w, None)
+                if ip: L.soft[w] = ip
+            else: L.why[w] = f"no shape in {n} tries: " + "; ".join(f"{k} x{v}" for k, v in sorted(tally.items(), key=lambda t: -t[1])[:7])
     return T, L
 
 if __name__ == "__main__":
@@ -219,6 +240,7 @@ if __name__ == "__main__":
     import harness_loom_data as HD
     T, L = plan(G, Field(OUT), hand=HD.hand(G), order=HD.order(G))
     for w, why in sorted(L.why.items()): print(w, why)
+    print("soft passes:", " ".join(f"{w}:{k}" for w, k in sorted(L.soft.items())))
     routes = {w: L.path[w] for w in T if w in L.path and not T[w]["fixed"]}
     json.dump(dict(note="made by harness_comb_v2c.py (deterministic loom builder); do not edit by hand", routes=routes), open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "harness_routes_v2c.json"), "w"), indent=0)
     print("placed", len(L.path), "of", len(T), "open", len(L.why), "total length", round(sum(samples(L.path[w], T[w]["rmul"] * T[w]["od"])[3] for w in L.path)))

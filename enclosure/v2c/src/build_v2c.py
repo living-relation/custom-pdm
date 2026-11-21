@@ -367,12 +367,12 @@ assert 1.5 * 3 <= TIE_SCREW_L - TIE_FLOOR <= TIE_TAP and TIE_DRILL - TIE_TAP >= 
 # the front strip under X2: PCB long side along x, upstream USB-C socket to the east, so a straight plug + cable fits towards the
 # bulkhead and the three board sockets are free for right-angle plugs. HUB_AT = world x of the PCB's west edge, y of its north
 # edge, z of its underside (on the 4 mm spacers). It is now screwed down: 4 x ISO 4762 M2 x 10 through the hub's 2.5 mm holes and
-# the spacers into blind M2 taps (drill 1.6 x 6.0, tap 4.5; 4.43 thread = 2.2 D; 2.0 plate left). M2 because the screw table
-# (screw_dimensions.csv / SR Fasteners) has no M2.5.
+# the spacers into blind M2.5 taps (drill 2.05 x 7.2, tap 6.5; 6.43 thread = 2.6 D; 0.8 plate left). wires4: M2.5 to suit the
+# hub's 2.5 mm holes and the M2.5 spacers; the ISO 4762 M2.5 row was added to screw_dimensions.csv (wires2 used M2).
 import harness_paths_v2c as HP
-HUB_AT = (152.0, -103.0, 4.0); HUB_F = HP.hub_frame(dict(HUBF=HUB_AT)); HUB_SCREW_L = 10.0; HUB_TAP = 4.5; HUB_DRILL = 6.0
-for (x, y) in HUB_F["holes"]: sink = sink.cut(cyl(1.6, (x, y, -HUB_DRILL), HUB_DRILL + 0.01))
-assert 2 * 2.0 <= HUB_SCREW_L - 1.57 - HUB_AT[2] <= HUB_TAP and pt - HUB_DRILL >= 0.762 and min(math.dist(h, q) for h in HUB_F["holes"] for q in TIE_PTS + list(globals().get("LID_SCREWS", []))) > 6.0, "hub screw holes"
+HUB_AT = (152.0, -103.0, 4.0); HUB_F = HP.hub_frame(dict(HUBF=HUB_AT)); HUB_SCREW_L = 12.0; HUB_TAP = 6.5; HUB_DRILL = 7.2
+for (x, y) in HUB_F["holes"]: sink = sink.cut(cyl(2.05, (x, y, -HUB_DRILL), HUB_DRILL + 0.01))
+assert 2 * 2.5 <= HUB_SCREW_L - 1.57 - HUB_AT[2] <= HUB_TAP and pt - HUB_DRILL >= 0.762 and min(math.dist(h, q) for h in HUB_F["holes"] for q in TIE_PTS + list(globals().get("LID_SCREWS", []))) > 6.0, "hub screw holes"
 # revD (cadfetch5, coordinator / harness PR #121): sealed pass-through for the two fans' leads (2 x 28 AWG UL1571 per fan) from
 # the fin bay into the box: McMaster-Carr 8183K5 liquid-tight brass cord grip M6 (cord 0.08-0.13 in = 2.0-3.3 mm, IP68 / IP69K,
 # -18..99 C, UL 94 V-0; the smallest metric cord grip McMaster lists, 2026-11-20), the 4 leads bundled in adhesive-lined heat
@@ -542,7 +542,7 @@ assert abs(bbx(sp).zlen - HUB_Z) < 0.01, ("94669A096 length", bbx(sp).zlen)
 part("94669A096", sp, "Unthreaded spacer M2.5, OD 4.5 x 4", "McMaster-Carr 94669A096 round spacer under the USB hub (M2.5 hub screw passes through)",
      "aluminium", "bought", maker="McMaster-Carr", source="mcmaster.com/94669A096 3-D STEP")
 item("hub-standoffs-M2.5x4", "94669A096", [L(x, y, 0.0) for (x, y) in HUB_F["holes"]], (0.3, 0.3, 0.33))
-for (x, y) in HUB_F["holes"]: screw("M2", HUB_SCREW_L, L(x, y, HUB_F["top"]), "hub")
+for (x, y) in HUB_F["holes"]: screw("M2.5", HUB_SCREW_L, L(x, y, HUB_F["top"]), "hub")
 
 # ---------------- terminals: copper bosses (v3b) on board B J1/J3 and T1-T4; copper bars to A1/A2 ----------------
 M6TOP = Z_BOT + max(bbx(so).zmax for so in stepB.solids() if abs(bbx(so).xlen - 10) < 0.6)
@@ -759,6 +759,14 @@ if VAR == "F1":
     part("43025-1200", one(mf), "Molex Micro-Fit 3.0 receptacle housing 2x6 (input board J2 plug)", "Molex 43025-1200; DRAWN best guess (outside part of the mated housing, cavities on the 3.0 grid); "
          "maker STEP not reachable from this job: swap in molex.com 430251200 STEP", "PA (UL94V-0)", "bought-drawn", maker="Molex", source="pin grid: KiCad footprint Molex_Micro-Fit_3.0_43045-1200_2x06; envelope ASSUMED")
     item("microfit-housings-43025-1200", "43025-1200", [L(x_ + 16.5, -88.5, ZI_ + 4.32) for x_ in IN_X.values()], (0.12, 0.12, 0.12))
+    # JST GH receptacle housings GHR-12V-S on the six GH links' ends (board A J6, board B J7, input board J1). DRAWN best guess: a
+    # block, width B = 16.25 (JST GH catalogue table, GHR-12V-S: A 13.75, B 16.25), depth 4.05 and thickness 2.0 ASSUMED; the
+    # headers are not in the board STEPs. Local frame: row along x, the wires leave towards -y, 1.5 behind the wire ends.
+    gh_ = box(-8.125, 8.125, -1.5, 2.55, -1.0, 1.0)
+    part("GHR-12V-S", one(gh_), "JST GH receptacle housing 12 way (GH link plug)", "JST GHR-12V-S; DRAWN best guess (block 16.25 x 4.05 x 2.0; width from the JST GH catalogue table, depth and "
+         "thickness ASSUMED); swap in the maker model when one is at hand", "PA 66 (UL94V-0)", "bought-drawn", maker="JST", source="JST GH catalogue (eGH): GHR-12V-S A 13.75 / B 16.25; envelope ASSUMED")
+    item("gh-housings-GHR-12V-S", "GHR-12V-S", [Pos(X0[n_] + 1.9, -31.774, Z_TOP + 1.0) * Rot(0, 0, -90) for n_ in ("A1", "A2")] + [Pos(76.144, -77.874, Z_TOP + 6.3) * Rot(0, 0, 90) * Rot(-90, 0, 0)]
+         + [Pos(x_ + 24.0, -16.5, ZI_ + 1.0) * Rot(0, 0, 180) for x_ in IN_X.values()], (0.92, 0.92, 0.88))
     # CAN splices SP1 / SP2 (TE Raychem D-436-37 sealed crimp splice) and fan splices SP3 / SP4 (solder splice + adhesive heat
     # shrink): simple bought parts, DRAWN as labelled best-guess cylinders (no maker model fetched); positions from the path table.
     SPL = HP.SPLICE
@@ -780,7 +788,7 @@ if VAR == "F1":
     assert bbx(Compound(sl_)).zmin > -P["plate_t"] - P["fin_h"] - P["foot_h"], "fan-lead sleeve below the feet"
     WIRE_ENDS = dict(microfit="43025-1200 x 3 (drawn)", can_splices=dict(pn="D-436-37", at=[(SPL["x"], y_, SPL["z"]) for y_ in SPL["y"].values()]), fan_splices="GENERIC-SOLDER-SPLICE x 2",
                      t58_lugs="3240083 x 4", sleeve=dict(pn=HP.SLEEVE["pn"], length_mm=slL_, rating_c=[-55, 135]), usb_plugs="part of the cable solids U1-U4 (best guess, USB Type-C spec envelope)",
-                     gh_housings="NOT modelled (JST GHR-12V-S: no maker model or drawing reachable in this job)")
+                     gh_housings="GHR-12V-S x 6 (drawn best guess)")
 # revD tie mounts: cadfetch3 had McMaster-Carr 7566K23 (adhesive, PPE, 0-82 C; replaced 7566K204, 68 C: plate top fans-on worst
 # case 70.9 C mean / 74.7 C max, docs/heat-analysis.md section 2). The ribbon over the mounts stays at z 9.7.
 # revD (cadfetch4): 7566K23 (0-82 C) is below the 85 C sink target and a fan failure (passive 90-136 C) exceeds it -> screw-on
@@ -998,7 +1006,7 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             footprint=(LX0, LX1, LY0, LY1), lid_bbox=(lb.xmin, lb.xmax, lb.ymin, lb.ymax, lb.zmin, lb.zmax),
             sink_bbox=(sb.xmin, sb.xmax, sb.ymin, sb.ymax, sb.zmin, sb.zmax), overall_no_plugs=(bb.xmin, bb.xmax, bb.ymin, bb.ymax, bb.zmin, bb.zmax),
             CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, usb_bulkhead=CN, feet=FEET, lid_screws=LID_SCREWS,
-            would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], hub=dict(at=HUB_AT, holes=HUB_F["holes"], socket=HUB_F["sock"], screw=f"ISO4762-M2x{HUB_SCREW_L:g}", tap=HUB_TAP, drill=HUB_DRILL), standoffs=[(n, h) for n, h, _ in SO],
+            would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], hub=dict(at=HUB_AT, holes=HUB_F["holes"], socket=HUB_F["sock"], screw=f"ISO4762-M2.5x{HUB_SCREW_L:g}", tap=HUB_TAP, drill=HUB_DRILL), standoffs=[(n, h) for n, h, _ in SO],
             colors={k: it["color"] for k, it in ITEMS.items()}, items={k: dict(pn=it["pn"], n=len(it["locs"])) for k, it in ITEMS.items()},
             parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn], source=c["source"], solids=len(c["shape"].solids())) for pn, c in CAT.items()},
             foot_vol=FOOT_VOL, foot_screws=FOOT_SCREWS, subassemblies=SUBASM, gap_pads={pn: dict(size=k, n=len(v)) for k, (pn, v) in PADPN.items()},
