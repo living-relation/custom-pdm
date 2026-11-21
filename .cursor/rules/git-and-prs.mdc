@@ -19,3 +19,4 @@ Enforcer: CI `state-check`, `no-claude-files`, `registry-check`; hooks; none yet
 - Never commit or print secrets (API keys, tokens, account details). Sign memory notes `-- <agent>, YYYY-MM-DD` (absolute dates only).
 - Any `CLAUDE.md`, `CLAUDE.local.md` or `.claude/CLAUDE.md` is folded into the `AGENTS.md` of its folder (keep every rule, drop exact duplicates) and deleted in a PR (Dan, 2026-11-17, pre-approved).
 - Do not push anything upstream to dingoPDM / dingoFW / dingoConfig.
+- Tidy up after every push or merge (Dan, 2026-11-21): remove the job's worktree (after the ignored-files check), delete its local and remote branch, fast-forward local `main`, archive its `STATE-<slug>.md`, update the root STATE (`Kept_Branches`, `Last_Verified_SHA`, NEXT), run `state_lint`, clear the job's scratch / temp folders, and end with `git status` clean and `git worktree list` showing only live jobs.
