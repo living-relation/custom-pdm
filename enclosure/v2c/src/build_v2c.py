@@ -699,7 +699,7 @@ made("wires-OUT1-4-10AWG", "CPDM-HAR-201", Compound(owires), (0.75, 0.1, 0.1), "
      "31 A each, two tiers out through the lid wire-way to the west edge; routing ASSUMED, OD 4.2 ASSUMED", "10 AWG GXL copper / XLPE", kind="harness")
 for k, (X, Y) in T58.items(): screw("M4", 8.0, L(X, Y, TTOP + P["lug_t"]))   # T5-T8 ring lugs + M4 screws, wires to X1
 # revF: the T5-T8 ring lugs are placed (same Phoenix 3240083 as OUT1-4): barrel to the south-west, T8 to the south, as the wires leave
-T58_ANG = {k: (-90.0 if k == "T8" else 240.0) for k in T58}
+T58_ANG = HP.T58_ANG
 item("ring-lugs-T5-8", "3240083", [L(X, Y, TTOP, rz=T58_ANG[k]) for k, (X, Y) in T58.items()], (0.85, 0.6, 0.3))
 
 # ---------------- input deck + standoffs (Grok b, unchanged) ----------------
@@ -736,7 +736,7 @@ if VAR == "F1":
     HEND = dict(REAR={k: round(bbx(xc[k]).ymax, 3) for k in CONN}, USB_REAR=round(WALL_IN + U_TAIL, 3), CAVY={k: round(YOFF + HP.CAV_Z[k], 3) for k in CONN}, HUBF=list(HUB_AT))
     HG = dict(Z_TOP=Z_TOP, X0=X0, CONN=CONN, TZ=TZ, REAR=HEND["REAR"], CAVY=HEND["CAVY"], IN_X=IN_X, Z_IN=Z_IN, GLAND=GLAND["at"], HUBF=HUB_AT,
               T58=T58, TTOP=TTOP, FAN=fan_info, USB_X=USB_X, USB_Z=P["usb_z"], USB_REAR=HEND["USB_REAR"])
-    HDRAFT = os.environ.get("HARNESS_DRAFT") == "1"                 # draft: the rules' first paths, for harness_route_v2c.py to relax (never released)
+    HDRAFT = os.environ.get("HARNESS_DRAFT") == "1"                 # draft: the rules' first paths, for harness_comb_v2c.py to build the loom on (never released)
     HTAB = HP.table(HG, strict=not HDRAFT, use_routes=not HDRAFT)
     for w_, d_ in ([] if HDRAFT else HTAB.items()):                 # a draft build has no harness solids: only the parts, for the router
         s_ = HP.solid(d_); s_.label = w_; s_.color = Color(*d_["rgb"]); HSOL[w_] = s_

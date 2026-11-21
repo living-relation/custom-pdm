@@ -6,9 +6,10 @@ World frame = build_v2c.py (X east, Y north, Z up, mm).
 
 Two steps (revF):
   1. initial(G): one rule per circuit gives each wire its ends and a first path (the topology: which lane, which side).
-  2. harness_route_v2c.py relaxes those paths against the placed parts and against each other (no wire through a part, no wire
-     through a wire, every bend >= the wire's radius) and writes harness_routes_v2c.json (committed data). table(G) uses a stored
-     route when its two ends still equal the rule's ends; a moved end makes the build fail until the router is run again.
+  2. harness_comb_v2c.py (the loom builder: fixed shapes in flat planes, no relaxation; hand data in harness_loom_data.py) gives
+     each wire its path clear of the parts and of the other wires, every bend >= the wire's radius, and writes
+     harness_routes_v2c.json (committed data). table(G) uses a stored route when its two ends still equal the rule's ends; a
+     moved end makes the build fail until the loom builder is run again.
 
 Ends (sources):
   X1 / X2: REAL cavity maps (revF), cavity_maps_v2c.json: IDs from TE customer drawing 0425-014-2400 rev H (all views = rear /
@@ -93,7 +94,12 @@ def rounded(pts, R):
 # ---------------- the rules: ends + first path of every wire ----------------
 PX = {1: -11.11, 2: -6.67, 3: -2.22, 4: 2.22, 5: 6.67, 6: 11.11, 7: 11.11, 8: 6.67, 9: 2.22, 10: -2.22, 11: -6.67, 12: -11.11}   # board A J3 pads (KiCad x)
 A2_LANE = {8: (-104.9, 12.6), 9: (-102.0, 12.6), 10: (-99.1, 12.6), 6: (-104.9, 15.4), 5: (-102.0, 15.4), 4: (-99.1, 15.4), 3: (-96.2, 15.4)}
-SPLICE = dict(x=170.0, y={"SP1": -90.0, "SP2": -86.0}, z=36.0, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
+SPLICE = dict(x=185.0, y={"SP1": -111.0, "SP2": -116.0}, z=58.5, L=25.0, d=4.5, fan_dx=1.6, fan_z=(16.0, 30.0), fan_d=3.2)   # CAN splices lie along x; fan splices stand above the cord grip
+STUB = 10.0                                    # straight wire behind a box connector's rear end before the first bend (mm)
+T58_ANG = {"T5": 240.0, "T6": 240.0, "T7": 235.0, "T8": 240.0}   # ring-lug barrel directions (deg from +X): south-west, where the lanes to X1 come from
+def t58_mouth(G, k):
+    """barrel mouth of a T5-T8 ring lug (Phoenix 3240083: 14 from the ring centre) and the barrel direction"""
+    X, Y = G["T58"][k]; a = math.radians(T58_ANG[k]); return (X + 14 * math.cos(a), Y + 14 * math.sin(a), G["TTOP"] + 2.8), (math.cos(a), math.sin(a), 0.0)
 SLEEVE = dict(pn="RNF-100-3-16-0-SP", id=3.0, od=4.02)
 def cav(G, k, c):
     """world (x, z) of a cavity: the map holds TE model x / y; model x -> world X, model y -> world Z"""
@@ -113,8 +119,8 @@ def initial(G):
     def Wb(n, xk, yk): return (X0[n] + xk + 37.846, -(yk + 33.274))
     def j3(n, p):
         x, y = Wb(n, PX[p], -4.56 if p <= 6 else 4.56); return x, y, (17.2 if p <= 6 else 14.4)   # lane height: north row over south row
-    def x1e(c): xc, zc = cav(G, "X1", c); return [(xc, Y1 + 6.0, zc), (xc, C1, zc)]            # ... -> stub -> cavity face
-    def x2s(k): xc, zc = cav(G, "X2", k); return [(xc, C2, zc), (xc, Y2 + 6.0, zc)]            # cavity face -> stub -> ...
+    def x1e(c): xc, zc = cav(G, "X1", c); return [(xc, Y1 + STUB, zc), (xc, C1, zc)]            # ... -> stub -> cavity face
+    def x2s(k): xc, zc = cav(G, "X2", k); return [(xc, C2, zc), (xc, Y2 + STUB, zc)]            # cavity face -> stub -> ...
     def inj2(n, p): return IN_X[n] + 24.0 - 3.0 * ((p - 1) % 6), ZI + (2.82 if p <= 6 else 5.82)
     SPX = SPLICE["x"]; SP = SPLICE["y"]; SPZ = SPLICE["z"]; SL = SPLICE["L"] / 2 + 2.5
     def sp_end(s, west, hi): xe = SPX + (-1.5 if west else 1.5); ze = SPZ + (0.80 if hi else -0.80); return [(xe, SP[s], ze), (SPX + (-SL if west else SL), SP[s], ze)]
@@ -127,11 +133,8 @@ def initial(G):
             yl, zl = A2_LANE[p]; pts += [(x, yl, z), (212.0, yl, z), (204.0, yl, zl), (150.0, yl, zl), (xc + 14.0, -100.0, zc)]
         return pts + x1e(c)
     def t_x1(k, c):                                                                 # board B T5-T8 lug barrel mouth -> X1 (12 AWG)
-        X, Y = T58[k]; zb = G["TTOP"] + 2.8; xc, zc = cav(G, "X1", c)
-        if k == "T8": return [(X, Y - 14.0, zb), (X, Y - 19.0, zb)] + x1e(c)
-        e = {"T7": 0.0, "T6": 7.4, "T5": 14.8}[k]; u = (-0.5, -math.sqrt(3) / 2)
-        A = (X + 14 * u[0], Y + 14 * u[1], zb); bx, by = X + (19.0 + e) * u[0], Y + (19.0 + e) * u[1]
-        return [A, (bx, by, zb), (bx, by - 8.0, zb), (bx, -84.0, 17.0), (xc - 6.0, -96.0, zc)] + x1e(c)
+        A, u = t58_mouth(G, k); xc, zc = cav(G, "X1", c)                            # first path only: the loom data holds the real one
+        return [A, add(A, u, 5.0), (xc - 6.0, -96.0, zc)] + x1e(c)
     def a_low(n, p, y1, z1):                                                        # lane end of a 20 AWG wire on a board A pad, pad first
         x, y, z = j3(n, p); return a_pad(n, p) + [(x, y1 + 6.0, z), (x, y1, z1)]
     def bj6(p):                                                                     # board B J6 pad -> east along the front strip, above the USB pigtail U2 and the tie mounts
@@ -225,7 +228,7 @@ def finish(d):
     d.update(segs=segs, length=round(L, 1), rmin=round(min(rmin, 999.0), 2), r_over_od=round(min(rmin, 999.0) / d["od"], 2)); return d
 def table(G, strict=True, use_routes=True):
     """the path table: the rules' ends, the routed paths (harness_routes_v2c.json) where present. strict: fail on a wire whose
-    stored route no longer fits its ends (run harness_route_v2c.py again) and on a bend below the wire's radius."""
+    stored route no longer fits its ends (run harness_comb_v2c.py again) and on a bend below the wire's radius."""
     R = initial(G); RT = routes() if use_routes else {}; stale = []; tight = []
     for w, d in R.items():
         d["rule_pts"] = d["pts"]; rt = RT.get(w)
@@ -236,7 +239,7 @@ def table(G, strict=True, use_routes=True):
         finish(d)
         if d["rmin"] < d["rmul"] * d["od"] - 1e-6: tight.append((w, d["r_over_od"]))
     if strict:
-        assert not stale, ("no stored route for these wires' ends: run harness_route_v2c.py (enclosure/v2c/src) and commit harness_routes_v2c.json", stale[:12], len(stale))
+        assert not stale, ("no stored route for these wires' ends: run harness_comb_v2c.py (enclosure/v2c/src) and commit harness_routes_v2c.json", stale[:12], len(stale))
         assert not tight, ("bend radius below the wire's minimum", tight)
     return R
 

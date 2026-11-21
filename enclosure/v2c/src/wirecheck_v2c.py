@@ -62,7 +62,7 @@ def centre_line(d, step=0.5):
     return np.concatenate(out)
 def free_space(T):
     """wire centre-line points in the air OUTSIDE the closed box -> {wire: count}; also how the box closed"""
-    import harness_route_v2c as HR
+    import harness_comb_v2c as HR
     from scipy import ndimage
     pts, _, _ = HR.surface_points(OUT, spacing=0.6, zmin=-2.0); m = json.load(open(os.path.join(OUT, "meta.json")))
     lo = pts.min(0) - 3.0; n = np.ceil((pts.max(0) + 3.0 - lo)).astype(int) + 1; shell = np.zeros(n, bool); ix = np.floor(pts - lo).astype(int); shell[ix[:, 0], ix[:, 1], ix[:, 2]] = True
