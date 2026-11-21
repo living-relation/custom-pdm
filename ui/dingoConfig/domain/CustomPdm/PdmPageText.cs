@@ -77,6 +77,9 @@ public static partial class PdmPageText
         } +
         " Which settings do you want?";
 
+    // uipolish: a path typed or pasted into the Open File dialog: spaces and the quotes of "Copy as path" go
+    public static string TypedPath(string? typed) => (typed ?? "").Trim().Trim('"', '\'').Trim();
+
     public const string KeepPcButton = "Keep the PC's settings (write them to the PDM)";
     public const string TakePdmButton = "Take the PDM's settings";
 

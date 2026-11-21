@@ -226,6 +226,16 @@ public class UiWalkTests
             (PdmPageText.KeepPcButton, PdmPageText.TakePdmButton));
     }
 
+    // uipolish: Enter in the Open File dialog's Path field
+    [Theory]
+    [InlineData("  C:\\cars\\st185.json  ", "C:\\cars\\st185.json")]
+    [InlineData("\"C:\\my cars\\st185.json\"", "C:\\my cars\\st185.json")]
+    [InlineData(" 'C:\\my cars' ", "C:\\my cars")]
+    [InlineData("\" C:\\x \"", "C:\\x")]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    public void ATypedPathLosesSpacesAndQuotes(string? typed, string path) => Assert.Equal(path, PdmPageText.TypedPath(typed));
+
     [Fact]
     public void ABoardInARunIsNotAskedAboutUntilTheRunEnds()
     {

@@ -47,6 +47,33 @@ public class PdmOpsService : IDisposable
         return Start(PdmOpKind.WriteAll, adapterConnected, now);
     }
 
+    // uipolish: the Reset faults button of /pdm (PdmFaults.cs: three live writes of the master retry input per board,
+    // ResetStepGap apart; nothing is burned, the value each board had is put back). Returns why it was refused, or null.
+    public async Task<string?> ResetFaultsAsync(bool adapterConnected, Func<TimeSpan, Task>? delay = null, TimeSpan? gap = null)
+    {
+        if (Ops.Busy) return PdmOps.BusyReason;
+        if (!adapterConnected) return PdmOps.AdapterOffReason;
+        var boards = BuildView().Boards.Where(b => b.Device.CustomPdm != null && _isConnected(b.Device)).ToList();
+        if (boards.Count == 0) return PdmOps.NoBoardReason;
+        delay ??= Task.Delay;
+        var keep = boards.Select(b => b.Device.CustomPdm!.MasterRetryInput).ToList();
+        try
+        {
+            for (var step = 0; step < 3; step++)
+            {
+                _deviceManager.SendCustomPdmFrames(boards.Select((b, i) => PdmFaults.ResetFrames(b.Device, keep[i])[step]).ToList());
+                await delay(gap ?? PdmFaults.ResetStepGap);
+            }
+        }
+        finally
+        {
+            // the board answers each write with the value it took and the PC device follows it: back to the kept one
+            for (var i = 0; i < boards.Count; i++) boards[i].Device.CustomPdm!.MasterRetryInput = keep[i];
+        }
+
+        return null;
+    }
+
     private void EnsureTimer()
     {
         lock (_timerLock)

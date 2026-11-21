@@ -24,6 +24,7 @@ public sealed class FakeBoard
     public byte BurnResult { get; set; } = 1;   // byte 4 of the burn reply (WriteConfig())
     public List<MessageCommand> Got { get; } = [];
     public int Burns { get; private set; }
+    public List<(int Index, int Sub, int Value)> Writes { get; } = [];
 
     public FakeBoard(int type, int baseId)
     {
@@ -75,6 +76,11 @@ public sealed class FakeBoard
                 var crc = Crc(_order.Select(k => Values[k]));
                 if (WrongCheckCrc) crc[0] ^= 1;
                 tx.Add(Reply(MessageCommand.CheckCrcRsp, tail: crc));
+                break;
+            case MessageCommand.Write:   // uipolish: one param, live (firmware param_protocol.cpp MsgCmd::Write)
+                Writes.Add((key.Item1, key.Item2, BitConverter.ToInt32(d, 4)));
+                Values[key] = d[4..8];
+                tx.Add(Reply(cmd, d[1], d[2], d[3], d[4..8]));
                 break;
             case MessageCommand.WriteAll:
                 _staged.Clear();

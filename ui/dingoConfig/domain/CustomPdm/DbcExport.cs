@@ -75,6 +75,44 @@ public static class DbcExport
         return m.Success && PdmView.AnalogInputNumber(node) is { } a ? $"PDM_In{a}_{m.Groups[1].Value}" : null;
     }
 
+    // uipolish (2026-11-21): the names the user gave outputs and inputs in the project go into the export: the
+    // PDM-wide name of output 19 "Fuel pump" is "Fuel_pump_Current", not "PDM_Out19_Current". Key = "PDM_Out19" /
+    // "PDM_In15", value = the sanitised name. Stock names (output3, digitalInput5) and empty ones keep the number;
+    // a name used by two outputs / inputs of the PDM gets the number added ("Lamp_Out1", "Lamp_Out3").
+    public static IReadOnlyDictionary<string, string> ProjectNames(IEnumerable<DbcBoard> boards)
+    {
+        var named = new List<(string Key, string Name)>();
+        void Add(string kind, int? number, string? name)
+        {
+            if (number != null && Sanitise(name) is { } s) named.Add(($"PDM_{kind}{number}", s));
+        }
+
+        foreach (var b in boards)
+        {
+            for (var i = 0; i < b.Device.Outputs.Count; i++) Add("Out", PdmView.OutputNumber(b.Node, i), b.Device.Outputs[i].Name);
+            for (var i = 0; i < b.Device.DigitalInputs.Count; i++) Add("In", PdmView.DigitalInputNumber(b.Node, i), b.Device.DigitalInputs[i].Name);
+            if (b.Device.AnalogInputs.Count > 0) Add("In", PdmView.AnalogInputNumber(b.Node), b.Device.AnalogInputs[0].Name);
+        }
+
+        var twice = named.GroupBy(n => n.Name, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1)
+            .Select(g => g.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return named.ToDictionary(n => n.Key, n => twice.Contains(n.Name) ? $"{n.Name}_{n.Key[4..]}" : n.Name);
+    }
+
+    private static readonly Regex StockName = new(@"^(output|digitalInput|analogInput)\d+$", RegexOptions.IgnoreCase);
+    public const int NameMax = 40;
+
+    // A name as a DBC-safe word: letters, digits and "_" only, not starting with a digit. null = no own name.
+    public static string? Sanitise(string? name)
+    {
+        var n = name?.Trim() ?? "";
+        if (n == "" || StockName.IsMatch(n)) return null;
+        n = Regex.Replace(n, "[^A-Za-z0-9]+", "_").Trim('_');
+        if (n == "") return null;
+        if (char.IsDigit(n[0])) n = "_" + n;
+        return n.Length > NameMax ? n[..NameMax].TrimEnd('_') : n;
+    }
+
     public record Message(int Id, int MsgNumber, string Name, string Node, List<Signal> Signals);
 
     private static readonly string OutStateTable = Table(Enum.GetNames<OutState>());
@@ -84,7 +122,10 @@ public static class DbcExport
     private static string Table(string[] names) => string.Join(" ", names.Select((n, i) => $"{i} \"{n}\""));
 
     // The messages of one board, exactly as the app decodes them (same IDs, bits, sign, factor, unit)
-    public static List<Message> Messages(DbcBoard board)
+    public static List<Message> Messages(DbcBoard board) => Messages(board, null);
+
+    // names: ProjectNames of the whole export (null = PDM numbers only, as the repo files)
+    public static List<Message> Messages(DbcBoard board, IReadOnlyDictionary<string, string>? names)
     {
         var dev = board.Device;
         var used = new HashSet<string>();
@@ -117,6 +158,8 @@ public static class DbcExport
                 var name = $"{board.Node}_{signals[i].Name}";
                 if (!used.Add(name)) { name += $"_M{msgNumber}"; used.Add(name); }
                 var pdm = PdmName(board.Node, signals[i].Name);
+                if (pdm != null && names != null && pdm.IndexOf('_', 4) is int cut and > 0 && names.TryGetValue(pdm[..cut], out var own))
+                    pdm = own + pdm[cut..];   // "PDM_Out19_Current" -> "Fuel_pump_Current"
                 if (pdm != null && !used.Add(pdm)) { pdm += $"_M{msgNumber}"; used.Add(pdm); }
                 var comment = pdm == null ? signals[i].Comment
                     : $"PDM-wide name {pdm}" + (signals[i].Comment is { } c ? "; " + c : "");
@@ -169,7 +212,8 @@ public static class DbcExport
     public static string Build(IEnumerable<DbcBoard> boards)
     {
         var list = boards.ToList();
-        var messages = list.SelectMany(Messages).OrderBy(m => m.Id).ToList();
+        var names = ProjectNames(list);
+        var messages = list.SelectMany(b => Messages(b, names)).OrderBy(m => m.Id).ToList();
         var dup = messages.GroupBy(m => m.Id).FirstOrDefault(g => g.Count() > 1);
         if (dup != null)
             throw new InvalidOperationException($"CAN ID 0x{dup.Key:X3} is used by {string.Join(" and ", dup.Select(m => m.Name))}: base IDs overlap");

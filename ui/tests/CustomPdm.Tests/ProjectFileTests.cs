@@ -36,7 +36,7 @@ public class ProjectFileTests
         domain.Common.ParamCodec.ToFrame(MessageCommand.Null, d.Params.Single(p => p.Index == index && p.SubIndex == sub), 0).Payload[4..8];
 
     // every param of the PC device is what the board now holds
-    private static void AssertBoardHoldsThePcValues(FakePdm pdm, string role)
+    internal static void AssertBoardHoldsThePcValues(FakePdm pdm, string role)
     {
         var dev = pdm.Dev(role);
         var differ = dev.Params.Where(p => !Wire(dev, p.Index, p.SubIndex).SequenceEqual(pdm.Boards[role].Values[(p.Index, p.SubIndex)]))

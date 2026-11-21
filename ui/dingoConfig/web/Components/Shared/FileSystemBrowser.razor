@@ -11,7 +11,8 @@
                       FullWidth="true"
                       Adornment="Adornment.End"
                       AdornmentIcon="@Icons.Material.Filled.Refresh"
-                      OnAdornmentClick="RefreshDirectory" />
+                      OnAdornmentClick="RefreshDirectory"
+                      Immediate="true" OnKeyDown="OnPathKey" />
         <MudIconButton Icon="@Icons.Material.Filled.ArrowUpward"
                        Variant="Variant.Outlined"
                        OnClick="NavigateUp"
@@ -174,6 +175,20 @@
     private void RefreshDirectory()
     {
         LoadDirectory(_currentPath);
+    }
+
+    // custom-pdm: Enter in the Path field goes there (before: only the refresh icon did); a typed or pasted file
+    // path (quotes from "Copy as path" allowed) opens its folder and picks the file
+    private async Task OnPathKey(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key != "Enter") return;
+        var typed = domain.CustomPdm.PdmPageText.TypedPath(_currentPath);
+        if (File.Exists(typed))
+        {
+            LoadDirectory(Path.GetDirectoryName(typed)!);
+            await SelectFile(typed);
+        }
+        else LoadDirectory(typed);
     }
 
     private void NavigateToDownloads()

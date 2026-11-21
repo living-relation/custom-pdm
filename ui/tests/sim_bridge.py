@@ -7,7 +7,10 @@ Boards on one CAN bus at 1 Mbit/s (factory defaults): A1 = custompdm_a unit 1 (b
   python3 sim_bridge.py <so dir> --slcan-tcp 3333   real time, SLCAN over TCP: dingoConfig adapter "SLCAN TCP",
                                                     port localhost:3333, bit rate 1000K; play lines (IN, LINK,
                                                     LOAD, TEMP, AN, RESTART, T, TXP: see play_ctl) written to
-                                                    <so dir>/ctl<port> act while a PC is connected
+                                                    <so dir>/ctl<port> act while a PC is connected; the app's /pdm
+                                                    Simulator panel sends the same lines in band as "!<line>\r"
+                                                    ("!HELLO" is answered "!SIM custom-pdm", a play line "!OK ..."
+                                                    or "!ERR ...")
 
 stdio commands (one per line, every reply ends with a line "OK"):
   T <id hex> <data hex>       PC tool sends a standard frame
@@ -155,6 +158,14 @@ def slcan_tcp(so, port):
                             n = int(line[4], 16); tool.send(int(line[1:4], 16), bytes.fromhex(line[5:5 + 2 * n]))
                         elif line[:1] == 'S' and line[1:] in rates:
                             tool._bitrate = rates[line[1:]]
+                        elif line[:1] == '!':   # uipolish: a play line from the app's /pdm Simulator panel, in band
+                            a = line[1:].split()
+                            if a and a[0].upper() == 'HELLO':
+                                conn.sendall(b'!SIM custom-pdm\r'); continue
+                            try: ok = play_ctl(a, so, bus, tool, boards, periodic)
+                            except (KeyError, ValueError, IndexError, ZeroDivisionError): ok = False
+                            print(f'app {line[1:]} {"at" if ok else "refused at"} {bus.now / 1000:.1f} ms', flush=True)
+                            conn.sendall((('!OK ' if ok else '!ERR ') + line[1:] + '\r').encode()); continue
                         conn.sendall(b'\r')
                 if os.path.exists(ctl):   # w1: IN / LINK lines written to <so dir>/ctl<port> act at once (browser checks)
                     with open(ctl) as fh: lines = fh.read().splitlines()
