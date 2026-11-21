@@ -1,6 +1,6 @@
 # enclosure v2c release records (F1)
 
-The releases themselves (STEPs, drawings, checks) are in the OneDrive models folder `custom-pdm-enclosure-v2c\rev<letter>\` (see `docs/enclosure-v2c.md`). Kept here, and locked in `VERIFIED.lock`:
+The releases themselves (STEPs, drawings, checks) are in the OneDrive models folder `custom-pdm-enclosure-rev<current>\rev<letter>\` (now custom-pdm-enclosure-revD) (see `docs/enclosure-v2c.md`). Kept here, and locked in `VERIFIED.lock`:
 
 | Rev | Date | Manifest copy (sha256 of every released file) | BOM generated from the assembly placements (`build_v2c.py`) |
 |---|---|---|---|
