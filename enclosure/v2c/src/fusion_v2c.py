@@ -282,8 +282,19 @@ def build_harness(st, clear=False, budget_s=40.0):
         b.appearance = _tint(des, "Wire " + (d["color"] if d["kind"] == "wire" else "cable jacket"), d["rgb"]); have.add(w)
     left = len(tab) - len(have)
     if not left:
-        bad = geom_problems(st["geom"][HARNESS], design_geom(doc), tol_vol=0.01) if HARNESS in st["geom"] else ["no STEP fingerprint"]
-        st.setdefault("synced", {})[HARNESS] = "native build ok" if not bad else f"MISMATCH: {bad}"
+        # checked against the STEP fingerprint (body count, total volume within 1 %) and wire by wire against the path table
+        # (volume = section x path length, 2 %). The bounding box is not compared: Fusion's box of a cut torus face is the whole
+        # torus's (5.9 mm too far south for the harness, measured 2026-11-21).
+        import math
+        want = st["geom"].get(HARNESS); got = design_geom(doc); bad = [] if want else ["no STEP fingerprint"]
+        if want and want["solids"] != got["solids"]: bad.append(f"bodies {got['solids']} != STEP solids {want['solids']}")
+        if want and abs(got["volume"] - want["volume"]) > 0.01 * want["volume"]: bad.append(f"volume {got['volume']} != STEP {want['volume']}")
+        for i in range(rc.occurrences.count):
+            c = rc.occurrences.item(i).component; d = tab[c.name]
+            if d.get("chain"): continue
+            v = c.bRepBodies.item(0).volume * 1000.0; w_ = math.pi * d["od"] ** 2 / 4 * d["length"]
+            if abs(v - w_) > 0.02 * w_ + 0.5: bad.append(f"{c.name}: volume {v:.1f} vs path {w_:.1f}")
+        st["harness_built"] = "native build ok" if not bad else f"MISMATCH: {bad}"
         if not bad and doc.isModified: doc.save(f"release {st['rev']}: {len(tab)} round wires from the path table {sha[:12]}")
     return left
 def _latest_refs(doc):
@@ -483,12 +494,12 @@ def check_refs(st):
 def tree_lines(st):
     """the top assembly's browser tree as text lines (for the review PNG): depth, name, linked / SR / local"""
     out = []
-    def walk(occs, d):
+    def walk(occs, d, wires=False):
         for i in range(occs.count):
             o = occs.item(i); srk = _sr_key(o.component)
-            kind = "SR body" if srk else ("linked" if o.isReferencedComponent else "LOCAL")
+            kind = "SR body" if srk else ("linked" if o.isReferencedComponent else "wire body" if wires else "LOCAL")
             out.append(f"{'    ' * d}{o.name}   [{kind}]  PN {o.component.partNumber}")
-            if o.isReferencedComponent and o.component.occurrences.count: walk(o.component.occurrences, d + 1)
+            if o.isReferencedComponent and o.component.occurrences.count: walk(o.component.occurrences, d + 1, o.component.partNumber == HARNESS)
     df = _find(st["top"], ASM); doc, opened = _open(df)
     walk(_des(doc).rootComponent.occurrences, 0)
     if opened: doc.close(False)
