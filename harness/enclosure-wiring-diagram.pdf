@@ -398,9 +398,9 @@ BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: w
 BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 1 of 3) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  4e8bd3d1faec61e370d5ecf5b00c3962) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  f0aff4ca01c91f92abd47dfdc6b01aab) Tj ET
 BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
 BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 22.68 77.67 Tm (How to read) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 68.60 Tm (One line = the wires that run together between two blocks. The tick number = how many wires. Label = line ID, wire IDs, count x gauge, colours.) Tj ET
@@ -770,7 +770,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 522.71 Tm (Board A1 input 1 \(switch to G
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 522.71 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 522.71 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 522.71 Tm (M22759/16-20-9) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (130) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 522.71 Tm (X2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 522.71 Tm (7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 522.71 Tm (0462-201-20141) Tj ET
@@ -786,7 +786,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 511.23 Tm (Board A1 input 2 \(switch to G
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 511.23 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 511.23 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 511.23 Tm (M22759/16-20-9) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (125) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 511.23 Tm (X2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 511.23 Tm (8) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 511.23 Tm (0462-201-20141) Tj ET
@@ -803,7 +803,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 499.75 Tm (Board A2 input 1 \(switch to G
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 499.75 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 499.75 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 499.75 Tm (M22759/16-20-9) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (120) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 499.75 Tm (X2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 499.75 Tm (15) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 499.75 Tm (0462-201-20141) Tj ET
@@ -819,7 +819,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 488.27 Tm (Board A2 input 2 \(switch to G
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 488.27 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 488.27 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 488.27 Tm (M22759/16-20-9) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (125) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 488.27 Tm (X2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 488.27 Tm (16) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 488.27 Tm (0462-201-20141) Tj ET
@@ -1352,7 +1352,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 120.90 Tm (TP3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 120.90 Tm (YE) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 120.90 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 120.90 Tm (M22759/16-20-4) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 120.90 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 120.90 Tm (125) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 120.90 Tm (SP1) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 120.90 Tm (S) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 120.90 Tm (-) Tj ET
@@ -1370,7 +1370,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 109.42 Tm (TP3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 109.42 Tm (GN) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 109.42 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 109.42 Tm (M22759/16-20-5) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 109.42 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 109.42 Tm (130) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 109.42 Tm (SP2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 109.42 Tm (S) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 109.42 Tm (-) Tj ET
@@ -1403,9 +1403,9 @@ BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: w
 BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 2 of 3) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  4e8bd3d1faec61e370d5ecf5b00c3962) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  f0aff4ca01c91f92abd47dfdc6b01aab) Tj ET
 BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
 BT 0 0 0 rg /F1 6.52 Tf 1 0 0 1 22.68 74.83 Tm (Wire schedule, wires W001 to W056 \(rows of harness/enclosure-wire-list.csv; 'Line' = the line on sheet 1; lengths in mm, TBD = not in the model\).) Tj ET
 endstream
@@ -1442,7 +1442,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 740.83 Tm (TP4) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 740.83 Tm (YE) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 740.83 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 740.83 Tm (M22759/16-20-4) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 740.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 740.83 Tm (145) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 740.83 Tm (SP1) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 740.83 Tm (S) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 740.83 Tm (-) Tj ET
@@ -1460,7 +1460,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 729.35 Tm (TP4) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 729.35 Tm (GN) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 729.35 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 729.35 Tm (M22759/16-20-5) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 729.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 729.35 Tm (145) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 729.35 Tm (SP2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 729.35 Tm (S) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 729.35 Tm (-) Tj ET
@@ -1476,7 +1476,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 717.87 Tm (Fan supply from A2 OUT2 \(fan 
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 717.87 Tm (RD) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 717.87 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 717.87 Tm (M22759/16-20-2) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 717.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 717.87 Tm (115) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 717.87 Tm (A2-J3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 717.87 Tm (7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 717.87 Tm (solder) Tj ET
@@ -1493,7 +1493,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 706.39 Tm (Fan return to input board #2 G
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 706.39 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 706.39 Tm (20) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 706.39 Tm (M22759/16-20-0) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 706.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 706.39 Tm (100) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 706.39 Tm (IN2-J2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 706.39 Tm (11) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 706.39 Tm (43030-0007) Tj ET
@@ -1575,7 +1575,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 648.99 Tm (A1 input 3 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 648.99 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 648.99 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 648.99 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 648.99 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 648.99 Tm (150) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 648.99 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 648.99 Tm (1) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 648.99 Tm (SSHL-002T-P0.2) Tj ET
@@ -1592,7 +1592,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 637.51 Tm (A1 input 4 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 637.51 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 637.51 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 637.51 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 637.51 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 637.51 Tm (145) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 637.51 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 637.51 Tm (2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 637.51 Tm (SSHL-002T-P0.2) Tj ET
@@ -1608,7 +1608,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 626.03 Tm (A1 input 5 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 626.03 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 626.03 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 626.03 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 626.03 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 626.03 Tm (145) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 626.03 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 626.03 Tm (3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 626.03 Tm (SSHL-002T-P0.2) Tj ET
@@ -1625,7 +1625,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 614.55 Tm (A1 input 6 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 614.55 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 614.55 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 614.55 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 614.55 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 614.55 Tm (140) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 614.55 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 614.55 Tm (4) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 614.55 Tm (SSHL-002T-P0.2) Tj ET
@@ -1641,7 +1641,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 603.07 Tm (A1 input 7 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 603.07 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 603.07 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 603.07 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 603.07 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 603.07 Tm (140) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 603.07 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 603.07 Tm (5) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 603.07 Tm (SSHL-002T-P0.2) Tj ET
@@ -1658,7 +1658,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 591.59 Tm (A1 analog input to the MCU ADC
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 591.59 Tm (VT) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 591.59 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 591.59 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 591.59 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 591.59 Tm (140) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 591.59 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 591.59 Tm (9) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 591.59 Tm (SSHL-002T-P0.2) Tj ET
@@ -1674,7 +1674,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 580.11 Tm (Board A1 +3.3 V to the input-b
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 580.11 Tm (RD) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 580.11 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 580.11 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 580.11 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 580.11 Tm (135) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 580.11 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 580.11 Tm (10) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 580.11 Tm (SSHL-002T-P0.2) Tj ET
@@ -1691,7 +1691,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 568.63 Tm (Board A1 GND to the input boar
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 568.63 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 568.63 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 568.63 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 568.63 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 568.63 Tm (135) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 568.63 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 568.63 Tm (11) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 568.63 Tm (SSHL-002T-P0.2) Tj ET
@@ -1707,7 +1707,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 557.15 Tm (Board A1 GND to the input boar
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 557.15 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 557.15 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 557.15 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 557.15 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 557.15 Tm (135) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 557.15 Tm (A1-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 557.15 Tm (12) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 557.15 Tm (SSHL-002T-P0.2) Tj ET
@@ -1724,7 +1724,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 545.67 Tm (A2 input 3 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 545.67 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 545.67 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 545.67 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 545.67 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 545.67 Tm (135) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 545.67 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 545.67 Tm (1) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 545.67 Tm (SSHL-002T-P0.2) Tj ET
@@ -1740,7 +1740,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 534.19 Tm (A2 input 4 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 534.19 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 534.19 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 534.19 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 534.19 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 534.19 Tm (140) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 534.19 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 534.19 Tm (2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 534.19 Tm (SSHL-002T-P0.2) Tj ET
@@ -1757,7 +1757,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 522.71 Tm (A2 input 5 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 522.71 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 522.71 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 522.71 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (150) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 522.71 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 522.71 Tm (3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 522.71 Tm (SSHL-002T-P0.2) Tj ET
@@ -1773,7 +1773,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 511.23 Tm (A2 input 6 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 511.23 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 511.23 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 511.23 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (155) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 511.23 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 511.23 Tm (4) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 511.23 Tm (SSHL-002T-P0.2) Tj ET
@@ -1790,7 +1790,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 499.75 Tm (A2 input 7 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 499.75 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 499.75 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 499.75 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (160) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 499.75 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 499.75 Tm (5) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 499.75 Tm (SSHL-002T-P0.2) Tj ET
@@ -1806,7 +1806,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 488.27 Tm (A2 analog input to the MCU ADC
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 488.27 Tm (VT) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 488.27 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 488.27 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (175) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 488.27 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 488.27 Tm (9) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 488.27 Tm (SSHL-002T-P0.2) Tj ET
@@ -1823,7 +1823,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 476.79 Tm (Board A2 +3.3 V to the input-b
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 476.79 Tm (RD) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 476.79 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 476.79 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 476.79 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 476.79 Tm (180) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 476.79 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 476.79 Tm (10) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 476.79 Tm (SSHL-002T-P0.2) Tj ET
@@ -1839,7 +1839,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 465.31 Tm (Board A2 GND to the input boar
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 465.31 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 465.31 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 465.31 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 465.31 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 465.31 Tm (185) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 465.31 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 465.31 Tm (11) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 465.31 Tm (SSHL-002T-P0.2) Tj ET
@@ -1856,7 +1856,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 453.83 Tm (Board A2 GND to the input boar
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 453.83 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 453.83 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 453.83 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 453.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 453.83 Tm (195) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 453.83 Tm (A2-J6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 453.83 Tm (12) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 453.83 Tm (SSHL-002T-P0.2) Tj ET
@@ -1872,7 +1872,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 442.35 Tm (B input 3 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 442.35 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 442.35 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 442.35 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 442.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 442.35 Tm (170) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 442.35 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 442.35 Tm (1) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 442.35 Tm (SSHL-002T-P0.2) Tj ET
@@ -1889,7 +1889,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 430.87 Tm (B input 4 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 430.87 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 430.87 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 430.87 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 430.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 430.87 Tm (175) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 430.87 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 430.87 Tm (2) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 430.87 Tm (SSHL-002T-P0.2) Tj ET
@@ -1905,7 +1905,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 419.39 Tm (B input 5 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 419.39 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 419.39 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 419.39 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 419.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 419.39 Tm (175) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 419.39 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 419.39 Tm (3) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 419.39 Tm (SSHL-002T-P0.2) Tj ET
@@ -1922,7 +1922,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 407.91 Tm (B input 6 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 407.91 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 407.91 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 407.91 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 407.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 407.91 Tm (175) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 407.91 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 407.91 Tm (4) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 407.91 Tm (SSHL-002T-P0.2) Tj ET
@@ -1938,7 +1938,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 396.43 Tm (B input 7 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 396.43 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 396.43 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 396.43 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 396.43 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 396.43 Tm (180) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 396.43 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 396.43 Tm (5) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 396.43 Tm (SSHL-002T-P0.2) Tj ET
@@ -1955,7 +1955,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 384.94 Tm (B input 8 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 384.94 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 384.94 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 384.94 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 384.94 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 384.94 Tm (180) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 384.94 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 384.94 Tm (6) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 384.94 Tm (SSHL-002T-P0.2) Tj ET
@@ -1971,7 +1971,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 373.46 Tm (B input 9 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 373.46 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 373.46 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 373.46 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 373.46 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 373.46 Tm (180) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 373.46 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 373.46 Tm (7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 373.46 Tm (SSHL-002T-P0.2) Tj ET
@@ -1988,7 +1988,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 361.98 Tm (B input 10 to the MCU) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 361.98 Tm (WH) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 361.98 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 361.98 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 361.98 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 361.98 Tm (185) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 361.98 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 361.98 Tm (8) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 361.98 Tm (SSHL-002T-P0.2) Tj ET
@@ -2004,7 +2004,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 350.50 Tm (B analog input to the MCU ADC)
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 350.50 Tm (VT) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 350.50 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 350.50 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 350.50 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 350.50 Tm (185) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 350.50 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 350.50 Tm (9) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 350.50 Tm (SSHL-002T-P0.2) Tj ET
@@ -2021,7 +2021,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 339.02 Tm (Board B +3.3 V to the input-bo
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 339.02 Tm (RD) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 339.02 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 339.02 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 339.02 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 339.02 Tm (185) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 339.02 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 339.02 Tm (10) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 339.02 Tm (SSHL-002T-P0.2) Tj ET
@@ -2037,7 +2037,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 327.54 Tm (Board B GND to the input board
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 327.54 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 327.54 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 327.54 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 327.54 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 327.54 Tm (190) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 327.54 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 327.54 Tm (11) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 327.54 Tm (SSHL-002T-P0.2) Tj ET
@@ -2054,7 +2054,7 @@ BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 316.06 Tm (Board B GND to the input board
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 316.06 Tm (BK) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 316.06 Tm (28) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 316.06 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
-BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 316.06 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 316.06 Tm (190) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 316.06 Tm (B-J7) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 316.06 Tm (12) Tj ET
 BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 316.06 Tm (SSHL-002T-P0.2) Tj ET
@@ -2384,9 +2384,9 @@ BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: w
 BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 3 of 3) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  4e8bd3d1faec61e370d5ecf5b00c3962) Tj ET
 BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
-BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  f0aff4ca01c91f92abd47dfdc6b01aab) Tj ET
 BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
 BT 0 0 0 rg /F1 6.52 Tf 1 0 0 1 22.68 74.83 Tm (Wire schedule, wires W057 to W111 \(rows of harness/enclosure-wire-list.csv; 'Line' = the line on sheet 1; lengths in mm, TBD = not in the model\).) Tj ET
 endstream
@@ -2395,7 +2395,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 1224.00 792.00] /Contents 9 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
 endobj
 11 0 obj
-<< /Title (custom-pdm enclosure wiring block diagram) /Creator (harness/src/enclosure_harness.py diagram) /Keywords (date 2026-11-21 | enclosure-wire-list.csv 1c39f1337a53c53bd1fc0cb5e0b10a1bdbfd07934f1573107e0e792cd069116b | enclosure-connectors.csv 3d253c2e1545dc92b402986c85aedb5ea01cacf9b74c8c7280ca39a9175b3920 | enclosure-key.csv fbb90bd67891a76fa5c5dfe70f45fdd7497a9c245ae68188f02fa5b5ded9f3c8) >>
+<< /Title (custom-pdm enclosure wiring block diagram) /Creator (harness/src/enclosure_harness.py diagram) /Keywords (date 2026-11-21 | enclosure-wire-list.csv 4e8bd3d1faec61e370d5ecf5b00c396270315a49d1ccc7f8c7b146916859796b | enclosure-connectors.csv 3d253c2e1545dc92b402986c85aedb5ea01cacf9b74c8c7280ca39a9175b3920 | enclosure-key.csv f0aff4ca01c91f92abd47dfdc6b01aabfa76a0b8229c6a832120ffb5ecebe49e) >>
 endobj
 xref
 0 12

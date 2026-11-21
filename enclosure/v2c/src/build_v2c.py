@@ -32,6 +32,10 @@ Rev D (2026-11-20, job cadfetch2): drawn bought stand-ins replaced by maker CAD 
   (adhesive, 82 C) -> McMaster 1722N12 (screw-in, ETFE, 168 C, V-0) on ISO 7380-1 M3 x 6 into M3 taps 5 deep in the plate.
   revD (job cadfetch5, harness PR #121): sealed pass-through for the fan leads: McMaster 8183K5 M6 liquid-tight brass cord grip
   in an M6 x 1 through-tap in the plate, in the fan bay's dead corner south of the south fan (F1).
+Rev E (2026-11-21, job wires): real round 3-D wires. The ribbon placeholders CPDM-HAR-202 / -203 are gone; the harness subassembly
+  CPDM-HAR-200 holds one swept solid per wire ID of harness/enclosure-wire-list.csv (94 wires + 4 USB cables = 111 rows), from the
+  one path table harness_paths_v2c.py (also used by fusion_v2c.py and for the wire-list lengths); wirecheck_v2c.py fails a wire
+  that passes through a part. Boards: the 5 V module boards (re-exported STEPs).
 ASSUMED = designer's choice, TBD = not confirmed by a primary source.
 """
 import os, sys, json, math
@@ -705,36 +709,25 @@ for n, h, (X, Y) in BOSS:
     if (n, h) not in so_set: screw("M3", 8.0, L(X, Y, Z_TOP), "board")
 for (X, Y) in in_pts: screw("M3", 8.0, L(X, Y, Z_IN + 1.51))
 
-# ---------------- wiring (flat taped ribbons, ASSUMED harness form) ----------------
-REAR = {k: (X, WALL_IN + 2.54 + 19.6 + 4.0) for k, X in CONN.items()}
-YR = REAR["X1"][1]
-zr = Z_TOP + 7.0
-wires = []
-for n, xc_, xe in (("A1", None, CONN["X1"] - 6.0), ("A2", 223.0, CONN["X1"] + 6.0)):
-    cx, cy = W(n, 0, 0); xc_ = xc_ or cx
-    via = [(165.0, -99.5, zr + 6.0)] if n == "A2" else []
-    wires.append(ribbon([(cx, cy, Z_TOP + 2.5), (xc_, cy - 8, zr), (xc_, -97.0, zr)] + via + [(xe, YR, TZ - 8)], 14.0, P["ribbon_t"]))
-bx_, by_ = W("B", -1.5, -1.5)
-jx = (SEAT["OUT2"][0] + RR + SEAT["OUT1"][0] - RR) / 2   # lane between the low and high copper risers (d1a)
-wires.append(ribbon([(bx_, by_, Z_TOP + 2.0), (jx, by_, Z_TOP + 5.0), (jx, -60.0, Z_TOP + 5.0), (jx, -103.0, Z_TOP + 6.0), (jx, -106.0, 9.7), (CONN["X2"] - 6, -105.0, 9.7), (CONN["X2"] - 6, -103.5, TZ + 4)], 3.5, 3.5))
-tx = 96.5
-wires.append(ribbon([(tx, T58["T5"][1], 16.0), (tx, -97.0, 16.0), (CONN["X1"] + 14, YR, 19.0)], 12.0, 2.5))
-for n, x in IN_X.items():
-    wires.append(ribbon([(x + 33, DY0 + 2, z_deck_top + 8), (x + 33, DY0 - 8, TZ + 14), (CONN["X2"] + 8, YR, TZ + 14)], 10.0, 3.0))
-usbc = []
-UX = USB_X - 12.0; UZ = P["usb_z"] - 3.0                             # cable runs 12 mm west of the bulkhead axis, 3 lower to pass under the input deck (bottom z 30.8)
-# revD: the CnLinko bulkhead has a USB-C socket on its back: a USB-C plug body (12.4 x 6.6 x 18 overmould, ASSUMED) then the
-# cable, on the bulkhead axis, before it drops to UZ and joins the revC route
-PLUG_L = 18.0; UR = WALL_IN + U_TAIL + PLUG_L
-usbc.append(box(USB_X - 6.2, USB_X + 6.2, WALL_IN + U_TAIL, UR, P["usb_z"] - 3.3, P["usb_z"] + 3.3))
-assert UR + 2.0 < -95.5, ("USB cable start vs route", UR)
-usbc.append(tube([(USB_X, UR - 0.5, P["usb_z"]), (USB_X, UR + 2.0, P["usb_z"]), (UX, -95.0, UZ), (80.0, -95.0, P["usb_z"]), (68.0, -95.0, 22.0), (27.0, -95.0, 22.0), (27.0, -100.5, 22.0), (27.0, -100.5, 14.0), (27.0, -106.0, 9.0), (28.0, (hb.ymin + hb.ymax) / 2, HUB_Z + 3)], 4.0))
-for n in ("B", "A1", "A2"):
-    X, Y = W(n, -17.0974, 55.7412)
-    usbc.append(tube([(hb.xmax - 4, hb.ymax + 1, HUB_Z + 3), (hb.xmax + 2, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, Z_TOP + 1.6)], 4.0))
-made("wire-ribbons", "CPDM-HAR-202", Compound(wires), (0.85, 0.75, 0.1), "Internal harness ribbons to X1 / X2",
-     "A1/A2 J3 pads, B J6 pads, B T5-T8 lugs, input boards J2 -> X1 / X2, flat taped ribbons; routing ASSUMED", "TXL / GXL wire, tape", kind="harness")
-made("usb-cables", "CPDM-HAR-203", Compound(usbc), (0.2, 0.2, 0.6), "USB-C cables (bulkhead -> hub -> 3 boards)", "4 mm cables; the plug body at the bulkhead is modelled (12.4 x 6.6 x 18), the other plugs are not; routing ASSUMED", "USB cable", kind="harness")
+# ---------------- wiring: revE real round wires (Dan 2026-11-21), ONE path table = harness_paths_v2c.py ----------------
+# The revD ribbon placeholders CPDM-HAR-202 (flat taped ribbons) and CPDM-HAR-203 (USB cable tubes + the drawn plug block) are
+# replaced by the harness subassembly CPDM-HAR-200: one swept round solid per wire of harness/enclosure-wire-list.csv, named by
+# its wire ID, bends at 3 x OD, colour from the wire list; one round cable per USB cable U1-U4 (their cores are the CSV rows).
+# CPDM-HAR-201 (the four OUT1-4 10 AWG wires, car-harness side, not in the wire list) stays as it was: round tubes already.
+import harness_paths_v2c as HP
+HPN = "CPDM-HAR-200"; HTAB = {}; HSOL = {}; HEND = {}
+if VAR == "F1":
+    HEND = dict(REAR={k: round(bbx(xc[k]).ymax, 3) for k in CONN}, USB_REAR=round(WALL_IN + U_TAIL, 3))
+    HTAB = HP.table(dict(Z_TOP=Z_TOP, X0=X0, CONN=CONN, TZ=TZ, REAR=HEND["REAR"], IN_X=IN_X, Z_IN=Z_IN, GLAND=GLAND["at"], HUB=[hb.xmin, hb.xmax, hb.ymin, hb.ymax],
+                         T58=T58, TTOP=TTOP, FAN=fan_info, USB_X=USB_X, USB_Z=P["usb_z"], USB_REAR=HEND["USB_REAR"]))
+    for w_, d_ in HTAB.items():
+        s_ = HP.solid(d_); s_.label = w_; s_.color = Color(*d_["rgb"]); HSOL[w_] = s_
+    part(HPN, Compound(list(HSOL.values())), "Internal harness (wires + USB cables)",
+         f"harness subassembly: {sum(d_['kind'] == 'wire' for d_ in HTAB.values())} wires + {sum(d_['kind'] == 'cable' for d_ in HTAB.values())} USB cables = "
+         f"{sum(len(d_['rows']) for d_ in HTAB.values())} rows of harness/enclosure-wire-list.csv, one solid per wire ID, swept round at 3 x OD; paths harness_paths_v2c.py; "
+         "X1 / X2 cavity positions, housing wire exits, 28 AWG OD 0.9 and USB cable OD 4.0 ASSUMED", "GXL / M22759/16 / 28 AWG wire, USB cable (wire list)", "harness")
+    item("harness-" + HPN, HPN, [IDENT], (0.80, 0.10, 0.10))
+    print("harness", HPN, len(HSOL), "solids", sum(len(d_["rows"]) for d_ in HTAB.values()), "rows", "total length", round(sum(d_["length"] for d_ in HTAB.values())), "mm", flush=True)
 # revD tie mounts: cadfetch3 had McMaster-Carr 7566K23 (adhesive, PPE, 0-82 C; replaced 7566K204, 68 C: plate top fans-on worst
 # case 70.9 C mean / 74.7 C max, docs/heat-analysis.md section 2). The ribbon over the mounts stays at z 9.7.
 # revD (cadfetch4): 7566K23 (0-82 C) is below the 85 C sink target and a fan failure (passive 90-136 C) exceeds it -> screw-on
@@ -908,7 +901,11 @@ shutil.copyfile(os.path.join(XS, SPN + ".stp"), os.path.join(XO, "Parts", SPN + 
 for pn, c in CAT.items():
     s = c["shape"]; s.label = pn; s.color = Color(*next(it["color"] for it in ITEMS.values() if it["pn"] == pn))
     export_step(s, os.path.join(XO, "Parts", pn + ".stp"))
+if HSOL:                                                            # the harness file: one named, coloured product per wire ID under CPDM-HAR-200
+    export_step(Compound(children=list(HSOL.values()), label=HPN), os.path.join(XO, "Parts", HPN + ".stp"))
+    json.dump(HTAB, open(os.path.join(OUT, "harness_paths.json"), "w"), indent=0)
 DESC = {pn: full_desc(pn) for pn in CAT}; DESC[ASM] = ascii_(f"custom-pdm enclosure {REV} {VAR} assembly | external references to Parts/*.stp (subassembly + parts) | rev {REV}")
+DESC.update({w_: ascii_(d_['desc'] + f" | OD {d_['od']:g} | L {d_['length']:g} mm") for w_, d_ in HTAB.items()})
 DESC[SPN] = ascii_(f"{SA['name']} | {SA['desc']} | external references to its sibling part files | rev {REV}")
 # Dan 2026-11-20: top assembly STEP at the root, every part AND subassembly STEP in Parts\ beside it (the subassembly file's
 # references are sibling part files)
@@ -955,6 +952,9 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, grp=g, fam=fm, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l, g, fm) in SCREWS],
             placements={nm: dict(pn=it["pn"], m=[mat4(l) for l in it["locs"]]) for nm, it in ITEMS.items()},   # 4x4 row-major, mm (Fusion insert)
             invalid_made_parts=INVALID, n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT},
-            board_boss=BOSS_INFO, tie_mounts=TIE_INFO, fan_lead_gland=GLAND)
+            board_boss=BOSS_INFO, tie_mounts=TIE_INFO, fan_lead_gland=GLAND, harness_ends=HEND,
+            harness=dict(pn=HPN, solids=len(HSOL), wires=sum(d_["kind"] == "wire" for d_ in HTAB.values()), cables=sum(d_["kind"] == "cable" for d_ in HTAB.values()),
+                         rows=sum(len(d_["rows"]) for d_ in HTAB.values()), total_length_mm=round(sum(d_["length"] for d_ in HTAB.values()), 1), ids=sorted(HTAB),
+                         bend_below_3xOD={w_: d_["r_over_od"] for w_, d_ in HTAB.items() if d_["r_over_od"] < 3.0}) if HTAB else None)
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
 print("done", VAR, len(ITEMS), "items", len(CAT), "part numbers", "overall(no plugs)", [round(v, 1) for v in meta["overall_no_plugs"]], "would-strip", dA, dB)

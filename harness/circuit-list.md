@@ -68,12 +68,13 @@ Counts: 11 circuits, 111 wires (86 single, 8 twisted in 4 pairs, 17 USB cable co
 | Fan feed | A2 J3 pad 7 -> SP3 -> both fan + leads (solder splices, Dan's generic solder splice part) | the factory leads (145 mm, UL1571 80 C PVC) cannot reach the board and should stay out of the hot air under the lid. |
 | Colours | RD outputs / fan + / +3V3 / VBUS, WH inputs, VT analog, BK grounds, YE CAN_H, GN CAN_L, GY USB CC | Key sheet. |
 | Labels | printed heat-shrink sleeve each end: `<wire ID> <signal> ><far end>` | Wires sheet From / To label. |
-| Lengths | model route + 20 mm X1 / X2 fan-out + 2 x 15 mm service loop, up to 5 mm; TBD where the model has no route | first filled from the route polylines (`src/enclosure_harness.py` ROUTE); the CSV owns the values now. |
+| Lengths | model route + 2 x 15 mm service loop, up to 5 mm (the old + 20 mm X1 / X2 fan-out is in the model since enclosure revE) | the route of every wire is a real 3-D wire in the enclosure model (harness subassembly CPDM-HAR-200, `enclosure/v2c/src/harness_paths_v2c.py`); `harness_paths_v2c.py lengths <run>/F1/harness_paths.json --write` filled the 40 TBD lengths (2026-11-21) and lists every row that differs from the model by more than 10 % (30 rows then: the 2026-11-20 values were bundle estimates; the fan leads are a fixed factory 145 mm). The CSV owns the values. |
 | Hub ports | PORT1 -> B, PORT2 -> A1, PORT3 -> A2, PORT4 spare | shortest runs. |
 
 ## 4. TBD (not guessed)
 
-- Routes not in the model (lengths TBD, estimates in Notes): A1 / A2 inputs and CAN stubs to X2 / SP1-2, fan wires, the three JST GH links.
-- **Fan pass-through**: the fans sit under the 8 mm plate in the fin bay; the model has no sealed way for their leads into the box (enclosure job).
+- Every wire has a modelled route since enclosure revE (CPDM-HAR-200). Still ASSUMED there: the cavity positions inside the X1 / X2 rear faces (the TE customer-view models have no cavities; a ring pattern stands in for the TE insert arrangement), the wire exits of the Micro-Fit / GH housings, the 28 AWG OD (0.9) and the USB cable OD (4.0). The harness.design layout view (`src/enclosure_harness.py` ROUTE / BUNDLES) still shows the revD bundle routes.
+- Fan leads: through the McMaster 8183K5 cord grip (enclosure revD); in the model they run under the fans, 3.5 to 4.6 mm below the fin tips (inside the feet's 10 mm), to the cord grip.
+- **USB pigtail U2**: the hub stands 1.5 mm in front of board B's USB-C socket, so no plug fits there (enclosure problem, reported in the revE PR).
 - Part numbers: USB cable U1 (USB 2.0 C-to-C, 0.3 m), USB-C plug pigtails U2-U4 (VBUS, D+, D-, GND, 56 kohm Rp on CC), the 28 AWG >= 105 C GH wire, strip lengths for Micro-Fit / GH / splices, hub pad order.
 - harness.design app check: the desktop app opened the file and did not rewrite it (2026-11-20); a visual check of the schematic and layout (dropped content shows only on screen) is still to do.

@@ -12,13 +12,19 @@ Each step is resumable and kept short (MCP calls time out at about 80 s):
     REL = r"<staged release>"; exec(open(r"<this file>").read()); st = load()
     sync_parts(st)          # repeat until 0 left: upload new PNs, push a changed STEP as a new version, check each
     set_props(st)           # repeat until 0 left: PN + description on every part design
+    build_harness(st)       # repeat until 0 left: revE harness design CPDM-HAR-200, native round wires from check/harness_paths.json
     build_subassembly(st)   # repeat until 0 left: heat-sink subassembly design (linked sink, gap pads, fans, tie mounts)
     sr_place(st, sub=True)  # repeat until 0 left: SR fan screws, tie-mount screws, set-screw studs in the subassembly
     build_assembly(st)      # repeat until 0 left: top assembly = subassembly + every other linked part
     sr_place(st, sub=False) # repeat until 0 left: every other SR screw in the top assembly
     check_refs(st); compare_tree(st)   # [] = newest versions only; Fusion tree == STEP tree (SR local bodies allowed)
 Reads REL: Parts/<PN>.stp, BOM-v2c-F1.csv, check/meta.json (placements 4x4 row-major mm; subassemblies; screws),
-check/part_geom.json, check/bomcheck.json (STEP tree), REVLOG.md."""
+check/part_geom.json, check/bomcheck.json (STEP tree), check/harness_paths.json (revE wire path table), REVLOG.md.
+Harness (revE, Dan 2026-11-21: real round wires as in his ST185 fuse box models; his "make wires" add-in is not installed on this
+PC, so the wires are made with the Fusion API the way st185-link-ecu-config cad/fusebox/src/build_fusion.py does): the design
+CPDM-HAR-200 in Parts holds one component per wire ID (named and numbered by the wire ID) with one body each: TemporaryBRep
+cylinders for the straight runs + torus pieces for the bends at 3 x OD, joined, tinted with the wire-list colour. The STEP copy
+(Parts/CPDM-HAR-200.stp) has the same tree: CPDM-HAR-200 > one product per wire ID; compare_tree checks both."""
 import adsk.core, adsk.fusion, os, sys, json, csv, time, re
 REL = globals().get("REL") or r"C:\Users\danie\.personal OneDrive\OneDrive\Desktop\models\custom-pdm-enclosure"   # the staged release folder
 VAR = "F1"; PROJECT = "custom-pdm"; FOLDER = "enclosure-v2c"; PARTS = "Parts"; ASM = f"custom-pdm-enclosure-v2c-{VAR}"
@@ -26,6 +32,7 @@ SR_HOME = r"C:\projects\active\sr-fastener"
 SR_STEP = re.compile(r"^(ISO4762-|ISO7380-|92015A)")            # STEP PNs that SR Fasteners bodies stand for in Fusion
 SET_SCREWS = {"92015A106": ("M3", 10.0), "92015A107": ("M3", 12.0)}   # McMaster DIN 916 cup point -> SR SSC-M (ISO 4029)
 SR_FAM = {"4762": "SSH-M", "7380": "SBH-M"}
+HARNESS = "CPDM-HAR-200"                                         # built natively (build_harness), not uploaded from its STEP
 SR_FIN = {"SSH-M": "ZN", "SBH-M": "SS", "SSC-M": "SS"}            # BOM materials: ISO 4762 steel zinc, 7380 A2, set screws 18-8
 app = adsk.core.Application.get()
 def _folder(parent, name, old=()):
@@ -62,7 +69,7 @@ def load():
     rows = [l.split("|")[1].strip() for l in open(rl, encoding="utf-8").read().splitlines() if re.match(r"^\| *[A-Z]{1,2}(\.\d+)? *\|", l)] if os.path.exists(rl) else []
     rev = rows[-1] if rows else "?"
     subs = set(meta["subassemblies"]) | {f"CPDM-ENC-100-{VAR}"}
-    ext = [pn for pn in bom if not SR_STEP.match(pn) and pn not in subs]   # part designs in Parts (SR screws are bodies, not designs)
+    ext = [pn for pn in bom if not SR_STEP.match(pn) and pn not in subs and pn != HARNESS]   # part designs in Parts (SR screws are bodies, not designs)
     return dict(proj=proj, top=top, parts=parts, meta=meta, bom=bom, ext=ext, geom=geom, rev=rev, log=[])
 def _open(df, visible=False):
     doc = next((d for d in app.documents if d.dataFile and d.dataFile.id == df.id), None)
@@ -211,6 +218,74 @@ def _fill(st, rc, places, budget_s, keep=()):
         pn, m = missing.pop(0); cache[pn] = cache.get(pn) or _find(st["parts"], pn)
         rc.occurrences.addByInsert(cache[pn], _mx(m), True)
     return len(missing)
+# ---------------- harness (revE): native round wires from the path table ----------------
+def _wire_body(d):
+    """one wire of the path table as a TemporaryBRep body (mm -> cm): cylinder per straight run, torus piece per bend (the torus
+    is made at the origin and moved: createTorus ignores its centre for a z axis, fuse box build 2026-10-14; it is cut to the
+    bend by two half-space boxes at the bend's ends), all joined. A 'chain' cable (bend tighter than the cable) = cylinders + spheres."""
+    tb = adsk.fusion.TemporaryBRepManager.get(); r = d["od"] / 20.0; U = adsk.fusion.BooleanTypes.UnionBooleanType; I = adsk.fusion.BooleanTypes.IntersectionBooleanType
+    P = lambda q: adsk.core.Point3D.create(q[0] / 10.0, q[1] / 10.0, q[2] / 10.0)
+    V = lambda q: adsk.core.Vector3D.create(q[0], q[1], q[2])
+    body = [None]
+    def add(b):
+        if body[0] is None: body[0] = b
+        else: tb.booleanOperation(body[0], b, U)
+    if d.get("chain"):
+        add(tb.createSphere(P(d["pts"][0]), r))
+        for a, b in zip(d["pts"][:-1], d["pts"][1:]): add(tb.createCylinderOrCone(P(a), r, P(b), r)); add(tb.createSphere(P(b), r))
+        return body[0]
+    for s in d["segs"]:
+        if s[0] == "L": add(tb.createCylinderOrCone(P(s[1]), r, P(s[2]), r)); continue
+        _, p1, p2, mid, c, R = s
+        r1 = V([p1[i] - c[i] for i in range(3)]); r2 = V([p2[i] - c[i] for i in range(3)]); r1.normalize(); r2.normalize()
+        n = r1.crossProduct(r2); n.normalize(); t1 = n.crossProduct(r1); t2 = n.crossProduct(r2)
+        tor = tb.createTorus(adsk.core.Point3D.create(0, 0, 0), n, R / 10.0, r)
+        m = adsk.core.Matrix3D.create(); m.translation = adsk.core.Vector3D.create(c[0] / 10.0, c[1] / 10.0, c[2] / 10.0); tb.transform(tor, m)
+        S = (4 * (R + d["od"]) + 1.0) / 10.0
+        for q, tv, rv, sg in ((p1, t1, r1, 1.0), (p2, t2, r2, -1.0)):   # keep the side after the bend's start and before its end
+            cen = adsk.core.Point3D.create(q[0] / 10.0 + sg * tv.x * S / 2, q[1] / 10.0 + sg * tv.y * S / 2, q[2] / 10.0 + sg * tv.z * S / 2)
+            tb.booleanOperation(tor, tb.createBox(adsk.core.OrientedBoundingBox3D.create(cen, tv, rv, S, S, S)), I)
+        add(tor)
+    return body[0]
+def _tint(des, name, rgb):
+    a = des.appearances.itemByName(name)
+    if a is None:
+        lib = app.materialLibraries.itemByName("Fusion Appearance Library")
+        a = des.appearances.addByCopy(lib.appearances.itemByName("Plastic - Glossy (Red)"), name)
+        for i in range(a.appearanceProperties.count):
+            pr = a.appearanceProperties.item(i)
+            if isinstance(pr, adsk.core.ColorProperty) and pr.name in ("Color", "Colour"):
+                pr.value = adsk.core.Color.create(int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255), 255); break
+    return a
+def harness_table():
+    f = os.path.join(REL, "check", "harness_paths.json"); raw = open(f, "rb").read()
+    import hashlib
+    return json.loads(raw), hashlib.sha256(raw).hexdigest()
+def build_harness(st, clear=False, budget_s=40.0):
+    """the harness design (Parts/CPDM-HAR-200): one component per wire ID of the path table, one body each. Resumable; a changed
+    path table (hash kept on the root component) clears the design first. Saved as a new version when complete and when the
+    body count and the total volume match the STEP fingerprint (check/part_geom.json). Returns the number of wires left."""
+    tab, sha = harness_table(); t0 = time.time()
+    doc, rc = _design(st, HARNESS, HARNESS, _desc(st, HARNESS), folder=st["parts"]); des = _des(doc)
+    if des.designType == adsk.fusion.DesignTypes.ParametricDesignType: des.designType = adsk.fusion.DesignTypes.DirectDesignType
+    at = rc.attributes.itemByName("custompdm", "paths_sha")
+    if clear or (at is not None and at.value != sha) or (at is None and rc.occurrences.count):
+        for i in range(rc.occurrences.count - 1, -1, -1): rc.occurrences.item(i).deleteMe()
+    rc.attributes.add("custompdm", "paths_sha", sha)
+    have = {rc.occurrences.item(i).component.name for i in range(rc.occurrences.count)}
+    for w in sorted(tab):
+        if w in have: continue
+        if time.time() - t0 > budget_s: break
+        d = tab[w]; occ = rc.occurrences.addNewComponent(adsk.core.Matrix3D.create()); c = occ.component
+        c.name = w; c.partNumber = w; c.description = d["desc"][:1000]
+        b = c.bRepBodies.add(_wire_body(d)); b.name = w
+        b.appearance = _tint(des, "Wire " + (d["color"] if d["kind"] == "wire" else "cable jacket"), d["rgb"]); have.add(w)
+    left = len(tab) - len(have)
+    if not left:
+        bad = geom_problems(st["geom"][HARNESS], design_geom(doc), tol_vol=0.01) if HARNESS in st["geom"] else ["no STEP fingerprint"]
+        st.setdefault("synced", {})[HARNESS] = "native build ok" if not bad else f"MISMATCH: {bad}"
+        if not bad and doc.isModified: doc.save(f"release {st['rev']}: {len(tab)} round wires from the path table {sha[:12]}")
+    return left
 def _latest_refs(doc):
     n = 0
     for i in range(doc.documentReferences.count):
@@ -365,14 +440,18 @@ def compare_tree(st):
     for d, n, f, c in tree:
         k = (d, step_key(n) or n); want[k] = want.get(k, 0) + c
     got = {}; probs = []
-    def walk(occs, d):
+    def walk(occs, d, wires=False):
         for i in range(occs.count):
             o = occs.item(i); srk = _sr_key(o.component); pn = srk or o.component.partNumber or o.component.name
             got[(d, pn)] = got.get((d, pn), 0) + 1
             if srk:
                 if o.component.bRepBodies.count != 1: probs.append(f"{pn}: SR component with {o.component.bRepBodies.count} bodies")
                 continue
+            if wires:                                                # revE: inside the harness design, one local component per wire ID, one body
+                if o.component.bRepBodies.count != 1 or o.component.occurrences.count: probs.append(f"{pn}: wire component with {o.component.bRepBodies.count} bodies")
+                continue
             if not o.isReferencedComponent: probs.append(f"{pn}: local component (not a linked design, not SR Fasteners)"); continue
+            if pn == HARNESS: walk(o.component.occurrences, d + 1, True); continue
             if o.component.occurrences.count: walk(o.component.occurrences, d + 1)
             elif pn in st["geom"] and o.component.bRepBodies.count != st["geom"][pn]["solids"]:
                 probs.append(f"{pn}: {o.component.bRepBodies.count} bodies vs STEP {st['geom'][pn]['solids']}")
