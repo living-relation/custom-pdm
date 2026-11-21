@@ -87,6 +87,14 @@ MCP2562FD = dict(src="Microchip MCP2562FD DS20005284A", idd_stby=15e-6, tprop=12
                  can_dc=(-58, 58), can_iso7637=(-150, 100))   # 1.0 DC / AC tables; standby IDDS incl. IIO (max)
 TSR = dict(src="Traco TSR 1 series data sheet (2026-10-08)", vin_min=6.5, vin_max=36.0, acc=0.02, line=0.002,
            load=0.004, tc=0.00015, overshoot=0.01, step_dv=0.200, step_t=350e-6, i_noload=1e-3, cap_max=470e-6)
+# hw5v (2026-11-21): the 5 V converter on both main boards (A U15 / B U13 TSR 1-2450 -> TI LMZM23601V5, new ref).
+# acc: initial accuracy over VIN 4-36 V and TJ -40..125 C (6.5, limits over the full TJ range); dmax: fixed-output max
+# duty (6.5); rdrop: HS RDS(on) 0.22 + inductor DCR 0.39 Ohm (6.5); uvlo: VIN rising 3.85 max / hysteresis 0.2 min (6.5);
+# i_noload: 32 uA at 12 V in, 5 V out (6.6); pfm_rise: no-load output about 1 % higher in auto PFM (7.3.7.2);
+# step_dv: 0.02 -> 0.22 A step, ASSUMED from the averaged model in tools/verify_spice.py (module5v) x 2.
+LMZM23601 = dict(src="TI LMZM23601 SNVSAQ4C rev C (2023-03)", vin_min=4.0, vin_max=36.0, vin_abs=40.0, acc=0.015,
+                 dmax=0.93, rdrop=0.61, uvlo=(3.85, 0.2), i_noload=32e-6, pfm_rise=0.01, cap_max=220e-6,
+                 step_dv=0.05, i_load_max=0.22, tj_max=125.0)
 TLV1117LV = dict(src="TI TLV1117LV SBVS160C", vdo_200ma=0.09, vin_max_abs=6.0, acc=0.01, iq=0.1e-3)   # dropout typ, IQ (est.)
 MB85RC64TA = dict(src="RAMXEED MB85RC64TA DS501-00044-5v0-E", endurance=1e13, istby=9e-6)          # read/write cycles per byte
 RESISTOR_TOL = {"0805W8F": 0.01, "0603WAF": 0.01, "RT0805DRD": 0.005}       # Uniroyal 1 %, Yageo RT 0.5 %

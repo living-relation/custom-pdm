@@ -50,6 +50,10 @@ try {
     if ($LASTEXITCODE) { throw 'd2_tvs.py sch failed' }
     & $py9 "$repo\tools\hw_protect.py" sch A                  # hwprotect: NRST / VDDA caps, USB ESD diodes
     if ($LASTEXITCODE) { throw 'hw_protect.py sch failed' }
+    & $py9 "$repo\tools\hw_5v_module.py" lib                  # hw5v: 125 C 5 V module footprint (TI SIL0010A land pattern)
+    if ($LASTEXITCODE) { throw 'hw_5v_module.py lib failed' }
+    & $py9 "$repo\tools\hw_5v_module.py" sch A                # hw5v: LMZM23601V5 + caps in place of the TSR U15
+    if ($LASTEXITCODE) { throw 'hw_5v_module.py sch failed' }
     & $kc10 sch export netlist --format kicadxml -o "$Out\net.xml" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_swap_board_a.py" DingoPDM.kicad_pcb "$Out\net.xml" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_swap_board_a.py failed' }
@@ -77,6 +81,8 @@ try {
     if ($LASTEXITCODE) { throw 'd2_tvs.py pcb failed' }
     & $py9 "$repo\tools\hw_protect.py" pcb DingoPDM.kicad_pcb "$Out\board-a.net" A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # hwprotect: new parts placed + connected (last stage)
     if ($LASTEXITCODE) { throw 'hw_protect.py pcb failed' }
+    & $py9 "$repo\tools\hw_5v_module.py" pcb DingoPDM.kicad_pcb "$Out\board-a.net" A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # hw5v: TSR out, 125 C module in its outline (last stage)
+    if ($LASTEXITCODE) { throw 'hw_5v_module.py pcb failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3

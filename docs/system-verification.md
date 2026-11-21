@@ -64,10 +64,10 @@ ran items 1-8; DansPC WSL ran the Renode bench (Renode 1.17.0, arm-none-eabi-gcc
 
 | Check | Result | Verdict |
 |---|---|---|
-| CAN works from | 6.35 V battery (worst at 25 C); with every TSR tolerance stacked at -40 C +5V is 4.44 V (< 4.5 V) | PASS / WARN |
-| +3V3 regulated from / >= 2.7 V from | 5.2 V / 4.65 V battery (TSR dropout below 6.5 V ASSUMED 1 V) | PASS / WARN |
-| 6 V crank | +5VP 4.45, +5V 4.16, +3V3 3.25 V: CAN drops out, outputs and MCU stay | WARN |
-| 16 V / 24 V jump start | TSR, LDO, PROFET inside their ratings | PASS |
+| CAN works from | 5.85 V battery (worst); at -40 C +5V is 4.54 V (LMZM23601V5 accuracy holds over TJ -40..125 C; hw5v, was 6.35 V / 4.44 V with the TSR) | PASS |
+| +3V3 regulated from / >= 2.7 V from | 4.6 V / 4.25 V battery (module dropout 0.93 x VIN - 0.61 Ohm x I, SNVSAQ4C 6.5; hw5v) | PASS |
+| 6 V crank | +5VP 4.92, +5V 4.63, +3V3 3.25 V: CAN, outputs and MCU stay (hw5v; was 4.45 / 4.16 V with the TSR) | PASS |
+| 16 V / 24 V jump start | 5 V module, LDO, PROFET inside their ratings; clamped surges 33.8 V at the module (36 V recommended, 40 V abs max; verify_spice module5v) | PASS |
 | Brown-out | firmware sets no BOR level; factory option byte = BOR off: 1.7-2.7 V unprotected at 144 MHz / 4 wait states | **FAIL** -> fixed (fwsafety): the firmware writes BOR level 3 once at its first start (>= 10 V battery), host sim s0 + Renode |
 | Reverse battery: logic, PROFETs, inputs, CAN | blocked / data-sheet setup / 2.9 mA / -58 V rating | PASS |
 | Reverse battery: board B freewheel diodes D13-D28 | forward across the reversed battery through the PROFET (stock Max the same); kept fitted by hwprotect (removing them fails the A/C clutch turn-off, see below) | **FAIL** (design choice) |
@@ -99,7 +99,7 @@ signals; BOOT0 / BOOT1 fine. WARN: board B PA15 (JTDI pull-up at reset) drives P
 NRST has no capacitor (both boards, stock). Clocks: VCO 288 MHz, SYSCLK 144, USB 48.00, APB1 36 MHz: PASS. CAN
 1 Mbit/s: 18 tq, sample point 88.9 %, SJW 1, oscillator tolerance +-2778 ppm vs about +-110 ppm crystal, bus up to
 about 40 m: PASS. Watchdog: none (stock): WARN -> built (fwsafety): IWDG 1.00 / 1.47 / 2.77 s at LSI 47 / 32 / 17 kHz, refreshed only when all five essential threads ran (longest gap 251 ms host sim, 362 ms Renode), RTC-refreshed in sleep. FRAM: written only on a config save: PASS.
-Sleep: 6.2 mA (25 C) / 14.1 mA (85 C) for the whole PDM (TSR no-load 1 mA x 3, battery dividers, op-amps): WARN.
+Sleep: 3.3 mA (25 C) / 11.2 mA (85 C) for the whole PDM (battery dividers, op-amps; the 5 V module draws 32 uA, the TSR drew 1 mA x 3; hw5v): WARN.
 CPU load: not measurable without a cycle model: bench.
 
 ## 5. CAN system (S4: 10 of 10)
@@ -171,7 +171,7 @@ failed, 60 C cabin): laminate = U6 + 9.6 .. 19.0 K, Tj = U6 + 1.7 .. 19.8 K.
 ## Left for the coordinator (real problems / design choices; data above)
 
 1. Board B MCP9808 at 96-110 C in normal use vs the stock 80 C critical (and 55 C warn): done in firmware (fwsafety:
-   98 / 104 C, table above); the board B logic area: crystal and X5R caps now 125 C parts (hwprotect); the TSR still 85 C (footprint change).
+   98 / 104 C, table above); the board B logic area: crystal and X5R caps now 125 C parts (hwprotect); the TSR is now a TJ 125 C TI LMZM23601V5 (hw5v, docs/parts-audit.md section 16).
 2. Board B freewheel diodes BYG23M: reverse-battery short (FAIL) and PWM of fans above about 30 Hz (FAIL): remove /
    replace with a larger diode / reverse-polarity protection on the feed; the fan presets' 100 Hz soft start.
    hwprotect: kept fitted (removing them fails the A/C clutch turn-off); options below and parts-audit 15.4.
@@ -188,8 +188,8 @@ failed, 60 C cabin): laminate = U6 + 9.6 .. 19.0 K, Tj = U6 + 1.7 .. 19.8 K.
   the top side in free space; no other part moved (`tools/board_semdiff.py`). USB ESD at the MCU end of the lines
   (the connector end has no free site).
 - **Item 1 (board B):** crystal and the five X5R capacitors are 125 C parts in the same footprints. U13 (TSR 1-2450,
-  85 C) stays: every same-footprint 5 V converter found stops at 85-90 C; a 125 C converter needs a footprint change
-  (left for the coordinator).
+  85 C) stayed: every same-footprint 5 V converter found stops at 85-90 C; replaced 2026-11-21 by a TJ 125 C TI
+  LMZM23601V5 inside the TSR outline (hw5v, docs/parts-audit.md section 16).
 - **Item 2 (board B freewheel diodes): kept fitted, design choice open.** The PROFET data sheets (8.4.1) want the
   reverse current limited by the load, so the GND -> OUT diodes short a reversed battery. Without them every turn-off
   goes into the switch clamp: `python tools/verify_power.py --no-freewheel-b` gives A/C clutch (B OUT6, L 50-200 mH
