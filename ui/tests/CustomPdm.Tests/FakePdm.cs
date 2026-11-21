@@ -140,7 +140,16 @@ public sealed class FakePdm
         foreach (var d in _devices) d.SuccessNotification += Notes.Add;
     }
 
-    private readonly List<FwDevice> _devices;
+    private List<FwDevice> _devices;
+
+    // uipolish: File > Open (MainLayout.HandleOpen): the project's devices are replaced by the loaded ones
+    public void Open(List<domain.Interfaces.IDevice> loaded)
+    {
+        Mgr.ClearDevices();
+        Mgr.AddDevices(loaded);
+        _devices = Mgr.GetDevicesByType<FwDevice>().ToList();
+        foreach (var d in _devices) d.SuccessNotification += Notes.Add;
+    }
 
     public FwDevice Dev(string role) => _devices.Single(d => d.Name == role);
     public PdmView View => Service.BuildView();

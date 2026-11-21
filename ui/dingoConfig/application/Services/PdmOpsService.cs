@@ -38,6 +38,15 @@ public class PdmOpsService : IDisposable
     public IReadOnlyList<PdmBoard> ConnectWaiting() => AutoReader.Waiting(BuildView());
     public void AnswerConnect(FwDevice dev, PdmConnectAnswer answer) => AutoReader.Answer(dev, answer);
 
+    // uipolish: the answer "Keep the PC's settings (write them to the PDM)" to the one question of /pdm: the asking
+    // boards keep the PC values (nothing is read over them) and the Write All of the PDM starts at once. Returns why
+    // the write did not start (a board missing or offline: the settings are still kept), or null when it started.
+    public string? KeepPcAndWrite(IEnumerable<PdmBoard> asks, bool adapterConnected, DateTime? now = null)
+    {
+        foreach (var b in asks) AutoReader.Answer(b.Device, PdmConnectAnswer.KeepPc);
+        return Start(PdmOpKind.WriteAll, adapterConnected, now);
+    }
+
     private void EnsureTimer()
     {
         lock (_timerLock)

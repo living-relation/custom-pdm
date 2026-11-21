@@ -60,6 +60,12 @@ public class CustomPdmSettings
     // against the sim. Not saved: a project loaded from a file counts as not read.
     [JsonIgnore] public bool FactoryNew { get; set; }
 
+    // uipolish (PdmProjectFile.cs): saved with the project: the values of this board were a complete set (read from a
+    // board, New PDM, starter, or loaded from such a file). null = a file from before this marker.
+    [JsonPropertyName("completeSettings")] public bool? CompleteSettings { get; set; }
+    // this board came from a project file with a complete set: writable without a Read All, asked about on connect
+    [JsonIgnore] public bool FromFile { get; set; }
+
     [JsonIgnore] public int DeviceType { get; private set; }
     [JsonIgnore] public int NumOutputs { get; private set; }
     [JsonIgnore] public int NumDigitalInputs { get; private set; }

@@ -146,6 +146,7 @@ public sealed class PcTool(SimBus bus, FwDevice dev)
     public FwDevice Dev { get; } = dev;
     public List<string> Notes { get; } = [];
     public List<(int Id, byte[] Data)> Seen { get; } = [];
+    public double GapMs { get; set; } = 2;   // bus time between the frames the PC sends (uipolish: Write All speed)
     private ConcurrentDictionary<(int BaseId, int Index, int SubIndex), DeviceCanFrame> _queue = new();
     private readonly Queue<CanFrame> _pending = new();
     private bool _hooked;
@@ -183,7 +184,7 @@ public sealed class PcTool(SimBus bus, FwDevice dev)
         {
             var batch = new List<CanFrame>();
             while (_pending.Count > 0 && batch.Count < 64) batch.Add(_pending.Dequeue());
-            Feed(bus.Tx(batch));
+            Feed(bus.Tx(batch, GapMs));
         }
     }
 

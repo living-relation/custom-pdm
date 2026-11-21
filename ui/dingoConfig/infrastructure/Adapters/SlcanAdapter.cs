@@ -216,6 +216,7 @@ public class SlcanAdapter : ICommsAdapter
         if (Io == null) return Task.FromResult(false);
 
         var frameBuffer = new byte[22];
+        var pacer = new domain.CustomPdm.PdmPacer(TimeSpan.FromMilliseconds(InterFrameDelayMs)); // custom-pdm: the first frame goes at once
         try
         {
             for (var i = 0; i < frames.Count; i++)
@@ -231,12 +232,14 @@ public class SlcanAdapter : ICommsAdapter
                     Thread.Sleep(1);
                 }
                 
+                // Keep bursts within what common SLCAN firmware can reliably drain.
+                // custom-pdm: the same 2 ms gap, on the fine clock. Was Thread.Sleep(InterFrameDelayMs) after the
+                // write: 15.6 ms per frame on Windows, 41 s for the 2646 frames of one Write All (PdmPacer.cs).
+                pacer.Wait();
+
                 var len = EncodeFrame(frame, frameBuffer, 0);
                 Io.Write(frameBuffer, 0, len);
-                
-                // Keep bursts within what common SLCAN firmware can reliably drain.
-                if (i < frames.Count - 1)
-                    Thread.Sleep(InterFrameDelayMs);
+                pacer.Sent(); // custom-pdm
             }
         }
         catch (InvalidOperationException)

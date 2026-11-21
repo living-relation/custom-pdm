@@ -59,36 +59,18 @@
         @* p2a: a board connected while the PC holds unsaved edits for it (domain/CustomPdm/PdmAutoRead.cs)
            uiwalk: several boards asking at once (New PDM with the PDM on the bus) is ONE question for the PDM *@
         var asks = Pdm.ConnectAsks().Where(a => PdmPageText.AskNow(a.Role, busy, results)).ToList();
-        @if (asks.Count > 1)
+        @* uipolish: always ONE question for the PDM (also for one board, and for an opened project file); Keep writes *@
+        @if (asks.Count > 0)
         {
             <MudAlert Severity="Severity.Warning" Class="mb-2" id="connect-ask-all">
                 <MudText Typo="Typo.body2">
-                    <b>@PdmPageText.ConnectAskText(asks.Select(a => a.Role).ToList(), asks.All(a => a.Device.CustomPdm?.FactoryNew == true && !a.Device.FullReadDone))</b>
+                    <b>@PdmPageText.ConnectAskText(asks.Select(a => a.Role).ToList(), PdmPageText.AskKind(asks))</b>
                 </MudText>
                 <MudStack Row="true" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
                     <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" id="connect-keep-all"
-                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
+                               OnClick="@(() => KeepPc(asks))">@PdmPageText.KeepPcButton</MudButton>
                     <MudButton Variant="Variant.Outlined" Size="Size.Small" id="connect-take-all"
-                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.TakeBoard))">Take the boards' settings (Read All)</MudButton>
-                </MudStack>
-            </MudAlert>
-        }
-        @foreach (var ask in asks.Count > 1 ? [] : asks)
-        {
-            var dev = ask.Device;
-            <MudAlert Severity="Severity.Warning" Class="mb-2" id="@($"connect-ask-{ask.Role}")">
-                <MudText Typo="Typo.body2">
-                    <b>@ask.Role connected.</b>
-                    @(dev.CustomPdm?.FactoryNew == true && !dev.FullReadDone
-                        ? "The PC holds the New PDM settings for it, not written yet."
-                        : "The PC has changes for it that are not on the board yet.")
-                    Which settings do you want?
-                </MudText>
-                <MudStack Row="true" Spacing="2" Class="mt-2">
-                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
-                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
-                    <MudButton Variant="Variant.Outlined" Size="Size.Small"
-                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.TakeBoard))">Take the board's (Read All of @ask.Role)</MudButton>
+                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.TakeBoard))">@PdmPageText.TakePdmButton</MudButton>
                 </MudStack>
             </MudAlert>
         }
@@ -198,7 +180,11 @@
                                          Color="@(dev.Connected ? Color.Success : Color.Default)">
                                     @(dev.Connected ? "Connected" : "Offline")
                                 </MudChip>
-                                @if (!dev.FullReadDone && dev.CustomPdm?.FactoryNew == true)
+                                @if (!dev.FullReadDone && dev.CustomPdm?.FromFile == true)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">Project file settings, not read from the board</MudChip>
+                                }
+                                else if (!dev.FullReadDone && dev.CustomPdm?.FactoryNew == true)
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">New PDM: factory settings, not read</MudChip>
                                 }
@@ -494,6 +480,14 @@
     private void AnswerAll(IReadOnlyList<PdmBoard> asks, PdmConnectAnswer answer)
     {
         foreach (var b in asks) Pdm.AnswerConnect(b.Device, answer);
+    }
+
+    // uipolish: "Keep the PC's settings (write them to the PDM)": the Write All starts at once when it can
+    private void KeepPc(IReadOnlyList<PdmBoard> asks)
+    {
+        var refused = Pdm.KeepPcAndWrite(asks, AdapterManager.IsConnected);
+        if (refused == null) Notification.NewInfo("PC settings kept: PDM Write All started (A1, A2, B)");
+        else Notification.NewWarning($"PC settings kept, but not written yet: {refused} Press Write All when that is fixed.");
     }
 
     // p2a: a Read All started by a board that connected (PdmAutoRead)

@@ -10,7 +10,9 @@ namespace domain.CustomPdm;
 //   base ID 0x500 = board A1, so the next write goes to the wrong board), and Write Modified skips values equal to the
 //   PC default: both are off for types 14 / 15;
 // - Write All before any Read All would write those PC defaults (e.g. 500K): it is refused until a full Read All of
-//   that device succeeded in this session (FwDevice.FullReadDone; a loaded project file counts as not read).
+//   that device succeeded in this session (FwDevice.FullReadDone), or the PC values are a complete set from a New PDM
+//   or from a project file saved with one (PdmProjectFile, uipolish 2026-11-21; a hand-added board that was never
+//   read stays blocked, also after a save and a load).
 public static class CustomPdmGuards
 {
     public const string ModifiedOffReason =
@@ -28,7 +30,8 @@ public static class CustomPdmGuards
 
     // B3 (u2a): a board of a "New PDM" project holds our factory defaults on the PC (PdmFactoryDefaults, proven equal
     // to the firmware's against the sim), so its Write All is as safe as one after a Read All.
-    public static bool ReadOrFactoryNew(FwDevice device) => device.FullReadDone || device.CustomPdm?.FactoryNew == true;
+    // uipolish: so does a board loaded from a project file that was saved with a complete set (PdmProjectFile).
+    public static bool ReadOrFactoryNew(FwDevice device) => PdmProjectFile.Complete(device);
 
     // Why a config operation must not run (null = allowed). allParams false = the Modified variants.
     public static string? ReadBlockedReason(IDeviceConfigurable device, bool allParams) =>
