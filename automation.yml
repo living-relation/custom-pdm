@@ -344,13 +344,13 @@ automations:
     owner: claude
   - id: enclosure-harness
     script: harness/src/enclosure_harness.py
-    helpers: []
-    trigger: manual                 # harness/circuit-list.md; the xlsx is the source of truth (wirelist only fills it once)
-    reads: [harness/enclosure-wire-list.xlsx]   # route geometry copied from enclosure/v2c/src/build_v2c.py rev D (ROUTE table in the script)
-    writes: [harness/enclosure-wire-list.csv, harness/enclosure.harness, harness/enclosure.harnesslib]
+    helpers: [harness/src/wiring_diagram.py]
+    trigger: manual                 # harness/circuit-list.md; the three CSVs are the master (Dan 2026-11-21), nothing writes them
+    reads: [harness/enclosure-wire-list.csv, harness/enclosure-connectors.csv, harness/enclosure-key.csv]   # route geometry copied from enclosure/v2c/src/build_v2c.py rev D (ROUTE table in the script)
+    writes: [harness/enclosure.harness, harness/enclosure.harnesslib, harness/enclosure-wiring-diagram.svg, harness/enclosure-wiring-diagram-sheet2.svg, harness/enclosure-wiring-diagram-sheet3.svg, harness/enclosure-wiring-diagram.pdf]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python harness/src/enclosure_harness.py build
+    run_cmd: python harness/src/enclosure_harness.py build && python harness/src/enclosure_harness.py diagram   # optional Excel copy (git-ignored): ... xlsx
     check_cmd: python harness/src/enclosure_harness.py check
     owner: claude

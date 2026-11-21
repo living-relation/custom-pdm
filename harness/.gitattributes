@@ -1,0 +1,2 @@
+# the PDF is plain bytes: never convert its line ends
+*.pdf binary
