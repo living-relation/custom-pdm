@@ -66,10 +66,31 @@ public static partial class PdmPageText
 
     // One question for the PDM when several boards ask at once (New PDM with the three boards on the bus asked
     // three times, once per board).
-    public static string ConnectAskText(IReadOnlyList<string> roles, bool allFactoryNew) =>
-        $"{string.Join(", ", roles)} connected. " +
-        (allFactoryNew
-            ? "The PC holds the New PDM settings, not written yet."
-            : "The PC has changes that are not on the boards yet.") +
+    // uipolish (2026-11-21): always one question, also for one board and for an opened project file; "Keep" writes.
+    public static string ConnectAskText(IReadOnlyList<string> roles, PdmAskKind kind) =>
+        (PdmOps.Roles.All(roles.Contains) ? "The PDM is connected. " : $"{string.Join(", ", roles)} connected. ") +
+        kind switch
+        {
+            PdmAskKind.NewPdm => "The PC holds the New PDM settings, not written yet.",
+            PdmAskKind.ProjectFile => "The PC holds the settings of the project file; the PDM may hold other ones.",
+            _ => "The PC has changes that are not on the PDM yet."
+        } +
         " Which settings do you want?";
+
+    // uipolish: a path typed or pasted into the Open File dialog: spaces and the quotes of "Copy as path" go
+    public static string TypedPath(string? typed) => (typed ?? "").Trim().Trim('"', '\'').Trim();
+
+    public const string KeepPcButton = "Keep the PC's settings (write them to the PDM)";
+    public const string TakePdmButton = "Take the PDM's settings";
+
+    // What the PC holds for the boards that ask: a project file, a New PDM, or edits made after a read / write
+    public static PdmAskKind AskKind(IReadOnlyList<PdmBoard> asks)
+    {
+        var fresh = asks.Where(a => !a.Device.FullReadDone).ToList();
+        if (fresh.Count != asks.Count || asks.Count == 0) return PdmAskKind.Edits;
+        if (fresh.All(a => a.Device.CustomPdm?.FromFile == true)) return PdmAskKind.ProjectFile;
+        return fresh.All(a => a.Device.CustomPdm?.FactoryNew == true) ? PdmAskKind.NewPdm : PdmAskKind.Edits;
+    }
 }
+
+public enum PdmAskKind { NewPdm, ProjectFile, Edits }

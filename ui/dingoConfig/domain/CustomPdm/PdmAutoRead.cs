@@ -38,7 +38,8 @@ public class PdmAutoRead
         lock (_lock)
         {
             var synced = _boards.TryGetValue(dev.Guid, out var b) ? b.Synced : null;
-            if (synced == null) return dev.CustomPdm?.FactoryNew == true;
+            // uipolish: a board loaded from a complete project file is like a New PDM: its settings are not on the board yet
+            if (synced == null) return dev.CustomPdm is { FactoryNew: true } or { FromFile: true };
             var now = Values(dev);
             return now.Length != synced.Length || now.Where((v, i) => !Equals(v, synced[i])).Any();
         }

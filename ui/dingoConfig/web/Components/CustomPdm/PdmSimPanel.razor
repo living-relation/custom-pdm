@@ -1,0 +1,147 @@
+@using System.Globalization
+@using application.Services
+@using domain.CustomPdm
+@using domain.Interfaces
+@using web.Services
+@inject PdmSimService Sim
+@inject ICommsAdapterManager AdapterManager
+@inject NotificationService Notification
+
+@* custom-pdm uipolish (domain/CustomPdm/PdmSim.cs): shown only while the CAN adapter is the simulator bridge.
+   Sets what a bench would: an input wire, a load on an output, a board temperature, the analog input voltage, the
+   frames an ECU / keypad would send, and a power cycle. Every button sends one of the bridge's play lines. *@
+@if (Sim.IsSimulator)
+{
+    var fields = PdmSim.Fields(View);
+    <MudPaper Outlined="true" Class="pa-3 mb-4" id="pdm-sim" Style="border-color: var(--mud-palette-info)">
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Info" />
+            <MudText Typo="Typo.h6">Simulator</MudText>
+            <MudText Typo="Typo.caption">The boards on the bus are simulated. Set what the car would do; nothing here changes a setting.</MudText>
+            <MudSpacer />
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.PowerSettingsNew" id="pdm-sim-restart"
+                       OnClick="@(() => Send(PdmSim.RestartLine(View), null, "Power cycle of the PDM (burned settings stay)"))">Power cycle</MudButton>
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2">
+            <MudText Typo="Typo.body2" Style="min-width: 110px"><b>Input wire</b></MudText>
+            <MudSelect T="int" @bind-Value="_in" Label="Input" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-in" ToStringFunc="@InText">
+                @foreach (var r in View.Inputs.Where(r => r.Digital != null)) { <MudSelectItem T="int" Value="@r.Number">IN@(r.Number) @r.Name (@r.Board)</MudSelectItem> }
+            </MudSelect>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-in-gnd" OnClick="@(() => SetInput("gnd"))">To ground</MudButton>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-in-12v" OnClick="@(() => SetInput("12v"))">To 12 V</MudButton>
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-in-open" OnClick="@(() => SetInput("open"))">Open</MudButton>
+            <MudText Typo="Typo.caption">ON / OFF follows the input's pull and invert settings, as on the car.</MudText>
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2">
+            <MudText Typo="Typo.body2" Style="min-width: 110px"><b>Load</b></MudText>
+            <MudSelect T="int" @bind-Value="_out" Label="Output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-out" ToStringFunc="@OutText">
+                @foreach (var r in View.Outputs) { <MudSelectItem T="int" Value="@r.Number">@r.Number @PdmFaults.OutputLabel(r)</MudSelectItem> }
+            </MudSelect>
+            <MudNumericField T="double" @bind-Value="_amps" Label="Draws (A), 0 = nothing connected" Min="0" Max="@PdmSim.MaxAmps" Step="1" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 230px" Class="pdm-sim-amps" />
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-load" OnClick="SetLoad">Set load</MudButton>
+        </MudStack>
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2">
+            <MudText Typo="Typo.body2" Style="min-width: 110px"><b>Board</b></MudText>
+            <MudSelect T="string" @bind-Value="_board" Label="Board" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 100px" Class="pdm-sim-board">
+                @foreach (var b in View.Boards) { <MudSelectItem T="string" Value="@b.Role">@b.Role</MudSelectItem> }
+            </MudSelect>
+            <MudNumericField T="double" @bind-Value="_tempC" Label="Temperature (C)" Min="-40" Max="150" Step="5" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 150px" Class="pdm-sim-temp-c" />
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-temp" OnClick="@(() => Send(PdmSim.TempLine(View, Board, _tempC), $"TEMP {Board}", $"Board {Board} at {_tempC:0.#} C"))">Set temperature</MudButton>
+            <MudNumericField T="double" @bind-Value="_volts" Label="Analog input (V)" Min="0" Max="@PdmSim.MaxVolts" Step="0.5" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 150px" Class="pdm-sim-volts" />
+            <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-an" OnClick="@(() => Send(PdmSim.AnalogLine(View, Board, _volts), $"AN {Board}", $"Analog input of {Board} at {_volts:0.##} V"))">Set analog</MudButton>
+        </MudStack>
+
+        <MudText Typo="Typo.body2" Class="mt-3"><b>ECU / CAN frames the setup listens to</b> (sent every @(PdmEcu.DefaultPeriodMs) ms while on)</MudText>
+        @if (fields.Count == 0)
+        {
+            <MudText Typo="Typo.caption">This setup reads nothing from an ECU or a keypad yet (Functions: "switched by the ECU", CAN values; Values: keypad buttons).</MudText>
+        }
+        else
+        {
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                @foreach (var f in fields)
+                {
+                    var ff = f;
+                    <MudNumericField T="double" Value="@Value(ff)" ValueChanged="@((double x) => SetValue(ff, x))" Label="@ff.Name" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     Style="min-width: 250px; max-width: 320px" Class="pdm-sim-field" />
+                }
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Info" id="pdm-sim-frames-on" OnClick="@(() => SendFrames(fields))">@(_sending ? "Update frames" : "Send frames")</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" id="pdm-sim-frames-off" Disabled="@(!_sending)" OnClick="@(() => StopFrames(fields))">Stop (as if the ECU went silent)</MudButton>
+            </MudStack>
+        }
+
+        @if (Sim.SetLines is { Count: > 0 } set)
+        {
+            <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap" Class="mt-2" id="pdm-sim-set">
+                @foreach (var line in set) { <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@line</MudChip> }
+            </MudStack>
+        }
+        @if (Sim.LastReply is { } reply)
+        {
+            <MudText Typo="Typo.caption" Class="mt-1" Style="display: block" Color="@(reply.StartsWith("ERR") ? Color.Error : Color.Default)" id="pdm-sim-reply">Simulator: @reply</MudText>
+        }
+    </MudPaper>
+}
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private int _in = 1, _out = 1, _renders;
+    private double _amps = 5, _tempC = 25, _volts = 2.5;
+    private string _board = "B";
+    private bool _sending;
+    private readonly Dictionary<string, double> _values = new();
+
+    private string Board => View.RoleOr(_board) ?? _board;
+
+    // the parent refreshes at 10 Hz: every 2 s ask an adapter that has not answered whether it is the simulator
+    protected override void OnParametersSet()
+    {
+        if (!Sim.IsSimulator && AdapterManager.IsConnected && _renders++ % 20 == 0) Sim.Probe();
+        if (!Sim.IsSimulator) _sending = false;
+    }
+
+    // the picked row in words also when the list was not there at the first render (project loaded later)
+    private string InText(int n) => View.Inputs.FirstOrDefault(r => r.Number == n && r.Digital != null) is { } r ? $"IN{r.Number} {r.Name} ({r.Board})" : n.ToString();
+    private string OutText(int n) => View.Outputs.FirstOrDefault(r => r.Number == n) is { } r ? $"{r.Number} {PdmFaults.OutputLabel(r)}" : n.ToString();
+
+    private double Value(PdmSimField f) => _values.GetValueOrDefault(f.Key);
+
+    private void SetValue(PdmSimField f, double x) => _values[f.Key] = x;
+
+    private void Send(string? line, string? what, string done)
+    {
+        var refused = Sim.Send(line, what);
+        if (refused != null) Notification.NewError($"Simulator: {refused}");
+        else Notification.NewInfo($"Simulator: {done}");
+    }
+
+    private void SetInput(string wire) => Send(PdmSim.InputLine(View, _in, wire), $"IN {_in}",
+        $"IN{_in} {(wire == "open" ? "open" : wire == "gnd" ? "to ground" : "to 12 V")}");
+
+    private void SetLoad() => Send(PdmSim.LoadLine(View, _out, _amps), $"LOAD {_out}",
+        string.Create(CultureInfo.InvariantCulture, $"output {_out} draws {_amps:0.#} A when on"));
+
+    private void SendFrames(IReadOnlyList<PdmSimField> fields)
+    {
+        foreach (var (id, data) in PdmSim.Frames(fields, Value))
+            if (Sim.Send(PdmSim.FrameLine(id, data, PdmEcu.DefaultPeriodMs), $"TXP {id:X}") is { } refused)
+            {
+                Notification.NewError($"Simulator: {refused}");
+                return;
+            }
+
+        _sending = true;
+        Notification.NewInfo("Simulator: frames on");
+    }
+
+    private void StopFrames(IReadOnlyList<PdmSimField> fields)
+    {
+        foreach (var id in fields.Select(f => f.Id).Distinct()) Sim.Send(PdmSim.StopLine(id), $"TXP {id:X}");
+        _sending = false;
+        Notification.NewInfo("Simulator: frames stopped");
+    }
+}

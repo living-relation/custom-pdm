@@ -27,6 +27,17 @@
     .pdm-grid .mud-table-cell { padding: 4px 6px !important; }
     .pdm-grid th .sortable-column-header { white-space: normal; line-height: 1.2; }
     .pdm-grid th .column-options { display: none !important; }
+    /* uipolish: phone / narrow window: the two grids keep their column widths and scroll sideways inside their own
+       box (they were cut at the right edge), with the # and place columns staying in view */
+    @@media (max-width: 1100px) {
+        .pdm-grid .mud-table-container { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    }
+    /* below 600 px MudBlazor stacks every row as "label: value" lines by itself (seen at 390 px): nothing to widen */
+    @@media (min-width: 600px) and (max-width: 1100px) {
+        .pdm-grid table { min-width: 1500px; }
+        .pdm-grid th:nth-child(1), .pdm-grid td:nth-child(1) { position: sticky; left: 0; z-index: 2; background: var(--mud-palette-surface); }
+        .pdm-grid th:nth-child(2), .pdm-grid td:nth-child(2) { position: sticky; left: 30px; z-index: 2; background: var(--mud-palette-surface); }
+    }
 </style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
@@ -56,39 +67,41 @@
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="pdm-offline">@offline</MudAlert>
         }
 
+        @* uipolish: what is wrong right now, in plain words, with one button that clears the overcurrent faults *@
+        var faults = PdmFaults.Lines(_view);
+        @if (faults.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-2" id="pdm-faults">
+                @foreach (var fault in faults)
+                {
+                    <MudText Typo="Typo.body2" Class="pdm-fault-line"><b>@fault.Text</b></MudText>
+                }
+                @if (faults.Any(f => f.Reset))
+                {
+                    <MudStack Row="true" Spacing="2" Class="mt-2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Error" id="pdm-reset-faults"
+                                   Disabled="@(busy || _resetting || !AdapterManager.IsConnected)" OnClick="ResetFaults">@PdmFaults.ResetButton</MudButton>
+                        <MudText Typo="Typo.caption">Clears the overcurrent faults on all boards (nothing is burned). An output whose load is still too high trips again.</MudText>
+                    </MudStack>
+                }
+            </MudAlert>
+        }
+
         @* p2a: a board connected while the PC holds unsaved edits for it (domain/CustomPdm/PdmAutoRead.cs)
            uiwalk: several boards asking at once (New PDM with the PDM on the bus) is ONE question for the PDM *@
         var asks = Pdm.ConnectAsks().Where(a => PdmPageText.AskNow(a.Role, busy, results)).ToList();
-        @if (asks.Count > 1)
+        @* uipolish: always ONE question for the PDM (also for one board, and for an opened project file); Keep writes *@
+        @if (asks.Count > 0)
         {
             <MudAlert Severity="Severity.Warning" Class="mb-2" id="connect-ask-all">
                 <MudText Typo="Typo.body2">
-                    <b>@PdmPageText.ConnectAskText(asks.Select(a => a.Role).ToList(), asks.All(a => a.Device.CustomPdm?.FactoryNew == true && !a.Device.FullReadDone))</b>
+                    <b>@PdmPageText.ConnectAskText(asks.Select(a => a.Role).ToList(), PdmPageText.AskKind(asks))</b>
                 </MudText>
                 <MudStack Row="true" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
                     <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" id="connect-keep-all"
-                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
+                               OnClick="@(() => KeepPc(asks))">@PdmPageText.KeepPcButton</MudButton>
                     <MudButton Variant="Variant.Outlined" Size="Size.Small" id="connect-take-all"
-                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.TakeBoard))">Take the boards' settings (Read All)</MudButton>
-                </MudStack>
-            </MudAlert>
-        }
-        @foreach (var ask in asks.Count > 1 ? [] : asks)
-        {
-            var dev = ask.Device;
-            <MudAlert Severity="Severity.Warning" Class="mb-2" id="@($"connect-ask-{ask.Role}")">
-                <MudText Typo="Typo.body2">
-                    <b>@ask.Role connected.</b>
-                    @(dev.CustomPdm?.FactoryNew == true && !dev.FullReadDone
-                        ? "The PC holds the New PDM settings for it, not written yet."
-                        : "The PC has changes for it that are not on the board yet.")
-                    Which settings do you want?
-                </MudText>
-                <MudStack Row="true" Spacing="2" Class="mt-2">
-                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary"
-                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
-                    <MudButton Variant="Variant.Outlined" Size="Size.Small"
-                               OnClick="@(() => Pdm.AnswerConnect(dev, PdmConnectAnswer.TakeBoard))">Take the board's (Read All of @ask.Role)</MudButton>
+                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.TakeBoard))">@PdmPageText.TakePdmButton</MudButton>
                 </MudStack>
             </MudAlert>
         }
@@ -145,7 +158,7 @@
                 }
                 @if (busy && Pdm.Ops.LastOp == PdmOpKind.WriteAll)
                 {
-                    <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">A real board takes about 5 s per Write All (PdmOps.cs); a simulated board about 41 s (measured through the sim bridge, 2026-11-21).</MudText>
+                    <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">One board takes about 6 s (its about 2650 settings go out 2 ms apart; measured through the sim bridge, 2026-11-21).</MudText>
                 }
                 @* uiwalk: a read on connect right after a Write All / Burn must not hide how that run ended *@
                 @if (Pdm.Ops.Earlier is { } earlier)
@@ -169,6 +182,7 @@
             }
         </MudPaper>
 
+        <PdmSimPanel View="@_view" />
         <PdmSettingsPanel View="@_view" />
         <PdmTriggersPanel View="@_view" />
         <PdmLinksPanel View="@_view" />
@@ -198,7 +212,11 @@
                                          Color="@(dev.Connected ? Color.Success : Color.Default)">
                                     @(dev.Connected ? "Connected" : "Offline")
                                 </MudChip>
-                                @if (!dev.FullReadDone && dev.CustomPdm?.FactoryNew == true)
+                                @if (!dev.FullReadDone && dev.CustomPdm?.FromFile == true)
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">Project file settings, not read from the board</MudChip>
+                                }
+                                else if (!dev.FullReadDone && dev.CustomPdm?.FactoryNew == true)
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Info">New PDM: factory settings, not read</MudChip>
                                 }
@@ -366,9 +384,10 @@
                         {
                             <MudCheckBox @bind-Value="di.Enabled" Dense="true" Disabled="@busy" />
                         }
-                        else
+                        else if (context.Item.Analog is { } an)
                         {
-                            @(context.Item.Enabled ? "Yes" : "No")
+                            @* uipolish: analog inputs are set here like the other inputs (was: on the board's own page) *@
+                            <MudCheckBox @bind-Value="an.Enabled" Dense="true" Disabled="@busy" Class="@($"pdm-an-enabled-{context.Item.Number}")" />
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -378,9 +397,9 @@
                         {
                             <MudTextField @bind-Value="di.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
                         }
-                        else
+                        else if (context.Item.Analog is { } an)
                         {
-                            @context.Item.Name
+                            <MudTextField @bind-Value="an.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" Class="@($"pdm-an-name-{context.Item.Number}")" />
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -394,6 +413,11 @@
                         else if (context.Item.Analog is { } an)
                         {
                             @($"{an.Millivolts:F0} mV")
+                            @if (an.Switch.Enabled)
+                            {
+                                <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 50px;"
+                                         Color="@(an.Switch.State ? Color.Success : Color.Default)">@(an.Switch.State ? "ON" : "OFF")</MudChip>
+                            }
                         }
                     </CellTemplate>
                 </PropertyColumn>
@@ -407,6 +431,20 @@
                                     <MudSelectItem T="domain.Enums.InputMode" Value="@mode">@mode</MudSelectItem>
                                 }
                             </MudSelect>
+                        }
+                        else if (context.Item.Analog is { } an)
+                        {
+                            <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                <MudTooltip Text="Use this analog input as an on / off switch (on above the level in the last column)">
+                                    <MudCheckBox @bind-Value="an.Switch.Enabled" Dense="true" Disabled="@(busy || !an.Enabled)" Label="switch" Class="@($"pdm-an-switch-{context.Item.Number}")" />
+                                </MudTooltip>
+                                <MudSelect T="domain.Enums.InputMode" @bind-Value="an.Switch.Mode" Variant="Variant.Outlined" Dense="true" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)">
+                                    @foreach (domain.Enums.InputMode mode in Enum.GetValues(typeof(domain.Enums.InputMode)))
+                                    {
+                                        <MudSelectItem T="domain.Enums.InputMode" Value="@mode">@mode</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudStack>
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -429,9 +467,13 @@
                         {
                             <MudCheckBox @bind-Value="di.Invert" Dense="true" Disabled="@Locked(di)" />
                         }
+                        else if (context.Item.Analog is { } an)
+                        {
+                            <MudCheckBox @bind-Value="an.Switch.Invert" Dense="true" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)" />
+                        }
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Debounce (ms)" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : x.Digital.DebounceTime)" CellStyle="min-width: 100px">
+                <TemplateColumn Title="Debounce (ms) / analog level (mV)" Sortable="true" SortBy="@(x => x.Digital == null ? -1 : x.Digital.DebounceTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
@@ -439,11 +481,18 @@
                                              Value="@di.DebounceTime" Disabled="@Locked(di)"
                                              ValueChanged="@((int val) => OnDebounceChanged(di, val))" />
                         }
+                        else if (context.Item.Analog is { } an)
+                        {
+                            <MudNumericField Style="width: 92px" @key="@($"anlevel-{context.Item.Number}-{_refreshCounter}")"
+                                             Value="@an.Switch.Threshold" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)"
+                                             Class="@($"pdm-an-level-{context.Item.Number}")"
+                                             ValueChanged="@((int val) => OnAnalogLevelChanged(an, val))" />
+                        }
                     </EditTemplate>
                 </TemplateColumn>
             </Columns>
         </MudDataGrid>
-        <MudText Typo="Typo.caption">Analog inputs (rows 25-27) are read-only here: set them on the board's own page.</MudText>
+        <MudText Typo="Typo.caption" id="pdm-analog-note">Analog inputs (rows 25-27): tick "switch" to use one as an on / off input; it is on above the level (mV) in the last column. Their mV value is always there for levels and math.</MudText>
     }
 </MudContainer>
 
@@ -494,6 +543,35 @@
     private void AnswerAll(IReadOnlyList<PdmBoard> asks, PdmConnectAnswer answer)
     {
         foreach (var b in asks) Pdm.AnswerConnect(b.Device, answer);
+    }
+
+    // uipolish: "Keep the PC's settings (write them to the PDM)": the Write All starts at once when it can
+    private void KeepPc(IReadOnlyList<PdmBoard> asks)
+    {
+        var refused = Pdm.KeepPcAndWrite(asks, AdapterManager.IsConnected);
+        if (refused == null) Notification.NewInfo("PC settings kept: PDM Write All started (A1, A2, B)");
+        else Notification.NewWarning($"PC settings kept, but not written yet: {refused} Press Write All when that is fixed.");
+    }
+
+    private bool _resetting;
+
+    private async Task ResetFaults()
+    {
+        _resetting = true;
+        try
+        {
+            var refused = await Pdm.ResetFaultsAsync(AdapterManager.IsConnected);
+            if (refused != null) Notification.NewError($"Faults not reset: {refused}");
+            else Notification.NewInfo("Faults reset on the PDM. An output that is still overloaded trips again.");
+        }
+        catch (Exception ex)
+        {
+            Notification.NewError("Error resetting the faults", ex);
+        }
+        finally
+        {
+            _resetting = false;
+        }
     }
 
     // p2a: a Read All started by a board that connected (PdmAutoRead)
@@ -547,6 +625,12 @@
 
     private void OnDebounceChanged(DigitalInput item, int value) =>
         item.DebounceTime = (int)Clamp(value, 0, 1000, $"{item.Name}.DebounceTime");
+
+    private void OnAnalogLevelChanged(AnalogInput item, int value)
+    {
+        if (PdmWide.SetThreshold(item, value) is { } warn) Notification.NewWarning(warn);
+        _refreshCounter++;
+    }
 
     private double Clamp(double value, double min, double max, string what)
     {

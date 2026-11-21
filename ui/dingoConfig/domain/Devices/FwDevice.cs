@@ -630,6 +630,15 @@ public class FwDevice : IDeviceConfigurable
         var type = (MessageType)char.ToUpper(Convert.ToChar(data[0]));
         var src = (MessageSrc)data[1];
 
+        // custom-pdm: the fault / state lines of our boards get plain words after the stock text (PdmFaults.LogWords)
+        if (CustomPdm != null && PdmFaults.LogWords(this, type, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6]) is { } plain)
+        {
+            Logger.Log(type switch { MessageType.Error => LogLevel.Error, MessageType.Warning => LogLevel.Warning, _ => LogLevel.Information },
+                "{Name} ID: {BaseId}, Src: {MessageSrc} {I} {I1} {I2}: {Words}",
+                Name, BaseId, src, (data[3] << 8) + data[2], (data[5] << 8) + data[4], (data[7] << 8) + data[6], plain);
+            return;
+        }
+
         switch (type)
         {
             case MessageType.Info:

@@ -43,7 +43,8 @@ public class PdmOps(PdmOpsLinks links)
 
     // Measured against the firmware sim (ui/tests PdmLiveSimTests output, about 2500 params per board, frames 2 ms
     // apart): Read All of one board about 0.6 s, Write All about 5 s. Through the real-time SLCAN TCP sim bridge
-    // (ui/README.md) one Write All took 40 to 55 s (the sim runs slower than real time); real boards about 5 s.
+    // (ui/README.md) one Write All took 41 s per board until 2026-11-21: the SLCAN adapter's Thread.Sleep(2) between
+    // frames lasts 15.6 ms on Windows (PdmPacer.cs). Now about 5.6 s per board through the bridge, as on a real board.
     // So the write has no fixed wait (b3a, 2026-11-16): the wait restarts on every frame the PC actually sends to
     // that board and on every config-channel reply from it (NoteTraffic), and the board fails WriteIdleTimeout after
     // the last of those. WriteMaxTimeout caps one board's write in any case.

@@ -215,11 +215,26 @@ public class UiWalkTests
     [Fact]
     public void SeveralBoardsAskingIsOneQuestion()
     {
-        Assert.Equal("A1, A2, B connected. The PC holds the New PDM settings, not written yet. Which settings do you want?",
-            PdmPageText.ConnectAskText(["A1", "A2", "B"], true));
-        Assert.Equal("A1, B connected. The PC has changes that are not on the boards yet. Which settings do you want?",
-            PdmPageText.ConnectAskText(["A1", "B"], false));
+        // uipolish: the question speaks of the PDM, not of boards, when all three ask
+        Assert.Equal("The PDM is connected. The PC holds the New PDM settings, not written yet. Which settings do you want?",
+            PdmPageText.ConnectAskText(["A1", "A2", "B"], PdmAskKind.NewPdm));
+        Assert.Equal("A1, B connected. The PC has changes that are not on the PDM yet. Which settings do you want?",
+            PdmPageText.ConnectAskText(["A1", "B"], PdmAskKind.Edits));
+        Assert.Equal("The PDM is connected. The PC holds the settings of the project file; the PDM may hold other ones. Which settings do you want?",
+            PdmPageText.ConnectAskText(["B", "A1", "A2"], PdmAskKind.ProjectFile));
+        Assert.Equal(("Keep the PC's settings (write them to the PDM)", "Take the PDM's settings"),
+            (PdmPageText.KeepPcButton, PdmPageText.TakePdmButton));
     }
+
+    // uipolish: Enter in the Open File dialog's Path field
+    [Theory]
+    [InlineData("  C:\\cars\\st185.json  ", "C:\\cars\\st185.json")]
+    [InlineData("\"C:\\my cars\\st185.json\"", "C:\\my cars\\st185.json")]
+    [InlineData(" 'C:\\my cars' ", "C:\\my cars")]
+    [InlineData("\" C:\\x \"", "C:\\x")]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    public void ATypedPathLosesSpacesAndQuotes(string? typed, string path) => Assert.Equal(path, PdmPageText.TypedPath(typed));
 
     [Fact]
     public void ABoardInARunIsNotAskedAboutUntilTheRunEnds()

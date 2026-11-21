@@ -38,6 +38,42 @@ public class PdmOpsService : IDisposable
     public IReadOnlyList<PdmBoard> ConnectWaiting() => AutoReader.Waiting(BuildView());
     public void AnswerConnect(FwDevice dev, PdmConnectAnswer answer) => AutoReader.Answer(dev, answer);
 
+    // uipolish: the answer "Keep the PC's settings (write them to the PDM)" to the one question of /pdm: the asking
+    // boards keep the PC values (nothing is read over them) and the Write All of the PDM starts at once. Returns why
+    // the write did not start (a board missing or offline: the settings are still kept), or null when it started.
+    public string? KeepPcAndWrite(IEnumerable<PdmBoard> asks, bool adapterConnected, DateTime? now = null)
+    {
+        foreach (var b in asks) AutoReader.Answer(b.Device, PdmConnectAnswer.KeepPc);
+        return Start(PdmOpKind.WriteAll, adapterConnected, now);
+    }
+
+    // uipolish: the Reset faults button of /pdm (PdmFaults.cs: three live writes of the master retry input per board,
+    // ResetStepGap apart; nothing is burned, the value each board had is put back). Returns why it was refused, or null.
+    public async Task<string?> ResetFaultsAsync(bool adapterConnected, Func<TimeSpan, Task>? delay = null, TimeSpan? gap = null)
+    {
+        if (Ops.Busy) return PdmOps.BusyReason;
+        if (!adapterConnected) return PdmOps.AdapterOffReason;
+        var boards = BuildView().Boards.Where(b => b.Device.CustomPdm != null && _isConnected(b.Device)).ToList();
+        if (boards.Count == 0) return PdmOps.NoBoardReason;
+        delay ??= Task.Delay;
+        var keep = boards.Select(b => b.Device.CustomPdm!.MasterRetryInput).ToList();
+        try
+        {
+            for (var step = 0; step < 3; step++)
+            {
+                _deviceManager.SendCustomPdmFrames(boards.Select((b, i) => PdmFaults.ResetFrames(b.Device, keep[i])[step]).ToList());
+                await delay(gap ?? PdmFaults.ResetStepGap);
+            }
+        }
+        finally
+        {
+            // the board answers each write with the value it took and the PC device follows it: back to the kept one
+            for (var i = 0; i < boards.Count; i++) boards[i].Device.CustomPdm!.MasterRetryInput = keep[i];
+        }
+
+        return null;
+    }
+
     private void EnsureTimer()
     {
         lock (_timerLock)

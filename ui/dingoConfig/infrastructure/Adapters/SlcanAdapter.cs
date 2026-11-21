@@ -9,8 +9,28 @@ using domain.Models;
 
 namespace infrastructure.Adapters;
 
-public class SlcanAdapter : ICommsAdapter
+public class SlcanAdapter : ICommsAdapter, domain.CustomPdm.IPdmSimLink // custom-pdm: IPdmSimLink (PdmSim.cs)
 {
+    // custom-pdm (domain/CustomPdm/PdmSim.cs): text lines of the simulator bridge, "!...", in band with the frames
+    public event Action<string>? SimLine;
+    private readonly object _ioLock = new();   // a play line must not land inside a frame of a running batch
+
+    public bool SendSimLine(string line)
+    {
+        var io = Io;
+        if (io == null) return false;
+        try
+        {
+            var bytes = Encoding.ASCII.GetBytes(line + "\r");
+            lock (_ioLock) io.Write(bytes, 0, bytes.Length);
+            return true;
+        }
+        catch (Exception e) when (e is InvalidOperationException or IOException or ObjectDisposedException)
+        {
+            return false;
+        }
+    }
+
     public virtual string Name => "SLCAN";
     
     private const int MaxBufferedSerialBytes = 2048;
@@ -216,6 +236,7 @@ public class SlcanAdapter : ICommsAdapter
         if (Io == null) return Task.FromResult(false);
 
         var frameBuffer = new byte[22];
+        var pacer = new domain.CustomPdm.PdmPacer(TimeSpan.FromMilliseconds(InterFrameDelayMs)); // custom-pdm: the first frame goes at once
         try
         {
             for (var i = 0; i < frames.Count; i++)
@@ -231,12 +252,14 @@ public class SlcanAdapter : ICommsAdapter
                     Thread.Sleep(1);
                 }
                 
-                var len = EncodeFrame(frame, frameBuffer, 0);
-                Io.Write(frameBuffer, 0, len);
-                
                 // Keep bursts within what common SLCAN firmware can reliably drain.
-                if (i < frames.Count - 1)
-                    Thread.Sleep(InterFrameDelayMs);
+                // custom-pdm: the same 2 ms gap, on the fine clock. Was Thread.Sleep(InterFrameDelayMs) after the
+                // write: 15.6 ms per frame on Windows, 41 s for the 2646 frames of one Write All (PdmPacer.cs).
+                pacer.Wait();
+
+                var len = EncodeFrame(frame, frameBuffer, 0);
+                lock (_ioLock) Io.Write(frameBuffer, 0, len); // custom-pdm: lock (SendSimLine)
+                pacer.Sent(); // custom-pdm
             }
         }
         catch (InvalidOperationException)
@@ -333,6 +356,7 @@ public class SlcanAdapter : ICommsAdapter
 
     private void ProcessFrame(string raw)
     {
+        if (raw.Length > 0 && raw[0] == domain.CustomPdm.PdmSim.Mark) { SimLine?.Invoke(raw); return; } // custom-pdm: simulator bridge line
         if (raw.Length < 5) return; //'t' msg is always at least 5 bytes long (t + ID ID ID + DLC)
         if (raw[0] != 't') return; // Skip non-message frames (acknowledgments, status, etc.)
 
