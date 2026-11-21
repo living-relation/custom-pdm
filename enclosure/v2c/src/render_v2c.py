@@ -17,8 +17,25 @@ meta = json.load(open(os.path.join(OUT, "meta.json"))); col = meta["colors"]
 S = {os.path.basename(f)[:-5]: import_brep(f) for f in sorted(glob.glob(os.path.join(OUT, "brep", "*.brep")))}
 def bb(s):
     b = s.bounding_box(); return (b.min.X, b.min.Y, b.min.Z), (b.max.X, b.max.Y, b.max.Z)
+BADFACES = [0]
 def mesh(s, tol=0.05):
-    return SEC._tess(s.faces(), tol, 0.25)
+    """revD (cadfetch3): OCCT leaves a few maker-STEP faces untriangulated (build123d then fails on poly None): retry those
+    faces coarser, and count any that still fail (printed at the end, never dropped silently)"""
+    try:
+        return SEC._tess(s.faces(), tol, 0.25)
+    except AttributeError:
+        parts = []
+        for f in s.faces():
+            for t_ in (tol, 0.2, 0.5):
+                try:
+                    m_ = SEC._tess([f], t_, 0.5)
+                    if m_ is not None: parts.append(m_)
+                    break
+                except AttributeError:
+                    continue
+            else:
+                BADFACES[0] += 1
+        return parts[0].merge(parts[1:]) if len(parts) > 1 else (parts[0] if parts else None)
 skipped = []
 def capped(so, o, n, keep):
     """section.cut_capped; when OCCT's split hands back a ShapeList (several pieces) cut_capped can't take it, so the
@@ -138,4 +155,5 @@ if "sec_stud" in which:
           T + f"  capped section Y={Y:.2f} through OUT1/OUT2 terminals, copper risers, G10 carrier and bay (looking north)", parallel=True, zoom=3.6)
 from collections import Counter
 print("section cuts refused (solid left out):", dict(Counter(k for k, _ in skipped)))
+print("faces OCCT could not triangulate (left out of the renders):", BADFACES[0])
 json.dump(skipped, open(os.path.join(RD, f"{VAR}-section-refused.json"), "w"), indent=0)

@@ -8,7 +8,7 @@ set -u
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WT="${WT:-$(cd "$SRC/../../.." && pwd)}"
 case "$WT" in */.claude/worktrees/*) ROOT="${WT%%/.claude/worktrees/*}";; *) ROOT="$WT";; esac
-SCR=~/scratch/encl-v2c
+SCR="${SCR:-$HOME/scratch/encl-v2c}"                  # set SCR for a separate scratch (src copy, logs, runs) per job
 mkdir -p "$SCR/src" "$SCR/logs" "$SCR/runs"
 for f in "$SRC"/*.py "$SRC"/*.csv; do tr -d '\r' < "$f" > "$SCR/src/$(basename "$f")"; done
 export CAD_PY=~/.venvs/handbuilt-cad/bin/python RUN_DIR="${RUN_DIR:-$SCR/runs}" WT="$WT"

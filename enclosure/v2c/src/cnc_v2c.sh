@@ -9,9 +9,9 @@ PY="${CAD_PY:-$HOME/.venvs/handbuilt-cad/bin/python}"
 D="$RUN/$V/cnc"; mkdir -p "$D"
 # standard shop end mills (radius, mm): dia 2 / 3 / 4 / 6 / 10 / 12 (fin channels are 4 wide, so a dia 3-4 cutter does them)
 echo '{"tool_radii_mm": [1.0, 1.5, 2.0, 3.0, 5.0, 6.0], "spindle_axis": "z", "max_listed": 15}' > "$D/spec.json"
-for pn in "CPDM-ENC-101-$V:0.762" CPDM-ENC-104:0.762 CPDM-ENC-105:0.762 CPDM-ENC-106:0.762 CPDM-ENC-107:0.762 CPDM-ENC-108:0.762 CPDM-ENC-109:1.52; do
+for pn in "CPDM-ENC-101-$V:0.762" CPDM-ENC-104:0.762 CPDM-ENC-105:0.762 CPDM-ENC-106:0.762 CPDM-ENC-107:0.762 CPDM-ENC-108:0.762 CPDM-ENC-109:1.52 CPDM-ENC-112:0.762 CPDM-ENC-113:0.762; do
   p="${pn%%:*}"; w="${pn##*:}"
-  cp "$RUN/$V/xref/parts/$p.stp" "$D/$p.step"
+  cp "$RUN/$V/xref/Parts/$p.stp" "$D/$p.step"
   "$PY" "$CAD/tools/cnc_check.py" "$D/$p.step" --spec "$D/spec.json" --min-wall "$w" --reach "+Z,-Z" > "$D/$p.log" 2>&1
   echo "$p rc=$?"; grep -iE "setup|corner|wall|reach|unreach|flag" "$D/${p}_cnc.txt" 2>/dev/null | head -12
 done
