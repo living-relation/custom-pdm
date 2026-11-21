@@ -12,7 +12,7 @@ VAR = sys.argv[1]; RUN = sys.argv[2] if len(sys.argv) > 2 else os.environ["RUN_D
 OUT = os.path.join(RUN, VAR); meta = json.load(open(os.path.join(OUT, "meta.json")))
 B = {os.path.basename(f)[:-5]: import_brep(f) for f in glob.glob(os.path.join(OUT, "brep", "*.brep"))}
 # install order (stage index): heat-sink subassembly, boards + board hardware, upper parts, lid + lid screws, feet + foot screws
-STAGES = [("heat-sink-sub", ("heat-sink", "gap-pads", "fans-", "tie-points", "standoff-studs")),
+STAGES = [("heat-sink-sub", ("heat-sink", "gap-pads", "fans-", "fan-lead-gland", "tie-points", "standoff-studs")),
           ("boards", ("board-", "copper-", "screws_M6", "standoffs-", "carrier-", "ring-lugs", "wires-", "input-", "vendor-", "usb", "hub-", "wire-ribbons", "panel-")),
           ("lid", ("lid", "heat-set-inserts")),
           ("feet", ("heat-sink-foot",))]

@@ -48,8 +48,9 @@ SINK = [no("heat-sink")]; BOARDS = [no(nm) for nm in pick("board-")]
 scr = lambda grp: [nm for nm in PL if nm.startswith("screws_") and nm.endswith("_" + grp)]
 plain_m3x8 = [nm for nm in PL if nm == "screws_ISO4762-M3x8"]
 steps = [
-    dict(no=1, title="HEAT-SINK SUBASSEMBLY", subtitle="SET SCREWS 5.0 INTO THE BOSSES, GAP PADS, TIE MOUNTS + M3 x 6 BUTTON SCREWS, FANS + FAN SCREWS",
+    dict(no=1, title="HEAT-SINK SUBASSEMBLY", subtitle="SET SCREWS 5.0 INTO THE BOSSES, GAP PADS, TIE MOUNTS + M3 x 6 BUTTON SCREWS, FAN-LEAD CORD GRIP, FANS + FAN SCREWS",
          base=SINK, custom=mv(pick("standoff-studs-"), (0, 0, 40)) + mv(pick("gap-pads-"), (0, 0, 22)) + mv(pick("tie-points"), (0, 0, 22)) + mv(scr("tie"), (0, 0, 45))
+         + mv(pick("fan-lead-gland"), (0, 0, 30))
          + mv(pick("fans-"), FAN) + mv(scr("fan"), FANS)),
     dict(no=2, title="BOARDS ON THE GAP PADS AND STUDS", subtitle="BOARD SCREWS M3 x 8 INTO THE SINK BOSSES",
          base=SINK, custom=mv(pick("board-"), (0, 0, 40)) + mv(scr("board"), (0, 0, 75))),
@@ -72,14 +73,14 @@ if os.path.exists(rl): os.remove(rl)
 REV_ROWS = [("A", "Initial", datetime.date(2026, 11, 13)),
             ("B", "v2c: rebuilt from own sources (KiCad board STEPs, maker CAD); every part its own STEP with PN", None),
             ("C", "Maker CAD for the Sunon fan, Phoenix 3240083 ring lug and LTW bulkhead", None),
-            ("D", "Separate feet, gap pads, heat-sink subassembly; fan wall 6.0; CnLinko USB-C bulkhead; standoffs on set-screw studs; board-boss taps 6.5; screw-on 168 C tie mounts; ruthex maker STEP; install-order sheets", None)]
+            ("D", "Separate feet, gap pads, heat-sink subassembly; fan wall 6.0; CnLinko USB-C bulkhead; standoffs on set-screw studs; board-boss taps 6.5; screw-on 168 C tie mounts; fan-lead cord grip; ruthex maker STEP; install-order sheets", None)]
 for L_, d_, dt in REV_ROWS: revs.add_release(rl, L_, d_, date=dt, title=APN)
 spec = dict(items=items, title=f"ENCLOSURE ASSEMBLY {VAR}", pn=APN, project="custom-pdm enclosure v2c", revlog=rl, source="build_v2c.py (build123d)",
             open_hide=[no("lid"), no("heat-set-inserts-M4")] + [no(nm) for nm in scr("lid")], open_label="TRIMETRIC - LID REMOVED",
             iso_balloons={"open": []}, stage_sheets=[steps[:4], steps[4:]], bom_h=1.5,
             notes=["INSTALL ORDER: SHEETS 2-3 (STEPS 1-6). LID SCREWS BEFORE THE FEET.", "SET SCREWS (STUDS) 5.0 INTO THE M3 SINK BOSSES; F-F STANDOFFS SPUN DOWN ONTO THEM TO CLAMP THE BOARDS.",
                    "BOARDS DRAWN AS THE BARE PCB; COMPONENTS PER THE BOARD STEP.", "MODEL: build_v2c.py (build123d). THE STEP FILES GOVERN."],
-            rev_marks=[dict(rev="D", bom=NO[pn]) for pn in NO if pn.startswith(("94868A", "92015A", "1722N", "ISO7380", "RX-M4", "CPDM-ENC-110", "CPDM-ENC-112", "CPDM-ENC-113", "LP-16-", "CPDM-ENC-102", "CPDM-ENC-101", "ISO4762-M3x16", "ISO4762-M3x6"))])   # DRAWING-RULES 33: rev D triangles at the changed BOM rows
+            rev_marks=[dict(rev="D", bom=NO[pn]) for pn in NO if pn.startswith(("94868A", "92015A", "1722N", "8183K", "ISO7380", "RX-M4", "CPDM-ENC-110", "CPDM-ENC-112", "CPDM-ENC-113", "LP-16-", "CPDM-ENC-102", "CPDM-ENC-101", "ISO4762-M3x16", "ISO4762-M3x6"))])   # DRAWING-RULES 33: rev D triangles at the changed BOM rows
 ck = asm.make_assembly(spec, os.path.join(OUT, APN + ".pdf"), os.path.join(OUT, APN + "_preview"))
 res = json.load(open(os.path.join(OUT, APN + ".checks.json")))
 print(json.dumps({k: res.get(k) for k in ("ok", "not_ballooned", "views")}, default=str)[:3000])

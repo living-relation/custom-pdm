@@ -34,8 +34,11 @@ def _folder(parent, name, old=()):
         if f is None and parent.dataFolders.itemByName(o): f = parent.dataFolders.itemByName(o); f.name = name
     return f if f else parent.dataFolders.add(name)
 def _find(folder, stem):
-    for i in range(folder.dataFiles.count):
-        df = folder.dataFiles.item(i)
+    """the data file of that name in the folder. folder.dataFiles is a fresh hub query on every access (about 0.5 s; 23 s
+    for a 38-file scan when re-read per item), so the collection is read once per call."""
+    dfs = folder.dataFiles
+    for i in range(dfs.count):
+        df = dfs.item(i)
         if df.name == stem: return df
     return None
 def step_key(pn):
@@ -61,9 +64,9 @@ def load():
     subs = set(meta["subassemblies"]) | {f"CPDM-ENC-100-{VAR}"}
     ext = [pn for pn in bom if not SR_STEP.match(pn) and pn not in subs]   # part designs in Parts (SR screws are bodies, not designs)
     return dict(proj=proj, top=top, parts=parts, meta=meta, bom=bom, ext=ext, geom=geom, rev=rev, log=[])
-def _open(df):
+def _open(df, visible=False):
     doc = next((d for d in app.documents if d.dataFile and d.dataFile.id == df.id), None)
-    return (doc, False) if doc else (app.documents.open(df, False), True)
+    return (doc, False) if doc else (app.documents.open(df, visible), True)
 def _des(doc): return adsk.fusion.Design.cast(doc.products.itemByProductType("DesignProductType"))
 def design_geom(doc):
     """bodies / bbox (mm) / volume (mm3) of an open Fusion design, over every component"""
@@ -80,34 +83,61 @@ def geom_problems(want, got, tol_mm=1.0, tol_vol=0.002):
     if max(abs(a - b) for a, b in zip(want["bbox"], got["bbox"])) > tol_mm: p.append(f"bbox {got['bbox']} != STEP {want['bbox']}")
     if abs(got["volume"] - want["volume"]) > tol_vol * max(want["volume"], 1.0): p.append(f"volume {got['volume']} != STEP {want['volume']}")
     return p
-def _replace_geometry(doc, step):
-    """new VERSION of the same design: remove its bodies / occurrences, import the STEP into its root component, save"""
-    des = _des(doc); rc = des.rootComponent
+def _replace_geometry(doc, step, want_solids=None):
+    """new geometry for the same design (the caller saves it as a new VERSION): remove its bodies / occurrences, import the
+    STEP into its root component, then move every imported body up into the root component and drop the import's
+    occurrence(s), so the design stays flat like a design made by uploading the STEP (bodies in the root, no sub-components).
+    The document must be open visibly and active (an import into a hidden document yields no bodies). Returns the root body
+    count; the caller must not save when it differs from the STEP's solid count."""
+    doc.activate(); des = _des(doc); rc = des.rootComponent
     if des.designType == adsk.fusion.DesignTypes.ParametricDesignType: des.designType = adsk.fusion.DesignTypes.DirectDesignType
     for i in range(rc.occurrences.count - 1, -1, -1): rc.occurrences.item(i).deleteMe()
     for i in range(rc.bRepBodies.count - 1, -1, -1): rc.bRepBodies.item(i).deleteMe()
-    im = app.importManager; im.importToTarget(im.createSTEPImportOptions(step), rc)
+    im = app.importManager
+    if not im.importToTarget(im.createSTEPImportOptions(step), rc): return -1
+    occs = [o for o in rc.allOccurrences]
+    for o in occs:
+        for b in [o.bRepBodies.item(i) for i in range(o.bRepBodies.count)]: b.moveToComponent(rc)
+    for i in range(rc.occurrences.count - 1, -1, -1): rc.occurrences.item(i).deleteMe()
+    return rc.bRepBodies.count
+def step_sha(path):
+    """sha256 of a STEP file's DATA section (the HEADER carries the write time, so two builds of the same shape differ there)"""
+    import hashlib
+    t = open(path, "rb").read(); i = t.find(b"\nDATA;")
+    return hashlib.sha256(t[i if i >= 0 else 0:]).hexdigest()
 def sync_parts(st, budget_s=25.0, timeout_s=600):
-    """every part-design PN: missing -> upload; present but not matching its STEP -> same design, new version; then the check
-    passes. st['synced'] holds the checked PNs (persist it between calls with the caller's json file)."""
-    st.setdefault("synced", {}); t0 = time.time()
+    """every part-design PN: missing -> upload; present but its STEP content changed since the design's newest version was made
+    (st['step_sha'][pn], the DATA-section hash of the STEP that version holds) -> same design, new version; then the geometry
+    check. A changed STEP is detected by its content hash, not by the geometry fingerprint (a 5 mm hole moves the sink's volume
+    by 0.03 %, inside the fingerprint's tolerance). st['synced'] holds the checked PNs (persist it and st['step_sha'] between
+    calls with the caller's json file). Close the subassembly / top assembly first: a part design open only as a reference of
+    an open assembly is not a top-level document, and Fusion does not save it (doc.save() then makes no version)."""
+    open_asm = [d.name for d in app.documents if d.name.startswith((ASM + " ", "CPDM-ENC-120-"))]
+    if open_asm: raise RuntimeError(f"close the assemblies before sync_parts: {open_asm}")
+    st.setdefault("synced", {}); sha = st.setdefault("step_sha", {}); t0 = time.time()
     for pn in st["ext"]:
         if pn in st["synced"] or time.time() - t0 > budget_s: continue
-        step = os.path.join(REL, "Parts", pn + ".stp"); df = _find(st["parts"], pn)
+        step = os.path.join(REL, "Parts", pn + ".stp"); df = _find(st["parts"], pn); h = step_sha(step)
         if df is None:
             fut = st["parts"].uploadFile(step); t1 = time.time()
             while fut.uploadState == adsk.core.UploadStates.UploadProcessing and time.time() - t1 < timeout_s:
                 adsk.doEvents(); time.sleep(0.5)
-            st["synced"][pn] = "uploaded" if fut.uploadState == adsk.core.UploadStates.UploadFinished else f"upload state {fut.uploadState}"
+            ok = fut.uploadState == adsk.core.UploadStates.UploadFinished
+            st["synced"][pn] = "uploaded" if ok else f"upload state {fut.uploadState}"
+            if ok: sha[pn] = h
             continue
-        doc, opened = _open(df)
+        doc, opened = _open(df, visible=sha.get(pn) != h)
+        if sha.get(pn) != h:
+            n = _replace_geometry(doc, step); want = st["geom"].get(pn, {}).get("solids")
+            if n != want:                                            # never save a broken version
+                st["synced"][pn] = f"IMPORT FAILED: {n} bodies vs STEP {want} (not saved)"; doc.close(False); continue
+            v0 = df.latestVersionNumber
+            if not doc.save(f"release {st['rev']}: geometry from Parts/{pn}.stp"):
+                st["synced"][pn] = "SAVE FAILED (not saved)"; doc.close(False); continue
+            sha[pn] = h; tag = f"new version (was v{v0})"
+        else: tag = "ok"
         bad = geom_problems(st["geom"][pn], design_geom(doc)) if pn in st["geom"] else ["no STEP fingerprint"]
-        if bad and pn in st["geom"]:
-            _replace_geometry(doc, step); doc.save(f"release {st['rev']}: geometry from Parts/{pn}.stp")
-            bad2 = geom_problems(st["geom"][pn], design_geom(doc))
-            st["synced"][pn] = "new version" if not bad2 else f"MISMATCH after update: {bad2}"
-        else:
-            st["synced"][pn] = "ok" if not bad else f"MISMATCH: {bad}"
+        st["synced"][pn] = tag if not bad else f"MISMATCH ({tag}): {bad}"
         if opened: doc.close(False)
     return len(st["ext"]) - len(st["synced"])
 def _desc(st, pn):
@@ -151,15 +181,42 @@ def _design(st, name, pn, desc, folder=None):
     return doc, rc
 def _linked(rc): return sum(1 for i in range(rc.occurrences.count) if rc.occurrences.item(i).isReferencedComponent)
 def _places(st, items):
-    """linked-part placements [(pn, m)]; screws and set-screw studs are SR bodies (sr_place), not linked parts"""
-    return [(st["meta"]["placements"][nm]["pn"], m) for nm in items if not nm.startswith(("screws_", "standoff-studs-"))
+    """linked-part placements [(pn, m)]; SR-standing PNs (screws, set-screw studs) are SR bodies (sr_place), not linked parts.
+    Picked by PN, not by name: the DIN 976 rod placement is named screws_M6_stud_19_* but is a linked part design."""
+    return [(st["meta"]["placements"][nm]["pn"], m) for nm in items if not SR_STEP.match(st["meta"]["placements"][nm]["pn"])
             for m in st["meta"]["placements"][nm]["m"]]
-def _fill(st, rc, places, budget_s, skip=0):
-    """insert the placements [(pn, m)] in order, resuming at the linked-occurrence count (minus `skip` leading ones)"""
-    t0 = time.time(); n = _linked(rc) - skip
-    while n < len(places) and time.time() - t0 < budget_s:
-        pn, m = places[n]; rc.occurrences.addByInsert(_find(st["parts"], pn), _mx(m), True); n += 1
-    return len(places) - n
+def _occ_pn(o):
+    return o.component.partNumber or (o.component.parentDesign.parentDocument.dataFile.name if o.isReferencedComponent else o.component.name)
+def _fill(st, rc, places, budget_s, keep=()):
+    """make the linked occurrences of rc equal the placements [(pn, m)]: each placement is matched to a linked occurrence of the
+    same PN within 0.01 mm of its origin; unmatched placements are inserted, unmatched linked occurrences (PN not in `keep`) are
+    deleted (a part that left the build). Idempotent and resumable. Returns the number of placements still missing."""
+    t0 = time.time(); have = {}
+    for i in range(rc.occurrences.count):
+        o = rc.occurrences.item(i)
+        if o.isReferencedComponent: have.setdefault(_occ_pn(o), []).append(o)
+    missing = []
+    for pn, m in places:
+        P = (m[3] / 10.0, m[7] / 10.0, m[11] / 10.0); hit = None
+        for o in have.get(pn, []):
+            t = o.transform2.translation
+            if max(abs(t.x - P[0]), abs(t.y - P[1]), abs(t.z - P[2])) < 0.001: hit = o; break
+        if hit: have[pn].remove(hit)
+        else: missing.append((pn, m))
+    for pn, os_ in have.items():
+        if pn in keep: continue
+        for o in os_: o.deleteMe()
+    cache = {}
+    while missing and time.time() - t0 < budget_s:
+        pn, m = missing.pop(0); cache[pn] = cache.get(pn) or _find(st["parts"], pn)
+        rc.occurrences.addByInsert(cache[pn], _mx(m), True)
+    return len(missing)
+def _latest_refs(doc):
+    n = 0
+    for i in range(doc.documentReferences.count):
+        r = doc.documentReferences.item(i)
+        if r.isOutOfDate: r.getLatestVersion(); n += 1
+    return n
 def _sub(st):
     (spn, sa), = st["meta"]["subassemblies"].items(); return spn, sa
 def build_subassembly(st, clear=False, budget_s=30.0):
@@ -167,23 +224,20 @@ def build_subassembly(st, clear=False, budget_s=30.0):
     doc, rc = _design(st, spn, spn, f"{sa['name']} | {sa['desc']}", folder=st["parts"])
     if clear:
         for i in range(rc.occurrences.count - 1, -1, -1): rc.occurrences.item(i).deleteMe()
+    _latest_refs(doc)                                                # newest version of every linked part first
     left = _fill(st, rc, _places(st, sa["items"]), budget_s)
-    if not left: doc.save(f"release {st['rev']}: {_linked(rc)} linked parts")
+    if not left and doc.isModified: doc.save(f"release {st['rev']}: {_linked(rc)} linked parts, newest versions")
     return left
 def build_assembly(st, clear=False, budget_s=30.0):
     spn, sa = _sub(st)
     doc, rc = _design(st, ASM, f"CPDM-ENC-100-{VAR}", f"custom-pdm enclosure v2c {VAR} top assembly (heat-sink subassembly {spn} + linked parts + SR Fasteners screws)")
     if clear:
         for i in range(rc.occurrences.count - 1, -1, -1): rc.occurrences.item(i).deleteMe()
-    if _linked(rc) == 0:
-        rc.occurrences.addByInsert(_find(st["parts"], spn), adsk.core.Matrix3D.create(), True)   # the heat-sink subassembly, world frame
-    places = _places(st, [nm for nm in st["meta"]["placements"] if nm not in sa["items"]])
-    left = _fill(st, rc, places, budget_s, skip=1)
-    if not left:
-        for i in range(doc.documentReferences.count):
-            r = doc.documentReferences.item(i)
-            if r.isOutOfDate: r.getLatestVersion()
-        doc.save(f"release {st['rev']}: heat-sink subassembly + {len(places)} linked parts")
+    _latest_refs(doc)
+    places = [(spn, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])]   # the heat-sink subassembly, world frame
+    places += _places(st, [nm for nm in st["meta"]["placements"] if nm not in sa["items"]])
+    left = _fill(st, rc, places, budget_s)
+    if not left and doc.isModified: doc.save(f"release {st['rev']}: heat-sink subassembly + {len(places) - 1} linked parts, newest versions")
     return left
 # ---------------- SR Fasteners ----------------
 def _sr():
@@ -205,25 +259,29 @@ def sr_jobs(st, sub):
                 top = mm[11] + zmin + L                                      # set-screw top face (world z, mm)
                 jobs.append((f"{nm}#{j}", "SSC-M", size, L, [mm[3], mm[7], m["Z_BOT"]], [0.0, 0.0, 1.0], round(top - m["Z_BOT"], 4)))
     return jobs
-def _hole_edge(des, at_mm, axis, d_mm, tol_cm=0.01):
-    """the circular hole edge centred on the head-seat point, normal along the screw axis, radius 0.4..0.85 d (the bolt hole,
-    not a counterbore wall); smallest |r - 0.55 d| wins. Bodies of SR components are skipped."""
+def _hole_edge(des, at_mm, axis, d_mm, L_mm, tol_cm=0.01):
+    """the bolt-hole edge for a screw whose head seats at at_mm: a circular edge on the screw axis (within 0.1 mm), normal
+    along it, radius 0.4..0.85 d (the bolt / tap hole, not a counterbore wall), at the seat or up to L below it; the nearest
+    to the seat wins, then smallest |r - 0.55 d|. Returns (score, edge, owner, r, depth_mm) or None; depth_mm > 0 when the
+    head seats on a part without a circular hole edge (maker ring lug, KiCad pad / mask layer, a counterbore floor), and
+    the caller lifts the screw by it. Bodies of SR components are skipped."""
     P = adsk.core.Point3D.create(*[v / 10.0 for v in at_mm]); A = adsk.core.Vector3D.create(*axis); A.normalize()
-    best = None
+    best = None; g = L_mm / 10.0 + 0.05
     for occ in des.rootComponent.allOccurrences:
         if occ.component.attributes.itemByName("srfastener", "part_number"): continue
         for b in occ.bRepBodies:
             bb = b.boundingBox
-            if not (bb.minPoint.x - 0.05 <= P.x <= bb.maxPoint.x + 0.05 and bb.minPoint.y - 0.05 <= P.y <= bb.maxPoint.y + 0.05
-                    and bb.minPoint.z - 0.05 <= P.z <= bb.maxPoint.z + 0.05): continue
+            if not (bb.minPoint.x - g <= P.x <= bb.maxPoint.x + g and bb.minPoint.y - g <= P.y <= bb.maxPoint.y + g
+                    and bb.minPoint.z - g <= P.z <= bb.maxPoint.z + g): continue
             for e in b.edges:
                 c = adsk.core.Circle3D.cast(e.geometry) or adsk.core.Arc3D.cast(e.geometry)
-                if c is None or c.center.distanceTo(P) > tol_cm: continue
-                if abs(c.normal.dotProduct(A)) < 0.999: continue
+                if c is None or abs(c.normal.dotProduct(A)) < 0.999: continue
+                v = c.center.vectorTo(P); depth = v.dotProduct(A)
+                if max(v.dotProduct(v) - depth * depth, 0.0) ** 0.5 > tol_cm or not -0.001 <= depth <= L_mm / 10.0: continue
                 r = c.radius * 10.0
                 if not 0.4 * d_mm <= r <= 0.85 * d_mm: continue
-                sc = abs(r - 0.55 * d_mm)
-                if best is None or sc < best[0]: best = (sc, e, occ.fullPathName, round(r, 3))
+                sc = (round(max(depth, 0.0) * 10.0, 3), abs(r - 0.55 * d_mm))
+                if best is None or sc < best[0]: best = (sc, e, occ.fullPathName, round(r, 3), round(max(depth, 0.0) * 10.0, 4))
     return best
 def sr_place(st, sub, budget_s=40.0):
     """place the SR Fasteners screws of the subassembly (sub=True) or the top assembly on hole edges found in code; resumable
@@ -233,19 +291,21 @@ def sr_place(st, sub, budget_s=40.0):
     df = _find(st["parts"], spn) if sub else _find(st["top"], ASM)
     doc, _ = _open(df); doc.activate(); des = _des(doc); des.activateRootComponent(); rc = des.rootComponent
     a = rc.attributes.itemByName("cadfetch", "sr_done"); done = json.loads(a.value) if a else []
-    jobs = sr_jobs(st, sub); t0 = time.time(); log = st.setdefault("sr_log", [])
+    done = [k for k in done if k not in globals().get("RETRY", ())]   # keys logged as misses by an older run: try again
+    jobs = sr_jobs(st, sub); t0 = time.time(); log = st.setdefault("sr_log", []); missed = []
     for key, code, size, L, at, ax, off in jobs:
         if key in done or time.time() - t0 > budget_s: continue
-        d = float(size[1:]); hit = _hole_edge(des, at, ax, d)
-        if hit is None: log.append(f"{key} {code} {size}x{L:g}: no hole edge at {at}"); done.append(key); continue
-        _, edge, owner, r = hit
+        d = float(size[1:]); hit = _hole_edge(des, at, ax, d, L)
+        if hit is None: log.append(f"{key} {code} {size}x{L:g}: no hole edge at {at}"); missed.append(key); continue
+        _, edge, owner, r, depth = hit
+        if depth > 0.0: log.append(f"{key}: hole edge {depth} mm below the seat ({owner} r{r}); screw lifted by it")
         A = adsk.core.Vector3D.create(*ax)
         hole = fp.read_hole(edge)
         if hole.into.dotProduct(A) > 0: hole = fp.read_hole(edge, flip=True)   # 'into' must point away from the head
         fam = fc.family(cat, code); row = fc.size_row(fam, size)
         fin = SR_FIN[code] if SR_FIN[code] in fc.finishes_for(cat, fam, row) else fc.finishes_for(cat, fam, row)[0]
         it = fc.item(cat, code, size, fin, L); notes = []
-        occ = fp._place_one(app, des, cat, it, hole, off / 10.0, True, notes)
+        occ = fp._place_one(app, des, cat, it, hole, (off + depth) / 10.0, True, notes)
         o = occ.transform2.translation; want = [at[i] / 10.0 + ax[i] * off / 10.0 for i in range(3)]
         err = max(abs(o.x - want[0]), abs(o.y - want[1]), abs(o.z - want[2])) * 10.0
         z = occ.transform2.getAsCoordinateSystem()[3]
@@ -253,9 +313,44 @@ def sr_place(st, sub, budget_s=40.0):
         if notes: log.append(f"{key}: {notes}")
         done.append(key)
     rc.attributes.add("cadfetch", "sr_done", json.dumps(done))
-    left = len([j for j in jobs if j[0] not in done])
+    left = len([j for j in jobs if j[0] not in done])                 # a miss stays left (and is tried again next call)
+    if missed and left == len(missed): log.append(f"{len(missed)} screws without a hole edge: {missed}"); return left
     if not left: doc.save(f"release {st['rev']}: SR Fasteners screws ({len(jobs)}) on hole edges from meta.json")
     return left
+def _sr_doc(st, sub):
+    spn, _ = _sub(st); df = _find(st["parts"], spn) if sub else _find(st["top"], ASM)
+    doc, _ = _open(df); doc.activate(); des = _des(doc); des.activateRootComponent(); return doc, des, des.rootComponent
+def _is_sr(o): return o is not None and o.component.attributes.itemByName("srfastener", "family") is not None
+def sr_clear(st, sub):
+    """delete every SR Fasteners occurrence (and its joints) of the subassembly / top assembly and forget the done keys: run
+    after a linked part got new geometry (the screws' joints hold edges of the old version), then sr_place again"""
+    doc, des, rc = _sr_doc(st, sub)
+    for j in [rc.joints.item(i) for i in range(rc.joints.count)]:
+        if _is_sr(j.occurrenceOne) or _is_sr(j.occurrenceTwo): j.deleteMe()
+    occ = [rc.occurrences.item(i) for i in range(rc.occurrences.count) if _is_sr(rc.occurrences.item(i))]
+    for o in occ: o.deleteMe()
+    a = rc.attributes.itemByName("cadfetch", "sr_done")
+    if a: a.deleteMe()
+    return len(occ)
+def sr_verify(st, sub):
+    """[] when every SR job has exactly one SR occurrence of its family / size / length at its origin (0.02 mm) with its axis,
+    every joint is healthy and no SR occurrence is left over"""
+    doc, des, rc = _sr_doc(st, sub); probs = []
+    occ = [rc.occurrences.item(i) for i in range(rc.occurrences.count) if _is_sr(rc.occurrences.item(i))]
+    free = list(occ)
+    for key, code, size, L, at, ax, off in sr_jobs(st, sub):
+        want = [at[i] / 10.0 + ax[i] * off / 10.0 for i in range(3)]; k = f"SR:{code}:{size}x{L:g}"; hit = None
+        for o in free:
+            t = o.transform2.translation; z = o.transform2.getAsCoordinateSystem()[3]
+            if _sr_key(o.component) == k and max(abs(t.x - want[0]), abs(t.y - want[1]), abs(t.z - want[2])) < 0.002 \
+                    and z.x * ax[0] + z.y * ax[1] + z.z * ax[2] > 0.999: hit = o; break
+        if hit: free.remove(hit)
+        else: probs.append(f"{key} {k}: no SR body at {[round(v * 10, 3) for v in want]}")
+    probs += [f"left-over SR body {o.name}" for o in free]
+    for i in range(rc.joints.count):
+        j = rc.joints.item(i); h = getattr(j, "healthState", adsk.fusion.FeatureHealthStates.HealthyFeatureHealthState)
+        if h != adsk.fusion.FeatureHealthStates.HealthyFeatureHealthState: probs.append(f"joint {j.name}: health {h}")
+    return probs
 # ---------------- checks ----------------
 def _sr_key(comp):
     g = lambda k: (comp.attributes.itemByName("srfastener", k).value if comp.attributes.itemByName("srfastener", k) else None)
@@ -293,7 +388,7 @@ def compare_tree(st):
 def check_refs(st):
     """[] when the top assembly and the subassembly reference only the NEWEST version of designs in the parts folder (or the
     subassembly design); else the problems. The build check for Dan's one-source-of-truth rule (2026-11-20)."""
-    probs = []; ok_ids = {st["parts"].dataFiles.item(i).id for i in range(st["parts"].dataFiles.count)}
+    probs = []; dfs = st["parts"].dataFiles; ok_ids = {dfs.item(i).id for i in range(dfs.count)}
     spn, _ = _sub(st); sub = _find(st["parts"], spn)
     if sub: ok_ids.add(sub.id)
     for name, fo in ((spn, st["parts"]), (ASM, st["top"])):

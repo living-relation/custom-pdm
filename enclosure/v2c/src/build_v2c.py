@@ -30,6 +30,8 @@ Rev D (2026-11-20, job cadfetch2): drawn bought stand-ins replaced by maker CAD 
   RX-M4x8.1 from ruthex's own STEP (ruthex.de "CAD-Daten").
   revD fixes (job cadfetch4): board-mount boss tap 6.0 -> 6.5 deep (board screws M3 x 8 reach 6.23); tie mounts 7566K23
   (adhesive, 82 C) -> McMaster 1722N12 (screw-in, ETFE, 168 C, V-0) on ISO 7380-1 M3 x 6 into M3 taps 5 deep in the plate.
+  revD (job cadfetch5, harness PR #121): sealed pass-through for the fan leads: McMaster 8183K5 M6 liquid-tight brass cord grip
+  in an M6 x 1 through-tap in the plate, in the fan bay's dead corner south of the south fan (F1).
 ASSUMED = designer's choice, TBD = not confirmed by a primary source.
 """
 import os, sys, json, math
@@ -356,6 +358,36 @@ for i, (X, Y, sx, sy) in enumerate(FEET):
 TIE_PTS = [(60.0, -110.5), (140.0, -110.5)]; TIE_FLOOR = 1.27; TIE_SCREW_L = 6.0; TIE_TAP = 5.0; TIE_DRILL = 6.5
 for (x, y) in TIE_PTS: sink = sink.cut(cyl(2.5, (x, y, -TIE_DRILL), TIE_DRILL + 0.01))
 assert 1.5 * 3 <= TIE_SCREW_L - TIE_FLOOR <= TIE_TAP and TIE_DRILL - TIE_TAP >= 0.5 * 3 and TIE_DRILL >= 1.25 * TIE_TAP and pt - TIE_DRILL >= 0.762, "tie-mount tap"
+# revD (cadfetch5, coordinator / harness PR #121): sealed pass-through for the two fans' leads (2 x 28 AWG UL1571 per fan) from
+# the fin bay into the box: McMaster-Carr 8183K5 liquid-tight brass cord grip M6 (cord 0.08-0.13 in = 2.0-3.3 mm, IP68 / IP69K,
+# -18..99 C, UL 94 V-0; the smallest metric cord grip McMaster lists, 2026-11-20), the 4 leads bundled in adhesive-lined heat
+# shrink to a round 2.0-3.3 mm where the seal grips (harness item). It screws from the box side into an M6 x 1 thread tapped
+# THROUGH the 8 mm plate (drill 5.0 through; a through tap needs no relief), O-ring on the flat plate top; the supplied locknut
+# is not fitted (the 4.85 thread is shorter than the plate). Spot: the dead corner of the fan bay south of the south fan (no fin
+# channel and no fan inlet face is crossed; the leads come up beside the fan frame): x centred between the fan wall's east face
+# and the SE foot's web; y = -101.1, between board A2's south edge inside the box (y -95.25 at x 250: the gland, r 4.4 over its
+# hex corners, keeps 1.25 from it; cadfetch5 distance scan of the placed breps) and the SE foot's hex under the plate (vertex
+# towards +y; the hole edge keeps 1.4 from it). The gland goes in with the heat-sink subassembly, before the boards, so its
+# spanner never meets board A2.
+GLAND = None
+def _hex_gap(px, py, cx, cy, af, rot=30.0):
+    """distance from (px, py) to the outline of hexp(af) centred (cx, cy) (vertices at rot + 60 k, circumradius af / sqrt 3)"""
+    R = af / math.sqrt(3); V = [(cx + R * math.cos(math.radians(rot + 60 * k)), cy + R * math.sin(math.radians(rot + 60 * k))) for k in range(6)]
+    def seg(a, b):
+        ab = (b[0] - a[0], b[1] - a[1]); t = max(0.0, min(1.0, ((px - a[0]) * ab[0] + (py - a[1]) * ab[1]) / (ab[0] ** 2 + ab[1] ** 2)))
+        return math.dist((px, py), (a[0] + t * ab[0], a[1] + t * ab[1]))
+    return min(seg(V[k], V[(k + 1) % 6]) for k in range(6))
+if VAR == "F1":
+    sef = FEET[2]                                                     # SE foot (X, Y, sx, sy): web along y at x X +/- web_t/2
+    GX = round(((wall_x + 3.0) + (sef[0] - P["foot_web_t"] / 2)) / 2, 3); GY = -101.1
+    GLAND = dict(pn="8183K5", at=(GX, GY), thread="M6x1 tapped through the 8.0 plate", drill=5.0, cord_od=(2.03, 3.30), rating_c=(-18, 99),
+                 gaps_mm=dict(fan_wall=round(GX - 2.5 - (wall_x + 3.0), 2), foot_web=round(sef[0] - P["foot_web_t"] / 2 - GX - 2.5, 2),
+                              fan_frame=round((fan_y[0] - 15.0) - GY - 2.5, 2), foot_hex=round(_hex_gap(GX, GY, sef[0], sef[1], P["foot_af"]) - 2.5, 2),
+                              nearest_hole_centre=round(min(math.dist((GX, GY), q) for q in [(x, y) for _, x, y in FOOT_SCREWS] + TIE_PTS + LID_SCREWS), 2)))
+    # wall to the nearest foot / tie / lid-screw hole, taking the largest of them (lid-screw counterbore r 4.0) for every one
+    GLAND["gaps_mm"]["nearest_hole_wall_min"] = round(GLAND["gaps_mm"]["nearest_hole_centre"] - 2.5 - P["lid_cb_d"] / 2, 2)
+    assert min(GLAND["gaps_mm"][k] for k in ("fan_wall", "foot_web", "fan_frame", "foot_hex", "nearest_hole_wall_min")) >= 1.0, ("fan-lead gland spot", GLAND)
+    sink = sink.cut(cyl(5.0, (GX, GY, -pt - 0.01), pt + 0.02))         # M6 x 1 tap drill 5.0 through (thread modelled at drill size)
 FOOT_PN = {0: ("CPDM-ENC-112", 0.0), 3: ("CPDM-ENC-112", 180.0), 2: ("CPDM-ENC-113", 0.0), 1: ("CPDM-ENC-113", 180.0)}
 FOOT_VOL = {i: round(one(f).volume, 2) for i, f in enumerate(foot_w)}
 for i, pn_ in ((0, "CPDM-ENC-112"), (2, "CPDM-ENC-113")):
@@ -367,7 +399,7 @@ for pn_, nm_ in (("CPDM-ENC-112", "heat-sink-foot-112"), ("CPDM-ENC-113", "heat-
 made("heat-sink", f"CPDM-ENC-101-{VAR}", sink, (0.72, 0.72, 0.76), f"Heat sink / base {VAR}",
      "3-axis machined base: plate 8, fins + fan wall, 7 pedestals 3.14 high under the switch footprints (gap pads on top), "
      "14 x dia 6 x 4 mm board-mount bosses (M3 tap 6.5 deep, drill 2.5 x 8), 12 lid-screw counterbores, 4 x M6 + 8 x M3 foot mounts (feet CPDM-ENC-112 / -113 separate), "
-     "2 x M3 tap 5 deep (drill 2.5 x 6.5) for the screw-on tie mounts", "6061-T6 aluminium")
+     "2 x M3 tap 5 deep (drill 2.5 x 6.5) for the screw-on tie mounts" + ("; M6 x 1 tapped through (drill 5.0) for the fan-lead cord grip" if GLAND else ""), "6061-T6 aluminium")
 if VAR == "F2":
     made("flow-cone-PA12", "CPDM-ENC-111", flow_cone, (0.22, 0.22, 0.25), "Flow cone (F2)", "reverse-velocity-stack flare, M3 heat-set insert", "MJF PA12")
     screw_csk = Solid.make_cone(1.5, 3.0, 1.5, Plane(origin=(0, 0, -1.5))).fuse(cyl(3.0, (0, 0, -12.0), 10.5))
@@ -722,6 +754,22 @@ item("tie-points", "1722N12", [L(x, y, 0.0) for (x, y) in TIE_PTS], (0.2, 0.35, 
 for (x, y) in TIE_PTS: screw("M3", TIE_SCREW_L, L(x, y, TIE_FLOOR), "tie", fam="7380")
 TIE_INFO = dict(pn="1722N12", pts=TIE_PTS, floor=TIE_FLOOR, screw=f"ISO7380-M3x{TIE_SCREW_L:g}", thread_in_plate=round(TIE_SCREW_L - TIE_FLOOR, 3),
                 tap=TIE_TAP, drill=TIE_DRILL, rating_c=[-59, 168], flammability="UL 94 V-0")
+# revD (cadfetch5) fan-lead cord grip (spot + hole: see GLAND above). McMaster-Carr 8183K5 maker STEP (SolidWorks AP214, 5 solids,
+# axis z, dome up): seal insert, O-ring (OD 7.5, 1.5 thick, z -6.453..-4.953), body (hex 7.87 AF, M6 thread z -11.303..-6.453),
+# dome cap nut (to z 4.953), locknut (10 AF, z -9.128..-6.628). Fitted: the locknut is removed (not fitted, see above); the
+# O-ring underside (maker z -6.453) sits on the plate top z 0, so 4.85 of thread is in the plate and the dome stands 11.41 above it.
+if GLAND:
+    gl = vstep("McMaster_8183K5/8183K5.STEP"); gs = gl.solids()
+    assert len(gs) == 5, ("8183K5 solids", len(gs))
+    nut = [s_ for s_ in gs if bbx(s_).xlen > 10.5 and bbx(s_).zmax < -6.5]
+    assert len(nut) == 1, ("8183K5 locknut", [(round(bbx(s_).xlen, 2), round(bbx(s_).zmax, 2)) for s_ in gs])
+    gl = Compound([s_ for s_ in gs if s_ is not nut[0]]); gb = bbx(gl)
+    assert abs(gb.zmin + 11.303) < 0.01 and abs(gb.zmax - 4.953) < 0.01 and gb.xlen < 8.0, ("8183K5 frame", gb.zmin, gb.zmax, gb.xlen)
+    GLAND.update(seat_z_maker=-6.453, thread_in_plate=round(11.303 - 6.453, 3), top_above_plate=round(4.953 + 6.453, 3))
+    part("8183K5", gl, "Cord grip M6, liquid-tight, nickel-plated brass", "McMaster-Carr 8183K5 for the 4 fan leads (bundled in adhesive heat shrink to 2.0-3.3), "
+         "IP68 / IP69K, 0..210 F, UL 94 V-0; threads into the M6 x 1 through-tap in the sink plate, O-ring on the plate top; supplied locknut not fitted",
+         "nickel-plated brass, rubber seal, rubber O-ring", "bought", maker="McMaster-Carr", source="mcmaster.com/8183K5 3-D STEP (locknut solid removed: not fitted)")
+    item("fan-lead-gland", "8183K5", [L(GLAND["at"][0], GLAND["at"][1], 6.453)], (0.78, 0.72, 0.45))
 
 # ---------------- lid (MJF PA12): Grok b form, front turrets for X1/X2/USB ----------------
 w = P["wall"]; dr = P["draft_deg"]; R = P["corner_r"]; TX1 = 62.0
@@ -789,8 +837,8 @@ for (pn, grp), locs in SCR.items():
     item("screws_" + pn + ("_" + grp if grp else ""), pn, locs, (0.35, 0.35, 0.38))
 # revD: heat-sink subassembly (Dan 2026-11-20): the machined sink and what is fitted to it before anything else. The feet and
 # their screws are NOT in it: they go on after the lid screws (they cover the corner lid screws), so they sit in the top assembly
-SUBASM = {f"CPDM-ENC-120-{VAR}": dict(name=f"Heat-sink subassembly {VAR}", desc="heat sink + gap pads + fans + fan screws + cable-tie anchors + standoff set screws",
-          items=[nm for nm in ITEMS if nm == "heat-sink" or nm.startswith(("gap-pads-", "fans-", "tie-points", "screws_ISO4762-M3x16_fan", "screws_ISO7380-M3x6_tie", "standoff-studs-"))])}
+SUBASM = {f"CPDM-ENC-120-{VAR}": dict(name=f"Heat-sink subassembly {VAR}", desc="heat sink + gap pads + fans + fan screws + cable-tie anchors + standoff set screws" + (" + fan-lead cord grip" if GLAND else ""),
+          items=[nm for nm in ITEMS if nm == "heat-sink" or nm.startswith(("gap-pads-", "fans-", "fan-lead-gland", "tie-points", "screws_ISO4762-M3x16_fan", "screws_ISO7380-M3x6_tie", "standoff-studs-"))])}
 
 # ---------------- export ----------------
 # 1) one STEP per part number (parts/<PN>.stp, in the part's own frame) + the assembly STEP that references them (external
@@ -903,6 +951,6 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             assembly=dict(file=f"xref/{AFILE}", name=ASM), screws=[dict(size=s, L=Lg, grp=g, fam=fm, at=loc_info(l)[0], axis=loc_info(l)[1]) for (s, Lg, l, g, fm) in SCREWS],
             placements={nm: dict(pn=it["pn"], m=[mat4(l) for l in it["locs"]]) for nm, it in ITEMS.items()},   # 4x4 row-major, mm (Fusion insert)
             invalid_made_parts=INVALID, n_fins=len(fins), riser_d={k: round(math.dist(SEAT[k][:2], OUTT[k]), 3) for k in SEAT},
-            board_boss=BOSS_INFO, tie_mounts=TIE_INFO)
+            board_boss=BOSS_INFO, tie_mounts=TIE_INFO, fan_lead_gland=GLAND)
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
 print("done", VAR, len(ITEMS), "items", len(CAT), "part numbers", "overall(no plugs)", [round(v, 1) for v in meta["overall_no_plugs"]], "would-strip", dA, dB)
