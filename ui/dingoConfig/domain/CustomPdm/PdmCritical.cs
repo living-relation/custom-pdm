@@ -8,8 +8,9 @@ namespace domain.CustomPdm;
 // screen refuses them (PdmEngine.IsCritical). A wrong value stops the boards talking (base ID, CAN bit rate) or the
 // thermal shutdown (critical temperature, outputs kept on at critical temperature).
 // - Base ID: one board; moves at once with the stock Modify message (PdmOpsService.ChangeBaseId, checks PdmLinked).
-// - CAN bit rate, critical temperature, kept-on outputs: one value for the PDM, set on all three boards (PC edit:
-//   Write All sends it, Burn keeps it).
+// - CAN bit rate, kept-on outputs: one value for the PDM, set on all three boards (PC edit: Write All sends it, Burn
+//   keeps it). Critical temperature: one hot-spot value for the PDM, converted per board (ADR-2026-11-20-temp-onepdm,
+//   PdmThermal: board B hot spot - 20 K, board A keeps its own).
 public enum PdmCriticalKind { BaseId, BitRate, CritTemp, KeptOn }
 
 // Board = "" for a PDM-wide setting
@@ -42,13 +43,41 @@ public static class PdmCritical
         if (v.Boards.Count == 0) return list;
         list.Add(new PdmCriticalItem(PdmCriticalKind.BitRate, "", "CAN bit rate (all boards)", Differs(v, d => d.BitRate, RateText),
             string.Join(", ", BitRates.Select(RateText)), "every device on the bus (ECU, dash, this PC adapter) must use the same rate, or nothing talks"));
-        list.Add(new PdmCriticalItem(PdmCriticalKind.CritTemp, "", "Critical temperature, all outputs off (all boards)",
-            Differs(v, d => d.CustomPdm?.TempCrit ?? 0, t => $"{t} C"),
-            $"{CustomPdmSettings.TempMin}-{CustomPdmSettings.TempMax} C, above warn", "too high: the boards can overheat; too low: outputs drop while driving"));
+        // custom-pdm ADR-2026-11-20-temp-onepdm: one hot-spot value, converted per board (PdmThermal)
+        list.Add(new PdmCriticalItem(PdmCriticalKind.CritTemp, "", "Critical hot-spot temperature, all outputs off", CritTempText(v), CritTempHint(v),
+            "too high: the boards can overheat; too low: outputs drop while driving"));
         list.Add(new PdmCriticalItem(PdmCriticalKind.KeptOn, "", "Outputs kept on at critical temperature", KeptOnText(v),
             "output numbers, e.g. 10, 17 (or none)", "these outputs keep running when the board is too hot (the fans, output 10, should)"));
         return list;
     }
+
+    private static int? ParseTemp(string s) => int.TryParse(s.Trim().TrimEnd('C', 'c').Trim(), out var t) ? t : null;
+
+    private static string CritTempText(PdmView v) => PdmThermal.Current(v) is { } h
+        ? $"{h.Crit} C hot spot ({string.Join("; ", PdmThermal.Preview(v, h).Select(r => $"{r.Role} sensor {r.Sensor.Crit} C{(r.Converted ? "" : ", kept")}"))})"
+        : Differs(v, d => d.CustomPdm?.TempCrit ?? 0, t => $"{t} C sensor");
+
+    private static string CritTempHint(PdmView v)
+    {
+        var off = v.Boards.Select(b => PdmThermal.OffsetK(b.Device)).FirstOrDefault(o => o != null);
+        if (PdmThermal.Current(v) is not { } h || off is null) return "no board B in the project";
+        return $"hot spot, whole C, {Math.Max(h.Warn + 1, CustomPdmSettings.TempMin + off.Value)} to {CustomPdmSettings.TempMax + off.Value} (above warn {h.Warn} C)";
+    }
+
+    // What a valid typed value does to each board (shown in the Unlock dialog); empty for an invalid value
+    public static IReadOnlyList<string> Notes(PdmView v, PdmCriticalKind k, string typed)
+    {
+        if (k != PdmCriticalKind.CritTemp || Problem(v, k, "", typed) != null) return [];
+        var h = PdmThermal.Current(v)! with { Crit = ParseTemp(typed)!.Value };
+        return PdmThermal.Preview(v, h).Select(r => r.Converted
+                ? $"{r.Role} sensor critical becomes {r.Sensor.Crit} C"
+                : $"{r.Role} sensor critical stays {r.Sensor.Crit} C (no thermal model yet)")
+            .Concat(PdmThermal.RatingNotes(v, h)).ToList();
+    }
+
+    // Board A back on its factory limits (PdmThermal.RestoreFactory) goes through the same dialog: type "factory"
+    public static string? RestoreCheck(string typed) =>
+        typed.Trim().Equals("factory", StringComparison.OrdinalIgnoreCase) ? null : "Type factory to confirm.";
 
     public static string Normal(string s) => s.Trim().Replace(" ", "").ToUpperInvariant();
 
@@ -92,9 +121,9 @@ public static class PdmCritical
             case PdmCriticalKind.BitRate:
                 return ParseRate(typed) == null ? $"Type one of {string.Join(", ", BitRates.Select(RateText))}." : null;
             case PdmCriticalKind.CritTemp:
-                if (!int.TryParse(typed.Trim().TrimEnd('C', 'c').Trim(), out var t)) return "Type a whole number of degrees C.";
-                if (v.Boards.FirstOrDefault()?.Device is not { } first || PdmTempLimits.Of(first) is not { } now) return "No board in the project.";
-                return (now with { Crit = t }).Problem();
+                if (ParseTemp(typed) is not { } t) return "Type a whole number of degrees C.";
+                if (PdmThermal.Current(v) is not { } now) return PdmThermal.NoModelBoard;
+                return PdmThermal.Problem(v, now with { Crit = t });
             case PdmCriticalKind.KeptOn:
                 if (ParseOutputs(typed) is not { } outs) return "Type output numbers separated by commas (e.g. 10, 17), or none.";
                 return outs.FirstOrDefault(n => v.Outputs.All(o => o.Number != n)) is var bad and > 0
@@ -115,9 +144,7 @@ public static class PdmCritical
                 foreach (var b in v.Boards) b.Device.BitRate = ParseRate(typed)!.Value;
                 break;
             case PdmCriticalKind.CritTemp:
-                var t = int.Parse(typed.Trim().TrimEnd('C', 'c').Trim());
-                var now = PdmTempLimits.Of(v.Boards[0].Device)!;
-                return PdmLinked.SetTempLimits(v, now with { Crit = t });
+                return PdmThermal.Set(v, PdmThermal.Current(v)! with { Crit = ParseTemp(typed)!.Value });
             case PdmCriticalKind.KeptOn:
                 var outs = ParseOutputs(typed)!;
                 foreach (var b in v.Boards.Where(b => b.Device.CustomPdm != null))

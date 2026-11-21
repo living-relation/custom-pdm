@@ -17,41 +17,70 @@
             var a2 = View.Boards.FirstOrDefault(b => b.Role == "A2")?.Device;
         }
         <MudGrid Spacing="4">
-            @* ---- temperature limits (u1a: one set for all three boards) ---- *@
+            @* ---- temperature limits (u1a; ADR-2026-11-20-temp-onepdm): ONE hot-spot set, converted per board (PdmThermal) ---- *@
             <MudItem>
                 <MudCard Elevation="2" Style="height: 100%">
                     <MudCardContent>
-                        <MudText Typo="Typo.body1">Board temperature limits (all three boards)</MudText>
-                        @if (PdmLinked.TempLimitsDiffer(View))
+                        <MudText Typo="Typo.body1">Board temperature limits (hot spot, one set for the PDM)</MudText>
+                        <MudText Typo="Typo.caption" Style="display: block; max-width: 460px" Class="mb-1">
+                            Entered as the hottest point of the board (laminate). Each board compares its own sensor, so
+                            the tool converts the set per board: board B sensor = hot spot - @(PdmThermal.BoardBOffsetK) K
+                            (FEA map). Board A has no thermal model yet and keeps its own limits.
+                        </MudText>
+                        @if (PdmThermal.Current(View) == null)
                         {
-                            <MudAlert Severity="Severity.Warning" Dense="true" Class="my-1">
-                                The boards differ: @string.Join("; ", PdmLinked.TempLimitsByBoard(View).Select(t => $"{t.Role} {t.Limits.Warn} / {t.Limits.Crit} / {t.Limits.Hyst} / {t.Limits.Margin}"))
-                                (warn / critical / recovery / margin). Set once to make them equal.
-                            </MudAlert>
+                            <MudAlert Severity="Severity.Info" Dense="true" Class="my-1">@PdmThermal.NoModelBoard</MudAlert>
                         }
-                        <MudNumericField T="int" Value="_warn" ValueChanged="@(v => { _warn = v; _tempDirty = true; })" Label="Warn (°C)"
-                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                        <MudNumericField T="int" Value="_warn" ValueChanged="@(v => { _warn = v; _tempDirty = true; })" Label="Warn, hot spot (°C)"
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@(busy || PdmThermal.Current(View) == null)" id="hot-warn" />
                         @* editor1 (p1 / p3): critical, locked; changes only through Unlock *@
                         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
-                            <MudTextField T="string" Value="@($"{_crit}")" Label="Critical, all outputs off (°C), locked" ReadOnly="true"
+                            <MudTextField T="string" Value="@($"{_crit}")" Label="Critical, all outputs off, hot spot (°C), locked" ReadOnly="true"
                                           Variant="Variant.Outlined" Style="max-width: 220px" id="crit-temp" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Lock" />
-                            <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@busy" id="unlock-crit-temp"
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@(busy || PdmThermal.Current(View) == null)" id="unlock-crit-temp"
                                        OnClick="@(() => Unlock(PdmCriticalKind.CritTemp, ""))">Unlock</MudButton>
                         </MudStack>
                         <MudNumericField T="int" Value="_hyst" ValueChanged="@(v => { _hyst = v; _tempDirty = true; })" Label="Recovery below critical (°C)"
-                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@(busy || PdmThermal.Current(View) == null)" />
                         <MudNumericField T="int" Value="_margin" ValueChanged="@(v => { _margin = v; _tempDirty = true; })" Label="Critical-soon margin (°C, 0 = off)"
-                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@busy" />
-                        @if (TempInput.Problem() is { } tempWhy)
+                                         Variant="Variant.Outlined" Style="max-width: 220px" Disabled="@(busy || PdmThermal.Current(View) == null)" />
+
+                        @* what each board's sensor limit becomes (the values Write All sends) *@
+                        <MudText Typo="Typo.body2" Class="mt-2"><b>Each board's sensor limit</b>@(_tempDirty ? " (after Set)" : "")</MudText>
+                        <MudSimpleTable Dense="true" Style="max-width: 520px" id="temp-per-board">
+                            <thead><tr><th>Board</th><th>Warn</th><th>Critical</th><th>Recovery</th><th>Soon</th><th></th></tr></thead>
+                            <tbody>
+                            @foreach (var r in PdmThermal.Preview(View, TempInput))
+                            {
+                                <tr>
+                                    <td>@r.Role</td><td style="white-space: nowrap">@r.Sensor.Warn °C</td><td style="white-space: nowrap">@r.Sensor.Crit °C</td><td style="white-space: nowrap">@r.Sensor.Hyst °C</td><td style="white-space: nowrap">@(r.Sensor.Margin == 0 ? "off" : $"{r.Sensor.Margin} °C")</td>
+                                    <td><MudText Typo="Typo.caption">@(r.Converted ? $"hot spot - {PdmThermal.OffsetK(View.Boards.Single(b => b.Role == r.Role).Device)} K" : "kept: no thermal model yet")</MudText></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </MudSimpleTable>
+                        @if (PdmThermal.Current(View) != null && PdmThermal.Problem(View, TempInput) is { } tempWhy)
                         {
                             <MudText Typo="Typo.body2" Color="Color.Error">@tempWhy</MudText>
                         }
+                        @foreach (var n in PdmThermal.RatingNotes(View, TempInput))
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@n</MudAlert>
+                        }
+                        @foreach (var n in PdmThermal.OffFactory(View))
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-1">@n /pdm never puts another board's limits on board A.</MudAlert>
+                        }
                         <MudStack Row="true" Spacing="2" Class="mt-2">
-                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || TempInput.Problem() != null)"
+                            <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@(busy || PdmThermal.Problem(View, TempInput) != null)" id="set-temps"
                                        OnClick="SetTemps">Set on A1, A2, B</MudButton>
                             @if (_tempDirty)
                             {
                                 <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="@(() => _tempDirty = false)">Undo edits</MudButton>
+                            }
+                            @if (PdmThermal.OffFactory(View).Count > 0)
+                            {
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="@busy" id="restore-a-temps" OnClick="RestoreA">Unlock: board A back to factory</MudButton>
                             }
                         </MudStack>
                     </MudCardContent>
@@ -177,13 +206,13 @@
     private readonly Dictionary<string, string> _newBase = new();
     private List<string> _moveDone = [];
 
-    private PdmTempLimits TempInput => new(_warn, _crit, _hyst, _margin);
+    private PdmHotSpotLimits TempInput => new(_warn, _crit, _hyst, _margin);
     private PdmFanThresholds FanInput => new(_fanOn, _fanOff);
 
     // Until the user types, the fields follow the PC values (they change with Read All / New PDM / the board pages)
     protected override void OnParametersSet()
     {
-        if (View.Boards.FirstOrDefault() is { } first && PdmTempLimits.Of(first.Device) is { } t)
+        if (PdmThermal.Current(View) is { } t) // ADR-2026-11-20-temp-onepdm: the hot-spot set, from board B
         {
             _crit = t.Crit; // editor1: locked, always the PC value (Unlock changes it)
             if (!_tempDirty) (_warn, _hyst, _margin) = (t.Warn, t.Hyst, t.Margin);
@@ -198,9 +227,26 @@
 
     private void SetTemps()
     {
-        if (PdmLinked.SetTempLimits(View, TempInput) is { } why) { Notification.NewError(why); return; }
+        if (PdmThermal.Set(View, TempInput) is { } why) { Notification.NewError(why); return; }
         _tempDirty = false;
-        Notification.NewInfo("Temperature limits set on the PC for A1, A2 and B. Write All sends them to the boards.");
+        Notification.NewInfo("Hot-spot limits set on the PC: board B converted, board A keeps its own. Write All sends them to the boards.");
+    }
+
+    // Board A back on its factory limits: critical temperature included, so through the Unlock dialog (type "factory")
+    private async Task RestoreA()
+    {
+        var item = new PdmCriticalItem(PdmCriticalKind.CritTemp, "A", "Board A temperature limits back to factory",
+            string.Join(" ", PdmThermal.OffFactory(View)), "type factory", "board A gets its factory warn / critical / recovery / margin");
+        var parameters = new DialogParameters<PdmCriticalDialog>
+        {
+            { x => x.Item, item },
+            { x => x.Check, (Func<string, string?>)PdmCritical.RestoreCheck }
+        };
+        var dialog = await DialogService.ShowAsync<PdmCriticalDialog>("Unlock board A temperature limits", parameters);
+        var result = await dialog.Result;
+        if (result is not { Canceled: false }) return;
+        PdmThermal.RestoreFactory(View);
+        Notification.NewWarning("Board A temperature limits back to factory on the PC. Write All sends them, Burn keeps them.");
     }
 
     private void SetFan(domain.Devices.FwDevice a2)
@@ -249,7 +295,7 @@
             { x => x.Check, (Func<string, string?>)(s => PdmCritical.Problem(View, kind, role, s)) },
             { x => x.Notes, kind == PdmCriticalKind.BaseId
                 ? (Func<string, IReadOnlyList<string>>)(s => ParseHex(s) is { } nb ? PdmLinked.BaseIdWarnings(View, role, nb) : [])
-                : null }
+                : kind == PdmCriticalKind.CritTemp ? s => PdmCritical.Notes(View, kind, s) : null }
         };
         var dialog = await DialogService.ShowAsync<PdmCriticalDialog>($"Unlock {item.Label}", parameters);
         var result = await dialog.Result;
