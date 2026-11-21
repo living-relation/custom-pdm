@@ -112,6 +112,12 @@ public class SimPanelTests
         Assert.Contains(fields, f => f.Id == 0x180 + 0x28 && f.Length == 1);   // the keypad button of the starter
         Assert.Equal(fields.OrderBy(f => f.Id).ThenBy(f => f.StartBit).Select(f => f.Key), fields.Select(f => f.Key));
 
+        // a value one board reads from ANOTHER board's status frame is not for the simulator to send
+        var signal = PdmValues.RemoteSignals(v, "A1", out _).First().Name;
+        PdmValues.AddRemoteValue(v, "B", "A1", signal, out var refused);
+        Assert.Null(refused);
+        Assert.Equal(fields.Select(f => f.Key), PdmSim.Fields(v).Select(f => f.Key));
+
         var frames = PdmSim.Frames(fields, f => f.Key == pump.Key ? 1 : f.Key == coolant.Key ? 95 : 0);
         Assert.Equal("01", Convert.ToHexString(frames[0x3F4])[..2]);
         Assert.Equal("00", Convert.ToHexString(frames[0x3F4])[2..4]);

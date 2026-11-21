@@ -26,7 +26,8 @@
                 var mathA = PdmWide.Find(wide, _mA);
             }
             <MudText Typo="Typo.caption" Class="mb-2" Style="display: block" id="pdm-val-use">
-                Each function is made on the board its value or input lives on. In use: @string.Join("  |  ", View.Boards.Select(b => m.Use(b.Role).Summary))
+                Each function is made on the board its value or input lives on. In use:
+                @foreach (var b in View.Boards) { <span style="display: block">@m.Use(b.Role).Summary</span> }
             </MudText>
 
             <MudText Typo="Typo.subtitle2"><b>Counter</b> (1 counter): counts presses, e.g. a mode button</MudText>

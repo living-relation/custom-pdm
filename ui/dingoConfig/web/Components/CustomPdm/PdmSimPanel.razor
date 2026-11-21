@@ -25,7 +25,7 @@
 
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2">
             <MudText Typo="Typo.body2" Style="min-width: 110px"><b>Input wire</b></MudText>
-            <MudSelect T="int" @bind-Value="_in" Label="Input" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-in">
+            <MudSelect T="int" @bind-Value="_in" Label="Input" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-in" ToStringFunc="@InText">
                 @foreach (var r in View.Inputs.Where(r => r.Digital != null)) { <MudSelectItem T="int" Value="@r.Number">IN@(r.Number) @r.Name (@r.Board)</MudSelectItem> }
             </MudSelect>
             <MudButton Variant="Variant.Outlined" Size="Size.Small" Class="pdm-sim-in-gnd" OnClick="@(() => SetInput("gnd"))">To ground</MudButton>
@@ -36,7 +36,7 @@
 
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-2">
             <MudText Typo="Typo.body2" Style="min-width: 110px"><b>Load</b></MudText>
-            <MudSelect T="int" @bind-Value="_out" Label="Output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-out">
+            <MudSelect T="int" @bind-Value="_out" Label="Output" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 220px" Class="pdm-sim-out" ToStringFunc="@OutText">
                 @foreach (var r in View.Outputs) { <MudSelectItem T="int" Value="@r.Number">@r.Number @PdmFaults.OutputLabel(r)</MudSelectItem> }
             </MudSelect>
             <MudNumericField T="double" @bind-Value="_amps" Label="Draws (A), 0 = nothing connected" Min="0" Max="@PdmSim.MaxAmps" Step="1" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 230px" Class="pdm-sim-amps" />
@@ -103,6 +103,10 @@
         if (!Sim.IsSimulator && AdapterManager.IsConnected && _renders++ % 20 == 0) Sim.Probe();
         if (!Sim.IsSimulator) _sending = false;
     }
+
+    // the picked row in words also when the list was not there at the first render (project loaded later)
+    private string InText(int n) => View.Inputs.FirstOrDefault(r => r.Number == n && r.Digital != null) is { } r ? $"IN{r.Number} {r.Name} ({r.Board})" : n.ToString();
+    private string OutText(int n) => View.Outputs.FirstOrDefault(r => r.Number == n) is { } r ? $"{r.Number} {PdmFaults.OutputLabel(r)}" : n.ToString();
 
     private double Value(PdmSimField f) => _values.GetValueOrDefault(f.Key);
 

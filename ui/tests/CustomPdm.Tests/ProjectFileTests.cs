@@ -206,3 +206,47 @@ public class ProjectFileTests
         Assert.Equal(PdmAskKind.Edits, PdmPageText.AskKind(pdm.View.Boards)); // read: what differs now are edits
     }
 }
+
+// The same on the real firmware (host sim): a file saved by the app, opened in a fresh session, written onto blank boards
+[Collection("sim")]
+public class ProjectFileLiveSimTests
+{
+    [SimFact]
+    public async Task AFileSavedByTheAppGoesOntoBlankBoardsWithoutARead()
+    {
+        using var bus = new SimBus();
+        var rig = new PdmRig(bus, newPdm: true);   // the rig's own devices are replaced by the opened file below
+        rig.Step(1500);
+        var files = new ConfigFileManager(NullLogger<ConfigFileManager>.Instance, new FwDeviceDefManager());
+
+        // a setup (the ST185 example), saved by the app as the user would
+        var setup = (await files.LoadDevices(PdmStarter.Find(AppContext.BaseDirectory)!))!;
+        var path = Path.Combine(Path.GetTempPath(), $"cpdm-live-{Guid.NewGuid():N}.json");
+        await files.SaveDevices(setup, path);
+        Assert.Equal(3, Regex.Matches(File.ReadAllText(path), "\"completeSettings\": true").Count);
+
+        // File > Open in a session that has read nothing
+        var opened = (await files.LoadDevices(path))!;
+        rig.Mgr.ClearDevices();
+        rig.Mgr.AddDevices(opened);
+        var svc = new PdmOpsService(rig.Mgr, _ => true) { AutoTick = false };
+        rig.Step(1000);
+        Assert.All(svc.BuildView().Boards, b => Assert.False(b.Device.FullReadDone));
+        var t = rig.SimMs;
+        Assert.Null(svc.Start(PdmOpKind.WriteAll, true, rig.Now));
+        while (svc.Ops.Busy && rig.SimMs - t < 300000)
+        {
+            rig.Step();
+            svc.Tick(rig.Now);
+        }
+
+        Assert.All(svc.Ops.Results, r => Assert.Equal(PdmStepState.Ok, r.State));
+        Assert.All(new[] { 0x500, 0x540, 0x580 }, id => Assert.Equal(0, rig.CountSent(id, MessageCommand.ReadAll)));
+
+        // a fresh PC reads board B: the file's fuel pump limit (25 A on B OUT3), not the blank board's 31 A
+        var pc2 = PcTool.For(bus, 15, 0x580);
+        Assert.True(pc2.ReadAll());
+        Assert.Equal(25.0, pc2.Dev.Outputs[2].CurrentLimit);
+        Assert.Equal(25.0, opened.OfType<FwDevice>().Single(d => d.DeviceTypeId == 15).Outputs[2].CurrentLimit);
+    }
+}
