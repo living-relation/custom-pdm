@@ -132,6 +132,7 @@ public class PdmOpsService : IDisposable
         try { _deviceManager.GetDevicesByType<FwDevice>(); }
         catch (InvalidOperationException) { /* device list changed on another thread: next tick */ }
         var clock = now ?? DateTime.UtcNow;
+        ForgetOldResults();
         Ops.Tick(clock);
         if (AutoRead) StepAutoRead(clock);
         if (Ops.Busy || AutoRead) return;
@@ -141,6 +142,20 @@ public class PdmOpsService : IDisposable
             _timer?.Dispose();
             _timer = null;
         }
+    }
+
+    // uiwalk: a new project (File > New, Open, New PDM) has other boards: the result lines of the old ones go
+    private HashSet<Guid> _boardIds = [];
+
+    private void ForgetOldResults()
+    {
+        try
+        {
+            var ids = _deviceManager.GetAllDevices().OfType<FwDevice>().Where(d => d.CustomPdm != null).Select(d => d.Guid).ToHashSet();
+            if (_boardIds.Count > 0 && !ids.Overlaps(_boardIds)) Ops.ClearResults();
+            _boardIds = ids;
+        }
+        catch (InvalidOperationException) { /* device list changed on another thread: next tick */ }
     }
 
     // After Ops.Tick, so a run that just ended lets the waiting boards go

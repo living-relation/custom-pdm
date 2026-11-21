@@ -9,3 +9,9 @@ export function downloadText(fileName, text) {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// custom-pdm (uiwalk): bring an element into view, e.g. the trigger editor that opens under the 24-row list
+export function scrollIntoView(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+}

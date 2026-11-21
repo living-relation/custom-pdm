@@ -4,6 +4,7 @@
 @inject PdmOpsService Pdm
 @inject NotificationService Notification
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 @* custom-pdm one-PDM editor, phase 1 (domain/CustomPdm/PdmTriggers.cs, PdmEngine.cs): what switches each of the 24
    outputs, in words, and an editor per output. The editor writes the needed functions on the OUTPUT's board through
@@ -57,6 +58,11 @@
                                 else
                                 {
                                     <span id="@($"trigger-words-{o.Number}")">@t.Words</span>
+                                    @* uiwalk: the names of the inputs the words mention ("IN15" alone said little) *@
+                                    @if (PdmPageText.InputNames(View, t.Words) is { Length: > 0 } names)
+                                    {
+                                        <span style="opacity: 0.6" id="@($"trigger-names-{o.Number}")"> (@names)</span>
+                                    }
                                 }
                             </td>
                             <td>
@@ -215,8 +221,27 @@
             ? key[0] == 'i' ? PdmTerm.In(n, not) : PdmTerm.Of(n, not)
             : null;
 
+    // uiwalk: the editor opens under the 24-row list, out of sight for the upper rows: bring it into view
+    private bool _scrollToEditor;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_scrollToEditor) return;
+        _scrollToEditor = false;
+        try
+        {
+            await using var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/custompdm/download.js");
+            await module.InvokeVoidAsync("scrollIntoView", "trigger-editor");
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException or OperationCanceledException)
+        {
+            // no browser (tests, prerender) or the page is gone: the editor is still there, just not scrolled to
+        }
+    }
+
     private void StartEdit(PdmModel m, PdmTrigger t)
     {
+        _scrollToEditor = true;
         _edit = t.Out;
         var s = t.Spec ?? PdmTriggerSpec.None;
         _kind = s.Kind switch

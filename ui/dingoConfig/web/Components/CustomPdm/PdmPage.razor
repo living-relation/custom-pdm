@@ -18,6 +18,16 @@
    Editing follows the stock grids (Devices/FwDevice/Functions/OutputsGrid.razor, DigitalInputsGrid.razor): same
    clamps, same "disabled when not enabled / paired" rules. *@
 <PageTitle>PDM</PageTitle>
+@* uiwalk: the two grids fit a 1920 px window. Measured in the browser at 1920 px: the Outputs grid was 2870 px wide
+   (HorizontalScrollbar makes the table as wide as its widest one-line content: 40 px of padding, a one-line title
+   and a sort button per column); with these rules it is 1612 px = the page width, every column in view. A narrower
+   window scrolls sideways as before. Sorting still works with a click on a title. *@
+<style>
+    .pdm-grid { overflow-x: auto; }
+    .pdm-grid .mud-table-cell { padding: 4px 6px !important; }
+    .pdm-grid th .sortable-column-header { white-space: normal; line-height: 1.2; }
+    .pdm-grid th .column-options { display: none !important; }
+</style>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
     @if (!_view.Any)
@@ -40,8 +50,30 @@
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@problem</MudAlert>
         }
 
-        @* p2a: a board connected while the PC holds unsaved edits for it (domain/CustomPdm/PdmAutoRead.cs) *@
-        @foreach (var ask in Pdm.ConnectAsks())
+        @* uiwalk: a board that is missing on the bus is said at the top, not only on its card *@
+        @if (PdmPageText.OfflineLine(_view, AdapterManager.IsConnected) is { } offline)
+        {
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="pdm-offline">@offline</MudAlert>
+        }
+
+        @* p2a: a board connected while the PC holds unsaved edits for it (domain/CustomPdm/PdmAutoRead.cs)
+           uiwalk: several boards asking at once (New PDM with the PDM on the bus) is ONE question for the PDM *@
+        var asks = Pdm.ConnectAsks().Where(a => PdmPageText.AskNow(a.Role, busy, results)).ToList();
+        @if (asks.Count > 1)
+        {
+            <MudAlert Severity="Severity.Warning" Class="mb-2" id="connect-ask-all">
+                <MudText Typo="Typo.body2">
+                    <b>@PdmPageText.ConnectAskText(asks.Select(a => a.Role).ToList(), asks.All(a => a.Device.CustomPdm?.FactoryNew == true && !a.Device.FullReadDone))</b>
+                </MudText>
+                <MudStack Row="true" Spacing="2" Class="mt-2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Primary" id="connect-keep-all"
+                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.KeepPc))">Keep PC settings (Write All later)</MudButton>
+                    <MudButton Variant="Variant.Outlined" Size="Size.Small" id="connect-take-all"
+                               OnClick="@(() => AnswerAll(asks, PdmConnectAnswer.TakeBoard))">Take the boards' settings (Read All)</MudButton>
+                </MudStack>
+            </MudAlert>
+        }
+        @foreach (var ask in asks.Count > 1 ? [] : asks)
         {
             var dev = ask.Device;
             <MudAlert Severity="Severity.Warning" Class="mb-2" id="@($"connect-ask-{ask.Role}")">
@@ -87,23 +119,11 @@
                     <MudText Typo="Typo.body2">@RunName() running: boards are handled one after another (A1, A2, B). Settings are locked until it ends.</MudText>
                 }
             </MudStack>
-            @if (!busy && readBlocked != null)
+            @if (!busy)
             {
-                <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Read All is off: @readBlocked</MudText>
-            }
-            @if (!busy && writeBlocked != null && writeBlocked == burnBlocked && writeBlocked != readBlocked)
-            {
-                <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Write All and Burn are off: @writeBlocked</MudText>
-            }
-            else if (!busy)
-            {
-                @if (writeBlocked != null && writeBlocked != readBlocked)
+                @foreach (var off in PdmPageText.OffLines(readBlocked, writeBlocked, burnBlocked))
                 {
-                    <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Write All is off: @writeBlocked</MudText>
-                }
-                @if (burnBlocked != null && burnBlocked != readBlocked)
-                {
-                    <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2">Burn is off: @burnBlocked</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Warning" Class="mt-2 pdm-off-line">@off</MudText>
                 }
             }
             <MudText Typo="Typo.caption" Class="mt-2" Style="display: block">
@@ -120,8 +140,19 @@
                 {
                     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="mt-1">
                         <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Style="min-width: 44px;" Color="@ResultColor(r.State)">@r.Role</MudChip>
-                        <MudText Typo="Typo.body2">@r.Text</MudText>
+                        <MudText Typo="Typo.body2">@r.Text@(r.State == PdmStepState.Running && Pdm.Ops.Running(DateTime.UtcNow) is { } run && run.Role == r.Role ? $" {PdmOps.ElapsedText(run.For)}" : "")</MudText>
                     </MudStack>
+                }
+                @if (busy && Pdm.Ops.LastOp == PdmOpKind.WriteAll)
+                {
+                    <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">A real board takes about 5 s per Write All (PdmOps.cs); a simulated board about 41 s (measured through the sim bridge, 2026-11-21).</MudText>
+                }
+                @* uiwalk: a read on connect right after a Write All / Burn must not hide how that run ended *@
+                @if (Pdm.Ops.Earlier is { } earlier)
+                {
+                    <MudText Typo="Typo.body2" Class="mt-2" id="pdm-earlier-run">
+                        <b>@OpName(earlier.Op)</b> (the run before): @string.Join("; ", earlier.Results.Select(r => $"{r.Role} {r.Text}"))
+                    </MudText>
                 }
                 @if (!busy && Pdm.Ops.LastOp == PdmOpKind.WriteAll && results.Any(r => r.State != PdmStepState.Ok))
                 {
@@ -213,12 +244,14 @@
             </MudAlert>
         }
         <MudDataGrid Items="@_view.Outputs" Dense="true" Hover="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
-                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="true" Height="calc(55vh)" Class="mb-4">
+                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="false" Height="calc(72vh)" Class="mb-4 pdm-grid">
             <Columns>
                 <PropertyColumn Property="x => x.Number" Title="#" Editable="false" />
-                <PropertyColumn Property="x => x.Board" Title="Board" Editable="false" />
-                <PropertyColumn Property="x => x.BoardOutput" Title="Board Out" Editable="false" />
-                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
+                @* uiwalk: one "A1 OUT3" column (as the Output triggers list), short titles *@
+                <PropertyColumn Property="x => x.BoardOutput" Title="Board output" Editable="false" SortBy="@(x => x.Number)">
+                    <CellTemplate><span style="white-space: nowrap" class="@($"pdm-out-where-{context.Item.Number}")">@context.Item.Board OUT@(context.Item.BoardOutput)</span></CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Connector" Title="Pin" Editable="false" />
                 <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" Editable="false" />
                 <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Output.Enabled)">
                     <EditTemplate>
@@ -268,7 +301,7 @@
                 <PropertyColumn Property="x => x.Output.Current" Title="Current (A)" Editable="false" Format="F1" />
                 <TemplateColumn Title="Current Limit (A)" Sortable="true" SortBy="@(x => x.Output.CurrentLimit)" CellStyle="min-width: 100px">
                     <EditTemplate>
-                        <MudNumericField @key="@($"currentLimit-{context.Item.Number}-{_refreshCounter}")"
+                        <MudNumericField Style="width: 92px" @key="@($"currentLimit-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.CurrentLimit" Disabled="@Locked(context.Item.Output)"
                                          Error="@context.Item.OverRating" ErrorText="Above rating"
                                          ValueChanged="@((double val) => OnCurrentLimitChanged(context.Item, val))" />
@@ -276,21 +309,21 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Inrush Limit (A)" Sortable="true" SortBy="@(x => x.Output.InrushCurrentLimit)" CellStyle="min-width: 100px">
                     <EditTemplate>
-                        <MudNumericField @key="@($"inrushLimit-{context.Item.Number}-{_refreshCounter}")"
+                        <MudNumericField Style="width: 92px" @key="@($"inrushLimit-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.InrushCurrentLimit" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((double val) => OnInrushLimitChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
                 <TemplateColumn Title="Inrush Time (ms)" Sortable="true" SortBy="@(x => x.Output.InrushTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
-                        <MudNumericField @key="@($"inrushTime-{context.Item.Number}-{_refreshCounter}")"
+                        <MudNumericField Style="width: 92px" @key="@($"inrushTime-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.InrushTime" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((int val) => OnInrushTimeChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
-                <TemplateColumn Title="Reset Mode" Sortable="true" SortBy="@(x => (int)x.Output.ResetMode)" CellStyle="min-width: 130px">
+                <TemplateColumn Title="Reset Mode" Sortable="true" SortBy="@(x => (int)x.Output.ResetMode)" CellStyle="min-width: 104px">
                     <EditTemplate>
-                        <MudSelect T="ResetMode" @bind-Value="context.Item.Output.ResetMode" Variant="Variant.Outlined" Dense="true"
+                        <MudSelect T="ResetMode" @bind-Value="context.Item.Output.ResetMode" Variant="Variant.Outlined" Dense="true" Style="width: 104px"
                                    Disabled="@Locked(context.Item.Output)">
                             @foreach (ResetMode resetMode in Enum.GetValues(typeof(ResetMode)))
                             {
@@ -301,14 +334,14 @@
                 </TemplateColumn>
                 <TemplateColumn Title="Reset Count Limit" Sortable="true" SortBy="@(x => x.Output.ResetCountLimit)" CellStyle="min-width: 80px">
                     <EditTemplate>
-                        <MudNumericField @key="@($"resetCount-{context.Item.Number}-{_refreshCounter}")"
+                        <MudNumericField Style="width: 92px" @key="@($"resetCount-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.ResetCountLimit" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((int val) => OnResetCountChanged(context.Item.Output, val))" />
                     </EditTemplate>
                 </TemplateColumn>
                 <TemplateColumn Title="Reset Time (ms)" Sortable="true" SortBy="@(x => x.Output.ResetTime)" CellStyle="min-width: 100px">
                     <EditTemplate>
-                        <MudNumericField @key="@($"resetTime-{context.Item.Number}-{_refreshCounter}")"
+                        <MudNumericField Style="width: 92px" @key="@($"resetTime-{context.Item.Number}-{_refreshCounter}")"
                                          Value="@context.Item.Output.ResetTime" Disabled="@Locked(context.Item.Output)"
                                          ValueChanged="@((int val) => OnResetTimeChanged(context.Item.Output, val))" />
                     </EditTemplate>
@@ -319,13 +352,14 @@
 
         <MudText Typo="Typo.h6" Class="mb-2">Inputs (@_view.Inputs.Count)</MudText>
         <MudDataGrid Items="@_view.Inputs" Dense="true" Hover="true" EditMode="DataGridEditMode.Cell" ReadOnly="false"
-                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="true" Height="calc(55vh)" Class="mb-4">
+                     SortMode="SortMode.Single" FixedHeader="true" HorizontalScrollbar="false" Height="calc(72vh)" Class="mb-4 pdm-grid">
             <Columns>
                 <PropertyColumn Property="x => x.Number" Title="#" Editable="false" />
-                <PropertyColumn Property="x => x.Board" Title="Board" Editable="false" />
+                <PropertyColumn Property="x => x.BoardInput" Title="Board input" Editable="false" SortBy="@(x => x.Number)">
+                    <CellTemplate><span style="white-space: nowrap">@context.Item.Board @(context.Item.Kind == "Analog" ? "AN" : "IN")@(context.Item.BoardInput)</span></CellTemplate>
+                </PropertyColumn>
                 <PropertyColumn Property="x => x.Kind" Title="Kind" Editable="false" />
-                <PropertyColumn Property="x => x.BoardInput" Title="Board In" Editable="false" />
-                <PropertyColumn Property="x => x.Connector" Title="Connector Pin" Editable="false" />
+                <PropertyColumn Property="x => x.Connector" Title="Pin" Editable="false" />
                 <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Enabled)">
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
@@ -401,7 +435,7 @@
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
-                            <MudNumericField @key="@($"debounce-{context.Item.Number}-{_refreshCounter}")"
+                            <MudNumericField Style="width: 92px" @key="@($"debounce-{context.Item.Number}-{_refreshCounter}")"
                                              Value="@di.DebounceTime" Disabled="@Locked(di)"
                                              ValueChanged="@((int val) => OnDebounceChanged(di, val))" />
                         }
@@ -456,6 +490,11 @@
         PdmOpKind.Burn => "Burn",
         _ => ""
     };
+
+    private void AnswerAll(IReadOnlyList<PdmBoard> asks, PdmConnectAnswer answer)
+    {
+        foreach (var b in asks) Pdm.AnswerConnect(b.Device, answer);
+    }
 
     // p2a: a Read All started by a board that connected (PdmAutoRead)
     private string RunName() => Pdm.Ops.LastOnConnect ? "Read on connect" : OpName(Pdm.Ops.LastOp);
