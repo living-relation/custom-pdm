@@ -12,10 +12,12 @@ for V in $VARS; do
   bash "$HERE/run.sh" show_check.py "$V" > /dev/null
   bash "$HERE/run.sh" lugcheck_v2c.py "$V" > /dev/null
   bash "$HERE/run.sh" bomcheck_v2c.py "$V" > /dev/null
+  bash "$HERE/run.sh" access_v2c.py "$V" > /dev/null
+  NPROC="${NPROC:-12}" bash "$HERE/run.sh" wirecheck_v2c.py "$V" > /dev/null   # revE: no wire through a part
   bash "$HERE/run.sh" mass_v2c.py "$V" > /dev/null
   tr -d '\r' < "$HERE/cnc_v2c.sh" > /tmp/cnc_v2c.sh && bash /tmp/cnc_v2c.sh "$V" > "$L/cnc_$V.log" 2>&1
   echo "== $V"; grep -a '^done' "$L/build_v2c_$V.log"
   grep -v ' 0.0 mm3' "$L/show_check_$V.log" | head -60
-  grep -E 'head rule|lug_' "$L/lugcheck_v2c_$V.log"; tail -3 "$L/bomcheck_v2c_$V.log"; grep 'rc=' "$L/cnc_$V.log"
+  grep -E 'head rule|lug_' "$L/lugcheck_v2c_$V.log"; tail -3 "$L/bomcheck_v2c_$V.log"; tail -2 "$L/access_v2c_$V.log"; tail -3 "$L/wirecheck_v2c_$V.log" | cut -c1-400; grep 'rc=' "$L/cnc_$V.log"
 done
 echo ALLDONE

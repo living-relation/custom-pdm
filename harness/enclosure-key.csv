@@ -11,4 +11,4 @@ wire family,M22759/16-20,"ETFE, 150 C","20 AWG: X2 (E seal 1.02-2.41 mm), Micro-
 wire family,UL1571 28,PVC 80 C,Sunon factory fan leads only
 wire family,28 AWG (TBD),>= 105 C,JST GH links
 rule,Labels,,printed heat-shrink sleeve at each end: '<wire ID> <signal> ><far end>'
-rule,Length rule,,"model route + 20 mm X1/X2 fan-out + 2 x 15 mm service loop, rounded up to 5 mm; TBD = not in the model"
+rule,Length rule,,"model route (CPDM-HAR-200 real 3-D wire, fan-out included) + 2 x 15 mm service loop, rounded up to 5 mm; TBD = not in the model"

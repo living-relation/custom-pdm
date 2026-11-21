@@ -15,6 +15,13 @@ OUT = os.path.join(os.environ.get("RUN_DIR", os.path.join(ROOT, "runs", "latest"
 RD = os.environ.get("RENDER_DIR", os.path.join(OUT, "..", "renders")); os.makedirs(RD, exist_ok=True)
 meta = json.load(open(os.path.join(OUT, "meta.json"))); col = meta["colors"]
 S = {os.path.basename(f)[:-5]: import_brep(f) for f in sorted(glob.glob(os.path.join(OUT, "brep", "*.brep")))}
+HJ = os.path.join(OUT, "harness_paths.json")
+if os.path.exists(HJ):                                               # revE: the harness drawn wire by wire in its wire-list colours
+    import harness_paths_v2c as HP
+    for hk in [k for k in S if k.startswith("harness-")]: del S[hk]
+    grp = {}
+    for w_, d_ in json.load(open(HJ)).items(): grp.setdefault(d_["color"] if d_["kind"] == "wire" else "cable", (d_["rgb"], []))[1].append(HP.solid(d_))
+    for k_, (rgb_, sols_) in grp.items(): S["harness-" + k_] = Compound(sols_); col["harness-" + k_] = rgb_
 def bb(s):
     b = s.bounding_box(); return (b.min.X, b.min.Y, b.min.Z), (b.max.X, b.max.Y, b.max.Z)
 BADFACES = [0]
@@ -110,6 +117,11 @@ if "iso_ne" in which:
     scene(S, [(cx + 330, cy + 420, 330), (cx, cy, 10), (0, 0, 1)], "iso-ne", T + "  iso (north-east)", zoom=1.25)
 if "iso_nw" in which:
     scene(S, [(cx - 330, cy + 420, 330), (cx, cy, 10), (0, 0, 1)], "iso-nw", T + "  iso (north-west)", zoom=1.25)
+if "wiring" in which:
+    scene({k: v for k, v in S.items() if k != "lid"}, [(cx + 40, cy - 330, 250), (150, -85, 18), (0, 0, 1)], "wiring-closeup", T + "  wiring close-up from the front, lid hidden", zoom=2.0)
+    nodeck = {k: v for k, v in S.items() if k != "lid" and not k.startswith(("input-", "vendor-J2", "screws_ISO4762-M3x8", "copper-bar", "screws_ISO4762-M6", "vendor-X", "vendor-plug", "panel-"))}
+    scene(nodeck, [(cx, cy - 40, 520), (cx, cy, 0), (0, 1, 0)], "wiring-top-no-deck", T + "  wiring from above: lid, input deck / boards, bars and X1 / X2 hidden", zoom=1.35)
+    scene({k: v for k, v in S.items() if k.startswith(("harness-", "board-", "heat-sink", "vendor-X", "usbc-", "vendor-hub", "fans-", "fan-lead"))}, [(cx + 330, cy - 420, 330), (cx, cy, 10), (0, 0, 1)], "wiring-only", T + "  harness on the boards and sink (everything else hidden)", zoom=1.25)
 if "iso_open_nw" in which:
     scene({k: v for k, v in S.items() if k != "lid"}, [(cx - 330, cy + 420, 330), (cx, cy, 10), (0, 0, 1)], "iso-lid-off-nw", T + "  iso NW, lid hidden", zoom=1.25)
 if "lidT" in which:

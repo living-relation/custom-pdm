@@ -17,6 +17,7 @@ def parse(path):
     return ents
 def refs(s): return [int(x) for x in re.findall(r"#(\d+)", s)]
 def strs(s): return re.findall(r"'((?:[^']|'')*)'", s)
+HARN = {meta["harness"]["pn"]} if meta.get("harness") else set()   # revE: the harness file is an assembly of named wire solids
 fails = []; inst = {}; files = {}; TREE = []        # TREE: (depth, product, file, instances) for the report / Fusion tree check
 def walk(path, depth=0, mult=1, seen=()):
     """one STEP assembly file: its top product's NEXT_ASSEMBLY_USAGE_OCCURRENCEs; a child whose external file is itself an
@@ -54,7 +55,14 @@ def walk(path, depth=0, mult=1, seen=()):
         PE = parse(pf); pp = [strs(v) for k, v in PE.items() if v.startswith("PRODUCT(")]
         if not any(p[:1] == [name] and (p + ["", "", ""])[2] == desc for p in pp): fails.append(f"{name}: file PRODUCT name / description differ")
         TREE.append((depth + 1, name, os.path.relpath(pf, AD), count[name]))
-        if any(v.startswith("NEXT_ASSEMBLY_USAGE_OCCURRENCE") for v in PE.values()):
+        if name in HARN:                                                    # one solid per wire ID inside the harness file, no further files
+            inst[name] = inst.get(name, 0) + mult * count[name]; files[name] = fn
+            kids = sorted(p[0] for p in pp if p[:1] != [name]); nsol = sum(1 for v in PE.values() if v.startswith(("MANIFOLD_SOLID_BREP", "BREP_WITH_VOIDS")))
+            for w in kids: TREE.append((depth + 2, w, os.path.relpath(pf, AD), 1))
+            if kids != sorted(meta["harness"]["ids"]): fails.append(f"{name}: wire IDs in the file differ from the path table ({len(kids)} vs {len(meta['harness']['ids'])})")
+            if nsol != len(kids): fails.append(f"{name}: {nsol} solids for {len(kids)} wire IDs (one solid per wire)")
+            if any(not (p + ["", "", ""])[2] for p in pp): fails.append(f"{name}: a wire product has no description")
+        elif any(v.startswith("NEXT_ASSEMBLY_USAGE_OCCURRENCE") for v in PE.values()):
             files[name] = fn; walk(pf, depth + 1, mult * count[name])          # subassembly
         else:
             inst[name] = inst.get(name, 0) + mult * count[name]; files[name] = fn

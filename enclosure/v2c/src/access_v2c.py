@@ -11,18 +11,19 @@ from screwtool_twin import row as screw_row
 VAR = sys.argv[1]; RUN = sys.argv[2] if len(sys.argv) > 2 else os.environ["RUN_DIR"]
 OUT = os.path.join(RUN, VAR); meta = json.load(open(os.path.join(OUT, "meta.json")))
 B = {os.path.basename(f)[:-5]: import_brep(f) for f in glob.glob(os.path.join(OUT, "brep", "*.brep"))}
-# install order (stage index): heat-sink subassembly, boards + board hardware, upper parts, lid + lid screws, feet + foot screws
+# install order (stage index): heat-sink subassembly, boards + board hardware + upper parts, harness (revE), lid + lid screws, feet + foot screws
 STAGES = [("heat-sink-sub", ("heat-sink", "gap-pads", "fans-", "fan-lead-gland", "tie-points", "standoff-studs")),
-          ("boards", ("board-", "copper-", "screws_M6", "standoffs-", "carrier-", "ring-lugs", "wires-", "input-", "vendor-", "usb", "hub-", "wire-ribbons", "panel-")),
+          ("boards", ("board-", "copper-", "screws_M6", "standoffs-", "carrier-", "ring-lugs", "wires-", "input-", "vendor-", "usb", "hub-", "panel-")),
+          ("harness", ("harness-",)),            # revE: the harness CPDM-HAR-200 goes in after every board / deck screw, before the lid
           ("lid", ("lid", "heat-set-inserts")),
           ("feet", ("heat-sink-foot",))]
 def stage_of_item(nm):
-    if nm.startswith("heat-sink-foot"): return 3
+    if nm.startswith("heat-sink-foot"): return len(STAGES) - 1
     for i, (_, pre) in enumerate(STAGES):
         if nm.startswith(pre): return i
     return None
 def stage_of_screw(s):
-    return {"fan": 0, "tie": 0, "lid": 2, "feet": 3}.get(s.get("grp", ""), 1)
+    return {"fan": 0, "tie": 0, "lid": 3, "feet": 4}.get(s.get("grp", ""), 1)
 FAMILY = {"4762": "SHCS ISO 4762", "7380": "Button ISO 7380-1"}
 res = dict(blocked_by_feet=[], fails=[], screws=0)
 for s in meta["screws"]:
@@ -40,10 +41,13 @@ for s in meta["screws"]:
         si = stage_of_item(nm)
         if g < 1e-3 and si is not None and si < st:          # a part fitted in an EARLIER stage blocks the driver: no order works
             res["fails"].append(dict(screw=f"{s['size']}x{s['L']:g} {s.get('grp', '')}", at=s["at"], stage=STAGES[st][0], blocked_by=nm, item_stage=STAGES[si][0]))
+        if g < 1e-3 and nm.startswith("harness-") and si > st:      # allowed: the harness is fitted after this screw (reported)
+            res.setdefault("under_harness", []).append(dict(screw=f"{s['size']}x{s['L']:g} {s.get('grp', '')}", at=s["at"]))
         elif g < 1e-3 and si == st:                              # same stage: an install-order rule (screw before that part)
             res.setdefault("order", []).append(dict(screw=f"{s['size']}x{s['L']:g} {s.get('grp', '')}", at=s["at"], before=nm))
 json.dump(res, open(os.path.join(OUT, "access.json"), "w"), indent=1)
 print("screws", res["screws"], "blocked by feet:", res["blocked_by_feet"])
+print("screws the harness runs over (fitted before the harness):", len(res.get("under_harness", [])))
 print("install-order rules (screw before part, same stage):", len(res.get("order", [])), sorted({o["before"] for o in res.get("order", [])}))
 for f in res["fails"]: print("FAIL", f)
 print("fails:", len(res["fails"]))
