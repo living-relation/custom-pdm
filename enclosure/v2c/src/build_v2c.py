@@ -481,13 +481,16 @@ item("panel-nuts-2411-001-2405", "2411-001-2405", [L(X, LY0 - wt_, TZ, rx=-90) f
 # strap runs into it at z -15.4..-13.7) y 0.0..2.1 -> uncompressed 2.1; thread major dia 17.8 with flats 16.1 apart (z),
 # crests repeat every 1.5 on one side (pitch 1.5), thread ends at y 9.0 (dia 16.2 behind it to 10.4); hex jam nut AF 22 x 4.0
 # (y 2.6..6.6); rear stub dia 7.5 to y 14.8. Flange face = y 0.0 (the face in front of the ring).
-# Wall check (Dan's rule): max wall = thread from the flange face (9.0) - ring (2.1) - nut (4.0) - 2 x pitch (3.0) = -0.1.
+# Wall check: the limit for this part is Dan's "The connector wall can be 3mm Max." (Dan, 2026-11-21, answer b3): max panel
+# 3.0 at the cut-out, which replaces the 2-spare-thread rule for the CnLinko bulkhead. The thread rule's figure (thread from the
+# flange face 9.0 - ring 2.1 - nut 4.0 - 2 x pitch 3.0 = -0.1) and the spare threads at the wall stay in meta.json for the record.
 w_ = P["wall"]
 CN = dict(flange_face=0.0, ring=2.1, thread_end=9.0, pitch=1.5, nut0=2.6, nut1=6.6, nut_af=22.0)
 CN["thread_len"] = CN["thread_end"] - CN["flange_face"]; CN["nut_t"] = round(CN["nut1"] - CN["nut0"], 2)
-CN["max_wall"] = round(CN["thread_len"] - CN["ring"] - CN["nut_t"] - 2 * CN["pitch"], 2); CN["wall"] = w_
+CN["max_wall_thread_rule"] = round(CN["thread_len"] - CN["ring"] - CN["nut_t"] - 2 * CN["pitch"], 2); CN["wall"] = w_
+CN["max_wall"] = 3.0; CN["max_wall_source"] = "Dan, 2026-11-21 (b3): connector wall 3 mm max"
 CN["spare_threads_at_wall"] = round((CN["thread_len"] - CN["ring"] - CN["nut_t"] - w_) / CN["pitch"], 2)
-CN["wall_ok"] = w_ <= CN["max_wall"]
+CN["wall_ok"] = w_ <= CN["max_wall"] + 0.01
 cnm = vstep("CnLinko_LP-16-C05SX-02-101/LP-16-C05SX-02-101.step")
 cnm = Solid(max(cnm.solids()[0].shells(), key=lambda sh_: bbx(sh_).ylen))   # outer skin only: the model's solid also holds 6 tiny inner void shells (< 10 mm3, inside the body at y 1.6..5.6) that make every boolean return nothing
 cb = bbx(cnm); assert abs(cb.ymax - 14.8) < 0.05 and abs(cb.xmax - 12.47) < 0.05, ("CnLinko STEP frame", cb.ymax, cb.xmax)
@@ -822,7 +825,8 @@ for (X, Y) in LID_SCREWS:
     lid = lid.cut(cyl(5.6, (X, Y, -0.5), 10.5))
     screw("M4", 12.0, L(X, Y, -pt + 4.0, rx=180), "lid")
 wl = bbx(isect(lid, box(USB_X - 0.05, USB_X + 0.05, LY0 - 5, LY0 + 15, P["usb_z"] + USB_CUT_FLATS / 2 + 0.5, P["usb_z"] + USB_CUT_FLATS / 2 + 0.6)))
-CN["wall_at_hole"] = round(wl.ylen, 2); CN["wall_outer_y"] = round(wl.ymin, 2); CN["wall_ok"] = CN["wall_at_hole"] <= CN["max_wall"]
+CN["wall_at_hole"] = round(wl.ylen, 2); CN["wall_outer_y"] = round(wl.ymin, 2); CN["wall_ok"] = CN["wall_at_hole"] <= CN["max_wall"] + 0.01
+assert CN["wall_ok"], ("USB-C wall at the cut-out over Dan's 3.0 max (2026-11-21)", CN["wall_at_hole"])
 CN["cutout"] = dict(d=USB_CUT_D, flats=USB_CUT_FLATS)
 made("lid", "CPDM-ENC-102", lid, (0.18, 0.18, 0.2), "Lid", "walls 3.0, draft 6; front turrets for X1/X2/USB-C; OUT1-4 well + wire-way; M4 heat-set inserts", "MJF PA12")
 # revD (cadfetch3): ruthex's own STEP (ruthex.de product page "CAD-Daten" -> "Daten M4x8,1 herunterladen",
