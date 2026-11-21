@@ -1,5 +1,10 @@
 # ui - PC configuration tool
 
+## Start the UI
+- Double-click the Desktop shortcut "PDM UI" (or `ui\Start PDM UI.cmd`): it builds the simulated boards if they are older than `main`, starts the simulator bridge (port 3333) and the app (port 5000) in minimised windows, and opens http://localhost:5000/pdm. Already running: it only opens the browser.
+- Options (`ui\Start-PdmUi.ps1`): `-Stop` (stops only what the launcher started), `-NoSim` (app only), `-Rebuild` (build the sim again), `-InstallShortcut` (make the Desktop shortcut again), `-SelfTest`; `-Port` / `-BridgePort` / `-SoDir` for a second copy.
+- In the app pick adapter "SLCAN TCP", port `localhost:3333`, 1000K to reach the simulated boards (details under "Run on DansPC").
+
 `dingoConfig/` is upstream dingoConfig (MIT, licence in `dingoConfig/LICENSE`), copied in the same way dingoFW lives in `firmware/` (DECISIONS 2026-11-10 B2a, K1a route A). Nothing goes upstream.
 
 - Upstream: https://github.com/corygrant/dingoConfig, branch `development`, commit `01134ad057dee5c69788ccfecf63420740e932bc` (2026-10-26, "bump version"). It matches our firmware's dingoFW `development` @ 14084e9.

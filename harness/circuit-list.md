@@ -4,10 +4,21 @@ Scope (Dan 2026-11-20): every wire INSIDE the PDM box: X1 / X2 bulkheads to the 
 fans, USB bulkhead -> hub -> boards. Not in scope: the copper (BATT / GND bars and bosses, OUT1-4 risers) and the car
 harness outside the box (X1 / X2 mating plugs, OUT1-4 10 AWG lugs).
 
-Files (all in `harness/`):
-- `enclosure-wire-list.xlsx` = **source of truth** (sheets Wires / Connectors / Key, harness-design skill column order); `enclosure-wire-list.csv` = its Wires sheet for diffs.
-- `enclosure.harness` (harness.design v1.3, built from the xlsx), `enclosure.harnesslib` (the parts it uses).
-- `src/enclosure_harness.py`: `wirelist` (first fill of the xlsx from the tables in the script; refuses to overwrite), `build` (xlsx -> .harness + .harnesslib + csv), `check`.
+Files (all in `harness/`). **The three CSV files are the master** (Dan 2026-11-21); everything else is generated from them:
+
+| File | What | Made by |
+|---|---|---|
+| `enclosure-wire-list.csv` | **master**: one row per wire (harness-design skill column order) | by hand / agent |
+| `enclosure-connectors.csv` | **master**: one row per connector / end (part numbers, kind, cavity labels, contact sizes) | by hand / agent |
+| `enclosure-key.csv` | **master**: colour codes, wire families, label and length rules | by hand / agent |
+| `enclosure.harness`, `enclosure.harnesslib` | harness.design v1.3 document and its parts library | `enclosure_harness.py build` |
+| `enclosure-wiring-diagram.svg` (sheet 1), `-sheet2.svg`, `-sheet3.svg`, `.pdf` (all 3 sheets, 11 x 17 in) | wiring block diagram: blocks where the parts sit in the box, one line per group of wires with pins at both ends; sheets 2-3 = wire schedule | `enclosure_harness.py diagram` |
+
+To change the wiring: edit the CSV, then `python harness/src/enclosure_harness.py build`, `... diagram`, `... check` (repo root, Python 3, standard library only).
+- `check` proves: CSV rows <-> `.harness` conductors both ways; the built files are byte-for-byte what the CSVs give now; the `.harness` / `.harnesslib` keep the harness.design v1.3 top-level shape; every wire is exactly once in the drawn lines and once in the schedule; no text on text or on a line in the drawing; ampacity, contact range, seal range, splice fill.
+- `src/enclosure_harness.py` holds the wire-part and contact data and the harness.design layout; `src/wiring_diagram.py` holds the drawing (block places and line lanes in its LAYOUT tables; a new connector pair in the CSV stops the build until it gets a place).
+- `python harness/src/enclosure_harness.py xlsx` writes `enclosure-wire-list.generated.xlsx` (git-ignored Excel copy for people or for the harness.design Excel import; never read back). The old hand-kept `enclosure-wire-list.xlsx` is gone.
+- Do not edit a generated file: the next build overwrites it and `check` fails until then.
 
 Counts: 11 circuits, 111 wires (86 single, 8 twisted in 4 pairs, 17 USB cable cores), 32 connectors / ends (24 connectors, 4 ring lugs, 4 splices).
 
@@ -57,7 +68,7 @@ Counts: 11 circuits, 111 wires (86 single, 8 twisted in 4 pairs, 17 USB cable co
 | Fan feed | A2 J3 pad 7 -> SP3 -> both fan + leads (solder splices, Dan's generic solder splice part) | the factory leads (145 mm, UL1571 80 C PVC) cannot reach the board and should stay out of the hot air under the lid. |
 | Colours | RD outputs / fan + / +3V3 / VBUS, WH inputs, VT analog, BK grounds, YE CAN_H, GN CAN_L, GY USB CC | Key sheet. |
 | Labels | printed heat-shrink sleeve each end: `<wire ID> <signal> ><far end>` | Wires sheet From / To label. |
-| Lengths | model route + 20 mm X1 / X2 fan-out + 2 x 15 mm service loop, up to 5 mm; TBD where the model has no route | route polylines in `src/enclosure_harness.py` ROUTE. |
+| Lengths | model route + 20 mm X1 / X2 fan-out + 2 x 15 mm service loop, up to 5 mm; TBD where the model has no route | first filled from the route polylines (`src/enclosure_harness.py` ROUTE); the CSV owns the values now. |
 | Hub ports | PORT1 -> B, PORT2 -> A1, PORT3 -> A2, PORT4 spare | shortest runs. |
 
 ## 4. TBD (not guessed)
