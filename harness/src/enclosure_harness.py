@@ -1,21 +1,29 @@
-"""Enclosure (inside-the-box) wire harness for the custom PDM: wire list -> harness.design files -> checks.
+"""Enclosure (inside-the-box) wire harness for the custom PDM: CSV wire list -> harness.design files + wiring diagram -> checks.
 
-Usage (repo root, Python 3 with openpyxl):
-  python harness/src/enclosure_harness.py wirelist [--force]   # write harness/enclosure-wire-list.xlsx + .csv from the tables below
-  python harness/src/enclosure_harness.py build                # read the xlsx (the source of truth) -> enclosure.harnesslib + enclosure.harness
-  python harness/src/enclosure_harness.py check                # wire list <-> .harness, gauge vs current, contact vs gauge, seal vs OD
+Usage (repo root, Python 3, standard library only; openpyxl only for `xlsx`):
+  python harness/src/enclosure_harness.py build      # CSVs -> enclosure.harnesslib + enclosure.harness
+  python harness/src/enclosure_harness.py diagram    # CSVs -> enclosure-wiring-diagram.svg / -sheet2.svg / -sheet3.svg / .pdf (11 x 17 in)
+  python harness/src/enclosure_harness.py check      # CSVs <-> .harness <-> diagram, schema, gauge vs current, contact vs gauge, seal vs OD
+  python harness/src/enclosure_harness.py xlsx [out] # optional Excel copy of the three CSVs (generated, git-ignored, never read back)
 
-The spreadsheet is the source of truth once it exists (harness-design skill: "fix the list first, then the drawing"):
-`wirelist` refuses to overwrite it without --force. `build` and `check` read it. Geometry (route lengths, layout positions)
-comes from the enclosure model, enclosure/v2c/src/build_v2c.py rev D (branch chore/cad-models-fusion, meta.json of the
-2026-11-20 revD build); the numbers used are copied into ROUTE below with the model coordinates they came from.
+The three CSV files are the master (Dan 2026-11-21; harness-design skill: "fix the list first, then the drawing"):
+  enclosure-wire-list.csv   one row per wire (harness-design skill column order)
+  enclosure-connectors.csv  one row per connector / end: part numbers, kind, cavity labels and contact sizes
+  enclosure-key.csv         colour codes, wire families, label and length rules
+Everything else in harness/ is generated from them. Wire parts, contact data and the harness.design layout stay in this
+script. Geometry (bundle lengths, layout positions) comes from the enclosure model, enclosure/v2c/src/build_v2c.py rev D
+(branch chore/cad-models-fusion, meta.json of the 2026-11-20 revD build); the numbers used are copied into ROUTE below
+with the model coordinates they came from. The wire lengths in the CSV were first filled from the same routes
+(route + 20 mm X1 / X2 fan-out + 2 x 15 mm service loop, rounded up to 5 mm); the CSV now owns them.
 """
 import csv, json, math, os, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HDIR = os.path.dirname(HERE)
-XLSX = os.path.join(HDIR, "enclosure-wire-list.xlsx")
 CSVF = os.path.join(HDIR, "enclosure-wire-list.csv")
+CONF = os.path.join(HDIR, "enclosure-connectors.csv")
+KEYF = os.path.join(HDIR, "enclosure-key.csv")
+XLSX = os.path.join(HDIR, "enclosure-wire-list.generated.xlsx")
 LIBF = os.path.join(HDIR, "enclosure.harnesslib")
 HARF = os.path.join(HDIR, "enclosure.harness")
 
@@ -23,11 +31,63 @@ COLS = ["Wire ID", "Signal", "Description", "Signal group", "Twist/Shield group"
         "Length (mm)", "From device", "From connector", "From pin", "From terminal PN", "From seal PN", "From strip (mm)",
         "From label", "To device", "To connector", "To pin", "To terminal PN", "To seal PN", "To strip (mm)", "To label",
         "Net", "Notes"]
+CCOLS = ["Connector", "Device", "Part number", "Mating part number", "Kind", "Cavities", "Contact size", "Other-size cavities", "Description"]
+KCOLS = ["Kind", "Code", "Name", "Used for"]
+# kind: box = TE box receptacle, pads = solder pads on a board, housing = crimp housing, ring = ring lug on a terminal,
+# splice, leads = a device's factory leads, plug = USB plug (bought cable)
+KINDS = ("box", "pads", "housing", "ring", "splice", "leads", "plug")
 
 # ------------------------------------------------------------------------------------------------------------------
-# Length rule (stated in harness/circuit-list.md): route length in the enclosure model + 20 mm fan-out at an X1 / X2 end
-# (shell-24 insert, cavities up to about 20 mm off the axis) + 2 x 15 mm service loop (one re-termination per end),
-# rounded UP to 5 mm. TBD where the model has no route.
+# The master: three CSV files (read only here; nothing in this script writes them)
+# ------------------------------------------------------------------------------------------------------------------
+def _csv(path, cols):
+    with open(path, newline="", encoding="utf-8") as fh: rows = [r for r in csv.reader(fh) if any(c.strip() for c in r)]
+    assert rows and rows[0] == cols, (os.path.basename(path) + ": columns changed", rows[:1])
+    for r in rows[1:]: assert len(r) == len(cols), (os.path.basename(path) + ": wrong number of cells", r)
+    return [dict(zip(cols, r)) for r in rows[1:]]
+
+def read_connectors():
+    conn = {}
+    for d in _csv(CONF, CCOLS):
+        n = d["Connector"]
+        assert n not in conn, ("connector listed twice", n)
+        assert d["Kind"] in KINDS, ("unknown connector kind", n, d["Kind"])
+        c = dict(device=d["Device"], pn=d["Part number"], mate=d["Mating part number"], kind=d["Kind"], labels=d["Cavities"].split(), desc=d["Description"],
+                 size=int(d["Contact size"]) if d["Contact size"] else None, other={})
+        assert c["labels"] and len(set(c["labels"])) == len(c["labels"]), ("cavity labels missing or repeated", n)
+        if d["Other-size cavities"]:
+            sz, _, cavs = d["Other-size cavities"].partition(":")
+            for lab in cavs.split():
+                assert lab in c["labels"], ("other-size cavity is not a cavity", n, lab)
+                c["other"][lab] = int(sz)
+        conn[n] = c
+    return conn
+
+def read_wires():
+    rows = _csv(CSVF, COLS); ids = set(); used = {}
+    for r in rows:
+        assert r["Wire ID"] not in ids, ("wire ID used twice", r["Wire ID"]); ids.add(r["Wire ID"])
+        for side in ("From", "To"):
+            c, p = r[side + " connector"], r[side + " pin"]
+            assert c in CONN, (r["Wire ID"], "connector not in enclosure-connectors.csv", c)
+            assert p in CONN[c]["labels"], (r["Wire ID"], "pin is not a cavity of", c, p)
+            if CONN[c]["kind"] != "splice":
+                assert (c, p) not in used, (r["Wire ID"], "cavity already used by", used[(c, p)], c, p)
+                used[(c, p)] = r["Wire ID"]
+        assert r["Color"] in CODE.values(), (r["Wire ID"], "colour code not in enclosure-key.csv", r["Color"])
+    return rows
+
+def read_key(): return _csv(KEYF, KCOLS)
+def cav_size(c, p): return CONN[c]["other"].get(p, CONN[c]["size"])   # contact size of a box-connector cavity
+def file_hash(path):
+    """sha256 of a text file with CRLF read as LF (a Windows checkout and the git blob give the same hash)"""
+    import hashlib
+    return hashlib.sha256(open(path, "rb").read().replace(b"\r\n", b"\n")).hexdigest()
+def source_hashes(): return [(os.path.basename(f), file_hash(f)) for f in (CSVF, CONF, KEYF)]
+
+# ------------------------------------------------------------------------------------------------------------------
+# Model routes (bundle lengths in the layout view). The wire lengths in the CSV were first filled from these (length rule in
+# harness/circuit-list.md and enclosure-key.csv).
 # ------------------------------------------------------------------------------------------------------------------
 def plen(pts):
     return sum(math.dist(a, b) for a, b in zip(pts[:-1], pts[1:]))
@@ -50,11 +110,6 @@ for k, y in T58Y.items():
 HUB_PAD = (29.593 - 4.0, -99.18 + 1.0, 7.0)    # hub_bbox xmax - 4, ymax + 1 (build_v2c.py)
 for k, X in {"U2": 20.75, "U3": 134.14, "U4": 208.53}.items():   # board USB-C J5 / J2 at W(n, -17.0974, 55.7412)
     ROUTE[k] = [HUB_PAD, (HUB_PAD[0] + 6.0, -99.0, 7.8), (X, -99.0, 7.8), (X, -97.5, ZT + 1.6)]
-def rlen(key, xend=True, loop=True, splice_at_end=False):
-    pts = ROUTE[key]
-    if splice_at_end: pts = pts[:-1]             # B J6 ribbon: CAN legs stop at the splices by X2 (180, -105)
-    L = plen(pts) + (20.0 if xend else 0.0) + (30.0 if loop else 0.0)
-    return int(math.ceil(L / 5.0) * 5)
 
 # ------------------------------------------------------------------------------------------------------------------
 # Wire parts (SAE J1128 GXL for the X1 size 16 / 12 N-seal cavities, M22759/16 for 20 AWG: see circuit-list.md defaults)
@@ -75,223 +130,28 @@ WP = {  # key: (part id, part number, colour, awg, OD mm, description)
     "GH28BK": ("wp_gh28_bk", "TBD 28 AWG >=105 C BLACK (JST GH)", "Black", 28, None, "WIRE, 28 AWG, BLACK, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)"),
     "GH28VT": ("wp_gh28_vt", "TBD 28 AWG >=105 C VIOLET (JST GH)", "Violet", 28, None, "WIRE, 28 AWG, VIOLET, INSULATION RATED >= 105 C, OD WITHIN THE JST GH SSHL-002T-P0.2 RANGE (PART NUMBER TBD)"),
 }
-CODE = {"Red": "RD", "White": "WH", "Violet": "VT", "Black": "BK", "Yellow": "YE", "Green": "GN", "Gray": "GY"}
 PN2WP = {v[1]: k for k, v in WP.items()}
+CODE = {r["Name"]: r["Code"] for r in read_key() if r["Kind"] == "colour"}     # harness.design colour name -> code in the wire list
+CONN = read_connectors()
 
-# Connector / end catalogue (the Connectors sheet). kind: box = TE box receptacle, pads = solder pads on a board,
-# housing = crimp housing, ring = ring lug on a terminal, splice, leads = a device's factory leads, plug = USB plug (bought cable)
-CONN = {
-    "X1": dict(device="Box wall X1 (outputs)", pn="HD34-24-21SN", mate="HD36-24-21PN (outside harness, not in this file)", kind="box",
-               labels=list("ABCDEFGHJKLMNPRSTUVWX"), size12=set("BDEG"),
-               desc="TE DEUTSCH HD30 receptacle, shell 24, 24-21 insert (17 x size 16 + 4 x size 12), sockets, N seal; contacts loaded from inside the box"),
-    "X2": dict(device="Box wall X2 (signals, CAN)", pn="HDP24-24-47SE-L017", mate="HDP26-24-47PE-L015 (outside harness, not in this file)", kind="box",
-               labels=[str(i) for i in range(1, 48)], size16={"1", "4", "5", "6", "34"},
-               desc="TE DEUTSCH HDP20 receptacle, shell 24, 24-47 insert (42 x size 20 + 5 x size 16), sockets, E seal; contacts loaded from inside the box"),
-    "A1-J3": dict(device="Board A1", pn="(board A J3 wire pads)", mate="-", kind="pads", labels=[str(i) for i in range(1, 13)],
-                  desc="Board A J3 wire pads (old DT15-12PA holes, drill 1.77 mm; tools/wirepads.py), wires soldered"),
-    "A2-J3": dict(device="Board A2", pn="(board A J3 wire pads)", mate="-", kind="pads", labels=[str(i) for i in range(1, 13)],
-                  desc="Board A J3 wire pads (old DT15-12PA holes, drill 1.77 mm; tools/wirepads.py), wires soldered"),
-    "B-J6": dict(device="Board B", pn="(board B J6 wire pads)", mate="-", kind="pads", labels=["1", "2", "3", "4"],
-                 desc="Board B J6 wire pads (old Micro-Fit 2x2 holes, drill 1.02 mm; tools/wirepads.py), wires soldered"),
-    "IN1-J2": dict(device="Input board #1 (A1)", pn="43025-1200", mate="Molex 43045-1200 (input board J2)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="Molex Micro-Fit 3.0 receptacle housing, 2x6, dual row"),
-    "IN2-J2": dict(device="Input board #2 (A2)", pn="43025-1200", mate="Molex 43045-1200 (input board J2)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="Molex Micro-Fit 3.0 receptacle housing, 2x6, dual row"),
-    "IN3-J2": dict(device="Input board #3 (B)", pn="43025-1200", mate="Molex 43045-1200 (input board J2)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="Molex Micro-Fit 3.0 receptacle housing, 2x6, dual row"),
-    "A1-J6": dict(device="Board A1", pn="GHR-12V-S", mate="JST SM12B-GHS-TB (board A J6)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                  desc="JST GH housing 12 way (board end of the input-board link)"),
-    "A2-J6": dict(device="Board A2", pn="GHR-12V-S", mate="JST SM12B-GHS-TB (board A J6)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                  desc="JST GH housing 12 way (board end of the input-board link)"),
-    "B-J7": dict(device="Board B", pn="GHR-12V-S", mate="JST BM12B-GHS-TBT (board B J7)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                 desc="JST GH housing 12 way (board end of the input-board link)"),
-    "IN1-J1": dict(device="Input board #1 (A1)", pn="GHR-12V-S", mate="JST SM12B-GHS-TB (input board J1)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="JST GH housing 12 way (input-board end)"),
-    "IN2-J1": dict(device="Input board #2 (A2)", pn="GHR-12V-S", mate="JST SM12B-GHS-TB (input board J1)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="JST GH housing 12 way (input-board end)"),
-    "IN3-J1": dict(device="Input board #3 (B)", pn="GHR-12V-S", mate="JST SM12B-GHS-TB (input board J1)", kind="housing", labels=[str(i) for i in range(1, 13)],
-                   desc="JST GH housing 12 way (input-board end)"),
-    "FAN1": dict(device="Fan 1 (Sunon MF30101V1-1000U-A99)", pn="(fan factory leads)", mate="-", kind="leads", labels=["+", "-"],
-                 desc="Sunon fan, UL1571 28 AWG leads 145 +/- 10 mm, + red, - black (Sunon D03033580G-01 p. 6)"),
-    "FAN2": dict(device="Fan 2 (Sunon MF30101V1-1000U-A99)", pn="(fan factory leads)", mate="-", kind="leads", labels=["+", "-"],
-                 desc="Sunon fan, UL1571 28 AWG leads 145 +/- 10 mm, + red, - black (Sunon D03033580G-01 p. 6)"),
-    "U1-A": dict(device="USB-C bulkhead (CnLinko LP-16-C05SX-02-101) rear socket", pn="TBD (USB-C plug of cable U1)", mate="CnLinko LP-16-C05SX-02-101 rear USB-C socket", kind="plug",
-                 labels=["VBUS", "D+", "D-", "GND", "CC"], desc="USB-C plug, end A of USB 2.0 C-to-C cable U1 (cable part TBD)"),
-    "U1-B": dict(device="USB hub (Adafruit 5997) upstream USB-C", pn="TBD (USB-C plug of cable U1)", mate="Adafruit 5997 USB-C (upstream)", kind="plug",
-                 labels=["VBUS", "D+", "D-", "GND", "CC"], desc="USB-C plug, end B of USB 2.0 C-to-C cable U1 (cable part TBD)"),
-    "HUB-P1": dict(device="USB hub (Adafruit 5997) PORT1 pads", pn="(hub PORT1 pads)", mate="-", kind="pads", labels=["5V", "D+", "D-", "GND"],
-                   desc="Adafruit 5997 downstream PORT1 pads (5V, D+, D-, GND per Adafruit learn guide), wires soldered"),
-    "HUB-P2": dict(device="USB hub (Adafruit 5997) PORT2 pads", pn="(hub PORT2 pads)", mate="-", kind="pads", labels=["5V", "D+", "D-", "GND"],
-                   desc="Adafruit 5997 downstream PORT2 pads, wires soldered"),
-    "HUB-P3": dict(device="USB hub (Adafruit 5997) PORT3 pads", pn="(hub PORT3 pads)", mate="-", kind="pads", labels=["5V", "D+", "D-", "GND"],
-                   desc="Adafruit 5997 downstream PORT3 pads, wires soldered"),
-    "U2-B": dict(device="Board B USB-C J2", pn="TBD (USB-C plug pigtail U2)", mate="GCT USB4085-GF-A (board B J2)", kind="plug", labels=["VBUS", "D+", "D-", "GND", "CC"],
-                 desc="USB-C plug pigtail (VBUS, D+, D-, GND wired; CC: 56 kohm Rp to VBUS inside the plug, part TBD)"),
-    "U3-B": dict(device="Board A1 USB-C J5", pn="TBD (USB-C plug pigtail U3)", mate="GCT USB4085-GF-A (board A J5)", kind="plug", labels=["VBUS", "D+", "D-", "GND", "CC"],
-                 desc="USB-C plug pigtail (VBUS, D+, D-, GND wired; CC: 56 kohm Rp to VBUS inside the plug, part TBD)"),
-    "U4-B": dict(device="Board A2 USB-C J5", pn="TBD (USB-C plug pigtail U4)", mate="GCT USB4085-GF-A (board A J5)", kind="plug", labels=["VBUS", "D+", "D-", "GND", "CC"],
-                 desc="USB-C plug pigtail (VBUS, D+, D-, GND wired; CC: 56 kohm Rp to VBUS inside the plug, part TBD)"),
-    "SP1": dict(device="-", pn="D-436-37", mate="-", kind="splice", labels=["S"], desc="TE Raychem D-436-37 sealed crimp splice, 20-16 AWG, max 2 wires per side (CAN_H)"),
-    "SP2": dict(device="-", pn="D-436-37", mate="-", kind="splice", labels=["S"], desc="TE Raychem D-436-37 sealed crimp splice, 20-16 AWG, max 2 wires per side (CAN_L)"),
-    "SP3": dict(device="-", pn="GENERIC SOLDER SPLICE", mate="-", kind="splice", labels=["S"], desc="Solder splice + adhesive heat shrink (Dan's library part), fan + (2 x 28 AWG + 1 x 20 AWG)"),
-    "SP4": dict(device="-", pn="GENERIC SOLDER SPLICE", mate="-", kind="splice", labels=["S"], desc="Solder splice + adhesive heat shrink (Dan's library part), fan - (2 x 28 AWG + 1 x 20 AWG)"),
-}
-for t in ("T5", "T6", "T7", "T8"):
-    CONN["B-" + t] = dict(device="Board B", pn="3240083", mate="Wurth REDCUBE 74650074R (board B %s), M4 x 8 screw" % t, kind="ring", labels=["R"],
-                          desc="Phoenix Contact C-RC 6/M4 DIN ring cable lug, M4, 2.6-6 mm2, non-insulated (same lug as OUT1-4)")
-
-TERM = {  # end kind / cavity size -> (contact PN, seal PN, strip mm)
-    ("X1", 16): ("0462-201-1631", "integral grommet (N seal)", "7.1"),
-    ("X1", 12): ("0462-210-1231", "integral grommet (N seal)", "6.4"),
-    ("X2", 20): ("0462-201-20141", "integral grommet (E seal)", "4.8"),
-    "pads": ("solder", "-", "4.0"), "housing_mf": ("43030-0007", "-", "TBD"), "housing_gh": ("SSHL-002T-P0.2", "-", "TBD"),
-    "ring": ("3240083", "-", "8.0"), "splice": ("-", "-", "TBD"), "leads": ("factory", "-", "5.0"), "plug": ("cable assembly", "-", "factory"),
-}
-
-# ------------------------------------------------------------------------------------------------------------------
-# Circuits -> wires. Each tuple: (signal, description, group, twist, wire key, from conn, from pin, to conn, to pin,
-# length (int or "TBD"), current A, note). The "from" end is where the signal originates (harness-design skill).
-# ------------------------------------------------------------------------------------------------------------------
-ROWS = []
-def add(*r): ROWS.append(r)
-OUTA = [(1, "8", "H", "S"), (2, "7", "J", None), (3, "10", "K", "U"), (4, "9", "L", "V"), (5, "6", "M", "W"), (6, "5", "N", "X"), (7, "4", "P", "A"), (8, "3", "R", "C")]
-for n, pad, c1, c2 in OUTA:
-    add(f"A1_OUT{n}", f"Board A1 output {n}, 7.5 A, to X1", "C01 A1 outputs", "", "GXL16RD", "A1-J3", pad, "X1", c1, rlen("A1"), 7.5,
-        "route: A1 ribbon (CPDM-HAR-202), J3 pad field +/-12 mm")
-for n, pad, c1, c2 in OUTA:
-    if c2: add(f"A2_OUT{n}", f"Board A2 output {n}, 7.5 A, to X1", "C02 A2 outputs", "", "GXL16RD", "A2-J3", pad, "X1", c2, rlen("A2"), 7.5,
-               "route: A2 ribbon (CPDM-HAR-202), J3 pad field +/-12 mm")
-for n, c in ((5, "B"), (6, "D"), (7, "E"), (8, "G")):
-    add(f"B_OUT{n}", f"Board B output {n}, 15 A, ring lug on T{n} to X1", "C03 B outputs 5-8", "", "GXL12RD", f"B-T{n}", "R", "X1", c, rlen(f"T{n}"), 15.0,
-        "route: T5-T8 ribbon (CPDM-HAR-202); 12 AWG replaces box-connectors.md 14 AWG (needs Dan's yes, see PR)")
-for b, conn, pads, cav in (("A1", "A1-J3", ("12", "11"), ("7", "8")), ("A2", "A2-J3", ("12", "11"), ("15", "16")), ("B", "B-J6", ("4", "3"), ("23", "24"))):
-    for i in (0, 1):
-        L = rlen("BJ6") if b == "B" else "TBD"
-        note = "route: B J6 ribbon (CPDM-HAR-202)" if b == "B" else "route not in the model; est. %d mm (board ribbon to (x, -97), then to X2 rear)" % (150 if b == "A1" else 155)
-        add(f"{b}_IN{i + 1}", f"Board {b} input {i + 1} (switch to GND or 12 V)", f"C04 {b} board inputs", "", "M20WH", "X2", cav[i], conn, pads[i], L, 0.01, note)
-for ib, b, x2in, x2an, x2gnd, nin, key in (("IN1", "A1", 9, 14, ["35"], 5, "IN1"), ("IN2", "A2", 17, 22, ["36"], 5, "IN2"), ("IN3", "B", 25, 33, ["37", "38"], 8, "IN3")):
-    for ch in range(1, nin + 1):
-        add(f"{b}_IN{ch + 2}", f"{b} input {ch + 2} via input board {ib[-1]} ch {ch}", f"C05 {b} input-board inputs", "", "M20WH", "X2", str(x2in + ch - 1),
-            f"{ib}-J2", str(ch), rlen(key), 0.01, f"route: input-board {ib[-1]} ribbon (CPDM-HAR-202)")
-    add(f"{b}_AN", f"{b} analog input 0-5 V via input board {ib[-1]} ch 9", f"C06 {b} analog input", "", "M20VT", "X2", str(x2an), f"{ib}-J2", "9", rlen(key), 0.01,
-        f"route: input-board {ib[-1]} ribbon (CPDM-HAR-202)")
-    for j, cav in enumerate(x2gnd):
-        add("SIG_GND", f"Signal ground for switches / sensors, input board {ib[-1]} J2 pin {10 + j}", "C07 signal ground", "", "M20BK", f"{ib}-J2", str(10 + j),
-            "X2", cav, rlen(key), 0.1, "switch / sensor returns only, never a load return; X2 35-38 mapping = default (this job)")
-# CAN: X2 2 / 3 -> one splice per line by X2 -> each board (stubs < 0.3 m at 1 Mbit/s)
-add("CAN_H", "CAN high, X2 to splice SP1", "C08 CAN", "TP1", "M20YE", "X2", "2", "SP1", "S", int(math.ceil((ROUTE["BJ6"][-1][2] - 9.7 + 1.5 + 20 + 30) / 5) * 5), 0.1,
-    "twisted with CAN_L (TP1); splice by the X2 rear at the B ribbon end (180, -105)")
-add("CAN_L", "CAN low, X2 to splice SP2", "C08 CAN", "TP1", "M20GN", "X2", "3", "SP2", "S", int(math.ceil((ROUTE["BJ6"][-1][2] - 9.7 + 1.5 + 20 + 30) / 5) * 5), 0.1, "twisted with CAN_H (TP1)")
-for b, conn, tp, L, est in (("B", "B-J6", "TP2", rlen("BJ6", xend=False, splice_at_end=True), None), ("A1", "A1-J3", "TP3", "TBD", 125), ("A2", "A2-J3", "TP4", "TBD", 140)):
-    note = "route: B J6 ribbon to the splice" if est is None else f"route not in the model; est. {est} mm (board ribbon to (x, -97), then to the splice)"
-    add("CAN_H", f"CAN high stub, SP1 to board {b}", "C08 CAN", tp, "M20YE", "SP1", "S", conn, "2", L, 0.1, note)
-    add("CAN_L", f"CAN low stub, SP2 to board {b}", "C08 CAN", tp, "M20GN", "SP2", "S", conn, "1", L, 0.1, note)
-# Fans: A2 OUT2 (always-on / temperature fan output, r7a) -> SP3 -> both fan + leads; fan - leads -> SP4 -> input board #2 J2 pin 11 (GND)
-add("FAN_12V", "Fan supply from A2 OUT2 (fan output, 1 A limit) to splice SP3", "C09 fans", "", "M20RD", "A2-J3", "7", "SP3", "S", "TBD", 1.0,
-    "fan leads enter through a plate pass-through that the enclosure model does not have yet (TBD, enclosure job)")
-add("FAN_GND", "Fan return to input board #2 GND (J2 pin 11)", "C09 fans", "", "M20BK", "IN2-J2", "11", "SP4", "S", "TBD", 1.0, "pass-through TBD (enclosure job)")
-for f in ("FAN1", "FAN2"):
-    add("FAN_12V", f"{f} + lead (factory)", "C09 fans", "", "FANRD", "SP3", "S", f, "+", 145, 1.0, "Sunon factory lead 145 +/- 10 mm, UL1571 80 C PVC: keep it out of the hot air under the lid")
-    add("FAN_GND", f"{f} - lead (factory)", "C09 fans", "", "FANBK", f, "-", "SP4", "S", 145, 1.0, "Sunon factory lead 145 +/- 10 mm")
-# Input-board links (JST GH, pin n <-> pin n; board A uses ch 1-5 + 9-12 only)
-for b, bc, ic, chans, est in (("A1", "A1-J6", "IN1-J1", [1, 2, 3, 4, 5, 9, 10, 11, 12], 70), ("A2", "A2-J6", "IN2-J1", [1, 2, 3, 4, 5, 9, 10, 11, 12], 65),
-                               ("B", "B-J7", "IN3-J1", list(range(1, 13)), 90)):
-    for p in chans:
-        if p <= 8:
-            sig, wk, d, I = f"{b}_IN{p + 2}_MCU", "GH28WH", f"{b} input {p + 2} to the MCU", 0.01
-        elif p == 9:
-            sig, wk, d, I = f"{b}_AN_MCU", "GH28VT", f"{b} analog input to the MCU ADC", 0.01
-        elif p == 10:
-            sig, wk, d, I = f"+3V3_{b}", "GH28RD", f"Board {b} +3.3 V to the input-board pull-ups", 0.05
-        else:
-            sig, wk, d, I = f"GND_{b}", "GH28BK", f"Board {b} GND to the input board", 0.2 if b == "A2" else 0.05
-        add(sig, d, f"C10 {b} input-board link", "", wk, bc, str(p), ic, str(p), "TBD", I,
-            f"not in the enclosure model; straight-line est. {est} mm board J6/J7 to input board J1 (deck 32 mm above)")
-# USB
-for i, (s, wk) in enumerate((("USB_VBUS", "Red"), ("USB_D+", "Green"), ("USB_D-", "White"), ("USB_GND", "Black"), ("USB_CC", "Gray"))):
-    cav = ["VBUS", "D+", "D-", "GND", "CC"][i]
-    add(s, f"USB cable U1 core {cav}: bulkhead rear socket to hub upstream", "C11 USB", "U1", "USB:" + wk, "U1-A", cav, "U1-B", cav, 300, 0.5,
-        "bought USB 2.0 C-to-C cable 0.3 m (model route 250 mm + plug bodies); cable part TBD")
-for u, hub, plug, key in (("U2", "HUB-P1", "U2-B", "U2"), ("U3", "HUB-P2", "U3-B", "U3"), ("U4", "HUB-P3", "U4-B", "U4")):
-    for i, (s, wk) in enumerate((("USB_VBUS", "Red"), ("USB_D+", "Green"), ("USB_D-", "White"), ("USB_GND", "Black"))):
-        add(s, f"USB pigtail {u} core {['VBUS', 'D+', 'D-', 'GND'][i]}: hub pad to board USB-C", "C11 USB", u, "USB:" + wk, hub, ["5V", "D+", "D-", "GND"][i],
-            plug, ["VBUS", "D+", "D-", "GND"][i], rlen(key, xend=False), 0.5, "USB-C plug pigtail, part TBD (56 kohm Rp on CC in the plug)")
-
-def wire_rows():
-    out = []
-    for i, r in enumerate(ROWS, 1):
-        sig, desc, grp, tw, wk, fc, fp, tc, tp, L, I, note = r
-        wid = f"W{i:03d}"
-        if wk.startswith("USB:"):
-            col, awg, pn = wk[4:], "TBD", "core of cable %s (TBD)" % tw
-        else:
-            pid, pn, col, awg, od, _ = WP[wk]
-        def end(c, p):
-            k = CONN[c]["kind"]
-            if k == "box":
-                size = 12 if (c == "X1" and p in CONN["X1"]["size12"]) else 16 if c == "X1" else (16 if p in CONN["X2"]["size16"] else 20)
-                return TERM[(c, size)]
-            if k == "housing": return TERM["housing_mf" if c.endswith("J2") else "housing_gh"]
-            return TERM[k]
-        ft, fs, fst = end(fc, fp); tt, ts, tst = end(tc, tp)
-        fl = f"{wid} {sig} >{tc}.{tp}"; tl = f"{wid} {sig} >{fc}.{fp}"
-        net = sig if not sig.startswith("USB") else f"{tw}_{sig}"
-        out.append([wid, sig, desc, grp, tw, CODE.get(col, col), awg, pn, L, CONN[fc]["device"], fc, fp, ft, fs, fst, fl,
-                    CONN[tc]["device"], tc, tp, tt, ts, tst, tl, net, f"I = {I} A; {note}"])
-    return out
-
-KEY = [["Code", "Colour", "Used for"], ["RD", "Red", "switched +12 V outputs, fan supply, +3.3 V, USB VBUS"], ["WH", "White", "digital inputs, USB D-"],
-       ["VT", "Violet", "analog inputs (0-5 V)"], ["BK", "Black", "SIG_GND, fan return, GND, USB GND"], ["YE", "Yellow", "CAN_H"], ["GN", "Green", "CAN_L, USB D+"], ["GY", "Gray", "USB CC core (cable maker colour TBD)"],
-       ["", "", ""], ["Wire families", "", ""],
-       ["J1128-GXL-16/12", "SAE J1128 GXL, 125 C", "X1 size 16 / 12 cavities (N seal needs OD 2.54-3.40 / 3.40-4.32 mm)"],
-       ["M22759/16-20", "ETFE, 150 C", "20 AWG: X2 (E seal 1.02-2.41 mm), Micro-Fit (insulation <= 1.85 mm), CAN, fans"],
-       ["UL1571 28", "PVC 80 C", "Sunon factory fan leads only"], ["28 AWG (TBD)", ">= 105 C", "JST GH links"],
-       ["", "", ""], ["Labels", "", "printed heat-shrink sleeve at each end: '<wire ID> <signal> ><far end>'"],
-       ["Length rule", "", "model route + 20 mm X1/X2 fan-out + 2 x 15 mm service loop, rounded up to 5 mm; TBD = not in the model"]]
-
-def connectors_rows():
-    rows = [["Connector", "Device", "Part number", "Mating part number", "Kind", "Description"]]
-    for k, c in CONN.items():
-        rows.append([k, c["device"], c["pn"], c["mate"], c["kind"], c["desc"]])
-    return rows
-
-def cmd_wirelist(force):
-    if os.path.exists(XLSX) and not force:
-        sys.exit(f"{XLSX} exists (it is the source of truth); use --force to regenerate from the tables")
+def cmd_xlsx(out):
+    """Excel copy of the three CSVs for people who want a spreadsheet (and for the harness.design Excel import). Generated, never read back."""
     import openpyxl
-    from openpyxl.styles import Font, PatternFill, Alignment
-    rows = wire_rows()
+    from openpyxl.styles import Font, PatternFill
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "Wires"
-    ws.append(COLS)
-    for r in rows: ws.append(r)
-    for name, data in (("Connectors", connectors_rows()), ("Key", KEY)):
-        s = wb.create_sheet(name)
-        for r in data: s.append(r)
+    for name, path in (("Wires", CSVF), ("Connectors", CONF), ("Key", KEYF)):
+        s = ws if name == "Wires" else wb.create_sheet(name)
+        with open(path, newline="", encoding="utf-8") as fh:
+            for r in csv.reader(fh): s.append(r)
     for s in wb.worksheets:
         for c in s[1]: c.font = Font(bold=True, color="FFFFFF"); c.fill = PatternFill("solid", fgColor="305496")
         s.freeze_panes = "B2"
         for col in s.columns:
             w = max(len(str(c.value or "")) for c in col)
             s.column_dimensions[col[0].column_letter].width = min(60, max(8, w + 2))
-    tmp = XLSX + ".tmp"; wb.save(tmp); os.replace(tmp, XLSX)
-    export_csv()
-    print(f"wrote {XLSX} and {CSVF}: {len(rows)} wires, {len(CONN)} connectors / ends")
-
-def read_xlsx():
-    import openpyxl
-    wb = openpyxl.load_workbook(XLSX, data_only=True)
-    ws = wb["Wires"]; hdr = [c.value for c in ws[1]]
-    assert hdr == COLS, ("Wires sheet columns changed", hdr)
-    rows = [dict(zip(COLS, [("" if v is None else v) for v in r])) for r in ws.iter_rows(min_row=2, values_only=True) if r[0]]
-    return rows
-
-def export_csv():
-    rows = read_xlsx()
-    tmp = CSVF + ".tmp"
-    with open(tmp, "w", newline="", encoding="utf-8") as fh:
-        w = csv.writer(fh, lineterminator="\n"); w.writerow(COLS)
-        for r in rows: w.writerow([r[c] for c in COLS])
-    os.replace(tmp, CSVF)
+    wb.worksheets[2].insert_rows(1); wb.worksheets[2]["A1"] = "GENERATED COPY of harness/enclosure-*.csv (the CSV files are the master). Do not edit; changes here are never read."
+    tmp = out + ".tmp"; wb.save(tmp); os.replace(tmp, out)
+    print(f"wrote {out} (generated copy; the CSV files are the master)")
 
 # ------------------------------------------------------------------------------------------------------------------
 # Parts (library + harness). Reused from Dan's harness.design library "Parts Library" (5LO8) with the same ids where the
@@ -386,8 +246,8 @@ BUNDLES = [  # (id, from, to, length mm or None, label)
 def sid(name): return "c_" + name.replace("-", "_").replace("+", "p").lower()
 def cav_id(name, lab): return sid(name) + "_" + {"+": "p", "-": "m", "D+": "dp", "D-": "dm"}.get(lab, lab.lower())
 
-def cmd_build():
-    rows = read_xlsx(); export_csv()
+def built_harness(rows, want_stats=False):
+    """the two harness.design files as bytes, from the wire-list rows"""
     P = parts()
     lib = {"version": 1.3, "kind": "library", "currency": "$"}; lib.update({k: v for k, v in P.items() if v})
     doc = {"version": 1.3, "currency": "$", "lengthUnit": "mm", "gaugeUnit": "AWG"}
@@ -426,7 +286,7 @@ def cmd_build():
             if (n, lab) in sig_origin and not sig_origin[(n, lab)].startswith("SIG_GND"): cv["signal"] = sig_origin[(n, lab)]
             if (n, lab) in sig_origin and sig_origin[(n, lab)] == "SIG_GND": cv.update(signal="SIG_GND", **{"global": True})
             if n == "X1" and (n, lab) not in wired and lab in ("F", "T"): pass          # 114017 from the configuration (plug rule)
-            if n == "X2" and (n, lab) not in wired and lab in CONN["X2"]["size16"]: cv["cavityPlugPartId"] = "F6dRxdC4XlgPgmxZh_zyn"
+            if n == "X2" and (n, lab) not in wired and CONN["X2"]["other"].get(lab) == 16: cv["cavityPlugPartId"] = "F6dRxdC4XlgPgmxZh_zyn"
             if k == "plug" and lab == "CC" and n != "U1-A" and n != "U1-B": cv["notConnected"] = True
             cav.append(cv)
         co = {"id": sid(n), "label": n, "schematicPosition": {"x": pos[n][0], "y": pos[n][1]}, "layoutPosition": LP(*LAY[n]), "cavities": cav}
@@ -509,7 +369,7 @@ def cmd_build():
         if lab: bd.update(label=lab, middleLabel=True)
         bundles.append(bd)
     notes = [{"id": "sn_1", "schematicPosition": {"x": 0, "y": -150}, "width": 360, "color": "Yellow",
-              "text": "custom-pdm enclosure INSIDE harness. Source of truth: harness/enclosure-wire-list.xlsx (built by harness/src/enclosure_harness.py). "
+              "text": "custom-pdm enclosure INSIDE harness. Source of truth: harness/enclosure-wire-list.csv (built by harness/src/enclosure_harness.py). "
                       "Box connectors left, boards / devices right. Board pads, fan leads and hub pads are device ends (no part)."}]
     lnotes = [{"id": "ln_1", "layoutPosition": {"x": 0, "y": -120}, "width": 360, "color": "Yellow",
                "text": "Top view of the box, north up, from enclosure/v2c build_v2c.py rev D (3 px = 1 mm). Bundle lengths = model routes (no loops); "
@@ -518,16 +378,28 @@ def cmd_build():
                 "bundles": bundles, "branchPoints": bps, "schematicNotes": notes, "layoutNotes": lnotes})
     doc.update({k: v for k, v in P.items() if v})
     doc = {k: v for k, v in doc.items() if v != []}
-    for f, d in ((LIBF, lib), (HARF, doc)):
+    out = {f: (json.dumps(d, indent=2, ensure_ascii=False) + "\n").encode("utf-8") for f, d in ((LIBF, lib), (HARF, doc))}
+    stats = (len(wires), sum(len(t['wires']) for t in tws), sum(len(c['cores']) for c in cables), len(conns), len(terms), len(spls), len(bundles), len(lanes))
+    return (out, stats) if want_stats else out
+
+def cmd_build():
+    out, st = built_harness(read_wires(), want_stats=True)
+    for f, data in out.items():
         fd, tmp = tempfile.mkstemp(dir=HDIR, suffix=".tmp")
-        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as fh: json.dump(d, fh, indent=2, ensure_ascii=False); fh.write("\n")
+        with os.fdopen(fd, "wb") as fh: fh.write(data)
         os.replace(tmp, f)
-    print(f"wrote {LIBF} and {HARF}: {len(wires)} wires, {sum(len(t['wires']) for t in tws)} twisted, {sum(len(c['cores']) for c in cables)} cable cores, "
-          f"{len(conns)} connectors, {len(terms)} terminals, {len(spls)} splices, {len(bundles)} bundles, {len(lanes)} lanes")
+    wires, tws, cables, conns, terms, spls, bundles, lanes = st
+    print(f"wrote {LIBF} and {HARF}: {wires} wires, {tws} twisted, {cables} cable cores, {conns} connectors, {terms} terminals, {spls} splices, {bundles} bundles, {lanes} lanes")
 
 # ------------------------------------------------------------------------------------------------------------------
 # Checks
 # ------------------------------------------------------------------------------------------------------------------
+# harness.design v1.3 top-level keys (docs.harness.design/feature/local-files/json-format and the MCP editing guide "document-format", read 2026-11-21)
+HD_SETTINGS = {"version", "currency", "lengthUnit", "gaugeUnit", "readOnly", "idNumbers", "schematic", "formboard"}
+HD_COMPONENTS = {"wires", "connectors", "terminals", "cables", "twistedWires", "diodes", "resistors", "splices", "bundles", "branchPoints", "mates", "groups",
+                 "schematicNotes", "layoutNotes", "schematicImages", "layoutImages"}
+HD_PARTS = {"wireParts", "connectorParts", "terminalParts", "spliceParts", "contactParts", "cableParts", "coveringParts", "diodeParts", "resistorParts", "groupParts",
+            "lockParts", "dustCoverParts", "backshellParts", "bootParts", "cavitySealParts", "cavityPlugParts", "mountParts"}
 AMP125 = {16: 30.0, 14: 40.0, 12: 50.0}   # 33 CFR 183.425 Table 5, 125 C insulation column (A)
 AMB_90C = 0.61                            # AWC "Correction Factors for Various Ambient Temperatures", 125 C column, 90 C ambient
 def bundle_factor(n):                     # 33 CFR 183.425 Table 5 note 2 (current-carrying conductors in a bundle)
@@ -537,7 +409,7 @@ CONTACT_AWG = {"0462-201-1631": (20, 16), "0462-210-1231": (14, 12), "0462-201-2
 SMALL_I = {20: 1.0, 28: 1.0}              # 20 AWG / 28 AWG carry <= 1 A here: checked against the contact / JST GH 1 A rating, not the table
 
 def cmd_check():
-    rows = read_xlsx(); doc = json.load(open(HARF, encoding="utf-8")); fails = []
+    rows = read_wires(); doc = json.load(open(HARF, encoding="utf-8")); fails = []
     # 1. wire list <-> harness (every row is a conductor with the same ends, and nothing else is in the harness)
     names = {}
     for c in doc.get("connectors", []):
@@ -588,7 +460,7 @@ def cmd_check():
                 if not (hi <= awg <= lo): fails.append(f"{r['Wire ID']} {side}: {awg} AWG outside contact {t} range {lo}-{hi} AWG")
             if t == "3240083" and not (2.6 <= {12: 3.31, 14: 2.08, 10: 5.26}[awg] <= 6.0): fails.append(f"{r['Wire ID']}: ring lug range")
             if c in ("X1", "X2"):
-                size = 12 if (c == "X1" and p in CONN["X1"]["size12"]) else 16 if c == "X1" else (16 if p in CONN["X2"]["size16"] else 20)
+                size = cav_size(c, p)
                 od = WP[PN2WP[r["Wire part number"]]][4]
                 lo, hi = SEAL[(c, size)]
                 if not (lo <= od <= hi): fails.append(f"{r['Wire ID']}: OD {od} outside {c} size {size} seal {lo}-{hi} mm")
@@ -599,15 +471,84 @@ def cmd_check():
     for s, maxside in (("SP1", 2), ("SP2", 2)):
         n = sum(1 for r in rows if s in (r["From connector"], r["To connector"]))
         if n > 2 * maxside: fails.append(f"{s}: {n} wires > {2 * maxside} (D-436-37 max 2 per side)")
+    # 5. the .harness / .harnesslib still have the documented v1.3 shape (docs.harness.design /feature/local-files/json-format, read 2026-11-21)
+    lib = json.load(open(LIBF, encoding="utf-8"))
+    for name, d, allowed in (("enclosure.harness", doc, HD_SETTINGS | HD_COMPONENTS | HD_PARTS), ("enclosure.harnesslib", lib, {"version", "kind", "currency"} | HD_PARTS)):
+        if d.get("version") != 1.3: fails.append(f"{name}: version {d.get('version')} is not 1.3")
+        for k in d:
+            if k not in allowed: fails.append(f"{name}: top-level key '{k}' is not in the harness.design v1.3 format")
+            if isinstance(d[k], list) and not d[k]: fails.append(f"{name}: empty array '{k}' (the format wants it left out)")
+    if lib.get("kind") != "library" or "kind" in doc: fails.append("kind: must be 'library' in the .harnesslib and absent in the .harness")
+    allids = [e["id"] for k in HD_COMPONENTS | HD_PARTS for e in doc.get(k, [])]
+    if len(allids) != len(set(allids)): fails.append("enclosure.harness: element / part ids are not unique")
+    for k in ("connectors", "terminals", "splices", "twistedWires", "cables", "schematicNotes"):
+        for e in doc.get(k, []):
+            for pk in ("schematicPosition", "layoutPosition"):
+                if pk in e and (e[pk]["x"] % 30 or e[pk]["y"] % 30): fails.append(f"{e['id']}: {pk} is not on the 30 grid")
+    # 6. the built files are what `build` / `diagram` write from the CSVs now (nothing stale, nothing hand-edited)
+    def same(path, data):
+        try: old = open(path, "rb").read()
+        except OSError: return False
+        return old.replace(b"\r\n", b"\n") == data.replace(b"\r\n", b"\n")
+    for f, data in built_harness(rows).items():
+        if not same(f, data): fails.append(f"{os.path.basename(f)}: differs from a fresh build of the CSVs (run build)")
+    date = diagram_date()
+    if not date: fails.append("enclosure-wiring-diagram.svg: missing or has no date (run diagram)")
+    else:
+        files, drep = diagram_files(date); fails += drep["fails"]
+        for f, data in files.items():
+            if not same(f, data): fails.append(f"{os.path.basename(f)}: differs from a fresh build of the CSVs (run diagram)")
+        import wiring_diagram
+        svgs = [open(f, encoding="utf-8").read() for f in sorted(files) if f.endswith(".svg")]
+        fails += wiring_diagram.coverage(svgs, [r["Wire ID"] for r in rows])     # every wire exactly once in the lines and in the schedule
+        for name, h in source_hashes():
+            if any(h not in s for s in svgs) or h.encode() not in open(DIAG + ".pdf", "rb").read(): fails.append(f"diagram title block: hash of {name} is not the current one")
+        print(f"diagram: {drep['lines']} lines, {drep['sheets']} sheets, {drep['crossings']} crossings, every wire once in the lines and once in the schedule" if not fails else "diagram: see FAIL")
     print(f"wire list rows {len(rows)}, harness conductors {len(cond)}")
     for wid, txt in rep:
         if "AWG:" in txt: print(" ", wid, txt)
     print("FAIL:\n  " + "\n  ".join(fails) if fails else "all checks pass")
     return 1 if fails else 0
 
+# ------------------------------------------------------------------------------------------------------------------
+# Wiring block diagram (harness/src/wiring_diagram.py draws it; this writes the files)
+# ------------------------------------------------------------------------------------------------------------------
+DIAG = os.path.join(HDIR, "enclosure-wiring-diagram")
+def diagram_files(date):
+    import wiring_diagram
+    svgs, pdf, rep = wiring_diagram.make(read_wires(), CONN, read_key(), source_hashes(), date)
+    files = {DIAG + suf + ".svg": s.encode("utf-8") for suf, s in svgs}; files[DIAG + ".pdf"] = pdf
+    return files, rep
+
+def diagram_date():
+    """date in the committed drawing (so `check` can rebuild the same bytes), else None"""
+    import re
+    try: m = re.search(r"<!-- date (\d{4}-\d\d-\d\d) ", open(DIAG + ".svg", encoding="utf-8").read(2000))
+    except OSError: return None
+    return m.group(1) if m else None
+
+def cmd_diagram():
+    import datetime
+    date = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--date=")), None)
+    if not date:   # keep the date while the sources are unchanged, so a rebuild writes the same bytes
+        try: old = open(DIAG + ".svg", encoding="utf-8").read(2000)
+        except OSError: old = ""
+        date = diagram_date() if all(h in old for _, h in source_hashes()) and diagram_date() else datetime.date.today().isoformat()
+    files, rep = diagram_files(date)
+    if rep["fails"] and "--draft" not in sys.argv:
+        sys.exit("diagram NOT written, drawing checks failed:\n  " + "\n  ".join(rep["fails"]))
+    for f, data in files.items():
+        fd, tmp = tempfile.mkstemp(dir=HDIR, suffix=".tmp")
+        with os.fdopen(fd, "wb") as fh: fh.write(data)
+        os.replace(tmp, f)
+    for x in rep["fails"]: print("DRAFT, check failed:", x)
+    print(f"wrote {DIAG}.svg (+ sheets 2-{rep['sheets']}) and .pdf: {rep['lines']} lines for {len(read_wires())} wires, {rep['sheets']} sheets, "
+          f"{rep['crossings']} line crossings (all at 90 degrees), date {date}")
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
-    if cmd == "wirelist": cmd_wirelist("--force" in sys.argv)
-    elif cmd == "build": cmd_build()
+    if cmd == "build": cmd_build()
+    elif cmd == "diagram": cmd_diagram()
     elif cmd == "check": sys.exit(cmd_check())
+    elif cmd == "xlsx": cmd_xlsx(sys.argv[2] if len(sys.argv) > 2 else XLSX)
     else: sys.exit(__doc__)

@@ -1,0 +1,2418 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [6 0 R 8 0 R 10 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Length 30024 >>
+stream
+0 0 0 RG 1.42 w [] 0 d 31.18 98.93 1167.87 650.55 re S
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 36.85 737.57 Tm (PDM enclosure, plan view, lid off \(not to scale\). Blocks sit where the parts sit in the box; line paths are logical, not the wire routes.) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1155.68 737.57 Tm (rear wall \(north\)) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1041.91 104.31 Tm (front wall \(south\): X1, X2 and the USB-C bulkhead go through it) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 0 1 -1 0 40.25 409.32 Tm (west wall) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 0 1 -1 0 1195.65 145.70 Tm (east wall \(fans under the plate\)) Tj ET
+0.957 0.973 0.957 rg 0 0 0 RG 1.28 w [] 0 d 45.35 468.85 345.83 255.12 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 49.61 713.76 Tm (Board B \(CPDM-PCB-B\)) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 49.61 705.26 Tm (4 x 31 A + 4 x 15 A outputs) Tj ET
+0.957 0.973 0.957 rg 0 0 0 RG 1.28 w [] 0 d 399.69 468.85 306.14 255.12 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 403.94 713.76 Tm (Board A1 \(CPDM-PCB-A\)) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 403.94 705.26 Tm (8 x 7.5 A outputs) Tj ET
+0.957 0.973 0.957 rg 0 0 0 RG 1.28 w [] 0 d 714.33 468.85 340.16 255.12 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 718.58 713.76 Tm (Board A2 \(CPDM-PCB-A\)) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 718.58 705.26 Tm (7 x 7.5 A outputs + fan output) Tj ET
+0.741 0.741 0.741 RG 3.40 w [8.50 3.40] 0 d 51.02 691.37 m 1048.82 691.37 l S
+0.741 0.741 0.741 RG 3.40 w [8.50 3.40] 0 d 51.02 542.55 m 1048.82 542.55 l S
+0.933 0.953 0.98 rg 0 0 0 RG 0.85 w [] 0 d 246.61 473.10 85.04 205.51 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 250.87 668.41 Tm (Input board #3) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 250.87 659.91 Tm (\(deck above board B\)) Tj ET
+0.933 0.953 0.98 rg 0 0 0 RG 0.85 w [] 0 d 606.61 473.10 93.54 205.51 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 610.87 668.41 Tm (Input board #1) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 610.87 659.91 Tm (\(deck above board A1\)) Tj ET
+0.933 0.953 0.98 rg 0 0 0 RG 0.85 w [] 0 d 949.61 473.10 99.21 205.51 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 953.86 668.41 Tm (Input board #2) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 953.86 659.91 Tm (\(deck above board A2\)) Tj ET
+1 1 1 rg 59.53 687.12 289.90 8.50 re f
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 62.36 689.39 Tm (GND: chassis ground, M6 copper boss through the lid + copper bar across the three boards \(copper, not in the wire list\)) Tj ET
+1 1 1 rg 59.53 538.30 318.35 8.50 re f
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 62.36 540.57 Tm (BATT+: +12 V battery feed 150 A, M6 copper boss through the lid + copper bar across the three boards \(copper, not in the wire list\)) Tj ET
+1 1 1 rg 0.4 0.4 0.4 RG 0.71 w [3.40 2.27] 0 d 56.69 562.39 164.41 31.18 re B
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.94 582.24 Tm (T1-T4: OUT1-4, 31 A each, M4 copper risers) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.94 572.60 Tm (through the lid \(copper, not in the wire list\)) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 56.69 477.35 61.70 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 60.38 519.31 Tm (J2 USB-C) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.38 510.80 Tm (plug U2-B \(pigtail U2\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 56.69 506.83 m 118.39 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 60.83 498.33 Tm (VBUS D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.38 490.96 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 63.15 484.72 Tm (USB_D-, USB_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 167.24 477.35 73.10 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 170.93 510.80 Tm (J6 wire pads) Tj ET
+0 0 0 RG 0.57 w [] 0 d 167.24 506.83 m 240.34 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 176.28 498.33 Tm (4 3) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 170.93 490.96 Tm (B_IN1-2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 194.37 506.83 m 194.37 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 212.83 498.33 Tm (2 1) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 198.05 490.96 Tm (CAN_H, CAN_L) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 56.69 613.42 79.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 60.38 646.87 Tm (J7 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 56.69 642.90 m 135.89 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 89.77 634.39 Tm (1-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.38 627.02 Tm (B_IN3-10_MCU, B_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 72.27 620.79 Tm (+3V3_B, GND_B x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 250.87 613.42 79.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 254.55 646.87 Tm (J1 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 250.87 642.90 m 330.06 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 283.94 634.39 Tm (1-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 254.55 627.02 Tm (B_IN3-10_MCU, B_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 266.44 620.79 Tm (+3V3_B, GND_B x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 256.54 477.35 63.32 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 260.22 510.80 Tm (J2 \(Micro-Fit 2x6\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 256.54 506.83 m 319.86 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 274.42 498.33 Tm (1-9 10 11) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 267.54 490.96 Tm (B_IN3-10, B_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 272.48 484.72 Tm (SIG_GND x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 340.16 477.35 43.24 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 343.84 519.31 Tm (T5-T8) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 343.84 510.80 Tm (ring lugs) Tj ET
+0 0 0 RG 0.57 w [] 0 d 340.16 506.83 m 383.40 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 343.84 498.33 Tm (T5 T6 T7 T8) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 348.91 490.96 Tm (B_OUT5-8) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 408.19 477.35 61.70 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 411.87 519.31 Tm (J5 USB-C) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 411.87 510.80 Tm (plug U3-B \(pigtail U3\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 408.19 506.83 m 469.89 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 412.32 498.33 Tm (VBUS D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 411.88 490.96 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 414.65 484.72 Tm (USB_D-, USB_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 476.22 477.35 128.78 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 479.91 510.80 Tm (J3 wire pads) Tj ET
+0 0 0 RG 0.57 w [] 0 d 476.22 506.83 m 605.00 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 479.90 498.33 Tm (8 7 10 9 6 5 4 3) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 488.19 490.96 Tm (A1_OUT1-8) Tj ET
+0 0 0 RG 0.57 w [] 0 d 528.90 506.83 m 528.90 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 547.36 498.33 Tm (2 1) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 532.59 490.96 Tm (CAN_H, CAN_L) Tj ET
+0 0 0 RG 0.57 w [] 0 d 574.88 506.83 m 574.88 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 581.78 498.33 Tm (12 11) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 578.56 490.96 Tm (A1_IN1-2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 408.19 613.42 82.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 411.87 646.87 Tm (J6 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 408.19 642.90 m 490.38 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 437.14 634.39 Tm (1-5 9-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 411.87 627.02 Tm (A1_IN3-7_MCU, A1_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 422.26 620.79 Tm (+3V3_A1, GND_A1 x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 612.28 613.42 82.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 615.97 646.87 Tm (J1 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 612.28 642.90 m 694.47 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 641.24 634.39 Tm (1-5 9-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 615.97 627.02 Tm (A1_IN3-7_MCU, A1_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 626.36 620.79 Tm (+3V3_A1, GND_A1 x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 622.20 477.35 63.32 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 625.89 510.80 Tm (J2 \(Micro-Fit 2x6\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 622.20 506.83 m 685.53 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 641.90 498.33 Tm (1-5 9 10) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 631.71 490.96 Tm (A1_IN3-7, A1_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 641.74 484.72 Tm (SIG_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 722.83 477.35 61.70 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 726.52 519.31 Tm (J5 USB-C) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 726.52 510.80 Tm (plug U4-B \(pigtail U4\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 722.83 506.83 m 784.53 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 726.97 498.33 Tm (VBUS D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 726.52 490.96 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 729.29 484.72 Tm (USB_D-, USB_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 790.87 477.35 154.06 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 794.55 510.80 Tm (J3 wire pads) Tj ET
+0 0 0 RG 0.57 w [] 0 d 790.87 506.83 m 944.92 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 794.55 498.33 Tm (8 10 9 6 5 4 3) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 801.77 490.96 Tm (A2_OUT1,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 800.12 484.72 Tm (A2_OUT3-8) Tj ET
+0 0 0 RG 0.57 w [] 0 d 838.11 506.83 m 838.11 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 856.57 498.33 Tm (2 1) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 841.79 490.96 Tm (CAN_H, CAN_L) Tj ET
+0 0 0 RG 0.57 w [] 0 d 884.09 506.83 m 884.09 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 890.99 498.33 Tm (12 11) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 887.77 490.96 Tm (A2_IN1-2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 914.21 506.83 m 914.21 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 927.75 498.33 Tm (7) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 917.89 490.96 Tm (FAN_12V) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 722.83 613.42 82.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 726.52 646.87 Tm (J6 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 722.83 642.90 m 805.03 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 751.79 634.39 Tm (1-5 9-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 726.52 627.02 Tm (A2_IN3-7_MCU, A2_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 736.91 620.79 Tm (+3V3_A2, GND_A2 x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 958.11 613.42 82.19 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 961.80 646.87 Tm (J1 \(JST GH 12\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 958.11 642.90 m 1040.30 642.90 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 987.06 634.39 Tm (1-5 9-12) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 961.79 627.02 Tm (A2_IN3-7_MCU, A2_AN_MCU,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 972.19 620.79 Tm (+3V3_A2, GND_A2 x2) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 956.69 477.35 84.78 42.52 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 960.38 510.80 Tm (J2 \(Micro-Fit 2x6\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 956.69 506.83 m 1041.47 506.83 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 970.57 498.33 Tm (1-5 9 10) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 960.38 490.96 Tm (A2_IN3-7, A2_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 970.41 484.72 Tm (SIG_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 1008.37 506.83 m 1008.37 477.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 1021.29 498.33 Tm (11) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1012.05 490.96 Tm (FAN_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 49.32 138.90 229.14 80.50 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 53.01 180.85 Tm (USB hub Adafruit 5997) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 53.01 172.35 Tm (PORT4 not used) Tj ET
+0 0 0 RG 0.57 w [] 0 d 49.32 189.92 m 278.47 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 53.01 210.90 Tm (PORT1: 5V D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 60.35 203.53 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 63.12 197.29 Tm (USB_D-, USB_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 125.71 219.40 m 125.71 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 129.39 210.90 Tm (PORT2: 5V D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 136.73 203.53 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 139.50 197.29 Tm (USB_D-, USB_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 202.08 219.40 m 202.08 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 205.77 210.90 Tm (PORT3: 5V D+ D- GND) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 213.11 203.53 Tm (USB_VBUS, USB_D+,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 215.89 197.29 Tm (USB_D-, USB_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 49.32 168.38 m 278.47 168.38 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 115.45 159.87 Tm (USB-C in: VBUS D+ D- GND CC) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 125.36 152.50 Tm (USB_VBUS, USB_D+, USB_D-,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 138.46 146.27 Tm (USB_GND, USB_CC) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 317.48 168.38 140.95 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 321.17 180.85 Tm (X1  HD34-24-21SN) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 321.17 172.35 Tm (outputs, 21 cavities, sockets) Tj ET
+0 0 0 RG 0.57 w [] 0 d 317.48 189.92 m 458.43 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 321.90 210.90 Tm (B D E G) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 321.17 203.53 Tm (B_OUT5-8) Tj ET
+0 0 0 RG 0.57 w [] 0 d 350.59 219.40 m 350.59 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 354.27 210.90 Tm (H J K L M N P R) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 364.36 203.53 Tm (A1_OUT1-8) Tj ET
+0 0 0 RG 0.57 w [] 0 d 406.86 219.40 m 406.86 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 410.55 210.90 Tm (S U V W X A C) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 419.92 203.53 Tm (A2_OUT1,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 418.28 197.29 Tm (A2_OUT3-8) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 595.28 168.38 285.37 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 598.96 180.85 Tm (X2  HDP24-24-47SE-L017) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 598.96 172.35 Tm (inputs, analog, CAN, 47 cavities, sockets) Tj ET
+0 0 0 RG 0.57 w [] 0 d 595.28 189.92 m 880.64 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 600.68 210.90 Tm (23 24) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 598.96 203.53 Tm (B_IN1-2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 622.40 219.40 m 622.40 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 640.86 210.90 Tm (2 3) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 626.09 203.53 Tm (CAN_H, CAN_L) Tj ET
+0 0 0 RG 0.57 w [] 0 d 668.38 219.40 m 668.38 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 675.32 210.90 Tm (25-33 37 38) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 672.06 203.53 Tm (B_IN3-10, B_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 677.00 197.29 Tm (SIG_GND x2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 717.05 219.40 m 717.05 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 727.58 210.90 Tm (7 8) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 720.74 203.53 Tm (A1_IN1-2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 747.18 219.40 m 747.18 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 757.43 210.90 Tm (9-13 14 35) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 750.86 203.53 Tm (A1_IN3-7, A1_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 760.89 197.29 Tm (SIG_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 798.85 219.40 m 798.85 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 805.75 210.90 Tm (15 16) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 802.53 203.53 Tm (A2_IN1-2) Tj ET
+0 0 0 RG 0.57 w [] 0 d 828.97 219.40 m 828.97 189.92 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 837.41 210.90 Tm (17-21 22 36) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 832.66 203.53 Tm (A2_IN3-7, A2_AN,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 842.69 197.29 Tm (SIG_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 958.11 159.87 87.28 59.53 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 961.80 210.33 Tm (USB-C bulkhead) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 961.80 201.83 Tm (CnLinko LP-16-C05SX-02-101) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 961.80 193.32 Tm (rear socket, plug U1-A \(cable U1\)) Tj ET
+0 0 0 RG 0.57 w [] 0 d 958.11 189.35 m 1045.39 189.35 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 969.42 180.85 Tm (VBUS D+ D- GND CC) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 963.22 173.48 Tm (USB_VBUS, USB_D+, USB_D-,) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 976.32 167.24 Tm (USB_GND, USB_CC) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 1065.83 638.93 63.82 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 1069.51 680.88 Tm (FAN2) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1069.51 672.38 Tm (Sunon MF30101V1) Tj ET
+0 0 0 RG 0.57 w [] 0 d 1065.83 668.41 m 1129.65 668.41 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 1079.28 659.91 Tm (+) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1069.51 652.54 Tm (FAN_12V) Tj ET
+0 0 0 RG 0.57 w [] 0 d 1096.55 668.41 m 1096.55 638.93 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 1112.01 659.91 Tm (-) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1100.23 652.54 Tm (FAN_GND) Tj ET
+1 1 1 rg 0 0 0 RG 0.99 w [] 0 d 1129.61 553.89 63.82 51.02 re B
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 1133.29 595.84 Tm (FAN1) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1133.29 587.34 Tm (Sunon MF30101V1) Tj ET
+0 0 0 RG 0.57 w [] 0 d 1129.61 583.37 m 1193.43 583.37 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 1145.07 574.87 Tm (-) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1133.29 567.50 Tm (FAN_GND) Tj ET
+0 0 0 RG 0.57 w [] 0 d 1162.71 583.37 m 1162.71 553.89 l S
+BT 0 0 0 rg /F2 6.52 Tf 1 0 0 1 1176.16 574.87 Tm (+) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 1166.39 567.50 Tm (FAN_12V) Tj ET
+1 0.973 0.882 rg 0 0 0 RG 0.99 w [] 0 d 602.87 301.61 85.04 14.17 re B
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 613.22 306.14 Tm (SP1 CAN_H / SP2 CAN_L) Tj ET
+1 0.973 0.882 rg 0 0 0 RG 0.99 w [] 0 d 1099.84 426.33 56.69 14.17 re B
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 1109.34 430.87 Tm (SP4 FAN_GND) Tj ET
+1 0.973 0.882 rg 0 0 0 RG 0.99 w [] 0 d 1068.66 380.98 121.89 14.17 re B
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 1111.95 385.51 Tm (SP3 FAN_12V) Tj ET
+0 0 0 RG 1.28 w [] 0 d 1024.92 477.35 m 1024.92 433.42 l 1099.84 433.42 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 1029.17 443.91 Tm (L15  W060) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 1029.17 436.25 Tm (1 x 20 AWG BK) Tj ET
+0.102 0.102 0.102 rg 0 0 0 RG 0.34 w [] 0 d 1069.72 435.69 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 645.39 219.40 m 645.39 301.61 l S
+0 0 0 RG 0.71 w [] 0 d 642.55 224.79 m 648.22 230.46 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 649.36 225.64 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 652.76 233.57 Tm (L10  W051 W052) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 660.41 233.57 Tm (2 x 20 AWG YE GN, TP1) Tj ET
+0 0 0 RG 1.28 w [] 0 d 631.22 315.78 m 631.22 392.31 l 551.89 392.31 l 551.89 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 549.06 397.98 m 554.73 403.65 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 555.86 398.83 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 556.14 385.23 Tm (L12  W055 W056) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 556.14 377.57 Tm (2 x 20 AWG YE GN, TP3) Tj ET
+0 0 0 RG 0.79 w [] 0 d 1146.16 553.89 m 1146.16 440.50 l S
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 1153.53 443.34 Tm (L17  W062) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 1161.18 443.34 Tm (1 x 28 AWG BK) Tj ET
+0.102 0.102 0.102 rg 0 0 0 RG 0.34 w [] 0 d 1156.08 484.17 5.39 5.39 re B
+0 0 0 RG 0.79 w [] 0 d 135.89 628.16 m 250.87 628.16 l S
+0 0 0 RG 0.71 w [] 0 d 144.55 625.32 m 150.22 630.99 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 150.79 621.35 Tm (12) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 154.31 638.65 Tm (L22  W083-W094) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 154.31 630.99 Tm (12 x 28 AWG 8 WH 1 VT 1 RD 2 BK) Tj ET
+0 0 0 RG 0.79 w [] 0 d 490.38 628.16 m 612.28 628.16 l S
+0 0 0 RG 0.71 w [] 0 d 499.73 625.32 m 505.40 630.99 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 505.97 621.35 Tm (9) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 508.80 638.65 Tm (L20  W065-W073) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 508.80 630.99 Tm (9 x 28 AWG 5 WH 1 VT 1 RD 2 BK) Tj ET
+0 0 0 RG 2.13 w [] 0 d 361.78 477.35 m 361.78 355.46 l 334.03 355.46 l 334.03 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 331.20 339.02 m 336.87 344.69 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 338.00 339.87 Tm (4) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 341.40 242.08 Tm (L03  W016-W019) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 349.06 242.08 Tm (4 x 12 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 343.96 283.51 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 929.57 477.35 m 929.57 388.06 l 1068.66 388.06 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 984.84 398.55 Tm (L14  W059) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 984.84 390.90 Tm (1 x 20 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 1025.99 390.33 5.39 5.39 re B
+0 0 0 RG 0.79 w [] 0 d 805.03 628.16 m 958.11 628.16 l S
+0 0 0 RG 0.71 w [] 0 d 817.50 625.32 m 823.17 630.99 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 823.73 621.35 Tm (9) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 826.29 638.65 Tm (L21  W074-W082) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 826.29 630.99 Tm (9 x 28 AWG 5 WH 1 VT 1 RD 2 BK) Tj ET
+0 0 0 RG 0.79 w [] 0 d 1178.07 395.15 m 1178.07 553.89 l S
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 1185.44 397.98 Tm (L16  W061) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 1193.09 397.98 Tm (1 x 28 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 1187.99 439.41 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 732.12 219.40 m 732.12 405.35 l 589.94 405.35 l 589.94 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 729.28 235.16 m 734.95 240.83 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 736.08 236.01 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 739.49 244.91 Tm (L04  W020 W021) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 747.14 244.91 Tm (2 x 20 AWG WH) Tj ET
+1 1 1 rg 0 0 0 RG 0.34 w [] 0 d 742.04 287.54 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 813.91 219.40 m 813.91 278.93 l 899.15 278.93 l 899.15 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 896.31 295.94 m 901.98 301.61 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 903.12 296.79 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 906.52 304.44 Tm (L05  W022 W023) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 914.17 304.44 Tm (2 x 20 AWG WH) Tj ET
+1 1 1 rg 0 0 0 RG 0.34 w [] 0 d 909.07 347.06 5.39 5.39 re B
+0 0 0 RG 0.79 w [] 0 d 1113.10 638.93 m 1113.10 440.50 l S
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 1120.47 443.34 Tm (L19  W064) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 1128.12 443.34 Tm (1 x 28 AWG BK) Tj ET
+0.102 0.102 0.102 rg 0 0 0 RG 0.34 w [] 0 d 1123.02 484.17 5.39 5.39 re B
+0 0 0 RG 2.13 w [] 0 d 502.56 477.35 m 502.56 418.39 l 378.73 418.39 l 378.73 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 375.89 395.66 m 381.56 401.33 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 382.69 396.51 Tm (8) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 386.10 242.08 Tm (L01  W001-W008) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 393.75 242.08 Tm (8 x 16 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 388.65 283.51 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 659.57 315.78 m 659.57 327.12 l 861.10 327.12 l 861.10 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 676.89 324.28 m 682.55 329.95 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 683.12 320.31 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 777.20 320.03 Tm (L13  W057 W058) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 777.20 312.38 Tm (2 x 20 AWG YE GN, TP4) Tj ET
+0.992 0.847 0.208 rg 0 0 0 RG 0.34 w [] 0 d 840.20 311.81 5.39 5.39 re B
+0.18 0.49 0.196 rg 0 0 0 RG 0.34 w [] 0 d 847.01 311.81 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 854.81 219.40 m 854.81 259.09 l 982.53 259.09 l 982.53 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 979.70 278.08 m 985.37 283.75 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 986.50 278.93 Tm (7) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 989.90 287.43 Tm (L08  W033-W039) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 997.55 287.43 Tm (7 x 20 AWG 5 WH 1 VT 1 BK) Tj ET
+0 0 0 RG 1.28 w [] 0 d 773.01 219.40 m 773.01 444.47 l 653.86 444.47 l 653.86 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 770.18 239.07 m 775.85 244.74 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 776.98 239.92 Tm (7) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 780.38 344.13 Tm (L07  W026-W032) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 788.04 344.13 Tm (7 x 20 AWG 5 WH 1 VT 1 BK) Tj ET
+0 0 0 RG 0.79 w [] 0 d 1081.18 395.15 m 1081.18 638.93 l S
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 1088.55 443.34 Tm (L18  W063) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 1096.21 443.34 Tm (1 x 28 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 1091.11 484.77 5.39 5.39 re B
+0 0 0 RG 0.79 w [] 0 d 87.54 477.35 m 87.51 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 84.70 448.72 m 90.37 454.39 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 91.51 449.57 Tm (4) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 94.91 222.24 Tm (L24  W100-W103) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 102.57 222.24 Tm (4 x AWG TBD RD GN WH BK, cable U2) Tj ET
+0 0 0 RG 0.79 w [] 0 d 439.04 477.35 m 439.04 457.51 l 163.89 457.51 l 163.89 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 408.69 454.68 m 414.36 460.35 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 414.92 450.71 Tm (4) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 0 1 -1 0 150.57 222.24 Tm (L25  W104-W107) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 0 1 -1 0 158.22 222.24 Tm (4 x AWG TBD RD GN WH BK, cable U3) Tj ET
+0 0 0 RG 2.13 w [] 0 d 814.49 477.35 m 814.49 341.29 l 432.65 341.29 l 432.65 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 468.00 338.46 m 473.67 344.13 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 474.23 334.49 Tm (7) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 476.58 344.13 Tm (L02  W009-W015) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 524.46 344.13 Tm (7 x 16 AWG RD) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 565.60 343.56 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 602.87 308.69 m 217.36 308.69 l 217.36 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 561.49 305.86 m 567.16 311.53 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 567.72 301.89 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 244.29 319.18 Tm (L11  W053 W054) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 244.29 311.53 Tm (2 x 20 AWG YE GN, TP2) Tj ET
+0.992 0.847 0.208 rg 0 0 0 RG 0.34 w [] 0 d 307.29 310.96 5.39 5.39 re B
+0.18 0.49 0.196 rg 0 0 0 RG 0.34 w [] 0 d 314.09 310.96 5.39 5.39 re B
+0 0 0 RG 1.28 w [] 0 d 288.20 477.35 m 288.20 369.64 l 692.72 369.64 l 692.72 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 325.81 366.80 m 331.48 372.47 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 332.05 362.83 Tm (11) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 383.16 372.47 Tm (L09  W040-W050) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 431.03 372.47 Tm (11 x 20 AWG 8 WH 1 VT 2 BK) Tj ET
+0 0 0 RG 1.28 w [] 0 d 608.84 219.40 m 608.84 239.24 l 180.81 239.24 l 180.81 477.35 l S
+0 0 0 RG 0.71 w [] 0 d 563.20 236.41 m 568.87 242.08 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 569.44 232.44 Tm (2) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 437.34 242.08 Tm (L06  W024 W025) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 484.92 242.08 Tm (2 x 20 AWG WH) Tj ET
+1 1 1 rg 0 0 0 RG 0.34 w [] 0 d 527.26 241.51 5.39 5.39 re B
+0 0 0 RG 0.79 w [] 0 d 753.68 477.35 m 753.68 431.43 l 240.28 431.43 l 240.28 219.40 l S
+0 0 0 RG 0.71 w [] 0 d 699.51 428.60 m 705.18 434.27 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 705.74 424.63 Tm (4) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 366.42 441.92 Tm (L26  W108-W111) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 366.42 434.27 Tm (4 x AWG TBD RD GN WH BK, cable U4) Tj ET
+0 0 0 RG 0.79 w [] 0 d 1001.75 159.87 m 1001.75 115.94 l 163.89 115.94 l 163.89 138.90 l S
+0 0 0 RG 0.71 w [] 0 d 915.13 113.10 m 920.80 118.77 l S
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 921.37 109.13 Tm (5) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 168.15 118.77 Tm (L23  W095-W099) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 216.02 118.77 Tm (5 x AWG TBD RD GN WH BK GY, cable U1) Tj ET
+0 0 0 RG 1.42 w [] 0 d 17.01 17.01 1189.98 757.98 re S
+0 0 0 RG 1.42 w [] 0 d 17.01 89.01 m 1206.99 89.01 l S
+0 0 0 RG 1.42 w [] 0 d 827.72 89.01 m 827.72 17.01 l S
+BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: wiring block diagram) Tj ET
+BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 1 of 3) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
+BT 0 0 0 rg /F2 6.80 Tf 1 0 0 1 22.68 77.67 Tm (How to read) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 68.60 Tm (One line = the wires that run together between two blocks. The tick number = how many wires. Label = line ID, wire IDs, count x gauge, colours.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 60.38 Tm (The pin lists in the two end boxes of a line are in the same order \(wire ID order\): first pin to first pin. Grey text = the signals.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 52.16 Tm (Sheets 2-3 list every wire pin to pin with its line ID. Line weight: thick 12-16 AWG, medium 20 AWG, thin 28 AWG / USB cores. TPn = twisted pair n.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 43.94 Tm (Grey dashed = copper \(bosses, bars, risers\), not wires and not in the wire list. ) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 22.68 35.72 Tm (X1 spare cavities \(sealing plug\): F T.  X2 spare cavities \(sealing plug\): 1 4 5 6 34 39 40 41 42 43 44 45 46 47.) Tj ET
+BT 0 0 0 rg /F2 5.39 Tf 1 0 0 1 22.68 26.36 Tm (Colours:) Tj ET
+0.827 0.184 0.184 rg 0 0 0 RG 0.34 w [] 0 d 56.69 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 64.06 26.36 Tm (RD Red) Tj ET
+1 1 1 rg 0 0 0 RG 0.34 w [] 0 d 93.14 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 100.51 26.36 Tm (WH White) Tj ET
+0.482 0.122 0.635 rg 0 0 0 RG 0.34 w [] 0 d 134.66 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 142.03 26.36 Tm (VT Violet) Tj ET
+0.102 0.102 0.102 rg 0 0 0 RG 0.34 w [] 0 d 173.81 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 181.18 26.36 Tm (BK Black) Tj ET
+0.992 0.847 0.208 rg 0 0 0 RG 0.34 w [] 0 d 212.95 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 220.32 26.36 Tm (YE Yellow) Tj ET
+0.18 0.49 0.196 rg 0 0 0 RG 0.34 w [] 0 d 254.78 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 262.15 26.36 Tm (GN Green) Tj ET
+0.62 0.62 0.62 rg 0 0 0 RG 0.34 w [] 0 d 296.62 25.80 5.39 5.39 re B
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 303.99 26.36 Tm (GY Gray) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 1224.00 792.00] /Contents 5 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+7 0 obj
+<< /Length 63483 >>
+stream
+0.188 0.329 0.588 rg 22.68 748.91 1178.67 13.04 re f
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 25.51 752.31 Tm (Line) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 58.25 752.31 Tm (Wire) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 94.62 752.31 Tm (Signal) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 192.84 752.31 Tm (Description) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 476.59 752.31 Tm (Group) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 509.33 752.31 Tm (Colour) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 545.70 752.31 Tm (AWG) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 574.81 752.31 Tm (Wire part number) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 745.80 752.31 Tm (mm) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 774.91 752.31 Tm (From) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 840.39 752.31 Tm (pin) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 873.13 752.31 Tm (From contact) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 960.43 752.31 Tm (strip) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 989.55 752.31 Tm (To) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1055.03 752.31 Tm (pin) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1087.77 752.31 Tm (To contact) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1175.07 752.31 Tm (strip) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 740.83 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 740.83 Tm (W001) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 740.83 Tm (A1_OUT1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 740.83 Tm (Board A1 output 1, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 740.83 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 740.83 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 740.83 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 740.83 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 740.83 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 740.83 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 740.83 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 740.83 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 740.83 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 740.83 Tm (H) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 740.83 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 740.83 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 726.09 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 729.35 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 729.35 Tm (W002) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 729.35 Tm (A1_OUT2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 729.35 Tm (Board A1 output 2, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 729.35 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 729.35 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 729.35 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 729.35 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 729.35 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 729.35 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 729.35 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 729.35 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 729.35 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 729.35 Tm (J) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 729.35 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 729.35 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 717.87 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 717.87 Tm (W003) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 717.87 Tm (A1_OUT3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 717.87 Tm (Board A1 output 3, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 717.87 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 717.87 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 717.87 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 717.87 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 717.87 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 717.87 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 717.87 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 717.87 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 717.87 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 717.87 Tm (K) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 717.87 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 717.87 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 703.13 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 706.39 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 706.39 Tm (W004) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 706.39 Tm (A1_OUT4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 706.39 Tm (Board A1 output 4, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 706.39 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 706.39 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 706.39 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 706.39 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 706.39 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 706.39 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 706.39 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 706.39 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 706.39 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 706.39 Tm (L) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 706.39 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 706.39 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 694.91 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 694.91 Tm (W005) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 694.91 Tm (A1_OUT5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 694.91 Tm (Board A1 output 5, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 694.91 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 694.91 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 694.91 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 694.91 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 694.91 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 694.91 Tm (6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 694.91 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 694.91 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 694.91 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 694.91 Tm (M) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 694.91 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 694.91 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 680.17 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 683.43 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 683.43 Tm (W006) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 683.43 Tm (A1_OUT6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 683.43 Tm (Board A1 output 6, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 683.43 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 683.43 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 683.43 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 683.43 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 683.43 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 683.43 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 683.43 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 683.43 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 683.43 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 683.43 Tm (N) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 683.43 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 683.43 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 671.95 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 671.95 Tm (W007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 671.95 Tm (A1_OUT7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 671.95 Tm (Board A1 output 7, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 671.95 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 671.95 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 671.95 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 671.95 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 671.95 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 671.95 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 671.95 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 671.95 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 671.95 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 671.95 Tm (P) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 671.95 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 671.95 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 657.21 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 660.47 Tm (L01) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 660.47 Tm (W008) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 660.47 Tm (A1_OUT8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 660.47 Tm (Board A1 output 8, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 660.47 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 660.47 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 660.47 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 660.47 Tm (170) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 660.47 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 660.47 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 660.47 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 660.47 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 660.47 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 660.47 Tm (R) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 660.47 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 660.47 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 648.99 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 648.99 Tm (W009) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 648.99 Tm (A2_OUT1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 648.99 Tm (Board A2 output 1, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 648.99 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 648.99 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 648.99 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 648.99 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 648.99 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 648.99 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 648.99 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 648.99 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 648.99 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 648.99 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 648.99 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 648.99 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 634.25 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 637.51 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 637.51 Tm (W010) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 637.51 Tm (A2_OUT3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 637.51 Tm (Board A2 output 3, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 637.51 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 637.51 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 637.51 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 637.51 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 637.51 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 637.51 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 637.51 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 637.51 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 637.51 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 637.51 Tm (U) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 637.51 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 637.51 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 626.03 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 626.03 Tm (W011) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 626.03 Tm (A2_OUT4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 626.03 Tm (Board A2 output 4, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 626.03 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 626.03 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 626.03 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 626.03 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 626.03 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 626.03 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 626.03 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 626.03 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 626.03 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 626.03 Tm (V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 626.03 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 626.03 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 611.29 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 614.55 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 614.55 Tm (W012) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 614.55 Tm (A2_OUT5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 614.55 Tm (Board A2 output 5, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 614.55 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 614.55 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 614.55 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 614.55 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 614.55 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 614.55 Tm (6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 614.55 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 614.55 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 614.55 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 614.55 Tm (W) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 614.55 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 614.55 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 603.07 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 603.07 Tm (W013) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 603.07 Tm (A2_OUT6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 603.07 Tm (Board A2 output 6, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 603.07 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 603.07 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 603.07 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 603.07 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 603.07 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 603.07 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 603.07 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 603.07 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 603.07 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 603.07 Tm (X) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 603.07 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 603.07 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 588.33 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 591.59 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 591.59 Tm (W014) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 591.59 Tm (A2_OUT7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 591.59 Tm (Board A2 output 7, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 591.59 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 591.59 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 591.59 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 591.59 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 591.59 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 591.59 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 591.59 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 591.59 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 591.59 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 591.59 Tm (A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 591.59 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 591.59 Tm (7.1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 580.11 Tm (L02) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 580.11 Tm (W015) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 580.11 Tm (A2_OUT8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 580.11 Tm (Board A2 output 8, 7.5 A, to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 580.11 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 580.11 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 580.11 Tm (J1128-GXL-16-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 580.11 Tm (230) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 580.11 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 580.11 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 580.11 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 580.11 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 580.11 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 580.11 Tm (C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 580.11 Tm (0462-201-1631) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 580.11 Tm (7.1) Tj ET
+0.945 0.957 0.976 rg 22.68 565.37 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 568.63 Tm (L03) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 568.63 Tm (W016) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 568.63 Tm (B_OUT5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 568.63 Tm (Board B output 5, 15 A, ring lug on T5 to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 568.63 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 568.63 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 568.63 Tm (J1128-GXL-12-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 568.63 Tm (175) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 568.63 Tm (B-T5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 568.63 Tm (R) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 568.63 Tm (3240083) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 568.63 Tm (8.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 568.63 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 568.63 Tm (B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 568.63 Tm (0462-210-1231) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 568.63 Tm (6.4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 557.15 Tm (L03) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 557.15 Tm (W017) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 557.15 Tm (B_OUT6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 557.15 Tm (Board B output 6, 15 A, ring lug on T6 to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 557.15 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 557.15 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 557.15 Tm (J1128-GXL-12-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 557.15 Tm (150) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 557.15 Tm (B-T6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 557.15 Tm (R) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 557.15 Tm (3240083) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 557.15 Tm (8.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 557.15 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 557.15 Tm (D) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 557.15 Tm (0462-210-1231) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 557.15 Tm (6.4) Tj ET
+0.945 0.957 0.976 rg 22.68 542.41 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 545.67 Tm (L03) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 545.67 Tm (W018) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 545.67 Tm (B_OUT7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 545.67 Tm (Board B output 7, 15 A, ring lug on T7 to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 545.67 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 545.67 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 545.67 Tm (J1128-GXL-12-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 545.67 Tm (130) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 545.67 Tm (B-T7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 545.67 Tm (R) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 545.67 Tm (3240083) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 545.67 Tm (8.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 545.67 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 545.67 Tm (E) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 545.67 Tm (0462-210-1231) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 545.67 Tm (6.4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 534.19 Tm (L03) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 534.19 Tm (W019) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 534.19 Tm (B_OUT8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 534.19 Tm (Board B output 8, 15 A, ring lug on T8 to X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 534.19 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 534.19 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 534.19 Tm (J1128-GXL-12-RED) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 534.19 Tm (105) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 534.19 Tm (B-T8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 534.19 Tm (R) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 534.19 Tm (3240083) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 534.19 Tm (8.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 534.19 Tm (X1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 534.19 Tm (G) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 534.19 Tm (0462-210-1231) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 534.19 Tm (6.4) Tj ET
+0.945 0.957 0.976 rg 22.68 519.45 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 522.71 Tm (L04) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 522.71 Tm (W020) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 522.71 Tm (A1_IN1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 522.71 Tm (Board A1 input 1 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 522.71 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 522.71 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 522.71 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 522.71 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 522.71 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 522.71 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 522.71 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 522.71 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 522.71 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 522.71 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 522.71 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 511.23 Tm (L04) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 511.23 Tm (W021) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 511.23 Tm (A1_IN2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 511.23 Tm (Board A1 input 2 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 511.23 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 511.23 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 511.23 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 511.23 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 511.23 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 511.23 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 511.23 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 511.23 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 511.23 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 511.23 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 511.23 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 496.49 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 499.75 Tm (L05) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 499.75 Tm (W022) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 499.75 Tm (A2_IN1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 499.75 Tm (Board A2 input 1 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 499.75 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 499.75 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 499.75 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 499.75 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 499.75 Tm (15) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 499.75 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 499.75 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 499.75 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 499.75 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 499.75 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 499.75 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 488.27 Tm (L05) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 488.27 Tm (W023) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 488.27 Tm (A2_IN2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 488.27 Tm (Board A2 input 2 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 488.27 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 488.27 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 488.27 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 488.27 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 488.27 Tm (16) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 488.27 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 488.27 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 488.27 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 488.27 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 488.27 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 488.27 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 473.53 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 476.79 Tm (L06) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 476.79 Tm (W024) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 476.79 Tm (B_IN1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 476.79 Tm (Board B input 1 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 476.79 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 476.79 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 476.79 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 476.79 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 476.79 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 476.79 Tm (23) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 476.79 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 476.79 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 476.79 Tm (B-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 476.79 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 476.79 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 476.79 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 465.31 Tm (L06) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 465.31 Tm (W025) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 465.31 Tm (B_IN2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 465.31 Tm (Board B input 2 \(switch to GND or 12 V\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 465.31 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 465.31 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 465.31 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 465.31 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 465.31 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 465.31 Tm (24) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 465.31 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 465.31 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 465.31 Tm (B-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 465.31 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 465.31 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 465.31 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 450.57 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 453.83 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 453.83 Tm (W026) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 453.83 Tm (A1_IN3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 453.83 Tm (A1 input 3 via input board 1 ch 1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 453.83 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 453.83 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 453.83 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 453.83 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 453.83 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 453.83 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 453.83 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 453.83 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 453.83 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 453.83 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 453.83 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 453.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 442.35 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 442.35 Tm (W027) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 442.35 Tm (A1_IN4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 442.35 Tm (A1 input 4 via input board 1 ch 2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 442.35 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 442.35 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 442.35 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 442.35 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 442.35 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 442.35 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 442.35 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 442.35 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 442.35 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 442.35 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 442.35 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 442.35 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 427.61 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 430.87 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 430.87 Tm (W028) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 430.87 Tm (A1_IN5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 430.87 Tm (A1 input 5 via input board 1 ch 3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 430.87 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 430.87 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 430.87 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 430.87 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 430.87 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 430.87 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 430.87 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 430.87 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 430.87 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 430.87 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 430.87 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 430.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 419.39 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 419.39 Tm (W029) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 419.39 Tm (A1_IN6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 419.39 Tm (A1 input 6 via input board 1 ch 4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 419.39 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 419.39 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 419.39 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 419.39 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 419.39 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 419.39 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 419.39 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 419.39 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 419.39 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 419.39 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 419.39 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 419.39 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 404.65 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 407.91 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 407.91 Tm (W030) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 407.91 Tm (A1_IN7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 407.91 Tm (A1 input 7 via input board 1 ch 5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 407.91 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 407.91 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 407.91 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 407.91 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 407.91 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 407.91 Tm (13) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 407.91 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 407.91 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 407.91 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 407.91 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 407.91 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 407.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 396.43 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 396.43 Tm (W031) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 396.43 Tm (A1_AN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 396.43 Tm (A1 analog input 0-5 V via input board 1 ch 9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 396.43 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 396.43 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 396.43 Tm (M22759/16-20-7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 396.43 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 396.43 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 396.43 Tm (14) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 396.43 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 396.43 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 396.43 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 396.43 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 396.43 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 396.43 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 381.69 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 384.94 Tm (L07) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 384.94 Tm (W032) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 384.94 Tm (SIG_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 384.94 Tm (Signal ground for switches / sensors, input board 1 J2 pin 10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 384.94 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 384.94 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 384.94 Tm (M22759/16-20-0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 384.94 Tm (95) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 384.94 Tm (IN1-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 384.94 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 384.94 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 384.94 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 384.94 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 384.94 Tm (35) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 384.94 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 384.94 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 373.46 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 373.46 Tm (W033) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 373.46 Tm (A2_IN3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 373.46 Tm (A2 input 3 via input board 2 ch 1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 373.46 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 373.46 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 373.46 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 373.46 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 373.46 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 373.46 Tm (17) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 373.46 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 373.46 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 373.46 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 373.46 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 373.46 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 373.46 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 358.72 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 361.98 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 361.98 Tm (W034) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 361.98 Tm (A2_IN4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 361.98 Tm (A2 input 4 via input board 2 ch 2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 361.98 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 361.98 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 361.98 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 361.98 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 361.98 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 361.98 Tm (18) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 361.98 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 361.98 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 361.98 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 361.98 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 361.98 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 361.98 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 350.50 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 350.50 Tm (W035) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 350.50 Tm (A2_IN5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 350.50 Tm (A2 input 5 via input board 2 ch 3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 350.50 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 350.50 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 350.50 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 350.50 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 350.50 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 350.50 Tm (19) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 350.50 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 350.50 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 350.50 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 350.50 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 350.50 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 350.50 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 335.76 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 339.02 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 339.02 Tm (W036) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 339.02 Tm (A2_IN6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 339.02 Tm (A2 input 6 via input board 2 ch 4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 339.02 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 339.02 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 339.02 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 339.02 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 339.02 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 339.02 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 339.02 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 339.02 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 339.02 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 339.02 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 339.02 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 339.02 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 327.54 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 327.54 Tm (W037) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 327.54 Tm (A2_IN7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 327.54 Tm (A2 input 7 via input board 2 ch 5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 327.54 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 327.54 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 327.54 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 327.54 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 327.54 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 327.54 Tm (21) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 327.54 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 327.54 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 327.54 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 327.54 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 327.54 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 327.54 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 312.80 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 316.06 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 316.06 Tm (W038) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 316.06 Tm (A2_AN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 316.06 Tm (A2 analog input 0-5 V via input board 2 ch 9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 316.06 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 316.06 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 316.06 Tm (M22759/16-20-7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 316.06 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 316.06 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 316.06 Tm (22) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 316.06 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 316.06 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 316.06 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 316.06 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 316.06 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 316.06 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 304.58 Tm (L08) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 304.58 Tm (W039) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 304.58 Tm (SIG_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 304.58 Tm (Signal ground for switches / sensors, input board 2 J2 pin 10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 304.58 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 304.58 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 304.58 Tm (M22759/16-20-0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 304.58 Tm (100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 304.58 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 304.58 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 304.58 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 304.58 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 304.58 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 304.58 Tm (36) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 304.58 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 304.58 Tm (4.8) Tj ET
+0.945 0.957 0.976 rg 22.68 289.84 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 293.10 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 293.10 Tm (W040) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 293.10 Tm (B_IN3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 293.10 Tm (B input 3 via input board 3 ch 1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 293.10 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 293.10 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 293.10 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 293.10 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 293.10 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 293.10 Tm (25) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 293.10 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 293.10 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 293.10 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 293.10 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 293.10 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 293.10 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 281.62 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 281.62 Tm (W041) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 281.62 Tm (B_IN4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 281.62 Tm (B input 4 via input board 3 ch 2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 281.62 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 281.62 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 281.62 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 281.62 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 281.62 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 281.62 Tm (26) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 281.62 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 281.62 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 281.62 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 281.62 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 281.62 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 281.62 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 266.88 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 270.14 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 270.14 Tm (W042) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 270.14 Tm (B_IN5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 270.14 Tm (B input 5 via input board 3 ch 3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 270.14 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 270.14 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 270.14 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 270.14 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 270.14 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 270.14 Tm (27) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 270.14 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 270.14 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 270.14 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 270.14 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 270.14 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 270.14 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 258.66 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 258.66 Tm (W043) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 258.66 Tm (B_IN6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 258.66 Tm (B input 6 via input board 3 ch 4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 258.66 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 258.66 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 258.66 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 258.66 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 258.66 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 258.66 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 258.66 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 258.66 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 258.66 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 258.66 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 258.66 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 258.66 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 243.92 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 247.18 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 247.18 Tm (W044) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 247.18 Tm (B_IN7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 247.18 Tm (B input 7 via input board 3 ch 5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 247.18 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 247.18 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 247.18 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 247.18 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 247.18 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 247.18 Tm (29) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 247.18 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 247.18 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 247.18 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 247.18 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 247.18 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 247.18 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 235.70 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 235.70 Tm (W045) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 235.70 Tm (B_IN8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 235.70 Tm (B input 8 via input board 3 ch 6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 235.70 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 235.70 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 235.70 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 235.70 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 235.70 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 235.70 Tm (30) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 235.70 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 235.70 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 235.70 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 235.70 Tm (6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 235.70 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 235.70 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 220.96 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 224.22 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 224.22 Tm (W046) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 224.22 Tm (B_IN9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 224.22 Tm (B input 9 via input board 3 ch 7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 224.22 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 224.22 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 224.22 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 224.22 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 224.22 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 224.22 Tm (31) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 224.22 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 224.22 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 224.22 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 224.22 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 224.22 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 224.22 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 212.74 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 212.74 Tm (W047) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 212.74 Tm (B_IN10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 212.74 Tm (B input 10 via input board 3 ch 8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 212.74 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 212.74 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 212.74 Tm (M22759/16-20-9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 212.74 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 212.74 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 212.74 Tm (32) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 212.74 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 212.74 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 212.74 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 212.74 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 212.74 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 212.74 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 198.00 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 201.26 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 201.26 Tm (W048) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 201.26 Tm (B_AN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 201.26 Tm (B analog input 0-5 V via input board 3 ch 9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 201.26 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 201.26 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 201.26 Tm (M22759/16-20-7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 201.26 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 201.26 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 201.26 Tm (33) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 201.26 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 201.26 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 201.26 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 201.26 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 201.26 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 201.26 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 189.78 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 189.78 Tm (W049) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 189.78 Tm (SIG_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 189.78 Tm (Signal ground for switches / sensors, input board 3 J2 pin 10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 189.78 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 189.78 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 189.78 Tm (M22759/16-20-0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 189.78 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 189.78 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 189.78 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 189.78 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 189.78 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 189.78 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 189.78 Tm (37) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 189.78 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 189.78 Tm (4.8) Tj ET
+0.945 0.957 0.976 rg 22.68 175.04 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 178.30 Tm (L09) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 178.30 Tm (W050) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 178.30 Tm (SIG_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 178.30 Tm (Signal ground for switches / sensors, input board 3 J2 pin 11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 178.30 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 178.30 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 178.30 Tm (M22759/16-20-0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 178.30 Tm (160) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 178.30 Tm (IN3-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 178.30 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 178.30 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 178.30 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 178.30 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 178.30 Tm (38) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 178.30 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 178.30 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 166.82 Tm (L10) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 166.82 Tm (W051) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 166.82 Tm (CAN_H) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 166.82 Tm (CAN high, X2 to splice SP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 166.82 Tm (TP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 166.82 Tm (YE) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 166.82 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 166.82 Tm (M22759/16-20-4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 166.82 Tm (80) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 166.82 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 166.82 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 166.82 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 166.82 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 166.82 Tm (SP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 166.82 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 166.82 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 166.82 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 152.08 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 155.34 Tm (L10) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 155.34 Tm (W052) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 155.34 Tm (CAN_L) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 155.34 Tm (CAN low, X2 to splice SP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 155.34 Tm (TP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 155.34 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 155.34 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 155.34 Tm (M22759/16-20-5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 155.34 Tm (80) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 155.34 Tm (X2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 155.34 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 155.34 Tm (0462-201-20141) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 155.34 Tm (4.8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 155.34 Tm (SP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 155.34 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 155.34 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 155.34 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 143.86 Tm (L11) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 143.86 Tm (W053) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 143.86 Tm (CAN_H) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 143.86 Tm (CAN high stub, SP1 to board B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 143.86 Tm (TP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 143.86 Tm (YE) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 143.86 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 143.86 Tm (M22759/16-20-4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 143.86 Tm (255) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 143.86 Tm (SP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 143.86 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 143.86 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 143.86 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 143.86 Tm (B-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 143.86 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 143.86 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 143.86 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 129.12 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 132.38 Tm (L11) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 132.38 Tm (W054) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 132.38 Tm (CAN_L) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 132.38 Tm (CAN low stub, SP2 to board B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 132.38 Tm (TP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 132.38 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 132.38 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 132.38 Tm (M22759/16-20-5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 132.38 Tm (255) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 132.38 Tm (SP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 132.38 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 132.38 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 132.38 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 132.38 Tm (B-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 132.38 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 132.38 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 132.38 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 120.90 Tm (L12) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 120.90 Tm (W055) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 120.90 Tm (CAN_H) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 120.90 Tm (CAN high stub, SP1 to board A1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 120.90 Tm (TP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 120.90 Tm (YE) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 120.90 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 120.90 Tm (M22759/16-20-4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 120.90 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 120.90 Tm (SP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 120.90 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 120.90 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 120.90 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 120.90 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 120.90 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 120.90 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 120.90 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 106.16 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 109.42 Tm (L12) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 109.42 Tm (W056) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 109.42 Tm (CAN_L) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 109.42 Tm (CAN low stub, SP2 to board A1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 109.42 Tm (TP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 109.42 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 109.42 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 109.42 Tm (M22759/16-20-5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 109.42 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 109.42 Tm (SP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 109.42 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 109.42 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 109.42 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 109.42 Tm (A1-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 109.42 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 109.42 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 109.42 Tm (4.0) Tj ET
+0 0 0 RG 0.85 w [] 0 d 22.68 104.88 1178.67 657.07 re S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 55.42 761.95 m 55.42 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 91.79 761.95 m 91.79 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 190.01 761.95 m 190.01 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 473.75 761.95 m 473.75 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 506.49 761.95 m 506.49 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 542.86 761.95 m 542.86 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 571.97 761.95 m 571.97 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 742.96 761.95 m 742.96 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 772.07 761.95 m 772.07 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 837.55 761.95 m 837.55 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 870.29 761.95 m 870.29 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 957.60 761.95 m 957.60 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 986.71 761.95 m 986.71 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1052.19 761.95 m 1052.19 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1084.93 761.95 m 1084.93 104.88 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1172.24 761.95 m 1172.24 104.88 l S
+0 0 0 RG 1.42 w [] 0 d 17.01 17.01 1189.98 757.98 re S
+0 0 0 RG 1.42 w [] 0 d 17.01 89.01 m 1206.99 89.01 l S
+0 0 0 RG 1.42 w [] 0 d 827.72 89.01 m 827.72 17.01 l S
+BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: wire schedule) Tj ET
+BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 2 of 3) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
+BT 0 0 0 rg /F1 6.52 Tf 1 0 0 1 22.68 74.83 Tm (Wire schedule, wires W001 to W056 \(rows of harness/enclosure-wire-list.csv; 'Line' = the line on sheet 1; lengths in mm, TBD = not in the model\).) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 1224.00 792.00] /Contents 7 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+9 0 obj
+<< /Length 64468 >>
+stream
+0.188 0.329 0.588 rg 22.68 748.91 1178.67 13.04 re f
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 25.51 752.31 Tm (Line) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 58.25 752.31 Tm (Wire) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 94.62 752.31 Tm (Signal) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 192.84 752.31 Tm (Description) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 476.59 752.31 Tm (Group) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 509.33 752.31 Tm (Colour) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 545.70 752.31 Tm (AWG) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 574.81 752.31 Tm (Wire part number) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 745.80 752.31 Tm (mm) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 774.91 752.31 Tm (From) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 840.39 752.31 Tm (pin) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 873.13 752.31 Tm (From contact) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 960.43 752.31 Tm (strip) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 989.55 752.31 Tm (To) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1055.03 752.31 Tm (pin) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1087.77 752.31 Tm (To contact) Tj ET
+BT 1 1 1 rg /F2 7.37 Tf 1 0 0 1 1175.07 752.31 Tm (strip) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 740.83 Tm (L13) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 740.83 Tm (W057) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 740.83 Tm (CAN_H) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 740.83 Tm (CAN high stub, SP1 to board A2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 740.83 Tm (TP4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 740.83 Tm (YE) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 740.83 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 740.83 Tm (M22759/16-20-4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 740.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 740.83 Tm (SP1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 740.83 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 740.83 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 740.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 740.83 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 740.83 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 740.83 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 740.83 Tm (4.0) Tj ET
+0.945 0.957 0.976 rg 22.68 726.09 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 729.35 Tm (L13) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 729.35 Tm (W058) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 729.35 Tm (CAN_L) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 729.35 Tm (CAN low stub, SP2 to board A2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 729.35 Tm (TP4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 729.35 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 729.35 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 729.35 Tm (M22759/16-20-5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 729.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 729.35 Tm (SP2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 729.35 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 729.35 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 729.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 729.35 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 729.35 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 729.35 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 729.35 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 717.87 Tm (L14) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 717.87 Tm (W059) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 717.87 Tm (FAN_12V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 717.87 Tm (Fan supply from A2 OUT2 \(fan output, 1 A limit\) to splice SP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 717.87 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 717.87 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 717.87 Tm (M22759/16-20-2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 717.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 717.87 Tm (A2-J3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 717.87 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 717.87 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 717.87 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 717.87 Tm (SP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 717.87 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 717.87 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 717.87 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 703.13 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 706.39 Tm (L15) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 706.39 Tm (W060) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 706.39 Tm (FAN_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 706.39 Tm (Fan return to input board #2 GND \(J2 pin 11\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 706.39 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 706.39 Tm (20) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 706.39 Tm (M22759/16-20-0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 706.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 706.39 Tm (IN2-J2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 706.39 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 706.39 Tm (43030-0007) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 706.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 706.39 Tm (SP4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 706.39 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 706.39 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 706.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 694.91 Tm (L16) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 694.91 Tm (W061) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 694.91 Tm (FAN_12V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 694.91 Tm (FAN1 + lead \(factory\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 694.91 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 694.91 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 694.91 Tm (UL1571 28AWG RED \(Sunon factory lead\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 694.91 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 694.91 Tm (SP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 694.91 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 694.91 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 694.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 694.91 Tm (FAN1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 694.91 Tm (+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 694.91 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 694.91 Tm (5.0) Tj ET
+0.945 0.957 0.976 rg 22.68 680.17 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 683.43 Tm (L17) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 683.43 Tm (W062) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 683.43 Tm (FAN_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 683.43 Tm (FAN1 - lead \(factory\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 683.43 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 683.43 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 683.43 Tm (UL1571 28AWG BLACK \(Sunon factory lead\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 683.43 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 683.43 Tm (FAN1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 683.43 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 683.43 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 683.43 Tm (5.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 683.43 Tm (SP4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 683.43 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 683.43 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 683.43 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 671.95 Tm (L18) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 671.95 Tm (W063) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 671.95 Tm (FAN_12V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 671.95 Tm (FAN2 + lead \(factory\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 671.95 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 671.95 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 671.95 Tm (UL1571 28AWG RED \(Sunon factory lead\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 671.95 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 671.95 Tm (SP3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 671.95 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 671.95 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 671.95 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 671.95 Tm (FAN2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 671.95 Tm (+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 671.95 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 671.95 Tm (5.0) Tj ET
+0.945 0.957 0.976 rg 22.68 657.21 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 660.47 Tm (L19) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 660.47 Tm (W064) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 660.47 Tm (FAN_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 660.47 Tm (FAN2 - lead \(factory\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 660.47 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 660.47 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 660.47 Tm (UL1571 28AWG BLACK \(Sunon factory lead\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 660.47 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 660.47 Tm (FAN2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 660.47 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 660.47 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 660.47 Tm (5.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 660.47 Tm (SP4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 660.47 Tm (S) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 660.47 Tm (-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 660.47 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 648.99 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 648.99 Tm (W065) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 648.99 Tm (A1_IN3_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 648.99 Tm (A1 input 3 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 648.99 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 648.99 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 648.99 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 648.99 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 648.99 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 648.99 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 648.99 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 648.99 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 648.99 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 648.99 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 648.99 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 648.99 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 634.25 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 637.51 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 637.51 Tm (W066) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 637.51 Tm (A1_IN4_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 637.51 Tm (A1 input 4 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 637.51 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 637.51 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 637.51 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 637.51 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 637.51 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 637.51 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 637.51 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 637.51 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 637.51 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 637.51 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 637.51 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 637.51 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 626.03 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 626.03 Tm (W067) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 626.03 Tm (A1_IN5_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 626.03 Tm (A1 input 5 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 626.03 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 626.03 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 626.03 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 626.03 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 626.03 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 626.03 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 626.03 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 626.03 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 626.03 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 626.03 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 626.03 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 626.03 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 611.29 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 614.55 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 614.55 Tm (W068) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 614.55 Tm (A1_IN6_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 614.55 Tm (A1 input 6 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 614.55 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 614.55 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 614.55 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 614.55 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 614.55 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 614.55 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 614.55 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 614.55 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 614.55 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 614.55 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 614.55 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 614.55 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 603.07 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 603.07 Tm (W069) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 603.07 Tm (A1_IN7_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 603.07 Tm (A1 input 7 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 603.07 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 603.07 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 603.07 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 603.07 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 603.07 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 603.07 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 603.07 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 603.07 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 603.07 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 603.07 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 603.07 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 603.07 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 588.33 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 591.59 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 591.59 Tm (W070) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 591.59 Tm (A1_AN_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 591.59 Tm (A1 analog input to the MCU ADC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 591.59 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 591.59 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 591.59 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 591.59 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 591.59 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 591.59 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 591.59 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 591.59 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 591.59 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 591.59 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 591.59 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 591.59 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 580.11 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 580.11 Tm (W071) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 580.11 Tm (+3V3_A1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 580.11 Tm (Board A1 +3.3 V to the input-board pull-ups) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 580.11 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 580.11 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 580.11 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 580.11 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 580.11 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 580.11 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 580.11 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 580.11 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 580.11 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 580.11 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 580.11 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 580.11 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 565.37 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 568.63 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 568.63 Tm (W072) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 568.63 Tm (GND_A1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 568.63 Tm (Board A1 GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 568.63 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 568.63 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 568.63 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 568.63 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 568.63 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 568.63 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 568.63 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 568.63 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 568.63 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 568.63 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 568.63 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 568.63 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 557.15 Tm (L20) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 557.15 Tm (W073) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 557.15 Tm (GND_A1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 557.15 Tm (Board A1 GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 557.15 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 557.15 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 557.15 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 557.15 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 557.15 Tm (A1-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 557.15 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 557.15 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 557.15 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 557.15 Tm (IN1-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 557.15 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 557.15 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 557.15 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 542.41 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 545.67 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 545.67 Tm (W074) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 545.67 Tm (A2_IN3_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 545.67 Tm (A2 input 3 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 545.67 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 545.67 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 545.67 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 545.67 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 545.67 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 545.67 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 545.67 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 545.67 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 545.67 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 545.67 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 545.67 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 545.67 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 534.19 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 534.19 Tm (W075) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 534.19 Tm (A2_IN4_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 534.19 Tm (A2 input 4 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 534.19 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 534.19 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 534.19 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 534.19 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 534.19 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 534.19 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 534.19 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 534.19 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 534.19 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 534.19 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 534.19 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 534.19 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 519.45 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 522.71 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 522.71 Tm (W076) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 522.71 Tm (A2_IN5_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 522.71 Tm (A2 input 5 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 522.71 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 522.71 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 522.71 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 522.71 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 522.71 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 522.71 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 522.71 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 522.71 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 522.71 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 522.71 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 511.23 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 511.23 Tm (W077) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 511.23 Tm (A2_IN6_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 511.23 Tm (A2 input 6 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 511.23 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 511.23 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 511.23 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 511.23 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 511.23 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 511.23 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 511.23 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 511.23 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 511.23 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 511.23 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 511.23 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 511.23 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 496.49 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 499.75 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 499.75 Tm (W078) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 499.75 Tm (A2_IN7_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 499.75 Tm (A2 input 7 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 499.75 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 499.75 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 499.75 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 499.75 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 499.75 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 499.75 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 499.75 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 499.75 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 499.75 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 499.75 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 488.27 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 488.27 Tm (W079) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 488.27 Tm (A2_AN_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 488.27 Tm (A2 analog input to the MCU ADC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 488.27 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 488.27 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 488.27 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 488.27 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 488.27 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 488.27 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 488.27 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 488.27 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 488.27 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 488.27 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 488.27 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 488.27 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 473.53 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 476.79 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 476.79 Tm (W080) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 476.79 Tm (+3V3_A2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 476.79 Tm (Board A2 +3.3 V to the input-board pull-ups) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 476.79 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 476.79 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 476.79 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 476.79 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 476.79 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 476.79 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 476.79 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 476.79 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 476.79 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 476.79 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 476.79 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 476.79 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 465.31 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 465.31 Tm (W081) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 465.31 Tm (GND_A2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 465.31 Tm (Board A2 GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 465.31 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 465.31 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 465.31 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 465.31 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 465.31 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 465.31 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 465.31 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 465.31 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 465.31 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 465.31 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 465.31 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 465.31 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 450.57 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 453.83 Tm (L21) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 453.83 Tm (W082) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 453.83 Tm (GND_A2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 453.83 Tm (Board A2 GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 453.83 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 453.83 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 453.83 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 453.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 453.83 Tm (A2-J6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 453.83 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 453.83 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 453.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 453.83 Tm (IN2-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 453.83 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 453.83 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 453.83 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 442.35 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 442.35 Tm (W083) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 442.35 Tm (B_IN3_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 442.35 Tm (B input 3 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 442.35 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 442.35 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 442.35 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 442.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 442.35 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 442.35 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 442.35 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 442.35 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 442.35 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 442.35 Tm (1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 442.35 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 442.35 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 427.61 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 430.87 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 430.87 Tm (W084) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 430.87 Tm (B_IN4_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 430.87 Tm (B input 4 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 430.87 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 430.87 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 430.87 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 430.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 430.87 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 430.87 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 430.87 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 430.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 430.87 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 430.87 Tm (2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 430.87 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 430.87 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 419.39 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 419.39 Tm (W085) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 419.39 Tm (B_IN5_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 419.39 Tm (B input 5 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 419.39 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 419.39 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 419.39 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 419.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 419.39 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 419.39 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 419.39 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 419.39 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 419.39 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 419.39 Tm (3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 419.39 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 419.39 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 404.65 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 407.91 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 407.91 Tm (W086) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 407.91 Tm (B_IN6_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 407.91 Tm (B input 6 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 407.91 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 407.91 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 407.91 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 407.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 407.91 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 407.91 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 407.91 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 407.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 407.91 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 407.91 Tm (4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 407.91 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 407.91 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 396.43 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 396.43 Tm (W087) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 396.43 Tm (B_IN7_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 396.43 Tm (B input 7 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 396.43 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 396.43 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 396.43 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 396.43 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 396.43 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 396.43 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 396.43 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 396.43 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 396.43 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 396.43 Tm (5) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 396.43 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 396.43 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 381.69 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 384.94 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 384.94 Tm (W088) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 384.94 Tm (B_IN8_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 384.94 Tm (B input 8 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 384.94 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 384.94 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 384.94 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 384.94 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 384.94 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 384.94 Tm (6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 384.94 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 384.94 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 384.94 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 384.94 Tm (6) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 384.94 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 384.94 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 373.46 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 373.46 Tm (W089) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 373.46 Tm (B_IN9_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 373.46 Tm (B input 9 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 373.46 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 373.46 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 373.46 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 373.46 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 373.46 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 373.46 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 373.46 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 373.46 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 373.46 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 373.46 Tm (7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 373.46 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 373.46 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 358.72 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 361.98 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 361.98 Tm (W090) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 361.98 Tm (B_IN10_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 361.98 Tm (B input 10 to the MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 361.98 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 361.98 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 361.98 Tm (TBD 28 AWG >=105 C WHITE \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 361.98 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 361.98 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 361.98 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 361.98 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 361.98 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 361.98 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 361.98 Tm (8) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 361.98 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 361.98 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 350.50 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 350.50 Tm (W091) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 350.50 Tm (B_AN_MCU) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 350.50 Tm (B analog input to the MCU ADC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 350.50 Tm (VT) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 350.50 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 350.50 Tm (TBD 28 AWG >=105 C VIOLET \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 350.50 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 350.50 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 350.50 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 350.50 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 350.50 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 350.50 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 350.50 Tm (9) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 350.50 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 350.50 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 335.76 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 339.02 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 339.02 Tm (W092) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 339.02 Tm (+3V3_B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 339.02 Tm (Board B +3.3 V to the input-board pull-ups) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 339.02 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 339.02 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 339.02 Tm (TBD 28 AWG >=105 C RED \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 339.02 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 339.02 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 339.02 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 339.02 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 339.02 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 339.02 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 339.02 Tm (10) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 339.02 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 339.02 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 327.54 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 327.54 Tm (W093) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 327.54 Tm (GND_B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 327.54 Tm (Board B GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 327.54 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 327.54 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 327.54 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 327.54 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 327.54 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 327.54 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 327.54 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 327.54 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 327.54 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 327.54 Tm (11) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 327.54 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 327.54 Tm (TBD) Tj ET
+0.945 0.957 0.976 rg 22.68 312.80 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 316.06 Tm (L22) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 316.06 Tm (W094) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 316.06 Tm (GND_B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 316.06 Tm (Board B GND to the input board) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 316.06 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 316.06 Tm (28) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 316.06 Tm (TBD 28 AWG >=105 C BLACK \(JST GH\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 316.06 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 316.06 Tm (B-J7) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 316.06 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 316.06 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 316.06 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 316.06 Tm (IN3-J1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 316.06 Tm (12) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 316.06 Tm (SSHL-002T-P0.2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 316.06 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 304.58 Tm (L23) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 304.58 Tm (W095) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 304.58 Tm (USB_VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 304.58 Tm (USB cable U1 core VBUS: bulkhead rear socket to hub upstream) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 304.58 Tm (U1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 304.58 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 304.58 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 304.58 Tm (core of cable U1 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 304.58 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 304.58 Tm (U1-A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 304.58 Tm (VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 304.58 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 304.58 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 304.58 Tm (U1-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 304.58 Tm (VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 304.58 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 304.58 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 289.84 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 293.10 Tm (L23) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 293.10 Tm (W096) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 293.10 Tm (USB_D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 293.10 Tm (USB cable U1 core D+: bulkhead rear socket to hub upstream) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 293.10 Tm (U1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 293.10 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 293.10 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 293.10 Tm (core of cable U1 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 293.10 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 293.10 Tm (U1-A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 293.10 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 293.10 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 293.10 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 293.10 Tm (U1-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 293.10 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 293.10 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 293.10 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 281.62 Tm (L23) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 281.62 Tm (W097) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 281.62 Tm (USB_D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 281.62 Tm (USB cable U1 core D-: bulkhead rear socket to hub upstream) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 281.62 Tm (U1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 281.62 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 281.62 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 281.62 Tm (core of cable U1 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 281.62 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 281.62 Tm (U1-A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 281.62 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 281.62 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 281.62 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 281.62 Tm (U1-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 281.62 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 281.62 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 281.62 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 266.88 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 270.14 Tm (L23) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 270.14 Tm (W098) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 270.14 Tm (USB_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 270.14 Tm (USB cable U1 core GND: bulkhead rear socket to hub upstream) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 270.14 Tm (U1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 270.14 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 270.14 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 270.14 Tm (core of cable U1 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 270.14 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 270.14 Tm (U1-A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 270.14 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 270.14 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 270.14 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 270.14 Tm (U1-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 270.14 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 270.14 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 270.14 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 258.66 Tm (L23) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 258.66 Tm (W099) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 258.66 Tm (USB_CC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 258.66 Tm (USB cable U1 core CC: bulkhead rear socket to hub upstream) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 258.66 Tm (U1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 258.66 Tm (GY) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 258.66 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 258.66 Tm (core of cable U1 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 258.66 Tm (300) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 258.66 Tm (U1-A) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 258.66 Tm (CC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 258.66 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 258.66 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 258.66 Tm (U1-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 258.66 Tm (CC) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 258.66 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 258.66 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 243.92 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 247.18 Tm (L24) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 247.18 Tm (W100) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 247.18 Tm (USB_VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 247.18 Tm (USB pigtail U2 core VBUS: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 247.18 Tm (U2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 247.18 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 247.18 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 247.18 Tm (core of cable U2 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 247.18 Tm (50) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 247.18 Tm (HUB-P1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 247.18 Tm (5V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 247.18 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 247.18 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 247.18 Tm (U2-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 247.18 Tm (VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 247.18 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 247.18 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 235.70 Tm (L24) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 235.70 Tm (W101) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 235.70 Tm (USB_D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 235.70 Tm (USB pigtail U2 core D+: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 235.70 Tm (U2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 235.70 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 235.70 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 235.70 Tm (core of cable U2 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 235.70 Tm (50) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 235.70 Tm (HUB-P1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 235.70 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 235.70 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 235.70 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 235.70 Tm (U2-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 235.70 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 235.70 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 235.70 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 220.96 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 224.22 Tm (L24) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 224.22 Tm (W102) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 224.22 Tm (USB_D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 224.22 Tm (USB pigtail U2 core D-: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 224.22 Tm (U2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 224.22 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 224.22 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 224.22 Tm (core of cable U2 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 224.22 Tm (50) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 224.22 Tm (HUB-P1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 224.22 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 224.22 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 224.22 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 224.22 Tm (U2-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 224.22 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 224.22 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 224.22 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 212.74 Tm (L24) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 212.74 Tm (W103) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 212.74 Tm (USB_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 212.74 Tm (USB pigtail U2 core GND: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 212.74 Tm (U2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 212.74 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 212.74 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 212.74 Tm (core of cable U2 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 212.74 Tm (50) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 212.74 Tm (HUB-P1) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 212.74 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 212.74 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 212.74 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 212.74 Tm (U2-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 212.74 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 212.74 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 212.74 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 198.00 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 201.26 Tm (L25) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 201.26 Tm (W104) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 201.26 Tm (USB_VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 201.26 Tm (USB pigtail U3 core VBUS: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 201.26 Tm (U3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 201.26 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 201.26 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 201.26 Tm (core of cable U3 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 201.26 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 201.26 Tm (HUB-P2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 201.26 Tm (5V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 201.26 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 201.26 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 201.26 Tm (U3-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 201.26 Tm (VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 201.26 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 201.26 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 189.78 Tm (L25) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 189.78 Tm (W105) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 189.78 Tm (USB_D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 189.78 Tm (USB pigtail U3 core D+: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 189.78 Tm (U3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 189.78 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 189.78 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 189.78 Tm (core of cable U3 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 189.78 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 189.78 Tm (HUB-P2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 189.78 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 189.78 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 189.78 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 189.78 Tm (U3-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 189.78 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 189.78 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 189.78 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 175.04 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 178.30 Tm (L25) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 178.30 Tm (W106) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 178.30 Tm (USB_D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 178.30 Tm (USB pigtail U3 core D-: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 178.30 Tm (U3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 178.30 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 178.30 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 178.30 Tm (core of cable U3 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 178.30 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 178.30 Tm (HUB-P2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 178.30 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 178.30 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 178.30 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 178.30 Tm (U3-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 178.30 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 178.30 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 178.30 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 166.82 Tm (L25) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 166.82 Tm (W107) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 166.82 Tm (USB_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 166.82 Tm (USB pigtail U3 core GND: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 166.82 Tm (U3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 166.82 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 166.82 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 166.82 Tm (core of cable U3 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 166.82 Tm (145) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 166.82 Tm (HUB-P2) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 166.82 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 166.82 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 166.82 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 166.82 Tm (U3-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 166.82 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 166.82 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 166.82 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 152.08 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 155.34 Tm (L26) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 155.34 Tm (W108) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 155.34 Tm (USB_VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 155.34 Tm (USB pigtail U4 core VBUS: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 155.34 Tm (U4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 155.34 Tm (RD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 155.34 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 155.34 Tm (core of cable U4 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 155.34 Tm (215) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 155.34 Tm (HUB-P3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 155.34 Tm (5V) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 155.34 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 155.34 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 155.34 Tm (U4-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 155.34 Tm (VBUS) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 155.34 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 155.34 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 143.86 Tm (L26) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 143.86 Tm (W109) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 143.86 Tm (USB_D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 143.86 Tm (USB pigtail U4 core D+: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 143.86 Tm (U4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 143.86 Tm (GN) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 143.86 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 143.86 Tm (core of cable U4 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 143.86 Tm (215) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 143.86 Tm (HUB-P3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 143.86 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 143.86 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 143.86 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 143.86 Tm (U4-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 143.86 Tm (D+) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 143.86 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 143.86 Tm (factory) Tj ET
+0.945 0.957 0.976 rg 22.68 129.12 1178.67 11.48 re f
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 132.38 Tm (L26) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 132.38 Tm (W110) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 132.38 Tm (USB_D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 132.38 Tm (USB pigtail U4 core D-: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 132.38 Tm (U4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 132.38 Tm (WH) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 132.38 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 132.38 Tm (core of cable U4 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 132.38 Tm (215) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 132.38 Tm (HUB-P3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 132.38 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 132.38 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 132.38 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 132.38 Tm (U4-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 132.38 Tm (D-) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 132.38 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 132.38 Tm (factory) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 25.51 120.90 Tm (L26) Tj ET
+BT 0 0 0 rg /F2 7.37 Tf 1 0 0 1 58.25 120.90 Tm (W111) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 94.62 120.90 Tm (USB_GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 192.84 120.90 Tm (USB pigtail U4 core GND: hub pad to board USB-C) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 476.59 120.90 Tm (U4) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 509.33 120.90 Tm (BK) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 545.70 120.90 Tm (TBD) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 574.81 120.90 Tm (core of cable U4 \(TBD\)) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 745.80 120.90 Tm (215) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 774.91 120.90 Tm (HUB-P3) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 840.39 120.90 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 873.13 120.90 Tm (solder) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 960.43 120.90 Tm (4.0) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 989.55 120.90 Tm (U4-B) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1055.03 120.90 Tm (GND) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1087.77 120.90 Tm (cable assembly) Tj ET
+BT 0 0 0 rg /F1 7.37 Tf 1 0 0 1 1175.07 120.90 Tm (factory) Tj ET
+0 0 0 RG 0.85 w [] 0 d 22.68 116.36 1178.67 645.59 re S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 55.42 761.95 m 55.42 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 91.79 761.95 m 91.79 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 190.01 761.95 m 190.01 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 473.75 761.95 m 473.75 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 506.49 761.95 m 506.49 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 542.86 761.95 m 542.86 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 571.97 761.95 m 571.97 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 742.96 761.95 m 742.96 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 772.07 761.95 m 772.07 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 837.55 761.95 m 837.55 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 870.29 761.95 m 870.29 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 957.60 761.95 m 957.60 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 986.71 761.95 m 986.71 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1052.19 761.95 m 1052.19 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1084.93 761.95 m 1084.93 116.36 l S
+0.741 0.741 0.741 RG 0.34 w [] 0 d 1172.24 761.95 m 1172.24 116.36 l S
+0 0 0 RG 1.42 w [] 0 d 17.01 17.01 1189.98 757.98 re S
+0 0 0 RG 1.42 w [] 0 d 17.01 89.01 m 1206.99 89.01 l S
+0 0 0 RG 1.42 w [] 0 d 827.72 89.01 m 827.72 17.01 l S
+BT 0 0 0 rg /F2 9.07 Tf 1 0 0 1 833.39 74.83 Tm (custom-pdm enclosure harness: wire schedule) Tj ET
+BT 0 0 0 rg /F2 8.50 Tf 1 0 0 1 1153.59 74.83 Tm (Sheet 3 of 3) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 63.50 Tm (GENERATED 2026-11-21 by harness/src/enclosure_harness.py diagram. Do not edit: change the CSV files and rebuild.) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 54.99 Tm (111 wires in 26 lines, 32 connectors / ends. Sources \(sha256, line ends read as LF\):) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 46.49 Tm (harness/enclosure-wire-list.csv  1c39f1337a53c53bd1fc0cb5e0b10a1b) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 39.12 Tm (harness/enclosure-connectors.csv  3d253c2e1545dc92b402986c85aedb5e) Tj ET
+BT 0 0 0 rg /F1 5.39 Tf 1 0 0 1 833.39 31.75 Tm (harness/enclosure-key.csv  fbb90bd67891a76fa5c5dfe70f45fdd7) Tj ET
+BT 0.4 0.4 0.4 rg /F1 5.39 Tf 1 0 0 1 833.39 22.11 Tm (Block places: enclosure/v2c/src/build_v2c.py rev D \(branch chore/cad-models-fusion\). 11 x 17 in.) Tj ET
+BT 0 0 0 rg /F1 6.52 Tf 1 0 0 1 22.68 74.83 Tm (Wire schedule, wires W057 to W111 \(rows of harness/enclosure-wire-list.csv; 'Line' = the line on sheet 1; lengths in mm, TBD = not in the model\).) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 1224.00 792.00] /Contents 9 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+11 0 obj
+<< /Title (custom-pdm enclosure wiring block diagram) /Creator (harness/src/enclosure_harness.py diagram) /Keywords (date 2026-11-21 | enclosure-wire-list.csv 1c39f1337a53c53bd1fc0cb5e0b10a1bdbfd07934f1573107e0e792cd069116b | enclosure-connectors.csv 3d253c2e1545dc92b402986c85aedb5ea01cacf9b74c8c7280ca39a9175b3920 | enclosure-key.csv fbb90bd67891a76fa5c5dfe70f45fdd7497a9c245ae68188f02fa5b5ded9f3c8) >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000134 00000 n 
+0000000231 00000 n 
+0000000333 00000 n 
+0000030409 00000 n 
+0000030552 00000 n 
+0000094087 00000 n 
+0000094230 00000 n 
+0000158750 00000 n 
+0000158894 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R /Info 11 0 R >>
+startxref
+159315
+%%EOF
