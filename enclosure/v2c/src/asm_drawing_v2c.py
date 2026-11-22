@@ -58,12 +58,12 @@ steps = [
          base=SINK + BOARDS, custom=mv(pick("standoffs-"), (0, 0, 30)) + mv(pick("screws_M6"), (0, 0, 40)) + mv(pick("copper-bar"), (0, 0, 55)) + mv(pick("copper-boss"), (0, 0, 95))
          + mv(pick("copper-risers"), (0, 0, 45)) + mv(pick("carrier-"), (0, 0, 95)) + mv(pick("ring-lugs"), (0, 0, 115))
          + mv(pick("screws_ISO4762-M6", "screws_ISO4762-M4x6", "screws_ISO4762-M4x8", "screws_ISO4762-M3x6"), (0, 0, 135))),
-    dict(no=4, title="INPUT DECK, INPUT BOARDS, HUB, CONNECTORS, OUT1-4 WIRES", subtitle="DECK SCREWS M3 x 8 INTO THE STANDOFFS",
+    dict(no=4, title="INPUT DECK, INPUT BOARDS, HUB, CONNECTORS, OUT1-4 WIRES", subtitle="DECK SCREWS M3 x 8 INTO THE STANDOFFS; HUB SCREWS M2.5 x 12 THROUGH THE SPACERS",
          base=SINK + BOARDS, custom=mv(pick("input-deck"), (0, 0, 40)) + mv(pick("input-board", "vendor-J2"), (0, 0, 70)) + mv(plain_m3x8, (0, 0, 95))
-         + mv(pick("vendor-hub", "hub-standoffs"), (0, 0, 40)) + mv(pick("vendor-X", "vendor-plug", "usbc-"), (0, -80, 0)) + mv(pick("panel-washers"), (0, -40, 0)) + mv(pick("panel-nuts"), (0, 25, 0))
+         + mv(pick("vendor-hub", "hub-standoffs"), (0, 0, 40)) + mv(scr("hub"), (0, 0, 60)) + mv(pick("vendor-X", "vendor-plug", "usbc-"), (0, -80, 0)) + mv(pick("panel-washers"), (0, -40, 0)) + mv(pick("panel-nuts"), (0, 25, 0))
          + mv(pick("wires-"), (0, 0, 60))),
     dict(no=5, title="HARNESS CPDM-HAR-200", subtitle="AFTER THE DECK SCREWS, BEFORE THE LID: PADS SOLDERED, X1 / X2 CONTACTS IN FROM INSIDE, MICRO-FIT / GH PLUGGED, FAN LEADS THROUGH THE CORD GRIP",
-         base=SINK + BOARDS, custom=mv(pick("harness-"), (0, 0, 70))),
+         base=SINK + BOARDS, custom=mv(pick("harness-", "splices-", "fan-lead-sleeve"), (0, 0, 70)) + mv(pick("microfit-housings"), (0, -45, 105)) + mv(pick("gh-housings"), (0, 30, 120))),   # revF: the wire-end parts go in with the harness
     dict(no=6, title="HEAT-SET INSERTS INTO THE LID, LID, LID SCREWS", subtitle="LID SCREWS M4 x 12 FROM BELOW - BEFORE THE FEET",
          base=SINK, custom=mv(pick("lid"), (0, 0, 130)) + mv(pick("heat-set-inserts"), (0, 0, 60)) + mv(scr("lid"), (0, 0, -70))),
     dict(no=7, title="FEET AND FOOT SCREWS", subtitle="AFTER THE LID SCREWS: THE FEET COVER THE CORNER LID SCREWS",
@@ -76,14 +76,15 @@ REV_ROWS = [("A", "Initial", datetime.date(2026, 11, 13)),
             ("B", "v2c: rebuilt from own sources (KiCad board STEPs, maker CAD); every part its own STEP with PN", None),
             ("C", "Maker CAD for the Sunon fan, Phoenix 3240083 ring lug and LTW bulkhead", None),
             ("D", "Separate feet, gap pads, heat-sink subassembly; fan wall 6.0; CnLinko USB-C bulkhead; standoffs on set-screw studs; board-boss taps 6.5; screw-on 168 C tie mounts; fan-lead cord grip; ruthex maker STEP; install-order sheets", None),
-            ("E", "Real round 3-D wires: harness subassembly CPDM-HAR-200 (one solid per wire ID) replaces the ribbon / USB placeholders; boards with the 5 V module", None)]
+            ("E", "Real round 3-D wires: harness subassembly CPDM-HAR-200 (one solid per wire ID) replaces the ribbon / USB placeholders; boards with the 5 V module", None),
+            ("F", "USB hub under X2 on M2.5 screws, right-angle USB-C plugs at the boards; real X1 / X2 cavity map; loom re-laid; wire-end parts (T5-T8 lugs, Micro-Fit / GH housings, splices, fan-lead sleeve)", None)]
 for L_, d_, dt in REV_ROWS: revs.add_release(rl, L_, d_, date=dt, title=APN)
 spec = dict(items=items, title=f"ENCLOSURE ASSEMBLY {VAR}", pn=APN, project="custom-pdm enclosure v2c", revlog=rl, source="build_v2c.py (build123d)",
             open_hide=[no("lid"), no("heat-set-inserts-M4")] + [no(nm) for nm in scr("lid")], open_label="TRIMETRIC - LID REMOVED",
             iso_balloons={"open": []}, stage_sheets=[steps[:4], steps[4:]], bom_h=1.5,
             notes=["INSTALL ORDER: SHEETS 2-3 (STEPS 1-7). HARNESS BEFORE THE LID; LID SCREWS BEFORE THE FEET.", "SET SCREWS (STUDS) 5.0 INTO THE M3 SINK BOSSES; F-F STANDOFFS SPUN DOWN ONTO THEM TO CLAMP THE BOARDS.",
                    "BOARDS DRAWN AS THE BARE PCB; COMPONENTS PER THE BOARD STEP.", "MODEL: build_v2c.py (build123d). THE STEP FILES GOVERN."],
-            rev_marks=[dict(rev="E", bom=NO[pn]) for pn in NO if pn.startswith(("CPDM-HAR-200", "CPDM-PCB-A", "CPDM-PCB-B"))])   # DRAWING-RULES 33: rev E triangles at the changed BOM rows
+            rev_marks=[dict(rev="F", bom=NO[pn]) for pn in NO if pn.startswith(("CPDM-HAR-200", "CPDM-ENC-101", "5997", "3240083", "ISO4762-M2.5", "43025-1200", "D-436-37", "GENERIC-SOLDER-SPLICE", "GHR-12V-S", "RNF-100"))])   # DRAWING-RULES 33: rev F triangles at the changed BOM rows
 ck = asm.make_assembly(spec, os.path.join(OUT, APN + ".pdf"), os.path.join(OUT, APN + "_preview"))
 res = json.load(open(os.path.join(OUT, APN + ".checks.json")))
 print(json.dumps({k: res.get(k) for k in ("ok", "not_ballooned", "views")}, default=str)[:3000])

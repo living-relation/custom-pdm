@@ -42,6 +42,10 @@ import os, sys, json, math
 from build123d import *
 from OCP.gp import gp_Trsf, gp_Vec
 VAR = sys.argv[1] if len(sys.argv) > 1 else "F1"
+# Rev F (2026-11-21, jobs wires2-4): USB hub under X2 on 4 x ISO 4762 M2.5 x 12, right-angle USB-C plugs at the three boards; X1 / X2
+#   wires end on the real TE cavity map (cavity_maps_v2c.json); the loom is laid by harness_comb_v2c.py (+ hand data) under the
+#   reduced rules of wirecheck_v2c.py (wire-on-wire is counted, only gross pile-ups fail); wire-end parts: T5-T8 ring lugs,
+#   Micro-Fit 43025-1200 / JST GHR-12V-S housings and splices (drawn best guesses), TE RNF-100 fan-lead sleeve.
 REV = "v2c"
 BOARDS = os.environ["BOARDS"]; VENDOR = os.environ["VENDOR"]
 OUT = os.path.join(os.environ.get("RUN_DIR", "/tmp/v2c"), VAR)
@@ -359,9 +363,20 @@ for i, (X, Y, sx, sy) in enumerate(FEET):
 # ISO 7380-1 M3 x 6 button screws: seat on the mount floor 1.27 above the plate, so 6 - 1.27 = 4.73 thread in the plate (1.58 D).
 # Blind M3 tap 5.0 deep from the plate top, drill 2.5 x 6.5 (relief 1.5 = 0.5 D; drill >= 1.25 x tap; 1.5 plate floor left
 # above the fin channels), modelled at tap-drill size.
-TIE_PTS = [(60.0, -110.5), (140.0, -110.5)]; TIE_FLOOR = 1.27; TIE_SCREW_L = 6.0; TIE_TAP = 5.0; TIE_DRILL = 6.5
+# revF: the east mount moves from x 140 to x 90 (board A1's right-angle USB-C plug now sits at x 131..143, y -98..-109).
+TIE_PTS = [(60.0, -110.5), (90.0, -110.5)]; TIE_FLOOR = 1.27; TIE_SCREW_L = 6.0; TIE_TAP = 5.0; TIE_DRILL = 6.5
 for (x, y) in TIE_PTS: sink = sink.cut(cyl(2.5, (x, y, -TIE_DRILL), TIE_DRILL + 0.01))
 assert 1.5 * 3 <= TIE_SCREW_L - TIE_FLOOR <= TIE_TAP and TIE_DRILL - TIE_TAP >= 0.5 * 3 and TIE_DRILL >= 1.25 * TIE_TAP and pt - TIE_DRILL >= 0.762, "tie-mount tap"
+# revF (job wires2): the USB hub (Adafruit 5997) moves from the west end (it stood 1.5 mm in front of board B's USB-C socket) to
+# the front strip under X2: PCB long side along x, upstream USB-C socket to the east, so a straight plug + cable fits towards the
+# bulkhead and the three board sockets are free for right-angle plugs. HUB_AT = world x of the PCB's west edge, y of its north
+# edge, z of its underside (on the 4 mm spacers). It is now screwed down: 4 x ISO 4762 M2 x 10 through the hub's 2.5 mm holes and
+# the spacers into blind M2.5 taps (drill 2.05 x 7.2, tap 6.5; 6.43 thread = 2.6 D; 0.8 plate left). wires4: M2.5 to suit the
+# hub's 2.5 mm holes and the M2.5 spacers; the ISO 4762 M2.5 row was added to screw_dimensions.csv (wires2 used M2).
+import harness_paths_v2c as HP
+HUB_AT = (152.0, -103.0, 4.0); HUB_F = HP.hub_frame(dict(HUBF=HUB_AT)); HUB_SCREW_L = 12.0; HUB_TAP = 6.5; HUB_DRILL = 7.2
+for (x, y) in HUB_F["holes"]: sink = sink.cut(cyl(2.05, (x, y, -HUB_DRILL), HUB_DRILL + 0.01))
+assert 2 * 2.5 <= HUB_SCREW_L - 1.57 - HUB_AT[2] <= HUB_TAP and pt - HUB_DRILL >= 0.762 and min(math.dist(h, q) for h in HUB_F["holes"] for q in TIE_PTS + list(globals().get("LID_SCREWS", []))) > 6.0, "hub screw holes"
 # revD (cadfetch5, coordinator / harness PR #121): sealed pass-through for the two fans' leads (2 x 28 AWG UL1571 per fan) from
 # the fin bay into the box: McMaster-Carr 8183K5 liquid-tight brass cord grip M6 (cord 0.08-0.13 in = 2.0-3.3 mm, IP68 / IP69K,
 # -18..99 C, UL 94 V-0; the smallest metric cord grip McMaster lists, 2026-11-20), the 4 leads bundled in adhesive-lined heat
@@ -518,18 +533,20 @@ part("LP-16-C05SX-02-101", ub, "CnLinko USB-C to USB-C bulkhead, jam nut, IP-sea
      "metal shell, silicone ring and cap", "bought", maker="CnLinko", source="Dan's model models\\st185_vendor-parts_1101\\cnlinko\\LP-16-C05SX-02-101.step")
 item("usbc-bulkhead-LP-16-C05SX-02-101", "LP-16-C05SX-02-101", [L(USB_X, WALL_IN, P["usb_z"])], (0.75, 0.75, 0.78))
 hub = vstep("adafruit_5997_5997-CH334F-4-Port-Hub.step")
-b = bbx(hub.rotate(Axis.Z, 90)); HUB_Z = 4.0
+HUB_Z = HUB_AT[2]
 part("5997", hub, "Adafruit 5997 CH334F 4-port USB hub", "Adafruit_CAD_Parts STEP (MIT)", "PCB assembly", "bought", maker="Adafruit", source="github.com/adafruit/Adafruit_CAD_Parts")
-hub_loc = L(-2.0 - b.xmin, WALL_IN + 7.5 - b.ymin, HUB_Z - b.zmin, rz=90)
+hub_loc = L(HUB_AT[0], HUB_AT[1], HUB_Z, rz=-90)                      # revF: local +y (upstream socket) -> world +x
 item("vendor-hub-Adafruit-5997", "5997", [hub_loc], (0.1, 0.1, 0.4))
 hb = bbx(hub.moved(hub_loc))
+assert abs(hb.xmin - HUB_AT[0]) < 0.02 and abs(hb.ymax - HUB_AT[1]) < 0.02 and abs(hb.xmax - HUB_F["sock"][0]) < 0.02 and abs(hb.zmin - HUB_Z) < 0.02, ("hub frame", hb.xmin, hb.xmax, hb.ymax, hb.zmin)
 # revD: McMaster-Carr 94669A096 aluminium unthreaded spacer for M2.5, OD 4.5 x 4 (ID 2.7), maker STEP (mcmaster.com/94669A096,
 # "3-D STEP"); maker frame centred on z 0 -> bottom face moved to z 0. Replaces the drawn CPDM-BUY-303 (dia 5 x 4, PN TBD).
 sp = vstep("McMaster_94669A096/94669A096.STEP"); sb = bbx(sp); sp = sp.moved(L(-(sb.xmin + sb.xmax) / 2, -(sb.ymin + sb.ymax) / 2, -sb.zmin))
 assert abs(bbx(sp).zlen - HUB_Z) < 0.01, ("94669A096 length", bbx(sp).zlen)
 part("94669A096", sp, "Unthreaded spacer M2.5, OD 4.5 x 4", "McMaster-Carr 94669A096 round spacer under the USB hub (M2.5 hub screw passes through)",
      "aluminium", "bought", maker="McMaster-Carr", source="mcmaster.com/94669A096 3-D STEP")
-item("hub-standoffs-M2.5x4", "94669A096", [L(x, y, 0.0) for x in (hb.xmin + 2.5, hb.xmax - 2.5) for y in (hb.ymin + 2.5, hb.ymax - 2.5)], (0.3, 0.3, 0.33))
+item("hub-standoffs-M2.5x4", "94669A096", [L(x, y, 0.0) for (x, y) in HUB_F["holes"]], (0.3, 0.3, 0.33))
+for (x, y) in HUB_F["holes"]: screw("M2.5", HUB_SCREW_L, L(x, y, HUB_F["top"]), "hub")
 
 # ---------------- terminals: copper bosses (v3b) on board B J1/J3 and T1-T4; copper bars to A1/A2 ----------------
 M6TOP = Z_BOT + max(bbx(so).zmax for so in stepB.solids() if abs(bbx(so).xlen - 10) < 0.6)
@@ -685,6 +702,9 @@ for k, (sx, sy, sz) in SEAT.items():
 made("wires-OUT1-4-10AWG", "CPDM-HAR-201", Compound(owires), (0.75, 0.1, 0.1), "OUT1-4 wires (4 x 10 AWG GXL)",
      "31 A each, two tiers out through the lid wire-way to the west edge; routing ASSUMED, OD 4.2 ASSUMED", "10 AWG GXL copper / XLPE", kind="harness")
 for k, (X, Y) in T58.items(): screw("M4", 8.0, L(X, Y, TTOP + P["lug_t"]))   # T5-T8 ring lugs + M4 screws, wires to X1
+# revF: the T5-T8 ring lugs are placed (same Phoenix 3240083 as OUT1-4): barrel to the south-west, T8 to the south, as the wires leave
+T58_ANG = HP.T58_ANG
+item("ring-lugs-T5-8", "3240083", [L(X, Y, TTOP, rz=T58_ANG[k]) for k, (X, Y) in T58.items()], (0.85, 0.6, 0.3))
 
 # ---------------- input deck + standoffs (Grok b, unchanged) ----------------
 deck = dblock(DX0, DX1, DY0, DY1, z_deck_bot, z_deck_top, r=6)
@@ -714,20 +734,67 @@ for (X, Y) in in_pts: screw("M3", 8.0, L(X, Y, Z_IN + 1.51))
 # replaced by the harness subassembly CPDM-HAR-200: one swept round solid per wire of harness/enclosure-wire-list.csv, named by
 # its wire ID, bends at 3 x OD, colour from the wire list; one round cable per USB cable U1-U4 (their cores are the CSV rows).
 # CPDM-HAR-201 (the four OUT1-4 10 AWG wires, car-harness side, not in the wire list) stays as it was: round tubes already.
-import harness_paths_v2c as HP
-HPN = "CPDM-HAR-200"; HTAB = {}; HSOL = {}; HEND = {}
+HPN = "CPDM-HAR-200"; HTAB = {}; HSOL = {}; HEND = {}; WIRE_ENDS = {}
 if VAR == "F1":
-    HEND = dict(REAR={k: round(bbx(xc[k]).ymax, 3) for k in CONN}, USB_REAR=round(WALL_IN + U_TAIL, 3))
-    HTAB = HP.table(dict(Z_TOP=Z_TOP, X0=X0, CONN=CONN, TZ=TZ, REAR=HEND["REAR"], IN_X=IN_X, Z_IN=Z_IN, GLAND=GLAND["at"], HUB=[hb.xmin, hb.xmax, hb.ymin, hb.ymax],
-                         T58=T58, TTOP=TTOP, FAN=fan_info, USB_X=USB_X, USB_Z=P["usb_z"], USB_REAR=HEND["USB_REAR"]))
-    for w_, d_ in HTAB.items():
+    # revF: wires end on the real X1 / X2 cavity faces (cavity_maps_v2c.json), the hub frame goes to the path table
+    HEND = dict(REAR={k: round(bbx(xc[k]).ymax, 3) for k in CONN}, USB_REAR=round(WALL_IN + U_TAIL, 3), CAVY={k: round(YOFF + HP.CAV_Z[k], 3) for k in CONN}, HUBF=list(HUB_AT))
+    HG = dict(Z_TOP=Z_TOP, X0=X0, CONN=CONN, TZ=TZ, REAR=HEND["REAR"], CAVY=HEND["CAVY"], IN_X=IN_X, Z_IN=Z_IN, GLAND=GLAND["at"], HUBF=HUB_AT,
+              T58=T58, TTOP=TTOP, FAN=fan_info, USB_X=USB_X, USB_Z=P["usb_z"], USB_REAR=HEND["USB_REAR"])
+    HDRAFT = os.environ.get("HARNESS_DRAFT") == "1"                 # draft: the rules' first paths, for harness_comb_v2c.py to build the loom on (never released)
+    HTAB = HP.table(HG, strict=not HDRAFT, use_routes=not HDRAFT)
+    for w_, d_ in ([] if HDRAFT else HTAB.items()):                 # a draft build has no harness solids: only the parts, for the router
         s_ = HP.solid(d_); s_.label = w_; s_.color = Color(*d_["rgb"]); HSOL[w_] = s_
-    part(HPN, Compound(list(HSOL.values())), "Internal harness (wires + USB cables)",
-         f"harness subassembly: {sum(d_['kind'] == 'wire' for d_ in HTAB.values())} wires + {sum(d_['kind'] == 'cable' for d_ in HTAB.values())} USB cables = "
-         f"{sum(len(d_['rows']) for d_ in HTAB.values())} rows of harness/enclosure-wire-list.csv, one solid per wire ID, swept round at 3 x OD; paths harness_paths_v2c.py; "
-         "X1 / X2 cavity positions, housing wire exits, 28 AWG OD 0.9 and USB cable OD 4.0 ASSUMED", "GXL / M22759/16 / 28 AWG wire, USB cable (wire list)", "harness")
-    item("harness-" + HPN, HPN, [IDENT], (0.80, 0.10, 0.10))
-    print("harness", HPN, len(HSOL), "solids", sum(len(d_["rows"]) for d_ in HTAB.values()), "rows", "total length", round(sum(d_["length"] for d_ in HTAB.values())), "mm", flush=True)
+    if HSOL: part(HPN, Compound(list(HSOL.values())), "Internal harness (wires + USB cables)",
+         f"harness subassembly: {sum(d_['kind'] == 'wire' for d_ in HTAB.values())} wires + {sum(d_['kind'] == 'cable' for d_ in HTAB.values())} USB cables (with their plug bodies) = "
+         f"{sum(len(d_['rows']) for d_ in HTAB.values())} rows of harness/enclosure-wire-list.csv, one solid per wire ID, bends >= 3 x OD (cables 4 x OD); paths harness_paths_v2c.py + "
+         "harness_routes_v2c.json; X1 / X2 cavities from TE 0425-014-2400 rev H; 28 AWG OD 0.9, USB cable OD 4.0 / 3.0 and the USB plug bodies ASSUMED", "GXL / M22759/16 / 28 AWG wire, USB cable (wire list)", "harness")
+    if HSOL: item("harness-" + HPN, HPN, [IDENT], (0.80, 0.10, 0.10))
+    print("harness", HPN, len(HSOL), "solids", sum(len(d_["rows"]) for d_ in HTAB.values()), "rows", "total length", round(sum(d_["length"] for d_ in HTAB.values())), "mm",
+          "DRAFT" if HDRAFT else "routed", flush=True)
+    # ---- revF wire ends (parts of the box build, each its own file in Parts) ----
+    # Micro-Fit receptacle housing on each input board's J2 header (Molex 43025-1200). The maker STEP could not be fetched in this
+    # job (molex.com answers scripts with an error page), so it is DRAWN as a labelled best guess: the part of the housing that
+    # stands out of the 43045-1200 header, 20.9 x 6.9 x 8.9, 12 cavities dia 2.2 on the header's pin grid (3.0 x 3.0). The wires
+    # end on its rear face (9.0 behind the header face), each in its own cavity.
+    ZI_ = Z_IN + 1.51
+    mf = box(-10.45, 10.45, 0.0, 8.9, -3.45, 3.45)
+    for i_ in range(6):
+        for zz_ in (-1.5, 1.5): mf = mf.cut(cyl(2.2, (-7.5 + 3.0 * i_, -1.0, zz_), 11.0, (0, 1, 0)))
+    part("43025-1200", one(mf), "Molex Micro-Fit 3.0 receptacle housing 2x6 (input board J2 plug)", "Molex 43025-1200; DRAWN best guess (outside part of the mated housing, cavities on the 3.0 grid); "
+         "BEST-GUESS FROM DATASHEET (pin grid 3.0 x 3.0; outer envelope ASSUMED); maker STEP not reachable from this job: swap in molex.com 430251200 STEP", "PA (UL94V-0)", "bought-drawn", maker="Molex",
+         source="Molex Micro-Fit 3.0 43025 series, molex.com/en-us/products/part-detail/430251200; pin grid: KiCad footprint Molex_Micro-Fit_3.0_43045-1200_2x06; envelope ASSUMED")
+    item("microfit-housings-43025-1200", "43025-1200", [L(x_ + 16.5, -88.5, ZI_ + 4.32) for x_ in IN_X.values()], (0.12, 0.12, 0.12))
+    # JST GH receptacle housings GHR-12V-S on the six GH links' ends (board A J6, board B J7, input board J1). DRAWN best guess: a
+    # block, width B = 16.25 (JST GH catalogue table, GHR-12V-S: A 13.75, B 16.25), depth 4.05 and thickness 2.0 ASSUMED; the
+    # headers are not in the board STEPs. Local frame: row along x, the wires leave towards -y, 1.5 behind the wire ends.
+    gh_ = box(-8.125, 8.125, -1.5, 2.55, -1.0, 1.0)
+    part("GHR-12V-S", one(gh_), "JST GH receptacle housing 12 way (GH link plug)", "JST GHR-12V-S; DRAWN best guess (block 16.25 x 4.05 x 2.0; width from the JST GH catalogue table, depth and "
+         "thickness ASSUMED), BEST-GUESS FROM DATASHEET; swap in the maker model when one is at hand", "PA 66 (UL94V-0)", "bought-drawn", maker="JST",
+         source="JST GH connector catalogue eGH (mouser.com/datasheet/2/564/eGH-3476810.pdf): GHR-12V-S A 13.75 / B 16.25; depth and thickness ASSUMED")
+    item("gh-housings-GHR-12V-S", "GHR-12V-S", [Pos(X0[n_] + 1.9, -31.774, Z_TOP + 1.0) * Rot(0, 0, -90) for n_ in ("A1", "A2")] + [Pos(76.144, -77.874, Z_TOP + 6.3) * Rot(0, 0, 90) * Rot(-90, 0, 0)]
+         + [Pos(x_ + 24.0, -16.5, ZI_ + 1.0) * Rot(0, 0, 180) for x_ in IN_X.values()], (0.92, 0.92, 0.88))
+    # CAN splices SP1 / SP2 (TE Raychem D-436-37 sealed crimp splice) and fan splices SP3 / SP4 (solder splice + adhesive heat
+    # shrink): simple bought parts, DRAWN as labelled best-guess cylinders (no maker model fetched); positions from the path table.
+    SPL = HP.SPLICE
+    part("D-436-37", cyl(SPL["d"], (-SPL["L"] / 2, 0, 0), SPL["L"], (1, 0, 0)), "TE Raychem D-436-37 sealed crimp splice (CAN SP1 / SP2)",
+         f"DRAWN best guess: cylinder dia {SPL['d']:g} x {SPL['L']:g}; 20-16 AWG, 2 wires per side (harness/enclosure-connectors.csv); BEST-GUESS FROM DATASHEET (envelope ASSUMED: confirm on TE drawing D-436-0037)", "nylon / crimp barrel", "bought-drawn",
+         maker="TE Connectivity (Raychem)", source="TE Raychem D-436-37, te.com (customer drawing D-436-0037 not read in this job); harness/enclosure-connectors.csv SP1 / SP2; envelope ASSUMED")
+    item("splices-CAN-D-436-37", "D-436-37", [L(SPL["x"], y_, SPL["z"]) for y_ in SPL["y"].values()], (0.75, 0.15, 0.15))
+    part("GENERIC-SOLDER-SPLICE", cyl(SPL["fan_d"], (0, 0, 0), SPL["fan_z"][1] - SPL["fan_z"][0]), "Solder splice + adhesive heat shrink (fan SP3 / SP4)",
+         f"DRAWN best guess: cylinder dia {SPL['fan_d']:g} x {SPL['fan_z'][1] - SPL['fan_z'][0]:g}; Dan's library part (2 x 28 AWG fan leads + 1 x 20 AWG); BEST-GUESS FROM DATASHEET does not apply (generic part, no maker sheet): envelope ASSUMED", "solder sleeve, polyolefin", "bought-drawn",
+         maker="generic (Dan's library part)", source="harness/enclosure-connectors.csv SP3 / SP4; envelope ASSUMED")
+    item("splices-fan-solder", "GENERIC-SOLDER-SPLICE", [L(GLAND["at"][0] + s_ * SPL["fan_dx"], GLAND["at"][1], SPL["fan_z"][0]) for s_ in (-1, 1)], (0.3, 0.3, 0.32))
+    # fan-lead sleeve (BACKLOG 2026-11-20: the UL1571 80 C leads lie in the fin bay of the 85 C sink -> a >= 125 C sleeve from the
+    # cord grip to the fans): TE Raychem RNF-100 polyolefin tubing, -55..135 C, size 3/16 (4.8 supplied, 2.4 recovered, wall 0.51;
+    # TE RNF-100 data sheet), shrunk loosely over the lead bundle (2.4 across): drawn ID 3.0 / OD 4.02, two cut lengths under the plate.
+    sl_, slL_ = HP.sleeve_solids(HG)
+    part(HP.SLEEVE["pn"], Compound(sl_), "TE Raychem RNF-100 3/16 heat-shrink sleeve over the fan leads", f"RNF-100-3/16-0-SP, -55..135 C, two cut lengths = {slL_:g} mm (fan 2 leads between the fans; all four leads to the cord grip), "
+         "drawn ID 3.0 / OD 4.02 (wall 0.51 recovered), BEST-GUESS FROM DATASHEET (a shrunk sleeve has no maker model)", "radiation cross-linked polyolefin", "bought-drawn", maker="TE Connectivity (Raychem)", source="TE RNF-100 data sheet (size 3/16: 4.8 / 2.4 / 0.51; -55..135 C)")
+    item("fan-lead-sleeve", HP.SLEEVE["pn"], [IDENT], (0.05, 0.05, 0.05))
+    assert bbx(Compound(sl_)).zmin > -P["plate_t"] - P["fin_h"] - P["foot_h"], "fan-lead sleeve below the feet"
+    WIRE_ENDS = dict(microfit="43025-1200 x 3 (drawn)", can_splices=dict(pn="D-436-37", at=[(SPL["x"], y_, SPL["z"]) for y_ in SPL["y"].values()]), fan_splices="GENERIC-SOLDER-SPLICE x 2",
+                     t58_lugs="3240083 x 4", sleeve=dict(pn=HP.SLEEVE["pn"], length_mm=slL_, rating_c=[-55, 135]), usb_plugs="part of the cable solids U1-U4 (best guess, USB Type-C spec envelope)",
+                     gh_housings="GHR-12V-S x 6 (drawn best guess)")
 # revD tie mounts: cadfetch3 had McMaster-Carr 7566K23 (adhesive, PPE, 0-82 C; replaced 7566K204, 68 C: plate top fans-on worst
 # case 70.9 C mean / 74.7 C max, docs/heat-analysis.md section 2). The ribbon over the mounts stays at z 9.7.
 # revD (cadfetch4): 7566K23 (0-82 C) is below the 85 C sink target and a fan failure (passive 90-136 C) exceeds it -> screw-on
@@ -945,7 +1012,7 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             footprint=(LX0, LX1, LY0, LY1), lid_bbox=(lb.xmin, lb.xmax, lb.ymin, lb.ymax, lb.zmin, lb.zmax),
             sink_bbox=(sb.xmin, sb.xmax, sb.ymin, sb.ymax, sb.zmin, sb.zmax), overall_no_plugs=(bb.xmin, bb.xmax, bb.ymin, bb.ymax, bb.zmin, bb.zmax),
             CONN=CONN, USB_X=USB_X, FEED=FEED, OUTT=OUTT, T58=T58, fan=fan_info, usb_bulkhead=CN, feet=FEET, lid_screws=LID_SCREWS,
-            would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], standoffs=[(n, h) for n, h, _ in SO],
+            would_strip=dict(A_J3=dA, B_J6=dB), d_flat_below_centre=DFLAT, hub_bbox=[hb.xmin, hb.xmax, hb.ymin, hb.ymax], hub=dict(at=HUB_AT, holes=HUB_F["holes"], socket=HUB_F["sock"], screw=f"ISO4762-M2.5x{HUB_SCREW_L:g}", tap=HUB_TAP, drill=HUB_DRILL), standoffs=[(n, h) for n, h, _ in SO],
             colors={k: it["color"] for k, it in ITEMS.items()}, items={k: dict(pn=it["pn"], n=len(it["locs"])) for k, it in ITEMS.items()},
             parts={pn: dict(qty=qty[pn], name=c["name"], maker=c["maker"], kind=c["kind"], material=c["material"], desc=DESC[pn], source=c["source"], solids=len(c["shape"].solids())) for pn, c in CAT.items()},
             foot_vol=FOOT_VOL, foot_screws=FOOT_SCREWS, subassemblies=SUBASM, gap_pads={pn: dict(size=k, n=len(v)) for k, (pn, v) in PADPN.items()},
@@ -955,6 +1022,6 @@ meta = dict(variant=VAR, rev=REV, P=P, Z_BOT=Z_BOT, Z_TOP=Z_TOP, X0=X0, M6TOP=M6
             board_boss=BOSS_INFO, tie_mounts=TIE_INFO, fan_lead_gland=GLAND, harness_ends=HEND,
             harness=dict(pn=HPN, solids=len(HSOL), wires=sum(d_["kind"] == "wire" for d_ in HTAB.values()), cables=sum(d_["kind"] == "cable" for d_ in HTAB.values()),
                          rows=sum(len(d_["rows"]) for d_ in HTAB.values()), total_length_mm=round(sum(d_["length"] for d_ in HTAB.values()), 1), ids=sorted(HTAB),
-                         bend_below_3xOD={w_: d_["r_over_od"] for w_, d_ in HTAB.items() if d_["r_over_od"] < 3.0}) if HTAB else None)
+                         bend_below_min={w_: d_["r_over_od"] for w_, d_ in HTAB.items() if d_["r_over_od"] < d_["rmul"] - 1e-6}, wire_ends=WIRE_ENDS) if HTAB else None)
 json.dump(meta, open(os.path.join(OUT, "meta.json"), "w"), indent=1, default=str)
 print("done", VAR, len(ITEMS), "items", len(CAT), "part numbers", "overall(no plugs)", [round(v, 1) for v in meta["overall_no_plugs"]], "would-strip", dA, dB)

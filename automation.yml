@@ -198,7 +198,7 @@ automations:
               enclosure/v2c/src/bomcheck_v2c.py, enclosure/v2c/src/cnc_v2c.sh, enclosure/v2c/src/export_boards.ps1,
               enclosure/v2c/src/compare_v2b.py, enclosure/v2c/src/drawings_v2c.py, enclosure/v2c/src/fusion_v2c.py,
               enclosure/v2c/src/asm_drawing_v2c.py, enclosure/v2c/src/harness_paths_v2c.py, enclosure/v2c/src/wirecheck_v2c.py,
-              enclosure/v2c/src/access_v2c.py]
+              enclosure/v2c/src/access_v2c.py, enclosure/v2c/src/harness_comb_v2c.py, enclosure/v2c/src/harness_loom_data.py]
     trigger: manual
     reads: ["enclosure/v2c/src/*.py", "hardware/*/*.kicad_pcb", "harness/enclosure-wire-list.csv", "harness/src/enclosure_harness.py"]   # plus board / vendor STEPs in <repo root>/.claude/cache/enclosure (not in git, see enclosure/v2c/vendor/README.md)
     writes: []                      # STEP/BREP/meta/check JSON go to WSL ~/scratch/encl-v2c/runs (not in git); `harness_paths_v2c.py lengths <run>/F1/harness_paths.json --write` (by hand) fills TBD lengths in harness/enclosure-wire-list.csv

@@ -94,4 +94,5 @@ Also buy: sealing plugs for spare cavities (size 20, 16). The HDP 24-9 set is no
 
 ## Notes
 - X2 size 16 cavity numbers (1, 4, 5, 6, 34): check them against the part's molded numbers before crimping.
+- Cavity positions for the 3-D harness (enclosure revF): `enclosure/v2c/src/cavity_maps_v2c.json`. IDs from drawing 0425-014-2400 rev H (sheet 1 view HDP24/HD34-24-21S, sheet 2 view HDP24/HD34-24-47S; rear views), positions (mm) from the rear cavity faces of the TE customer-view STEP models. The 24-47 numbers were traced along the drawing's numbering line in the PDF's vector data: size 16 = 1, 4, 5, 6, 34 (as listed above). Seen from inside the box, the viewer's right is the box's west (-X); main key up.
 - Other open items (contacts to buy, current checks): `BACKLOG.md` in the memory store (AGENTS.md role table). Pictures: `docs/diagrams/` (illustrations, not a source of truth).

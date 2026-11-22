@@ -246,6 +246,11 @@ def _wire_body(d):
             cen = adsk.core.Point3D.create(q[0] / 10.0 + sg * tv.x * S / 2, q[1] / 10.0 + sg * tv.y * S / 2, q[2] / 10.0 + sg * tv.z * S / 2)
             tb.booleanOperation(tor, tb.createBox(adsk.core.OrientedBoundingBox3D.create(cen, tv, rv, S, S, S)), I)
         add(tor)
+    for p in d.get("plugs", []):                                     # revF: a USB cable's plug bodies (boxes x0 x1 y0 y1 z0 z1, cylinders p0 p1 d), joined to the cable
+        if p[0] == "box":
+            x0, x1, y0, y1, z0, z1 = p[1:]; cen = adsk.core.Point3D.create((x0 + x1) / 20.0, (y0 + y1) / 20.0, (z0 + z1) / 20.0)
+            add(tb.createBox(adsk.core.OrientedBoundingBox3D.create(cen, adsk.core.Vector3D.create(1, 0, 0), adsk.core.Vector3D.create(0, 1, 0), (x1 - x0) / 10.0, (y1 - y0) / 10.0, (z1 - z0) / 10.0)))
+        else: add(tb.createCylinderOrCone(P(p[1]), p[3] / 20.0, P(p[2]), p[3] / 20.0))
     return body[0]
 def _tint(des, name, rgb):
     a = des.appearances.itemByName(name)
@@ -291,7 +296,7 @@ def build_harness(st, clear=False, budget_s=40.0):
         if want and abs(got["volume"] - want["volume"]) > 0.01 * want["volume"]: bad.append(f"volume {got['volume']} != STEP {want['volume']}")
         for i in range(rc.occurrences.count):
             c = rc.occurrences.item(i).component; d = tab[c.name]
-            if d.get("chain"): continue
+            if d.get("chain") or d.get("plugs"): continue
             v = c.bRepBodies.item(0).volume * 1000.0; w_ = math.pi * d["od"] ** 2 / 4 * d["length"]
             if abs(v - w_) > 0.02 * w_ + 0.5: bad.append(f"{c.name}: volume {v:.1f} vs path {w_:.1f}")
         st["harness_built"] = "native build ok" if not bad else f"MISMATCH: {bad}"

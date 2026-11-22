@@ -14,11 +14,13 @@
   "enclosure/v2c/release/BOM-v2c-F1-revC.csv": "27e606e7d40c4335ac21344a8d8c927f0981eb2a9f7e23c8c318bd13c5db9711",
   "enclosure/v2c/release/BOM-v2c-F1-revD.csv": "7cd0339ad1734f21bc7b2eafdfb23db30c0e11b097631c12cc0ecd2b3cc12dd9",
   "enclosure/v2c/release/BOM-v2c-F1-revE.csv": "7031818f4ec17e68e1079f6fc7ed660cdc97cf0e0aeb32c68ddbd7821e898243",
+  "enclosure/v2c/release/BOM-v2c-F1-revF.csv": "b451ce09ca508138a628cdb88c464fb593aa733ccc894c5b7f679552a5c407ff",
   "enclosure/v2c/release/BOM-v2c-F1.csv": "cee0ee58cfcc7b7f874ac134abd9a3ac5ef6cdf269fb88927e6d35fbe5e2110f",
   "enclosure/v2c/release/MANIFEST-revB.sha256": "f7bec7bbb19b597de1f52ac699a99061d42a03e5872adb14a96dfd8df51b7e80",
   "enclosure/v2c/release/MANIFEST-revC.sha256": "e7cc071874b7dbf329ab91af20c8c0d26482deba06ea18cf80800d85dced362a",
   "enclosure/v2c/release/MANIFEST-revD.sha256": "b26a0583d034b14d08a1e63d8d940d5a90631d186fa10a56e641202ec7abfb43",
   "enclosure/v2c/release/MANIFEST-revE.sha256": "547319db07d3d07527441778fd41324f4692198ad5c11f51d9f4cf8bad4e56be",
+  "enclosure/v2c/release/MANIFEST-revF.sha256": "4da71c113e545de328c5afc9b58b7137497ddd57fd146f778f7045262267320e",
   "_history": [
     {
       "date": "2026-11-20T11:39:01Z",
@@ -119,6 +121,16 @@
       "date": "2026-11-21T18:15:37Z",
       "action": "lock",
       "path": "enclosure/v2c/release/MANIFEST-revE.sha256"
+    },
+    {
+      "date": "2026-11-22T18:16:36Z",
+      "action": "lock",
+      "path": "enclosure/v2c/release/BOM-v2c-F1-revF.csv"
+    },
+    {
+      "date": "2026-11-22T18:16:36Z",
+      "action": "lock",
+      "path": "enclosure/v2c/release/MANIFEST-revF.sha256"
     }
   ]
 }
