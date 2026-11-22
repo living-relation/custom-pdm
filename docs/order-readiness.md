@@ -101,6 +101,8 @@ FileNotFoundError); the AGENTS.md command line does not say so.
 | 1 oz / 2 oz (35 / 70 um) | 102.8 / 112.6 / 113.9 C | 106.7 C | PASS |
 | 2 oz / 1 oz (70 / 35 um) | 99.3 / 108.7 / 109.1 C | 103.2 C | PASS (check JLCPCB 2 oz track / gap limits first) |
 
+With the fans failed at 150 A the JLCPCB default copper gives 153.6 / 154.1 / 155.4 C (stackup copper: 135.9-137.3 C).
+
 Why it matters: `hardware/fab/*/fab-notes.md` says "Copper weight: Dan's choice (not set by this script)", and
 JLCPCB's own 1 oz outer layer is 35 um finished, not the 43.2 um in the KiCad stackup. docs/pcb-verification.md does
 run `verify_copper.py` at 35 / 17.5 um, but the heat model and the firmware's board B limits (98 / 104 C,
