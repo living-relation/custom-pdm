@@ -57,7 +57,7 @@ Box heat per load case (`sim/heat/loads_revF.json`, from the board models; `sim/
 |---|---|---|---|---|---|
 | `feed150` | 150 A on board B (A boards idle) | 11.1 | 15.5 | 26.6 | 1.1 |
 | `feed150a` | 2 x 60 A on the A boards + 30 A on B | 14.8 | 11.8 | 26.7 | 4.8 |
-| `car` | car loads (`docs/car-loads.dummy.md`, dummy copy), 142 A | 10.6 | 10.8 | 21.4 | 1.2 |
+| `car` | pre-07:44 load set (worst case): car loads (`docs/car-loads.dummy.md`, dummy copy; the car config is now `carfull`, ADR-2026-11-23-ecu-loads), 142 A | 10.6 | 10.8 | 21.4 | 1.2 |
 | `rating` | every output at its rating, 304 A (INFO) | 31.1 | 40.1 | 71.2 | 6.4 |
 
 Results (mesh m2, 828k tetrahedra; sink = plate + fins + pedestals + bosses; R_sys = (sink max - 60 C) / box heat):

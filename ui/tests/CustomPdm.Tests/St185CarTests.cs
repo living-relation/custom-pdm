@@ -8,113 +8,10 @@ using Xunit;
 
 namespace CustomPdm.Tests;
 
-// carconfig (Dan c4 = a, 2026-11-23): the ST185 install config (ui/examples/st185-car.json), built from the car map
-// below with the /pdm domain code on a New PDM. The map is a DUMMY COPY of st185-link-ecu-config @ 839be705
-// (sot/fuse-relay-map.csv, sot/channels.csv, docs/harness/circuit-plan.md, FUEL-SYSTEM.md, CAN-BUS-ID-ALLOCATION-TABLE.md;
-// that repo is read only), written out in docs/st185-car-config.md. The ECU command frame (0x3F4 bytes 0-3, 50 ms) is
-// a placeholder: TO CONFIRM when the Link ECU CAN setup is done (st185 plans no PDM frame yet).
-// Regenerate the file: $env:CUSTOMPDM_WRITE_CAR_CONFIG='1'; dotnet test --filter St185CarTests
-public static class St185Car
-{
-    public const string Source = "st185-link-ecu-config @ 839be705";
-    public const int EcuId = 0x3F4;   // TO CONFIRM (placeholder in st185's free range 0x3F2-0x63F)
-    public const int PumpByte = 0, RadFanByte = 1, CondFanByte = 2, EpsByte = 3;
-
-    // st185 fuse = the fuse that protects that circuit's wiring today (sot/fuse-relay-map.csv)
-    public record Load(int Number, string Name, PdmDeviceKind Kind, double St185FuseA, string Replaces, double? LimitA = null, double? InrushA = null);
-
-    public record Sw(int Number, string Name, bool GroundActive, string Wire);
-
-    public static readonly Load[] Loads =
-    [
-        new(1, "Low beams", PdmDeviceKind.LedLamp, 15, "K-HL relay (LOGIC M1) + HL 15 A"),
-        new(2, "High beams", PdmDeviceKind.LedLamp, 15, "K-HR relay (LOGIC M2) + HR 15 A"),
-        new(3, "DRLs", PdmDeviceKind.LedLamp, 7.5, "K-DRL relay (LOGIC M8) + RLY-DRL (B5) + DRL 7.5 A"),
-        new(5, "Horns", PdmDeviceKind.Horn, 15, "K-HORN relay (LOGIC M3); HZ 15 A stays for the hazard feed"),
-        new(6, "EPS pump enable", PdmDeviceKind.Module, 5, "K-EPS-EN relay (LOGIC M6) + EPSEN 5 A"),
-        new(7, "CSB3 switchboard", PdmDeviceKind.Module, 5, "CSB 5 A (BUS2-5)"),
-        new(8, "Centre cluster", PdmDeviceKind.Module, 5, "DEV 5 A (BUS2-6)"),
-        new(17, "Radiator fan", PdmDeviceKind.RadiatorFan, 30, "K-FAN relay (POWER R4) + AMI IN-4 30 A"),
-        new(18, "Condenser fan", PdmDeviceKind.CondenserFan, 30, "K-FAN2 relay (POWER R5) + AMI IN-5 30 A"),
-        new(19, "Fuel pump", PdmDeviceKind.FuelPump, 40, "K-FP relay (trunk block B3 K1) + FP 40 A"),
-        new(21, "CAN-Lambda", PdmDeviceKind.Heater, 10, "K-ON relay (LOGIC M7) + LAM 10 A", LimitA: 10, InrushA: 15),
-        new(22, "A/C clutch", PdmDeviceKind.AcClutch, 10, "K-ACC relay (LOGIC M5) + ACC 10 A"),
-    ];
-
-    public static readonly Sw[] Switches =
-    [
-        new(1, "Head / flash (R-Y)", true, "R-Y IE1-2: light switch HEAD (C15-14) / dimmer FLASH (C15-13) to ground"),
-        new(2, "High / flash (R-W)", true, "R-W IE1-18: dimmer HIGH / FLASH to ground"),
-        new(3, "DRL switch", true, "DRL-SW (the K-DRL coil 85 wire) to ground"),
-        new(4, "Horn switch", true, "G IE1-19: horn switch C15-10 to ground"),
-        new(5, "Ignition (IG2)", false, "B-O J/B1 1H-7 IGN (live at ON and ST), 12 V = on"),
-        new(15, "A/C clutch request", true, "A/C amplifier A15 pin 8 (sinks the old K-ACC coil 85)"),
-    ];
-
-    public static Load LoadOf(int n) => Loads.Single(l => l.Number == n);
-
-    // the trigger of every load (PDM input numbers; IN1-7 = A1, IN8-14 = A2, IN15-24 = B)
-    private static readonly (int Out, PdmTriggerSpec Spec)[] Triggers =
-    [
-        (1, PdmTriggerSpec.Input(PdmTerm.In(1))),
-        (2, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(2), PdmTerm.In(1))),                     // as K-HR: only with the head lamps on
-        (3, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(3), PdmTerm.In(5), PdmTerm.In(1, true))),  // as K-DRL + RLY-DRL
-        (5, PdmTriggerSpec.Input(PdmTerm.In(4))),
-        (7, PdmTriggerSpec.Input(PdmTerm.In(5))),
-        (8, PdmTriggerSpec.Input(PdmTerm.In(5))),
-        (21, PdmTriggerSpec.Input(PdmTerm.In(5))),                                                   // B, over CAN from A1
-        (22, PdmTriggerSpec.Input(PdmTerm.In(15))),
-    ];
-
-    // the ECU switches what it switches today (sot/channels.csv: Aux 3 pump, Aux 5 radiator fan, Ign 5 condenser fan,
-    // Ign 6 EPS enable); loss behaviour: every ECU-commanded load off at loss (PdmPresets.EcuLoss, configfix 2026-11-23)
-    private static readonly (int Out, int Byte, PdmLinkLoss Loss)[] Ecu =
-    [
-        (19, PumpByte, PdmLinkLoss.Off), (17, RadFanByte, PdmLinkLoss.On), (18, CondFanByte, PdmLinkLoss.On), (6, EpsByte, PdmLinkLoss.Hold),
-    ];
-
-    // Builds the car config on the boards of v (a New PDM). Throws when any step is refused.
-    public static void Build(PdmView v)
-    {
-        static void Ok(string? why, string what) { if (why != null) throw new InvalidOperationException($"{what}: {why}"); }
-
-        foreach (var s in Switches)
-        {
-            var d = v.Inputs.Single(r => r.Number == s.Number && r.Digital != null).Digital!;
-            (d.Enabled, d.Name, d.Mode, d.Invert) = (true, s.Name, InputMode.Momentary, s.GroundActive);
-            d.Pull = s.GroundActive ? InputPull.PullUp : InputPull.PullDown;
-        }
-        foreach (var (o, spec) in Triggers) Ok(PdmTriggers.Set(v, o, spec), $"output {o} trigger");
-        foreach (var (o, b, loss) in Ecu) Ok(PdmEcu.Set(v, o, EcuId, b, loss, PdmLinks.TimeoutMs), $"output {o} ECU byte {b}");
-        foreach (var l in Loads)
-        {
-            Ok(PdmPresets.Apply(v, l.Number, l.Kind), $"output {l.Number} preset");
-            var x = v.Outputs.Single(r => r.Number == l.Number).Output;
-            (x.Enabled, x.Name) = (true, l.Name);
-            if (l.LimitA is { } a) x.CurrentLimit = a;
-            if (l.InrushA is { } i) x.InrushCurrentLimit = i;
-        }
-    }
-
-    // every function in words, from the board params only (names left out: they live in the project file)
-    public static List<string> Functions(PdmView v)
-    {
-        var m = PdmModel.Build(v);
-        var list = m.Triggers.Select(t => $"{t.Out.Number}: {System.Text.RegularExpressions.Regex.Replace(t.Words, " '[^']*'", "")}").ToList();
-        foreach (var o in v.Outputs)
-        {
-            var x = o.Output;
-            var pro = o.Device.CustomPdm!.OutputProtection[o.BoardOutput - 1];
-            list.Add($"{o.Number} {o.Board} OUT{o.BoardOutput}: {(x.Enabled ? "on" : "off")}, limit {x.CurrentLimit:0.##} A, inrush {x.InrushCurrentLimit:0.##} A / {x.InrushTime} ms, " +
-                     $"trip {pro.TripTime} ms, {PdmPresets.TripsText(x.ResetCountLimit, x.ResetTime)}, soft start {(x.SoftStartEnabled ? $"{x.SoftStartRampTime} ms at {x.Frequency} Hz" : "no")}, " +
-                     $"open-load {pro.MinCurrent:0.##} A");
-        }
-        foreach (var i in v.Inputs.Where(r => r.Digital != null))
-            list.Add($"IN{i.Number}: {(i.Digital!.Enabled ? "on" : "off")}, {i.Digital.Pull}, {(i.Digital.Invert ? "inverted" : "not inverted")}, {i.Digital.Mode}, {i.Digital.DebounceTime} ms");
-        return list;
-    }
-}
-
+// carsim (2026-11-23): the ST185 car config (ui/examples/st185-car.dummy.json, DUMMY / demo) is exactly what the map in
+// St185Car.cs builds; the doc (docs/st185-car-config.dummy.md), the drive-cycle param file
+// (firmware/sim/data/st185-car.params.dummy.tsv)
+// follow it; no ECU <-> PDM CAN frame is needed (Dan 2026-11-23 07:44: the ECU's loads stay off the PDM). Regenerate: $env:CUSTOMPDM_WRITE_CAR_CONFIG='1'; dotnet test --filter St185CarTests
 public class St185CarTests
 {
     internal static (DeviceManager Mgr, PdmOpsService Service) NewApp()
@@ -126,6 +23,7 @@ public class St185CarTests
     }
 
     private static ConfigFileManager Files() => new(NullLogger<ConfigFileManager>.Instance, new FwDeviceDefManager());
+    private static bool Write => Environment.GetEnvironmentVariable("CUSTOMPDM_WRITE_CAR_CONFIG") == "1";
 
     internal static string CarPath()
     {
@@ -141,6 +39,8 @@ public class St185CarTests
         while (!Directory.Exists(Path.Combine(dir!.FullName, "ui", "examples"))) dir = dir.Parent;
         return Path.Combine(dir.FullName, "ui", "examples");
     }
+
+    internal static string Root() => new DirectoryInfo(ExamplesDir()).Parent!.Parent!.FullName;
 
     private static PdmOpsService Built()
     {
@@ -160,18 +60,13 @@ public class St185CarTests
     private static List<(string Name, int Index, int Sub, string Bytes)> Raw(FwDevice d) => d.Params
         .Select(p => (p.Name, p.Index, p.SubIndex, Convert.ToHexString(ParamCodec.ToFrame(MessageCommand.Write, p, 0).Payload, 4, 4))).ToList();
 
-    // The committed file is exactly what the map builds (param by param, names and preset labels too), so the file,
-    // the map in this class and docs/st185-car-config.md cannot drift apart. CUSTOMPDM_WRITE_CAR_CONFIG=1 writes it.
     [Fact]
     public async Task TheCarFileIsWhatTheMapBuilds()
     {
         var built = Built();
-        if (Environment.GetEnvironmentVariable("CUSTOMPDM_WRITE_CAR_CONFIG") == "1")
-        {
-            var files = Files();
-            await files.SaveDevices(built.BuildView().Boards.Select(b => (domain.Interfaces.IDevice)b.Device).ToList(),
+        if (Write)
+            await Files().SaveDevices(built.BuildView().Boards.Select(b => (domain.Interfaces.IDevice)b.Device).ToList(),
                 Path.Combine(ExamplesDir(), PdmStarter.CarFileName));
-        }
         var loaded = await Loaded();
         foreach (var role in PdmOps.Roles)
         {
@@ -184,6 +79,28 @@ public class St185CarTests
         }
     }
 
+    // the wire values (as Write All sends them) for the firmware drive cycle s5 --car (as StarterParamsExportTests)
+    public const string ParamsRelPath = "firmware/sim/data/st185-car.params.dummy.tsv";
+
+    [Fact]
+    public async Task TheDriveCycleParamFileIsTheCarConfig()
+    {
+        var svc = await Loaded();
+        var want = new List<string>
+        {
+            "# DUMMY TEST COPY - not a source of truth: the wire values (4 bytes, as Write All sends them) of ui/examples/st185-car.dummy.json "
+            + "(a DUMMY / demo car config, docs/st185-car-config.dummy.md), written by ui/tests/CustomPdm.Tests/St185CarTests.cs",
+            "# role\tindex\tsub\tbytes\tname"
+        };
+        foreach (var role in PdmOps.Roles)
+            want.AddRange(svc.BuildView().Boards.Single(b => b.Role == role).Device.Params.Select(p =>
+                $"{role}\t0x{p.Index:X4}\t{p.SubIndex}\t{Convert.ToHexString(ParamCodec.ToFrame(MessageCommand.Write, p, 0).Payload, 4, 4)}\t{p.Name}"));
+        var path = Path.Combine(Root(), ParamsRelPath);
+        if (Write) File.WriteAllText(path, string.Join("\n", want) + "\n");
+        Assert.True(File.Exists(path), $"{ParamsRelPath} missing: run the tests once with CUSTOMPDM_WRITE_CAR_CONFIG=1");
+        Assert.Equal(want, File.ReadAllText(path).Replace("\r\n", "\n").TrimEnd('\n').Split('\n'));
+    }
+
     [Fact]
     public async Task TheCarConfigLoadsAsAWritablePdmWithEveryFunctionInWords()
     {
@@ -192,24 +109,33 @@ public class St185CarTests
         Assert.Equal(["A1", "A2", "B"], v.Boards.Select(b => b.Role));
         Assert.Empty(v.Problems);
         Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.FactoryNew));
-        Assert.Null(svc.BlockedReason(PdmOpKind.WriteAll, v, true));   // writable without a Read All, as a New PDM
+        Assert.Null(svc.BlockedReason(PdmOpKind.WriteAll, v, true));
         var m = PdmModel.Build(v);
         Assert.Empty(m.Problems);
         Assert.Empty(v.OverRating);
+        var dump = Environment.GetEnvironmentVariable("CUSTOMPDM_DUMP_CAR");
+        if (!string.IsNullOrEmpty(dump))
+            File.WriteAllLines(dump, St185Car.Functions(v)
+                .Concat(v.Outputs.Select(o => $"ROW | {o.Number} | {o.Board} OUT{o.BoardOutput} | {o.Connector} | {PdmTriggers.Of(m, o.Number).Words}"))
+                .Concat(v.Inputs.Where(r => r.Digital != null).Select(i => $"IN | IN{i.Number} | {i.Board} IN{i.BoardInput} | {i.Connector} |")));
 
         string Words(int n) => PdmTriggers.Of(m, n).Words;
         Assert.Equal("IN1", Words(1));
         Assert.Equal("IN2 AND IN1", Words(2));
         Assert.Equal("IN3 AND IN5 AND NOT IN1", Words(3));
+        Assert.Equal("IN6", Words(4));
         Assert.Equal("IN4", Words(5));
-        Assert.Equal("ECU 0x3F4 byte 3 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(6));   // configfix: ECU loads off at loss
-        Assert.Equal(("IN5", "IN5", "IN5", "IN15"), (Words(7), Words(8), Words(21), Words(22)));
-        Assert.Equal("ECU 0x3F4 byte 0 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(19));
-        Assert.Equal("ECU 0x3F4 byte 1 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(17));
-        Assert.Equal("ECU 0x3F4 byte 2 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(18));
+        Assert.Equal(("IN5", "IN5", "IN21", "IN16", "IN16", "IN24"), (Words(7), Words(8), Words(16), Words(17), Words(21), Words(22)));
+        Assert.Equal(("IN7 (link: keeps its last state (off at power-up))", "IN7 (link: keeps its last state (off at power-up))"), (Words(14), Words(15)));   // lamps hold at loss
+        Assert.Equal("turn signal LEFT: IN8 or hazard IN9, flashing 350 / 350 ms in step with output 11", Words(9));
+        Assert.Equal("pop-up LH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN11 (top) / IN12 (bottom)", Words(12));
+        Assert.Equal("pop-up RH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN13 (top) / IN14 (bottom)", Words(13));
+        Assert.StartsWith("IN22 AND IN16 AND NOT B virtual input", Words(20));
+        Assert.StartsWith("wiper motor run (wiper on B:", Words(23));
         Assert.Contains("fan logic", Words(10));           // A2 OUT2 still runs the box fans
-        var spare = v.Outputs.Select(o => o.Number).Except(St185Car.Loads.Select(l => l.Number)).Except([10]).ToList();
-        Assert.Equal([4, 9, 11, 12, 13, 14, 15, 16, 20, 23, 24], spare);
+        // every output but the box fans and three spares (A1 OUT6, B OUT2 / OUT3, 31 A) is a car load
+        var spare = Enumerable.Range(1, 24).Except([10]).Except(St185Car.Loads.Select(l => l.Number)).ToList();
+        Assert.Equal([6, 18, 19], spare);
         Assert.All(spare, n => Assert.Equal("none", Words(n)));
 
         foreach (var l in St185Car.Loads)
@@ -218,21 +144,49 @@ public class St185CarTests
             Assert.Equal((l.Name, true), (o.Output.Name, o.Output.Enabled));
             Assert.Equal(l.Kind, PdmPresets.KindOf(v, o));
             Assert.True(o.Output.CurrentLimit <= Math.Min(o.RatingA, l.St185FuseA), $"output {l.Number}: {o.Output.CurrentLimit} A over its rating or the st185 fuse");
+            Assert.NotEqual("none", Words(l.Number));
         }
-        Assert.Equal((25.0, 100.0, 500), (v.Outputs[18].Output.CurrentLimit, v.Outputs[18].Output.InrushCurrentLimit, v.Outputs[18].Output.InrushTime));
-        Assert.Equal((10.0, 15.0), (v.Outputs[20].Output.CurrentLimit, v.Outputs[20].Output.InrushCurrentLimit));   // CAN-Lambda: LAM 10 A
-        Assert.Equal(["current limit", "inrush limit"], PdmPresets.Changed(v, v.Outputs[20], PdmDeviceKind.Heater));
-
         foreach (var s in St185Car.Switches)
         {
             var i = v.Inputs.Single(r => r.Number == s.Number);
-            Assert.Equal((s.Name, true, s.GroundActive, s.GroundActive ? InputPull.PullUp : InputPull.PullDown),
-                (i.Name, i.Digital!.Enabled, i.Digital.Invert, i.Digital.Pull));
+            Assert.Equal((s.Name, true, s.GroundActive, s.GroundActive ? InputPull.PullUp : InputPull.PullDown, s.Latched ? InputMode.Latched : InputMode.Momentary),
+                (i.Name, i.Digital!.Enabled, i.Digital.Invert, i.Digital.Pull, i.Digital.Mode));
         }
-        Assert.Equal("IN5 = Ignition (IG2), IN1 = Head / flash (R-Y)", PdmPageText.InputNames(v, "IN5 AND NOT IN1"));
     }
 
-    // Why the car config may be loaded "as a New PDM": everything a wrong file could break is what New PDM sets
+    // Dan 2026-11-23: the ECU controls and powers its own loads (no PDM output, no ECU command on the PDM); what the EFI
+    // main relay fed (Bus 2) follows IN5, never the ignition; auto sleep waits for IN5 (key on or the ECU's after-run
+    // hold), the tail switch and the hazard switch.
+    [Fact]
+    public async Task TheEcuKeepsItsLoadsAndItsHoldIsNeverCut()
+    {
+        var v = (await Loaded()).BuildView();
+        var m = PdmModel.Build(v);
+        Assert.Empty(PdmEcu.All(v));
+        foreach (var ecuLoad in new[] { "fuel pump", "fan", "EPS", "steering", "heater", "blower", "A/C", "throttle", "boost", "injector", "coil" })
+            Assert.DoesNotContain(St185Car.Loads, l => l.Name.Contains(ecuLoad, StringComparison.OrdinalIgnoreCase));
+        foreach (var o in new[] { 3, 7, 8 })
+        {
+            var w = PdmTriggers.Of(m, o).Words;
+            Assert.Contains("IN5", w);
+            Assert.DoesNotContain("IN16", w);
+        }
+        foreach (var q in v.Boards)
+        {
+            var d = q.Device;
+            Assert.True(d.SleepEnabled);
+            var tm = PdmKeyOff.SleepTimer(d);
+            Assert.NotNull(tm);
+            Assert.Equal((TimerMode.OnDelay, PdmKeyOff.MuteDelayMs), (tm!.Mode, tm.Time));
+            Assert.Equal(St185Car.WakeMask(q.Role), d.CustomPdm!.WakeInputMask);
+        }
+        var sleepWords = PdmValues.All(m).Where(f => f.Kind == PdmValueKind.AutoSleep).Select(f => f.Words).ToList();
+        Assert.Equal(3, sleepWords.Count);
+        Assert.All(sleepWords, w => Assert.Contains("IN5 and IN7 and IN9 are all off", w));
+        // the firmware can arm every wake input (core/sleep.cpp: not A IN1 / IN3 / IN4, not B IN1 / IN9 / IN10)
+        Assert.Equal((0b1110010, 0b10, 0b10), (St185Car.WakeMask("A1"), St185Car.WakeMask("A2"), St185Car.WakeMask("B")));
+    }
+
     [Fact]
     public async Task TheCarConfigsCriticalSettingsAreTheFactoryOnes()
     {
@@ -240,7 +194,7 @@ public class St185CarTests
         var (_, factory) = NewApp();
         Assert.Null(factory.NewPdm());
 
-        static List<string> Block(FwDevice d) => d.Params.Where(p => p.Index == CustomPdmSettings.BaseIndex)
+        static List<string> Block(FwDevice d) => d.Params.Where(p => p.Index == CustomPdmSettings.BaseIndex && p.Name != "customPdm.wakeInputMask")
             .Select(p => $"{p.Name} {p.SubIndex} = {p.GetValue()}").ToList();
         foreach (var role in PdmOps.Roles)
         {
@@ -249,10 +203,8 @@ public class St185CarTests
             Assert.Equal((f.BaseId, f.BitRate, f.Type), (s.BaseId, s.BitRate, s.Type));
             Assert.Equal(CanBitRate.BitRate1000K, s.BitRate);
             Assert.NotEmpty(Block(f));
-            Assert.Equal(Block(f), Block(s));   // 0x7F00: temperature limits, outputs kept on at critical, wake inputs
+            Assert.Equal(Block(f), Block(s));   // 0x7F00: temperature limits, outputs kept on at critical (wake inputs: the car's)
         }
-        // A2 takes no car load: every A2 param (its box fan logic included) is the factory one
-        Assert.Equal(Raw(factory.BuildView().Boards.Single(b => b.Role == "A2").Device), Raw(svc.BuildView().Boards.Single(b => b.Role == "A2").Device));
     }
 
     [Fact]
@@ -268,19 +220,19 @@ public class St185CarTests
             var f = Raw(factory.BuildView().Boards.Single(b => b.Role == role).Device);
             Assert.Equal(f.Select(p => (p.Name, p.Index, p.Sub)), s.Select(p => (p.Name, p.Index, p.Sub)));
             outside.AddRange(s.Zip(f).Where(x => x.First.Bytes != x.Second.Bytes)
-                .Select(x => x.First.Name.Split('[', '.')[0]).Where(b => !Allowed.Contains(b)).Select(b => $"{role} {b}"));
+                .Select(x => x.First.Name).Where(n => !Allowed.Contains(n.Split('[', '.')[0]) && !AllowedDevice.Contains(n)).Select(b => $"{role} {b}"));
         }
         Assert.Empty(outside.Distinct());
     }
 
-    private static readonly string[] Allowed = ["output", "input", "canInput", "virtualInput", "customPdm"];
+    private static readonly string[] Allowed = ["output", "input", "canInput", "virtualInput", "customPdm", "condition", "timer", "flasher", "wiper"];
+    private static readonly string[] AllowedDevice = ["device.sleepEnabled", "device.muteCanTxInput"];
 
-    // docs/st185-car-config.md shows the map that is in the file: one table row per load and per switch
+    // docs/st185-car-config.dummy.md shows the map that is in the file: one table row per load and per switch
     [Fact]
     public async Task TheDocTableIsTheMap()
     {
-        var dir = new DirectoryInfo(ExamplesDir()).Parent!.Parent!.FullName;
-        var doc = await File.ReadAllTextAsync(Path.Combine(dir, "docs", "st185-car-config.md"));
+        var doc = await File.ReadAllTextAsync(Path.Combine(Root(), "docs", "st185-car-config.dummy.md"));
         var v = Built().BuildView();
         Assert.StartsWith("DUMMY COPY", doc);
         Assert.Contains(St185Car.Source, doc.Split('\n')[0]);
@@ -294,6 +246,30 @@ public class St185CarTests
             var i = v.Inputs.Single(r => r.Number == s.Number);
             Assert.Contains($"| IN{s.Number} | {i.Board} IN{i.BoardInput} | {i.Connector} | {s.Name} |", doc);
         }
+    }
+
+    // Dan 2026-11-23 (coordinator): the car CAN files of this repo are DUMMY / DEMO / TEST ONLY: every file says so on
+    // line 1 and in its name, and nothing in the app or the firmware reads them.
+    [Fact]
+    public void TheEcuPdmCanConfigIsADummyThatNothingRealLoads()
+    {
+        var dir = Path.Combine(Root(), "docs", "car-can-dummy");
+        foreach (var f in Directory.GetFiles(dir))
+        {
+            Assert.Contains(".dummy.", Path.GetFileName(f));
+            Assert.Contains("DUMMY", File.ReadLines(f).First());
+        }
+        // no app or firmware source line (comments aside) names a dummy CAN file; the car config file itself is named dummy
+        var bad = new List<string>();
+        foreach (var root in new[] { Path.Combine(Root(), "ui", "dingoConfig"), Path.Combine(Root(), "firmware") })
+            foreach (var f in Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories)
+                         .Where(f => f.EndsWith(".cs") || f.EndsWith(".razor") || f.EndsWith(".cpp") || f.EndsWith(".h") || f.EndsWith(".c"))
+                         .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")))
+                foreach (var (line, n) in File.ReadLines(f).Select((l, n) => (l.Trim(), n + 1)))
+                    if (!line.StartsWith("//") && !line.StartsWith("@*") && !line.StartsWith("*") && (line.Contains("car-can-dummy") || line.Contains("link_pdm_")))
+                        bad.Add($"{f}:{n}");
+        Assert.Empty(bad);
+        Assert.Contains(".dummy.", PdmStarter.CarFileName);
     }
 
     [Fact]

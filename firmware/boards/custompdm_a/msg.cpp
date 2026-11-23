@@ -20,7 +20,7 @@ CANTxMsg TxMsg0()
         nDi |= (GetDigInputVal(i) ? 1 : 0) << i;
     stMsg.frame.data8[0] = nDi;
     stMsg.frame.data8[1] = static_cast<uint8_t>(GetDeviceState()) + (DEVICE_TYPE << 4);
-    stMsg.frame.data16[1] = (uint16_t)GetTotalCurrent();
+    stMsg.frame.data16[1] = (uint16_t)(GetTotalCurrent() + 0.5f); // custom-pdm: nearest amp (stock truncates)
     stMsg.frame.data16[2] = (uint16_t)(GetBattVolt() * 10.0);
     stMsg.frame.data16[3] = (uint16_t)(GetBoardTemp() * 10.0);
 
@@ -37,10 +37,10 @@ CANTxMsg TxMsg1()
     //=======================================================
     CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 1);
     stMsg.frame.DLC = 8; // Bytes to send
-    stMsg.frame.data16[0] = (uint16_t)GetOutputCurrent(0);
-    stMsg.frame.data16[1] = (uint16_t)GetOutputCurrent(1);
-    stMsg.frame.data16[2] = (uint16_t)GetOutputCurrent(2);
-    stMsg.frame.data16[3] = (uint16_t)GetOutputCurrent(3);
+    stMsg.frame.data16[0] = (uint16_t)(GetOutputCurrent(0) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[1] = (uint16_t)(GetOutputCurrent(1) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[2] = (uint16_t)(GetOutputCurrent(2) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[3] = (uint16_t)(GetOutputCurrent(3) + 0.5f); // custom-pdm: nearest amp (stock truncates)
 
     stMsg.bSend = true; // Always send
 
@@ -55,10 +55,10 @@ CANTxMsg TxMsg2()
     //=======================================================
     CanSetId(stMsg.frame, stConfig.stDevice.nBaseId + CYCLIC_TX_OFFSET + 2);
     stMsg.frame.DLC = 8; // Bytes to send
-    stMsg.frame.data16[0] = (uint16_t)GetOutputCurrent(4);
-    stMsg.frame.data16[1] = (uint16_t)GetOutputCurrent(5);
-    stMsg.frame.data16[2] = (uint16_t)GetOutputCurrent(6);
-    stMsg.frame.data16[3] = (uint16_t)GetOutputCurrent(7);
+    stMsg.frame.data16[0] = (uint16_t)(GetOutputCurrent(4) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[1] = (uint16_t)(GetOutputCurrent(5) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[2] = (uint16_t)(GetOutputCurrent(6) + 0.5f); // custom-pdm: nearest amp (stock truncates)
+    stMsg.frame.data16[3] = (uint16_t)(GetOutputCurrent(7) + 0.5f); // custom-pdm: nearest amp (stock truncates)
 
     stMsg.bSend = true; // Always send
 

@@ -173,7 +173,15 @@ public static class PdmValues
             {
                 var made = new List<PdmRes>();
                 var me = new PdmRes(r, PdmResKind.Timer, d.Timers.IndexOf(kt));
-                var w = $"auto sleep: CAN TX muted {PdmLinks.DelayText(kt.Time)} after {T(m, q, kt.ResetInput, made)} goes off, then the board sleeps 30 s after the bus is quiet";
+                // carsim: several stay-awake inputs = one virtual input "a OR b [OR c]" (PdmKeyOff.AwakeTag)
+                // by shape, not name (names are not on the boards: a Read All gives them back as virtualInputN)
+                var awake = d.VirtualInputs.FirstOrDefault(x => x is { Enabled: true, Mode: InputMode.Momentary, Not0: false, Not1: false, Not2: false, Cond0: Conditional.Or }
+                    && (x.Var2 == 0 || x.Cond1 == Conditional.Or) && x.Var0 != 0 && x.Var1 != 0 && PdmFactoryDefaults.VarOf(d, x) == kt.ResetInput);
+                var reset = awake != null
+                    ? string.Join(" and ", new[] { awake.Var0, awake.Var1, awake.Var2 }.Where(x => x != 0).Select(x => T(m, q, x, made)))
+                    : T(m, q, kt.ResetInput, made);
+                if (awake != null) made.Add(new PdmRes(r, PdmResKind.VirtualInput, d.VirtualInputs.IndexOf(awake)));
+                var w = $"auto sleep: CAN TX muted {PdmLinks.DelayText(kt.Time)} after {reset} {(awake != null ? "are all" : "goes")} off, then the board sleeps 30 s after the bus is quiet";
                 list.Add(new PdmValueFn(PdmValueKind.AutoSleep, r, me, [me, .. made], w, 0));
             }
             if (d.CustomPdm is { MasterRetryInput: > 0 } cp)

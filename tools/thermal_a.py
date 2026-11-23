@@ -29,7 +29,8 @@ Cases (the loaded board is A1; the box heat counts every board):
   rating     every output of the box at its rating (A1, A2 8 x 7.5 A, B 184 A: 304 A, above the 150 A feed: upper bound)
   feed150a   both A boards at their rating (2 x 60 A) + 30 A on B (B's ratings x 30 / 184): the 150 A feed limit with the
              A boards loaded first - the hottest board A case the firmware allows
-  car        docs/car-loads.dummy.md (dummy test copy), currents as tools/verify_thermal_box.py: A1 OUT1-8 2.0 2.5 0.5 0.2
+  car        pre-07:44 load set (worst case): docs/car-loads.dummy.md (dummy test copy; the car config is now
+             carfull, ADR-2026-11-23-ecu-loads), currents as tools/verify_thermal_box.py: A1 OUT1-8 2.0 2.5 0.5 0.2
              5.0 0.15 5.0 5.0 A; A2 0.2 0.13 0.2 3.0 A; B 118.1 A (thermal_board_b car)
   drive      firmware/sim/data/s5_board_power.csv (s5 drive cycle, PR #140): A1, A2 and B outputs at their RMS current
              over the coolant / fan phase, held steady (thermal_board_b drive_currents)
@@ -86,6 +87,9 @@ def case_currents(name):
         d, _ = TB.drive_currents()
         return dict(this={n: d["A1"].get(n, 0.0) for n in OUTS}, other_a={n: d["A2"].get(n, 0.0) for n in OUTS},
                     I_B=sum(d["B"].values()), b_scale=None, b_case="drive")
+    if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py, DUMMY data)
+        j = TB.carfull()
+        return dict(this=dict(zip(OUTS, j["A1"])), other_a=dict(zip(OUTS, j["A2"])), I_B=float(sum(j["B"])), b_scale=None, b_case="carfull")
     raise SystemExit(f"unknown case {name}")
 
 

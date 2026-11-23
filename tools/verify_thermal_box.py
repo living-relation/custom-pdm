@@ -109,6 +109,10 @@ def add(group, check, value, limit, verdict, note=""):
 
 def contacts_harness(case):
     """Heat into the lid air from the X1 / X2 contacts and the internal harness, W (docs/heat-analysis.md 3)."""
+    if case == "carfull":    # carsim: the full-PDM car config, every load on (firmware/sim/data/s5_car_currents.dummy.json)
+        j = json.load(open(os.path.join(ROOT, "firmware", "sim", "data", "s5_car_currents.dummy.json"), encoding="utf-8"))
+        a7, b15 = j["A1"] + j["A2"], j["B"][4:]
+        return sum(i * i * (2e-3 + 3.3e-3) for i in a7) + sum(i * i * (1e-3 + 0.78e-3) for i in b15)
     if case == "drive":      # s5 drive cycle RMS currents (thermal_board_b.drive_currents, same file and phase)
         d = drive_currents()
         a7 = [d["A1"].get(f"PF_OUT{i}", 0.0) for i in range(1, 9)] + [d["A2"].get(f"PF_OUT{i}", 0.0) for i in range(1, 9)]
@@ -150,8 +154,9 @@ def main():
     ap.add_argument("--anofan", help="tools/thermal_a.py --air nofan JSON")
     ap.add_argument("--cabin", type=float, default=60.0)
     ap.add_argument("--json")
+    ap.add_argument("--carfull", action="store_true", help="carsim: also the full-PDM car config case (s5_car_cycle.py currents)")
     a = ap.parse_args()
-    cases = ["car", "drive", "feed150", "feed150hi", "feed150lo", "rating"]
+    cases = ["car", "drive", "feed150", "feed150hi", "feed150lo", "rating"] + (["carfull"] if a.carfull else [])
     data = {}
     for air in ("fans", "nofan"):
         path = getattr(a, air) or run_board_b(air, cases)
@@ -180,9 +185,9 @@ def main():
             sens = (r.get("t_sensor_u6") or float("nan")) + (a.cabin - 60.0)
             label = f"{case} ({r['I_B']:.0f} A on B), {'fans on' if air == 'fans' else 'fans failed / off'}, cabin {a.cabin:.0f} C"
             ok = lam <= LAMINATE_C and tj <= TJ_C
-            if case in ("car", "feed150"):
+            if case in ("car", "feed150", "carfull"):
                 # normal use = the car loads with the fans on: must not cut; anything hotter: a cut is the protection
-                v = ("PASS" if sens < CRIT_C else "FAIL") if (case, air) == ("car", "fans") else "INFO"
+                v = ("PASS" if sens < CRIT_C else "FAIL") if (case, air) in (("car", "fans"), ("carfull", "fans")) else "INFO"
                 add("Firmware limits", f"board B's own MCP9808 vs its critical limit {CRIT_C:.0f} C (port_boards.py "
                     f"DEFAULT_TEMP_CRIT) at {label}", f"reads {sens:.1f} C (laminate max {lam:.1f} C)",
                     f"< {CRIT_C:.0f} C, else board B cuts its outputs in normal use" if v != "INFO" else

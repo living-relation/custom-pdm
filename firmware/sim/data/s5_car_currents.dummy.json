@@ -1,0 +1,33 @@
+{
+ "_DUMMY": "DUMMY TEST DATA - s5_car_cycle.py night-rain phase (every car load on), RMS current per output in A, from the DUMMY car config and ASSUMED loads; read by tools/thermal_a.py / thermal_board_b.py --case carfull",
+ "A1": [
+  2.1,
+  0.0,
+  0.0,
+  4.63,
+  0.0,
+  0.0,
+  2.1,
+  1.58
+ ],
+ "A2": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  1.37,
+  3.68,
+  0.0
+ ],
+ "B": [
+  10.57,
+  0.0,
+  0.0,
+  15.78,
+  8.52,
+  0.0,
+  0.21,
+  6.31
+ ]
+}

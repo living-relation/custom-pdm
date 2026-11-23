@@ -2,7 +2,7 @@
 dummy ECU (0x3F4 pump / condenser fan bytes, 0x3F5 coolant x 0.1), the dummy car traffic of
 docs/car-can-dummy/bus-load.dummy.md and the PC tool, with the ST185 starter (ui/examples/st185-starter.json, a DUMMY
 demo starter) written by Write All exactly as the app writes it (firmware/sim/data/st185-starter.params.dummy.tsv, made
-and checked by ui/tests StarterParamsExportTests). The car config (ui/examples/st185-car.json) gets its own run (carsim).
+and checked by ui/tests StarterParamsExportTests). The car config (ui/examples/st185-car.dummy.json) gets its own run: firmware/sim/s5_car_cycle.py (carsim).
 
 Script: park, key on, ECU prime, crank (6 V dip), idle, lights, turn signals, hazard, horn, wipers with the park cam,
 coolant 80 -> 105 -> 85 C (radiator fan from the CAN value, condenser fan from the ECU byte), A/C clutch on its switch,

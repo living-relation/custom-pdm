@@ -1,4 +1,5 @@
 DUMMY TEST COPY - not a source of truth; real source: st185-link-ecu-config @ 1bf9f527 (`sot/fuse-relay-map.csv`, `sot/channels.csv`, `docs/harness/circuit-plan.md`, `FUEL-SYSTEM.md`, `cad/fusebox/src/spec.py` fuse ratings); read only, nothing written there; Dan approves any use (Dan, 2026-11-16)
+SUPERSEDED for the car config by docs/st185-car-config.dummy.md and ADR-2026-11-23-ecu-loads; kept as the pre-07:44 worst-case load set for the thermal 'car' case
 
 # ST185 car loads for the PDM (parity job, dummy)
 
