@@ -48,7 +48,7 @@ try {
     if ($LASTEXITCODE) { throw 'd2_tvs.py lib failed' }
     & $py9 "$repo\tools\d2_tvs.py" sch Power.kicad_sch
     if ($LASTEXITCODE) { throw 'd2_tvs.py sch failed' }
-    & $py9 "$repo\tools\hw_protect.py" sch A                  # hwprotect: NRST / VDDA caps, USB ESD diodes
+    & $py9 "$repo\tools\hw_protect.py" sch A                  # hwprotect: NRST / VDDA caps, USB ESD diodes; orderprep: 125 C crystal + X7R caps (fields)
     if ($LASTEXITCODE) { throw 'hw_protect.py sch failed' }
     & $py9 "$repo\tools\hw_5v_module.py" lib                  # hw5v: 125 C 5 V module footprint (TI SIL0010A land pattern)
     if ($LASTEXITCODE) { throw 'hw_5v_module.py lib failed' }
@@ -83,6 +83,8 @@ try {
     if ($LASTEXITCODE) { throw 'hw_protect.py pcb failed' }
     & $py9 "$repo\tools\hw_5v_module.py" pcb DingoPDM.kicad_pcb "$Out\board-a.net" A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # hw5v: TSR out, 125 C module in its outline (last stage)
     if ($LASTEXITCODE) { throw 'hw_5v_module.py pcb failed' }
+    & $py9 "$repo\tools\pcb_stackup.py" DingoPDM.kicad_pcb A   # orderprep 2026-11-22: stackup copper = the ordered copper (tools/copper_order.py)
+    if ($LASTEXITCODE) { throw 'pcb_stackup.py failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3

@@ -30,6 +30,9 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import copper_order  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = []
 R_SYS = {"fans": 0.47, "nofan": 0.98}
@@ -40,10 +43,36 @@ G_BOARD_AIR = 0.024 * 3.0                    # W/K three board tops (2 x 72 x 95
 DT_BOARD_A = 15.0                            # K, board A mean over the sink (ASSUMED from docs/heat-analysis.md 2)
 LAMINATE_C, TJ_C = 130.0, 150.0
 SENSOR_ERR = 1.0                             # MCP9808 +-1 C max at -40..125 C (DS20005095B DC characteristics)
-# board B logic-area parts at its MCP9808 reading (verify_thermal_box part table): rating C. The 85 C ones are to be
-# replaced by >= 105 C grades (ADR-2026-11-20-presim-findings item 1, hardware job).
+RES_MM = "0.3"                               # thermal_board_b grid for this check: the grid-checked one (0.3 / 0.25 mm
+#                                              agree within 0.2 K, docs/pcb-verification.md); 0.4 reads the +12V neck low
+
+
+def bom_grades(tag):
+    """Crystal and ceramic-capacitor temperature grade of one board, read from its generated full BOM
+    (hardware/fab/<tag>/<tag>-bom-full.csv), so this table follows the parts that are really fitted.
+    Returns (crystal name, rating C, capacitor text, rating C)."""
+    import csv
+    xtal, x5r, n_cap = ("?", 85.0), [], 0
+    with open(os.path.join(ROOT, "hardware", "fab", tag, f"{tag}-bom-full.csv"), encoding="utf-8") as f:
+        for r in csv.DictReader(f):
+            if not r["Fitted by"].startswith("JLCPCB"):
+                continue
+            refs, mpn = r["Designator"].split(","), r["MPN"]
+            if "Y1" in refs:      # ECS-...-CES: -40..125 C; ECS-...-VY: 105 C (ecsxtal.com 30Q data sheets); ABM3: 85 C
+                xtal = (mpn, 125.0 if "-CES-" in mpn else 105.0 if "-VY-" in mpn else 85.0)
+            if refs[0].startswith("C") and r["Footprint"].startswith("C_"):
+                n_cap += len(refs)
+                # X5R (85 C) by maker code: Samsung CL..A.., Murata GRM..R6.. (the X7R / C0G parts are 125 C)
+                if re.match(r"CL\d\dA|GRM\d\d\wR6", mpn):
+                    x5r += refs
+    caps = (f"X5R capacitors {' '.join(x5r)}", 85.0) if x5r else (f"ceramic capacitors (all {n_cap} X7R / C0G)", 125.0)
+    return xtal + caps
+
+
+GRADE = {k: bom_grades(tag) for k, tag in (("A", "board-a"), ("B", "board-b"))}
+# board B logic-area parts at its MCP9808 reading: rating C (crystal / capacitors: from board B's BOM)
 LOGIC_PARTS = [("STM32F446RET7 (ambient, suffix 7)", 105.0), ("MB85RC64TA FRAM", 105.0),
-               ("ABM3 crystal / X5R caps (85 C grades, to be replaced)", 85.0),
+               (f"crystal Y1 {GRADE['B'][0]}", GRADE["B"][1]), (GRADE["B"][2], GRADE["B"][3]),
                ("TI LMZM23601V5 5 V module (hw5v; TJ 125 C less its own ~0.2 W x PsiJB 20 K/W)", 121.0)]
 
 
@@ -57,8 +86,9 @@ def board_b_limits():
 
 CRIT_C = float(board_b_limits()[1])
 # parts rated below the board limit (docs/parts-audit.md section 10 table): name, rating C, where it sits
-RATED = [("TI LMZM23601V5 5 V module (hw5v; TJ 125 C - 4 K own heat)", 121.0, "board"), ("Abracon ABM3 crystal Y1", 85.0, "board"),
-         ("X5R capacitors (A C3 C4 C6 C14 C38, B C3 C4 C6 C10 C15)", 85.0, "board"),
+RATED = [("TI LMZM23601V5 5 V module (hw5v; TJ 125 C - 4 K own heat)", 121.0, "board")] + [
+         (f"board {k}: {name}", rating, "board") for k in ("A", "B") for name, rating in
+         ((f"crystal Y1 {GRADE[k][0]}", GRADE[k][1]), (GRADE[k][2], GRADE[k][3]))] + [
          ("Omron A6S DIP switches (input boards)", 70.0, "air"), ("MB85RC64TA FRAM", 105.0, "board"),
          ("STM32F446RET7 (ambient)", 105.0, "board"), ("MCP2562FD / MCP9808 / TLV9004 / TLV1117LV", 125.0, "board")]
 
@@ -79,7 +109,7 @@ def contacts_harness(case):
 def run_board_b(air, cases):
     out = os.path.join(tempfile.gettempdir(), f"presim_thb_{air}.json")
     subprocess.run([sys.executable, os.path.join(ROOT, "tools", "thermal_board_b.py"), "--case", *cases, "--air", air,
-                    "--json", out], check=False)
+                    "--res", RES_MM, "--json", out], check=False)
     return out
 
 
@@ -95,6 +125,11 @@ def main():
     for air in ("fans", "nofan"):
         path = getattr(a, air) or run_board_b(air, cases)
         data[air] = {r["case"]: r for r in json.load(open(path))}
+        notord = [c for c, r in data[air].items() if r.get("ordered") is not True]
+        if notord:        # no verdict on a copper thickness that is not ordered (tools/copper_order.py)
+            raise SystemExit(f"{path}: cases {notord} were not run at the ordered copper ({copper_order.text('B')}): "
+                             "re-run tools/thermal_board_b.py without --outer-um / --inner-um")
+    print(f"board B copper: {copper_order.text('B')} (ordered, tools/copper_order.py)")
     for air in ("fans", "nofan"):
         for case in cases:
             r = data[air].get(case)
@@ -195,6 +230,15 @@ def firmware_limits(data, cabin):
     add("Board B limits", f"laminate / Tj when U6 reaches critical {crit} C (+{SENSOR_ERR:.0f} C sensor error, largest offset)",
         f"laminate {lam_at:.1f} C, Tj {tj_at:.1f} C", f"<= {LAMINATE_C:.0f} / {TJ_C:.0f} C",
         "PASS" if lam_at <= LAMINATE_C and tj_at <= TJ_C else "FAIL")
+    # the UI's hot-spot offset (ui PdmThermal.cs) must cover this map: /pdm converts the hot-spot set with it
+    cs = os.path.join(ROOT, "ui", "dingoConfig", "domain", "CustomPdm", "PdmThermal.cs")
+    if os.path.exists(cs):
+        ui = float(re.search(r"BoardBLaminateOffsetK = ([0-9.]+)", open(cs, encoding="utf-8").read()).group(1))
+        ok = round(d_lam, 1) <= ui <= round(d_lam, 1) + 1.0
+        add("Board B limits", "UI hot-spot offset (PdmThermal.BoardBLaminateOffsetK) vs the largest laminate offset of this map",
+            f"UI {ui:.1f} K, map {d_lam:.1f} K (UI sensor limit = hot spot - {math.ceil(ui + SENSOR_ERR)} K)",
+            "map <= UI <= map + 1 K", "PASS" if ok else "FAIL",
+            "" if ok else "set the constant to the map value (and docs/system-verification.md, port_boards.py: the UI test ties them)")
     for name, rating in LOGIC_PARTS:
         t = crit + SENSOR_ERR
         add("Board B limits", f"{name} at the critical limit (logic area at the U6 reading + {SENSOR_ERR:.0f} C)",
