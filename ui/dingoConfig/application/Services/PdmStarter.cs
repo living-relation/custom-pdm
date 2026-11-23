@@ -10,16 +10,19 @@ namespace application.Services;
 // that connects is read over it). The starter is different on purpose: UiWalkTests proves that its critical settings
 // (base IDs, 1000K, temperature limits, fan logic) equal New PDM's factory settings, so it is loaded like a New PDM:
 // writable, and a connected board asks "Keep PC settings / Take the board's" instead of being read over it.
+// carconfig (2026-11-23, Dan c4 = a): "Load the ST185 car config" loads ui/examples/st185-car.json (the install config
+// Dan approved, built from the st185 car map by St185CarTests) by the same rules; the tests prove the same of it.
 public static class PdmStarter
 {
     public const string FileName = "st185-starter.json";
+    public const string CarFileName = "st185-car.json";
 
     // ui/examples/<file> next to the app's sources (dotnet run from the repo: content root = ui/dingoConfig/web)
-    public static string? Find(string startDir)
+    public static string? Find(string startDir, string fileName = FileName)
     {
         for (var dir = new DirectoryInfo(startDir); dir != null; dir = dir.Parent)
         {
-            foreach (var rel in new[] { Path.Combine("examples", FileName), Path.Combine("ui", "examples", FileName) })
+            foreach (var rel in new[] { Path.Combine("examples", fileName), Path.Combine("ui", "examples", fileName) })
                 if (File.Exists(Path.Combine(dir.FullName, rel))) return Path.Combine(dir.FullName, rel);
         }
 
@@ -42,14 +45,14 @@ public static class PdmStarter
     }
 
     // Replaces the project with the starter. Returns why it was refused, or null.
-    public static async Task<string?> LoadAsync(string path, ConfigFileManager files, DeviceManager devices, PdmOps ops)
+    public static async Task<string?> LoadAsync(string path, ConfigFileManager files, DeviceManager devices, PdmOps ops, string what = "starter")
     {
         if (ops.Busy) return PdmOps.BusyReason;
         var loaded = await files.LoadDevices(path);
         files.NewFile(); // not "the open file": Save must ask for a name, never write into ui/examples
         var boards = loaded?.OfType<FwDevice>().ToList() ?? [];
-        if (loaded == null || boards.Count != loaded.Count) return "The starter file could not be read.";
-        if (Problem(boards) is { } why) return "The starter file is not a PDM project: " + why;
+        if (loaded == null || boards.Count != loaded.Count) return $"The {what} file could not be read.";
+        if (Problem(boards) is { } why) return $"The {what} file is not a PDM project: " + why;
         devices.ClearDevices();
         devices.AddDevices(loaded);
         foreach (var d in boards) d.CustomPdm!.FactoryNew = true;

@@ -170,6 +170,18 @@ automations:
     run_cmd: dotnet run --project ui/tools/DbcGen   # same run as dbc-gen; exits 1 on an ID clash in the dummy table
     check_cmd: dotnet run --project ui/tools/DbcGen -- --check   # also ui/tests CarCanDummyTests, LinkDummyTests, BusLoadDummyTests
     owner: claude
+  - id: st185-car-config
+    script: ui/tests/CustomPdm.Tests/St185CarTests.cs
+    helpers: [ui/dingoConfig/application/Services/PdmStarter.cs]   # carconfig (Dan c4 = a, 2026-11-23): the car map St185Car builds the file on a New PDM
+    trigger: manual
+    reads: [ui/dingoConfig/domain/CustomPdm/PdmFactoryDefaults.cs]   # the New PDM it starts from; the map is a dummy copy of st185-link-ecu-config @ 839be705 (read only)
+    writes: [ui/examples/st185-car.json]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: powershell -Command "$env:CUSTOMPDM_WRITE_CAR_CONFIG='1'; dotnet test ui\tests\CustomPdm.Tests --filter St185CarTests"
+    check_cmd: dotnet test ui\tests\CustomPdm.Tests --filter St185CarTests   # TheCarFileIsWhatTheMapBuilds, TheDocTableIsTheMap
+    owner: claude
   - id: ui-launcher
     script: ui/Start-PdmUi.ps1
     helpers: ["ui/Start PDM UI.cmd", ui/tests/sim_bridge.py, firmware/sim/build.sh]   # the .cmd is the double-click entry; Desktop shortcut "PDM UI.lnk" points at it
