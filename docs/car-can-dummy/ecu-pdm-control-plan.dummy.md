@@ -2,6 +2,10 @@ DUMMY TEST COPY - not a source of truth; real source: st185-link-ecu-config/CAN-
 
 # ECU -> PDM output control: preliminary plan (L4a, dummy)
 
+carsim (2026-11-23): the ST185 car config (`docs/st185-car-config.dummy.md`) needs NO ECU -> PDM frame: Dan 07:44, the ECU
+controls and powers its own loads (pump, EPS, fans, heater, A/C, ETB, injectors, coils) on its own relays. This plan
+stays for the starter and for any user who wants ECU-commanded outputs (the /pdm Functions panel, default ID 0x3F4).
+
 Plan only (Dan, 2026-11-16, L4a): nothing built, nothing agreed, no code change. The PDM is unproven theory until
 the PCBs are made. IDs and the bus come from `can-id-table.dummy.md`; bus load from `bus-load.dummy.md`.
 

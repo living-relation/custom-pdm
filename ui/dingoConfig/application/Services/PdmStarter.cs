@@ -10,12 +10,12 @@ namespace application.Services;
 // that connects is read over it). The starter is different on purpose: UiWalkTests proves that its critical settings
 // (base IDs, 1000K, temperature limits, fan logic) equal New PDM's factory settings, so it is loaded like a New PDM:
 // writable, and a connected board asks "Keep PC settings / Take the board's" instead of being read over it.
-// carconfig (2026-11-23, Dan c4 = a): "Load the ST185 car config" loads ui/examples/st185-car.json (the install config
+// carconfig (2026-11-23, Dan c4 = a): "Load the ST185 car config" loads ui/examples/st185-car.dummy.json (the install config
 // Dan approved, built from the st185 car map by St185CarTests) by the same rules; the tests prove the same of it.
 public static class PdmStarter
 {
     public const string FileName = "st185-starter.json";
-    public const string CarFileName = "st185-car.json";
+    public const string CarFileName = "st185-car.dummy.json";   // carsim (Dan D10, 2026-11-23): a DUMMY / demo config: its ECU CAN frames are not confirmed
 
     // ui/examples/<file> next to the app's sources (dotnet run from the repo: content root = ui/dingoConfig/web)
     public static string? Find(string startDir, string fileName = FileName)

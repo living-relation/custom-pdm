@@ -86,6 +86,9 @@ def case_currents(name):
         d, _ = TB.drive_currents()
         return dict(this={n: d["A1"].get(n, 0.0) for n in OUTS}, other_a={n: d["A2"].get(n, 0.0) for n in OUTS},
                     I_B=sum(d["B"].values()), b_scale=None, b_case="drive")
+    if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py, DUMMY data)
+        j = TB.carfull()
+        return dict(this=dict(zip(OUTS, j["A1"])), other_a=dict(zip(OUTS, j["A2"])), I_B=float(sum(j["B"])), b_scale=None, b_case="carfull")
     raise SystemExit(f"unknown case {name}")
 
 

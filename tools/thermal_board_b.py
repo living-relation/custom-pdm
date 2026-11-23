@@ -124,6 +124,16 @@ S5_CSV = os.path.join(REPO, "firmware", "sim", "data", "s5_board_power.csv")
 DRIVE_PHASE = "coolant"
 
 
+# carsim (2026-11-23): the full-PDM ST185 car config (DUMMY), every car load on (night rain), RMS current per output from
+# firmware/sim/s5_car_cycle.py (firmware/sim/data/s5_car_currents.dummy.json, DUMMY test data); case "carfull"
+CARFULL_JSON = os.path.join(REPO, "firmware", "sim", "data", "s5_car_currents.dummy.json")
+
+
+def carfull():
+    with open(CARFULL_JSON, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def drive_currents(path=S5_CSV, phase=DRIVE_PHASE):
     """{"A1" | "A2" | "B": {PF_OUTn: RMS A}} over the drive-cycle phase whose name starts with `phase`, and its name."""
     import csv
@@ -157,6 +167,9 @@ def case_currents(name):
     if name == "drive":
         d, _ = drive_currents()
         return {n: d["B"].get(n, 0.0) for n in o}, sum(d["A1"].values()) + sum(d["A2"].values())
+    if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py)
+        j = carfull()
+        return {f"PF_OUT{i + 1}": float(x) for i, x in enumerate(j["B"])}, float(sum(j["A1"]) + sum(j["A2"]))
     raise SystemExit(f"unknown case {name}")
 
 

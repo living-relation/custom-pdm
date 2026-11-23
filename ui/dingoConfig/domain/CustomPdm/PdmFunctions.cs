@@ -29,9 +29,20 @@ public record PdmTurnSpec(int LeftOut, int RightOut, PdmTerm Left, PdmTerm Right
 public record PdmWiperSpec(int SlowOut, int FastOut, PdmTerm Slow, PdmTerm? Fast, PdmTerm? Inter, int ParkInput, bool ParkHigh = true,
     PdmTerm? Wash = null, int WashWipes = 3, int InterMs = 3000);
 
+// carsim (Dan 2026-11-23: "why can't the PDM do what the stalk switch does?"): pop-up headlamps driven straight from the
+// PDM, no retract relay. Each motor turns one way only (a crank: one half turn up, the next half turn down), so one
+// high-side output per motor runs it until ITS OWN limit contact says it has arrived (like the wiper park cam):
+//   up    = (UpAlso AND UpAlsoWith) OR Up      (ST185: DRL switch AND EFI main, or head / flash)
+//   down  = Down AND NOT up                     (ST185: the light switch OFF contact; flash wins)
+//   run   = (up AND NOT at top) OR (down AND NOT at bottom)        one per motor, its own limit inputs
+// The limit inputs must be on the motors' board (the stop must not wait for CAN). Cost: 6 virtual inputs (+ 1 CAN
+// input per command input of another board). Proven in firmware/sim s5_drive_cycle.py --car (pop-up phases).
+public record PdmPopUpSpec(int LeftOut, int RightOut, PdmTerm Up, PdmTerm Down, int LeftTop, int LeftBottom, int RightTop, int RightBottom,
+    PdmTerm? UpAlso = null, PdmTerm? UpAlsoWith = null);
+
 public static class PdmFunctions
 {
-    public const string Turn = "turn signals", WiperKind = "wiper";
+    public const string Turn = "turn signals", WiperKind = "wiper"; public const string PopUpsKind = "pop-ups";   // carsim
     public const int DefaultFlashMs = 350;
 
     private static PdmBoard BoardOf(PdmView v, PdmOutputRow o) => v.Boards.Single(b => ReferenceEquals(b.Device, o.Device));
@@ -75,6 +86,7 @@ public static class PdmFunctions
         {
             list.AddRange(Turns(m, q));
             if (WiperOf(m, q) is { } w) list.Add(w);
+            list.AddRange(PopUpsOf(m, q));   // carsim
         }
         return list;
     }
@@ -136,6 +148,100 @@ public static class PdmFunctions
         var outs = fast != null ? new[] { slow.Number, fast.Number } : [slow.Number];
         var per = fast != null ? new[] { $"wiper motor run ({desc})", $"wiper high speed (output {slow.Number}'s wiper)" } : [$"wiper motor run ({desc})"];
         return new PdmFunction(WiperKind, q.Role, outs, $"the wiper of {q.Role} (outputs {string.Join(" / ", outs)})", made, per);
+    }
+
+    // ---------------- pop-ups (carsim) ----------------
+
+    private static bool Shape(VirtualInput? vi, Conditional c0, bool not1, Conditional? c1) => vi != null && vi is { Enabled: true, Mode: InputMode.Momentary, Not0: false, Not2: false }
+        && vi.Cond0 == c0 && vi.Not1 == not1 && (c1 == null ? vi.Var2 == 0 : vi.Cond1 == c1 && vi.Var2 != 0);
+
+    private static IEnumerable<PdmFunction> PopUpsOf(PdmModel m, PdmBoard q)
+    {
+        var v = m.View;
+        var d = q.Device;
+        VirtualInput? V(int var) => StateOwner(d, var) as VirtualInput;
+        bool OwnDi(int var) => StateOwner(d, var) is DigitalInput;
+        var motors = new List<(PdmOutputRow O, VirtualInput Run, VirtualInput X, VirtualInput Up, VirtualInput Down)>();
+        foreach (var o in v.Outputs.Where(o => o.Board == q.Role))
+        {
+            var run = V(o.Output.Input);
+            if (!Shape(run, Conditional.And, true, Conditional.Or) || !OwnDi(run!.Var1)) continue;
+            var x = V(run.Var2);
+            if (!Shape(x, Conditional.And, true, null) || !OwnDi(x!.Var1)) continue;
+            var down = V(x.Var0);
+            if (!Shape(down, Conditional.And, true, null) || down!.Var1 != run.Var0) continue;
+            var up = V(run.Var0);
+            if (!(Shape(up, Conditional.And, false, Conditional.Or) || Shape(up, Conditional.And, false, null) && up!.Var1 == PdmTriggers.AlwaysOnVar)) continue;
+            motors.Add((o, run, x, up!, down));
+        }
+        foreach (var g in motors.GroupBy(x => (x.Up, x.Down)).Where(g => g.Count() == 2))
+        {
+            var (l, r) = (g.OrderBy(x => x.O.Number).First(), g.OrderBy(x => x.O.Number).Last());
+            var made = new List<PdmRes>();
+            var up = g.Key.Up;
+            var upText = up.Var2 != 0
+                ? $"({T(m, q.Role, Term(v, q, up.Var0, made))} and {T(m, q.Role, Term(v, q, up.Var1, made))}) or {T(m, q.Role, Term(v, q, up.Var2, made))}"
+                : T(m, q.Role, Term(v, q, up.Var0, made));
+            var downText = T(m, q.Role, Term(v, q, g.Key.Down.Var0, made));
+            foreach (var vi in new[] { up, g.Key.Down, l.X, l.Run, r.X, r.Run }) made.Add(new PdmRes(q.Role, PdmResKind.VirtualInput, d.VirtualInputs.IndexOf(vi)));
+            string Per(string side, VirtualInput run, VirtualInput x) =>
+                $"pop-up {side} motor: up on {upText}, down on {downText} (not while up); stops at its own limit contacts {T(m, q.Role, Term(v, q, run.Var1, []))} (top) / {T(m, q.Role, Term(v, q, x.Var1, []))} (bottom)";
+            yield return new PdmFunction(PopUpsKind, q.Role, [l.O.Number, r.O.Number], $"the pop-up headlamps (outputs {l.O.Number} / {r.O.Number})", made,
+                [Per("LH", l.Run, l.X), Per("RH", r.Run, r.X)]);
+        }
+    }
+
+    public static IReadOnlyDictionary<PdmResKind, int> PopUpCost(PdmView v, string role, PdmPopUpSpec s)
+    {
+        var c = new Dictionary<PdmResKind, int> { [PdmResKind.VirtualInput] = 6 };
+        if (OtherBoard(v, role, [s.Up, s.Down, s.UpAlso, s.UpAlsoWith]) is > 0 and var n) c[PdmResKind.CanInput] = n;
+        return c;
+    }
+
+    public static string? SetPopUps(PdmView v, PdmPopUpSpec s, bool overwrite = false)
+    {
+        if ((s.UpAlso == null) != (s.UpAlsoWith == null)) return "The second 'up' condition needs both of its inputs (or neither).";
+        if (Begin(v, PopUpsKind, [s.LeftOut, s.RightOut], overwrite, out var q, out var restore) is { } why) return why;
+        string? Fail(string msg) { restore.Restore(); return msg; }
+        foreach (var (t, w) in new[] { (s.Up, "up"), (s.Down, "down"), (s.UpAlso, "up (also)"), (s.UpAlsoWith, "up (also, with)") })
+            if (TermProblem(v, q.Role, t, w) is { } bad) return Fail(bad);
+        var limits = new[] { s.LeftTop, s.LeftBottom, s.RightTop, s.RightBottom };
+        if (limits.Distinct().Count() != 4) return Fail("The four limit contacts must be four different inputs.");
+        if (limits.Any(n => v.Inputs.FirstOrDefault(r => r.Number == n && r.Digital != null)?.Board != q.Role))
+            return Fail($"The pop-up limit contacts must be digital inputs of {q.Role} (the motors' board): the stop must not wait for CAN.");
+        var need = PopUpCost(v, q.Role, s);
+        if (!Fits(v, q.Role, need)) return Fail(Full(v, q.Role, need));
+        var m = PdmModel.Build(v);
+        var d = q.Device;
+        var freeC = new Queue<int>(m.FreeOf(q.Role, PdmResKind.CanInput));
+        var freeV = new Queue<int>(m.FreeOf(q.Role, PdmResKind.VirtualInput));
+        VirtualInput Vi(string name)
+        {
+            var vi = d.VirtualInputs[freeV.Dequeue()];
+            PdmEngine.Reset(vi);
+            (vi.Name, vi.Enabled, vi.Mode) = (name, true, InputMode.Momentary);
+            return vi;
+        }
+        int Var(VirtualInput x) => PdmFactoryDefaults.VarOf(d, x);
+        int Di(int n) => PdmFactoryDefaults.VarOf(d, v.Inputs.Single(r => r.Number == n && r.Digital != null).Digital!);
+        var upT = TermVar(v, q, s.Up, freeC, "pop-ups up");
+        var downT = TermVar(v, q, s.Down, freeC, "pop-ups down");
+        var up = Vi("pop-ups up");
+        if (s.UpAlso != null)
+            (up.Var0, up.Cond0, up.Var1, up.Cond1, up.Var2) = (TermVar(v, q, s.UpAlso, freeC, "pop-ups up"), Conditional.And,
+                TermVar(v, q, s.UpAlsoWith!, freeC, "pop-ups up"), Conditional.Or, upT);
+        else (up.Var0, up.Cond0, up.Var1) = (upT, Conditional.And, PdmTriggers.AlwaysOnVar);
+        var down = Vi("pop-ups down");
+        (down.Var0, down.Cond0, down.Not1, down.Var1) = (downT, Conditional.And, true, Var(up));
+        foreach (var (o, top, bottom, side) in new[] { (s.LeftOut, s.LeftTop, s.LeftBottom, "LH"), (s.RightOut, s.RightTop, s.RightBottom, "RH") })
+        {
+            var x = Vi($"pop-up {side}: down, not at the bottom");
+            (x.Var0, x.Cond0, x.Not1, x.Var1) = (Var(down), Conditional.And, true, Di(bottom));
+            var run = Vi($"pop-up {side}: run");
+            (run.Var0, run.Cond0, run.Not1, run.Var1, run.Cond1, run.Var2) = (Var(up), Conditional.And, true, Di(top), Conditional.Or, Var(x));
+            v.Outputs.Single(r => r.Number == o).Output.Input = Var(run);
+        }
+        return null;
     }
 
     // ---------------- cost ----------------

@@ -56,8 +56,8 @@ On an empty PDM page you get three buttons:
 
 ![The empty PDM page](ui-guide/02-empty-pdm.png)
 
-- **Load the ST185 car config**: the settings for YOUR car (`ui/examples/st185-car.json`, explained in
-  `docs/st185-car-config.md`). Use this one for the car.
+- **Load the ST185 car config**: the settings for YOUR car (`ui/examples/st185-car.dummy.json`, explained in
+  `docs/st185-car-config.dummy.md`). Use this one for the car.
 - **New PDM**: three empty boards with our factory settings.
 - **Load the ST185 starter**: a demo with fans, fuel pump, lights, horn, turn signals and wiper (not the real car).
   Most pictures below use it.
@@ -181,7 +181,7 @@ Press **Export DBC**. Your browser downloads `custompdm_PDM.dbc`: every PDM mess
 
 ## 13. In the car (real hardware later)
 
-1. Wire the box (`docs/box-connectors.md`, `docs/st185-car-config.md` "Install in the car"). Set the input-board DIP switches.
+1. Wire the box (`docs/box-connectors.md`, `docs/st185-car-config.dummy.md` "Install in the car"). Set the input-board DIP switches.
 2. Plug the USB-CAN adapter into the car's CAN bus, key on, start the tool with `-NoSim`, connect (step 2, 1000K).
 3. On the empty PDM page press **Load the ST185 car config**, answer **Keep the PC's settings** (Write All runs).
    Wait for "written OK" on A1, A2 and B.

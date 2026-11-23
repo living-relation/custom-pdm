@@ -8,7 +8,7 @@ namespace CustomPdm.Tests;
 
 // carconfig: the ST185 install steps on the simulated boards (real firmware logic): "Load the ST185 car config" on
 // fresh boards, Write All, Burn, a power cycle of all three boards, then a fresh PC (app restart) reads every function
-// back in the same words; then the outputs act on the bench: key on, the ECU frame, ECU frames lost.
+// back in the same words; then the outputs act on the bench: key on, head lamps, the ECU letting go of its main relay.
 [Collection("sim")]
 public class St185CarLiveSimTests(ITestOutputHelper output)
 {
@@ -49,24 +49,14 @@ public class St185CarLiveSimTests(ITestOutputHelper output)
         Assert.Equal(want, got);
         Assert.Empty(PdmModel.Build(svc2.BuildView()).Problems);
 
-        // on the bench (inputs and outputs count from 0 in the bridge): key on -> CSB3, cluster (A1) and the
-        // CAN-Lambda (B, A1's input over CAN); off until the ECU's first frame: pump, fans, EPS enable
+        // on the bench (inputs and outputs count from 0 in the bridge; carsim 2026-11-23 map): key on = the ignition on B IN2
+        // and the EFI main relay output on A1 IN5 -> CAN-Lambda and power windows (B), CSB3 and cluster (A1, Bus 2 = IN5)
+        bus.Cmd("IN B 1 12v");
         bus.Cmd("IN A1 4 12v");
         bus.Run(500);
-        Assert.Equal((true, true, true), (bus.Pin("A1", 6), bus.Pin("A1", 7), bus.Pin("B", 4)));
-        Assert.Equal((false, false, false, false), (bus.Pin("B", 2), bus.Pin("B", 0), bus.Pin("B", 1), bus.Pin("A1", 5)));
-
-        // the ECU frame (placeholder 0x3F4): pump and EPS enable on, fans off
-        for (var t = 0; t < 600; t += 50)
-        {
-            bus.Cmd("T 3F4 0100000100000000");
-            bus.Run(50);
-        }
-        Assert.Equal((true, true, false, false), (bus.Pin("B", 2), bus.Pin("A1", 5), bus.Pin("B", 0), bus.Pin("B", 1)));
-
-        // ECU frames lost: every ECU-commanded load off after 1 s (pump, EPS enable, fans; configfix 2026-11-23: the ECU keeps control)
-        bus.Run(3000);
-        Assert.Equal((false, false, false, false), (bus.Pin("B", 2), bus.Pin("A1", 5), bus.Pin("B", 0), bus.Pin("B", 1)));
+        Assert.Equal((true, true, true, true), (bus.Pin("A1", 6), bus.Pin("A1", 7), bus.Pin("B", 4), bus.Pin("B", 0)));
+        // the ECU's own loads are not on the PDM: B OUT2 / OUT3 and A1 OUT6 stay spare (off)
+        Assert.Equal((false, false, false), (bus.Pin("B", 1), bus.Pin("B", 2), bus.Pin("A1", 5)));
 
         // head lamps: low (A1 OUT1) and high (A1 OUT2) on their switches to ground; DRL off with the head lamps on
         bus.Cmd("IN A1 2 gnd");   // DRL switch on
@@ -76,5 +66,10 @@ public class St185CarLiveSimTests(ITestOutputHelper output)
         bus.Cmd("IN A1 1 gnd");
         bus.Run(300);
         Assert.Equal((false, true, true), (bus.Pin("A1", 2), bus.Pin("A1", 0), bus.Pin("A1", 1)));
+
+        // the ECU lets go of its main relay (end of its after-run): CSB3 and cluster off with IN5, the key-off functions stay
+        bus.Cmd("IN A1 4 open down");
+        bus.Run(300);
+        Assert.Equal((false, false), (bus.Pin("A1", 6), bus.Pin("A1", 7)));
     }
 }
