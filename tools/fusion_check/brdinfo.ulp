@@ -1,0 +1,24 @@
+string fn = argv[1];
+board(B) {
+  output(fn, "wt") {
+    printf("AREA_MM %.3f %.3f %.3f %.3f\n", u2mm(B.area.x1), u2mm(B.area.y1), u2mm(B.area.x2), u2mm(B.area.y2));
+    B.layers(L) { if (L.used) printf("LAYER %d %s\n", L.number, L.name); }
+    int e = 0; B.elements(E) e++;
+    int s = 0; B.signals(S) s++;
+    int pads = 0; int pths = 0;
+    B.elements(E) { E.package.contacts(C) { pads++; if (C.pad) pths++; } }
+    int vias = 0; B.signals(S) { S.vias(V) vias++; }
+    printf("COUNTS elements %d signals %d contacts %d pth %d vias %d\n", e, s, pads, pths, vias);
+    B.elements(E) {
+      int n = 0; E.package.contacts(C) n++;
+      printf("E %s|%s|%d\n", E.name, E.package.name, n);
+    }
+    B.signals(S) {
+      int n = 0; S.contactrefs(C) n++;
+      printf("S %s|%d|", S.name, n);
+      S.contactrefs(C) printf(" %s.%s", C.element.name, C.contact.name);
+      printf("\n");
+    }
+    B.wires(W) { if (W.layer == 20) printf("EDGE %.3f %.3f %.3f %.3f\n", u2mm(W.x1), u2mm(W.y1), u2mm(W.x2), u2mm(W.y2)); }
+  }
+}
