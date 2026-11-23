@@ -12,7 +12,7 @@ automations:
               tools/sch_board_power.py, tools/pcb_board_power.py, tools/sch_digikey.py, tools/pcb_digikey.py,
               tools/sch_tp_orphans.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py,
               tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py, tools/pcb_stackup.py, tools/copper_order.py,
-              tools/drc_erc_waivers.py]
+              tools/drc_erc_waivers.py, tools/tlv_unused.py]
     trigger: manual
     reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
     writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]

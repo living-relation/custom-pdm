@@ -162,10 +162,9 @@ WAIVERS = [
      "GND pour, carries mA only, and 1 spoke solders easier; same as stock"),
 ]
 # real items that stay visible until Dan / the coordinator decides (warnings, not waived)
-OPEN = [
-    ("A", "erc", "missing_unit", r"Symbol (U7|U12) "),
-    ("A", "erc", "missing_input_pin", r"Symbol (U7|U12) "),
-]
+# (board A's unused TLV9004 channels, U7 A / U12 A + B, were listed here until job tlvunused, 2026-11-23: they are
+# followers now, tools/tlv_unused.py; a missing unit or floating op-amp input is a NOT WAIVED item again)
+OPEN = []
 
 
 def run_cli(args):

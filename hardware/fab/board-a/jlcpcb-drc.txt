@@ -1,5 +1,5 @@
 JLCPCB check: board-a (4 layers). Limits: JLCPCB capabilities page, multilayer, 1 oz outer copper (read 2026-11-16).
-Zone fills: a refill (KiCad 9) changes the filled area by at most 0.000 % (GND on F.Cu); current
+Zone fills: a refill (KiCad 9) changes the filled area by at most 0.000 % (-); current
 Drilled holes on the same spot (two vias / via on a pad): none
 Hole pairs closer than JLCPCB's hole-to-hole limits (via-via 0.2 mm, pad hole 0.45 mm): none
 Assembly: 129 parts in 44 BOM lines, 129 placements; rotation offsets applied to: D2 +180, D4 +180, D6 +180, D7 +180, U2 +270, U3 +270, U4 +270, U5 +270, U6 +270, U7 +270, U8 +270, U10 +270, U11 +270, U12 +270, U13 +270
