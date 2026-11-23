@@ -26,15 +26,73 @@ stdio commands (one per line, every reply ends with a line "OK"):
   TRACE <ms> <step> <ids|-> <board>:<o> ...   run <ms> in <step> ms steps; prints "E <board>:<o> <bus ms> <0|1>" at
                               the start and at every change of those output pins, then "FRAME <id> <first ms> <last ms>
                               <count>" for each listed ID (hex, comma separated) seen
+  CB <base hex> <verb> ...    a simulated Dingo Electronics CANBoard (see CanBoard below): ADD | DEL | SW <i> <0|1> |
+                              AN <i> <mV> | ROT <i> <pos> | LINK <on|off> | OUT <n> <id hex> <start bit> [time-out ms] |
+                              OUT <n> off (i, n count from 0); also a play line of the real-time bridge
+  CBOUT <base hex>            prints "C <o1><o2><o3><o4>": the CANBoard's 4 outputs now (its own state, not a frame)
+  BUSLOAD <ms>                run the bus <ms>; prints "B <busy us> <frames>" for that time
   QUIT
 """
-import os, sys, time, socket, select
+import os, sys, time, socket, select, struct
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'firmware', 'sim'))
 import pdmsim as ps   # noqa: E402
 
 BOARDS = {'A1': (ps.BOARD_A, 1), 'A2': (ps.BOARD_A, 2), 'B': (ps.BOARD_B, 1)}
+
+
+class CanBoard(ps.PyNode):
+    """canboard (2026-11-22): a stand-in for a Dingo Electronics CANBoard running dingoFW. NOT its firmware: a model
+    written from firmware/boards/canboard_v2/msg.cpp (TxMsg0-2, always sent), core/device_config.h (status msg n on
+    base + 2 + n, every 100 ms) and functions/can_input.cpp + digital_output.cpp (an output follows a CAN input:
+    value == 1, off when no frame came for the time-out). 1 Mbit/s (the board must be set to it: 500K from factory).
+      base + 2   analog inputs 1-4 in mV (uint16 LE)          base + 3   analog input 5 in mV, bytes 6-7 temperature
+      base + 4   byte 0-2 rotary positions (nibbles), byte 4 digital inputs 1-8, byte 5 analog inputs as switches
+                 (over 2.5 V, the firmware default), byte 6 the 4 output states, byte 7 heartbeat (+1 per frame)
+    OUT <n> <id> <start bit> [ms] is what the user sets on the real CANBoard for output n: CAN input n = that ID,
+    start bit, 8 bits, Equal 1, time-out on; digital output n = CAN input n."""
+    def __init__(s, base, now):
+        super().__init__(f'canboard{base:X}'); s.base = base; s.sw = [0] * 8; s.an = [0] * 5; s.rot = [0] * 5; s.hb = 0
+        s.cfg = {}; s.val = {}; s.temp = 30; s.now = now; s.on_rx = s._rx; s.every(100000, s._tick, now + 1000)
+    def _rx(s, f):
+        for n, (i, bit, _) in s.cfg.items():
+            if f.id == i and not f.ide: s.val[n] = ((int.from_bytes(f.data, 'little') >> bit) & 0xFF, f.t)
+    def outs(s, now):
+        return [int(n in s.cfg and n in s.val and s.val[n][0] == 1 and now - s.val[n][1] <= s.cfg[n][2]) for n in range(4)]
+    def _tick(s, t):
+        s.now = t
+        if not s.connected: s.q.clear(); return     # unplugged: nothing queued for later
+        o = s.outs(t)
+        s.send(s.base + 2, struct.pack('<4H', *s.an[:4]))
+        s.send(s.base + 3, struct.pack('<4H', s.an[4], 0, 0, s.temp))
+        s.send(s.base + 4, bytes([s.rot[1] << 4 | s.rot[0], s.rot[3] << 4 | s.rot[2], s.rot[4], 0,
+                                  sum(b << i for i, b in enumerate(s.sw)), sum((mv > 2500) << i for i, mv in enumerate(s.an)),
+                                  sum(b << i for i, b in enumerate(o)), s.hb]))
+        s.hb = (s.hb + 1) & 255
+
+
+CANBOARDS = {}   # base ID -> CanBoard (one bus per bridge process)
+
+
+def canboard_cmd(a, bus):
+    """CB <base hex> <verb> ...: True when done, False for a line it does not know (raises on a bad number)."""
+    if len(a) < 3: return False
+    base = int(a[1], 16); verb = a[2].upper(); cb = CANBOARDS.get(base)
+    if verb == 'ADD':
+        if cb is None: cb = CANBOARDS[base] = CanBoard(base, bus.now); bus.add(cb)
+        return True
+    if cb is None: return False
+    if verb == 'DEL' and len(a) == 3: bus.nodes.remove(cb); del CANBOARDS[base]
+    elif verb == 'SW' and len(a) == 5 and a[4] in ('0', '1'): cb.sw[int(a[3])] = int(a[4])
+    elif verb == 'AN' and len(a) == 5 and 0 <= int(float(a[4])) <= 5000: cb.an[int(a[3])] = int(float(a[4]))
+    elif verb == 'ROT' and len(a) == 5 and 0 <= int(a[4]) <= 15: cb.rot[int(a[3])] = int(a[4])
+    elif verb == 'LINK' and len(a) == 4 and a[3].lower() in ('on', 'off'): cb.connected = a[3].lower() == 'on'
+    elif verb == 'OUT' and len(a) == 5 and a[4].lower() == 'off' and 0 <= int(a[3]) < 4: cb.cfg.pop(int(a[3]), None); cb.val.pop(int(a[3]), None)
+    elif verb == 'OUT' and len(a) in (6, 7) and 0 <= int(a[3]) < 4 and 0 <= int(a[5]) <= 56:
+        cb.cfg[int(a[3])] = (int(a[4], 16), int(a[5]), int(float(a[6]) * 1000) if len(a) == 7 else 1000000); cb.val.pop(int(a[3]), None)
+    else: return False
+    return True
 
 
 def make_bus(so):
@@ -75,6 +133,13 @@ def stdio(so):
             b = boards[a[1]]; amps = float(a[3]); b.set_load(int(a[2]), b.vbat / amps if amps else 0)
         elif c == 'LINK':
             boards[a[1]].connected = a[2].lower() == 'on'
+        elif c == 'CB':   # canboard: a simulated CANBoard
+            if not canboard_cmd(a, bus): sys.stdout.write(f'ERR {raw.strip()}\n')
+        elif c == 'CBOUT':
+            sys.stdout.write('C ' + ''.join(str(x) for x in CANBOARDS[int(a[1], 16)].outs(bus.now)) + '\n')
+        elif c == 'BUSLOAD':
+            b0, n0 = bus.busy_us, bus.count; bus.run_for(float(a[1])); out.clear()
+            sys.stdout.write(f'B {bus.busy_us - b0} {bus.count - n0}\n')
         elif c == 'PIN':   # B4: ground truth of an output, its PROFET IN pin (as s1_system.py pins_on)
             b = boards[a[1]]; sys.stdout.write(f'P {int(bool(b.level(b.model["outputs"][int(a[2])][0])))}\n')
         elif c == 'RESTART':   # w1: power-cycle boards (config kept: FRAM; wires, input DIPs and CAN wires kept)
@@ -110,9 +175,11 @@ def play_ctl(a, so, bus, tool, boards, periodic):
     """uiwalk: one line of <so dir>/ctl<port> (real-time bridge), so the play UI can be exercised without the tests:
     IN <board> <i> <open|gnd|12v> [dip]   LINK <board> <on|off>   LOAD <board> <o> <amps>   TEMP <board> <C> [die C]
     AN <board> <volts>   RESTART <board> ...   T <id hex> <data hex>   TXP <id hex> <data hex|off> [period ms]
+    CB <base hex> ADD | DEL | SW <i> <0|1> | AN <i> <mV> | ROT <i> <pos> | LINK <on|off> | OUT <n> <id hex> <start bit> [ms] | OUT <n> off
     (i and o count from 0, as in the --stdio protocol). Returns False for a line it does not know."""
     if not a: return False
     c = a[0].upper()
+    if c == 'CB': return canboard_cmd(a, bus)   # canboard: a simulated CANBoard
     if c == 'IN' and len(a) >= 4: boards[a[1]].set_input(int(a[2]), a[3], a[4] if len(a) > 4 else None)
     elif c == 'LINK' and len(a) == 3: boards[a[1]].connected = a[2].lower() == 'on'
     elif c == 'LOAD' and len(a) == 4:
