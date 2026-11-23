@@ -44,7 +44,7 @@ dfm 7 W, tolerance 5 W: the same today on 19479b5; on main bc32eca (merged here)
 **Result: PASS (job configfix, 2026-11-23, branch `fix/drive-cycle-config` merged with main b75c243).** All 24 output
 pins of A1, A2 and B followed the ST185 starter's logic every 1 ms through the whole 220 s cycle, every change inside its
 timing window: 34 of 34 checks, 0 XFAIL. No watchdog reset, no unplanned MCU reset, no CAN overrun. 16 of 16 one-line
-config mutations turned the run RED (each by a failed check, not a crash). The car config (`ui/examples/st185-car.json`)
+config mutations turned the run RED (each by a failed check, not a crash). The car config (`ui/examples/st185-car.dummy.json`)
 gets its own run in the carsim job.
 
 How it works, in plain words:

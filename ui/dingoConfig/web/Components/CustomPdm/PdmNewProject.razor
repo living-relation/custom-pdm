@@ -35,16 +35,16 @@
             </MudText>
         </MudStack>
     }
-    @* carconfig: the install config for the car (ui/examples/st185-car.json), loaded by the same rules as the starter *@
+    @* carconfig: the install config for the car (ui/examples/st185-car.dummy.json), loaded by the same rules as the starter *@
     @if (_car != null)
     {
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-3">
             <MudButton Variant="Variant.Outlined" Size="Size.Small" StartIcon="@Icons.Material.Filled.CarRepair"
                        Disabled="@Pdm.Ops.Busy" OnClick="@LoadCar" id="pdm-load-car">Load the ST185 car config</MudButton>
             <MudText Typo="Typo.body2">
-                The install config for the ST185 (from the st185 car map, docs/st185-car-config.md): lights, horns, the
-                ECU's fuel pump, fans and EPS enable, the CAN-Lambda, the A/C clutch and the module feeds. The ECU frame
-                0x3F4 is a placeholder until the Link ECU CAN setup is done. Write All, Burn, then check the outputs.
+                DUMMY / DEMO install config for the ST185 (from the st185 car map, docs/st185-car-config.dummy.md): every load of
+                the car's fuse and relay boxes that fits the 23 outputs. The ECU frame 0x3F3 is derived from the st185 CAN
+                rules but NOT confirmed on the real ECU: test only. Write All, Burn, then check the outputs.
             </MudText>
         </MudStack>
     }
@@ -66,7 +66,7 @@
         {
             var refused = await PdmStarter.LoadAsync(_car!, Files, Devices, Pdm.Ops, "car config");
             if (refused != null) Notification.NewError($"Car config not loaded: {refused}");
-            else Notification.NewSuccess("ST185 car config loaded: Write All, Burn, then check the outputs (docs/st185-car-config.md)");
+            else Notification.NewSuccess("ST185 car config (DUMMY / demo, ECU frames not confirmed) loaded: Write All, Burn, then check the outputs (docs/st185-car-config.dummy.md)");
         }
         catch (Exception ex)
         {

@@ -48,10 +48,21 @@ public static class PdmKeyOff
         return PdmFactoryDefaults.CanInState(d, free);
     }
 
+    // carsim (2026-11-23, Dan: the ECU power hold / after-run and the key-off functions must never be cut by PDM sleep):
+    // up to two more "stay awake" inputs. The timer's reset is then one virtual input per board, "IN a OR IN b [OR IN c]"
+    // (each term the input itself or its msg 37 CAN input, as above), named AwakeTag: the timer runs only when ALL of
+    // them are off. The ST185 car uses IN5 = the EFI main relay output (on with the key AND during the ECU's after-run
+    // hold), the tail switch and the hazard switch.
+    public const string AwakeTag = "stay awake (key off / auto sleep)";
+
+    private static int FreeVirt(PdmBoard q) => Enumerable.Range(0, q.Device.VirtualInputs.Count).FirstOrDefault(k => PdmLinks.IsFreeVirt(q, k), -1);
+
     // Auto sleep on every board (recipe above). Null = set on the PC (Write All sends it); else why not (nothing changed).
-    public static string? SetAutoSleep(PdmView v, int ignitionInput, int muteDelayMs = MuteDelayMs)
+    public static string? SetAutoSleep(PdmView v, int ignitionInput, int muteDelayMs = MuteDelayMs, params int[] awakeInputs)
     {
         if (muteDelayMs is < 1000 or > 600000) return "The key-off delay must be 1 to 600 s.";
+        if (awakeInputs.Length > 2) return "At most two inputs besides the ignition keep the PDM awake.";
+        if (awakeInputs.Contains(ignitionInput) || awakeInputs.Distinct().Count() != awakeInputs.Length) return "Each stay-awake input must be a different input.";
         var restore = PdmSnapshot.Take(v.Boards.Select(b => b.Device).ToList());
         foreach (var q in v.Boards)
         {
@@ -62,6 +73,23 @@ public static class PdmKeyOff
             {
                 restore.Restore();
                 return why ?? $"{q.Role} has no free timer for the key-off delay.";
+            }
+            if (awakeInputs.Length > 0)
+            {
+                var terms = new List<int> { ign };
+                foreach (var a in awakeInputs)
+                {
+                    var x = IgnitionVar(v, q, a, out why);
+                    if (x < 0) { restore.Restore(); return why; }
+                    terms.Add(x);
+                }
+                var k = FreeVirt(q);
+                if (k < 0) { restore.Restore(); return $"{q.Role} has no free virtual input for the stay-awake inputs."; }
+                var vi = d.VirtualInputs[k];
+                PdmEngine.Reset(vi);
+                (vi.Name, vi.Enabled, vi.Mode, vi.Var0, vi.Cond0, vi.Var1) = (AwakeTag, true, InputMode.Momentary, terms[0], Conditional.Or, terms[1]);
+                if (terms.Count > 2) (vi.Cond1, vi.Var2) = (Conditional.Or, terms[2]);
+                ign = PdmFactoryDefaults.VarOf(d, vi);
             }
             var tm = d.Timers[t];
             (tm.Name, tm.Enabled, tm.Input, tm.ResetInput, tm.Mode, tm.Time) =

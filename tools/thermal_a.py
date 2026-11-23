@@ -79,6 +79,9 @@ def case_currents(name):
         return dict(this=this, other_a=dict(this), I_B=30.0, b_scale=30.0 / 184.0)
     if name == "car":
         return dict(this=dict(zip(OUTS, CAR_A1)), other_a=dict(zip(OUTS, CAR_A2)), I_B=118.1, b_scale=None)
+    if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py, DUMMY data)
+        j = TB.carfull()
+        return dict(this=dict(zip(OUTS, j["A1"])), other_a=dict(zip(OUTS, j["A2"])), I_B=float(sum(j["B"])), b_scale="carfull")
     raise SystemExit(f"unknown case {name}")
 
 
@@ -94,6 +97,8 @@ def board_b_heat(c):
     """Board B's heat for the box total (W): drivers at their currents + copper estimate + 5 V module."""
     if c["b_scale"] is None:                     # car: thermal_board_b car currents
         cur, _ = TB.case_currents("car")
+    elif c["b_scale"] == "carfull":              # carsim: the full-PDM car currents
+        cur, _ = TB.case_currents("carfull")
     else:
         cur = {n: v * c["b_scale"] for n, v in TB.case_currents("rating")[0].items()}
     chips = TB.chip_list(cur)

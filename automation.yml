@@ -152,6 +152,17 @@ automations:
     enabled: true
     run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --out /tmp/s5   # after firmware/sim/build.sh x 3; 34 of 34; --mutants: 16 of 16 RED
     owner: claude
+  - id: firmware-car-cycle
+    script: firmware/sim/s5_car_cycle.py
+    helpers: [tools/presim_parts.py]   # carsim (2026-11-23): the full-PDM ST185 car config day; pdmsim.py is listed under firmware-sim
+    trigger: manual
+    reads: [firmware/sim/data/st185-car.params.dummy.tsv, docs/car-can-dummy/bus-load.dummy.md]
+    writes: [firmware/sim/data/s5_car_board_power.dummy.csv, firmware/sim/data/s5_car_currents.dummy.json]   # copied from the run's --out folder (s5_car_board_power.csv, s5_car_currents.dummy.json); the trace is not committed
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python3 firmware/sim/s5_car_cycle.py /tmp/simout --out /tmp/s5car   # after firmware/sim/build.sh x 3; 32 of 32; --mutants: 13 of 13 RED
+    owner: claude
   - id: starter-params
     script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs
     trigger: manual
@@ -202,7 +213,7 @@ automations:
     helpers: [ui/dingoConfig/application/Services/PdmStarter.cs]   # carconfig (Dan c4 = a, 2026-11-23): the car map St185Car builds the file on a New PDM
     trigger: manual
     reads: [ui/dingoConfig/domain/CustomPdm/PdmFactoryDefaults.cs]   # the New PDM it starts from; the map is a dummy copy of st185-link-ecu-config @ 839be705 (read only)
-    writes: [ui/examples/st185-car.json]
+    writes: [ui/examples/st185-car.dummy.json, firmware/sim/data/st185-car.params.dummy.tsv]   # carsim: DUMMY / demo car config + its wire values for s5 car
     committed: yes
     auto_commit: false
     enabled: true

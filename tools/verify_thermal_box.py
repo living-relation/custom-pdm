@@ -97,12 +97,18 @@ def add(group, check, value, limit, verdict, note=""):
     RES.append(dict(group=group, check=check, value=value, limit=limit, verdict=verdict, note=note))
 
 
+def TB_car():
+    """carsim: the full-PDM car currents (firmware/sim/data/s5_car_currents.dummy.json, DUMMY test data)"""
+    p = os.path.join(ROOT, "firmware", "sim", "data", "s5_car_currents.dummy.json")
+    return json.load(open(p, encoding="utf-8"))
+
+
 def contacts_harness(case):
     """Heat into the lid air from the X1 / X2 contacts and the internal harness, W (docs/heat-analysis.md 3)."""
     a7 = {"car": [2.0, 2.5, 0.5, 0.2, 5.0, 0.15, 5.0, 5.0, 0.2, 0.13, 0.2, 3.0, 0, 0, 0, 0],
-          "feed150": [7.5 * 0.4] * 16, "feed150hi": [7.5 * 0.4] * 16, "feed150lo": [7.5 * 0.4] * 16, "rating": [7.5] * 16}[case]
+          "feed150": [7.5 * 0.4] * 16, "feed150hi": [7.5 * 0.4] * 16, "feed150lo": [7.5 * 0.4] * 16, "rating": [7.5] * 16, **({"carfull": TB_car()["A1"] + TB_car()["A2"]} if case == "carfull" else {})}[case]
     b15 = {"car": [8.1, 3.6, 6.0, 0], "feed150": [15.0 * 0.815] * 4, "feed150hi": [26.0 / 4] * 4, "feed150lo": [15.0] * 4,
-           "rating": [15.0] * 4}[case]   # board B OUT5-8 (thermal_board_b.py case_currents)
+           "rating": [15.0] * 4, **({"carfull": TB_car()["B"][4:]} if case == "carfull" else {})}[case]   # board B OUT5-8 (thermal_board_b.py case_currents)
     return sum(i * i * (2e-3 + 3.3e-3) for i in a7) + sum(i * i * (1e-3 + 0.78e-3) for i in b15)
 
 
@@ -119,8 +125,9 @@ def main():
     ap.add_argument("--nofan")
     ap.add_argument("--cabin", type=float, default=60.0)
     ap.add_argument("--json")
+    ap.add_argument("--carfull", action="store_true", help="carsim: also the full-PDM car config case (s5_car_cycle.py currents)")
     a = ap.parse_args()
-    cases = ["car", "feed150", "feed150hi", "feed150lo", "rating"]
+    cases = ["car", "feed150", "feed150hi", "feed150lo", "rating"] + (["carfull"] if a.carfull else [])
     data = {}
     for air in ("fans", "nofan"):
         path = getattr(a, air) or run_board_b(air, cases)
@@ -146,9 +153,9 @@ def main():
             sens = (r.get("t_sensor_u6") or float("nan")) + (a.cabin - 60.0)
             label = f"{case} ({r['I_B']:.0f} A on B), {'fans on' if air == 'fans' else 'fans failed / off'}, cabin {a.cabin:.0f} C"
             ok = lam <= LAMINATE_C and tj <= TJ_C
-            if case in ("car", "feed150"):
+            if case in ("car", "feed150", "carfull"):
                 # normal use = the car loads with the fans on: must not cut; anything hotter: a cut is the protection
-                v = ("PASS" if sens < CRIT_C else "FAIL") if (case, air) == ("car", "fans") else "INFO"
+                v = ("PASS" if sens < CRIT_C else "FAIL") if (case, air) in (("car", "fans"), ("carfull", "fans")) else "INFO"
                 add("Firmware limits", f"board B's own MCP9808 vs its critical limit {CRIT_C:.0f} C (port_boards.py "
                     f"DEFAULT_TEMP_CRIT) at {label}", f"reads {sens:.1f} C (laminate max {lam:.1f} C)",
                     f"< {CRIT_C:.0f} C, else board B cuts its outputs in normal use" if v != "INFO" else

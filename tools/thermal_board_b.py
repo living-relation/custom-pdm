@@ -88,6 +88,16 @@ T_CABIN = 60.0
 LIMITS = dict(tj=150.0, laminate=130.0)
 
 
+# carsim (2026-11-23): the full-PDM ST185 car config (DUMMY), every car load on (night rain), RMS current per output from
+# firmware/sim/s5_car_cycle.py (firmware/sim/data/s5_car_currents.dummy.json, DUMMY test data)
+CARFULL_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "firmware", "sim", "data", "s5_car_currents.dummy.json")
+
+
+def carfull():
+    with open(CARFULL_JSON, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def case_currents(name):
     o = [f"PF_OUT{i}" for i in range(1, 9)]
     rating = {n: (31.0 if n in HI else 15.0) for n in o}
@@ -103,6 +113,9 @@ def case_currents(name):
         cur = dict(PF_OUT1=30.0, PF_OUT2=30.0, PF_OUT3=25.0, PF_OUT4=0.0, PF_OUT5=8.1, PF_OUT6=10.0, PF_OUT7=15.0,
                    PF_OUT8=0.0)
         return cur, 150.0 - sum(cur.values())
+    if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py)
+        j = carfull()
+        return {f"PF_OUT{i + 1}": float(x) for i, x in enumerate(j["B"])}, float(sum(j["A1"]) + sum(j["A2"]))
     raise SystemExit(f"unknown case {name}")
 
 
