@@ -71,6 +71,8 @@ builder.Services.AddSingleton<DeviceManager>();
 builder.Services.AddSingleton<PdmOpsService>(sp => new PdmOpsService(sp.GetRequiredService<DeviceManager>()) // custom-pdm: /pdm Read All / Write All / Burn
     { AdapterConnected = () => sp.GetRequiredService<ICommsAdapterManager>().IsConnected, AutoRead = true }); // custom-pdm p2a: read boards on connect
 builder.Services.AddSingleton<PdmSimService>(); // custom-pdm: /pdm Simulator panel (only with the simulator bridge)
+builder.Services.AddSingleton<PdmOutputTestService>(sp => new PdmOutputTestService(sp.GetRequiredService<DeviceManager>(), sp.GetRequiredService<PdmOpsService>()) // custom-pdm uifix2: /pdm Output test
+    { AdapterConnected = () => sp.GetRequiredService<ICommsAdapterManager>().IsConnected });
 builder.Services.AddSingleton<CanMsgLogger>();
 builder.Services.AddSingleton<SystemLogger>();
 builder.Services.AddSingleton<SimPlayback>();
@@ -111,6 +113,12 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// custom-pdm uifix2: an output test puts its values back before the adapter disconnects and when the app closes
+var pdmOutputTest = app.Services.GetRequiredService<PdmOutputTestService>();
+if (app.Services.GetRequiredService<ICommsAdapterManager>() is infrastructure.Comms.CommsAdapterManager pdmAdapters)
+    pdmAdapters.BeforeDisconnect = () => pdmOutputTest.StopNow("adapter disconnect");
+app.Lifetime.ApplicationStopping.Register(() => pdmOutputTest.StopNow("app closing"));
 
 // Open browser on launch in non-Development environments (e.g., published Release builds)
 var isDevelopment = app.Environment.IsDevelopment();

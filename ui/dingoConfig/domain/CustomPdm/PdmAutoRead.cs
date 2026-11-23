@@ -45,6 +45,18 @@ public class PdmAutoRead
         }
     }
 
+    // uifix2 (output test): the PC values of this board are what the board was last seen to hold (read from it or written
+    // to it in this session, no PC change since): only then does a test put the board's OWN values back
+    public bool InSync(FwDevice dev)
+    {
+        lock (_lock)
+        {
+            if (!_boards.TryGetValue(dev.Guid, out var b) || b.Synced == null) return false;
+            var now = Values(dev);
+            return now.Length == b.Synced.Length && !now.Where((v, i) => !Equals(v, b.Synced[i])).Any();
+        }
+    }
+
     // Boards (by role) that wait for an answer: connected with unsaved edits
     public IReadOnlyList<PdmBoard> Asks(PdmView view)
     {

@@ -25,9 +25,8 @@ namespace domain.CustomPdm;
 //             signals with one ID share one frame (firmware can_outputs.cpp); the 8 open-load flags of a board as one
 //             frame = 8 one-bit outputs (msg 37 is full)
 // An input of another board inside a counter / starter / retry is one CAN input on msg 37 (the links 'off' recipe).
-// canboard: CanBoard = one input of a CANBoard preset (PdmCanBoard); its output frames are CanOut
 // configfix: AutoSleep = the key-off mute timer of a board (+ its ignition CAN input), PdmKeyOff
-public enum PdmValueKind { Counter, Math, Level, CanValue, Keypad, Starter, Retry, CanOut, CanBoard, AutoSleep }
+public enum PdmValueKind { Counter, Math, Level, CanValue, Keypad, Starter, Retry, CanOut, AutoSleep }
 
 public record PdmValueFn(PdmValueKind Kind, string Board, PdmRes Main, IReadOnlyList<PdmRes> Made, string Words, int Var);
 
@@ -98,7 +97,6 @@ public static class PdmValues
         var v = m.View;
         var list = new List<PdmValueFn>();
         var levelOuts = v.Outputs.Select(o => o.Output.Input).ToHashSet();
-        var canBoards = PdmCanBoard.All(v);   // canboard: its inputs and output frames in their own words
         foreach (var q in v.Boards)
         {
             var d = q.Device;
@@ -150,10 +148,7 @@ public static class PdmValues
                 var c = d.CanInputs[s];
                 if (PdmLinks.IsFanSlot(q, s)) continue;
                 var me = new PdmRes(r, PdmResKind.CanInput, s);
-                if (canBoards.SelectMany(cb => cb.Inputs.Where(x => ReferenceEquals(x.Input, c)).Select(x => (cb, x))).FirstOrDefault() is { cb: not null } hit)
-                    list.Add(new PdmValueFn(PdmValueKind.CanBoard, r, me, [me],
-                        $"{PdmCanBoard.Label(hit.cb, hit.x.Signal, c)}: frame 0x{c.Id:X3} of {hit.cb.Name}, reads {(hit.x.Signal.IsValue ? "0" : "off")} {PdmLinks.DelayText(c.Timeout)} after it goes silent", hit.x.Var));
-                else if (IsValueShape(c))
+                if (IsValueShape(c))
                 {
                     var src = v.Boards.FirstOrDefault(p => p.Role != r && c.Id >= p.Device.BaseId && c.Id < p.Device.BaseId + 0x40);
                     var from = src != null ? $"{src.Role}'s frame 0x{c.Id:X3}" : $"frame 0x{c.Id:X3}";
@@ -193,9 +188,7 @@ public static class PdmValues
                 var c = d.CanOutputs[i];
                 if (!c.Enabled || c.Id == 0) continue;
                 var me = new PdmRes(r, PdmResKind.CanOutput, i);
-                if (canBoards.SelectMany(cb => cb.Outputs.Where(x => ReferenceEquals(x.Out, c)).Select(x => (cb, x))).FirstOrDefault() is { cb: not null } cbo)
-                    list.Add(new PdmValueFn(PdmValueKind.CanOut, r, me, [me], PdmCanBoard.OutWords(m, cbo.cb, cbo.x), 0));
-                else list.Add(new PdmValueFn(PdmValueKind.CanOut, r, me, [me],
+                list.Add(new PdmValueFn(PdmValueKind.CanOut, r, me, [me],
                     $"CAN out: {PdmTriggers.VarText(m, r, c.Input)} on 0x{c.Id:X3} start bit {c.StartBit}, {c.BitLength} bits{(c.ByteOrder == ByteOrder.BigEndian ? " big endian" : "")}" +
                     (c.Factor != 1 || c.Offset != 0 ? $", raw = (value - {Num(c.Offset)}) / {Num(c.Factor)}" : "") + $", every {c.Interval} ms", 0));
             }
@@ -375,10 +368,6 @@ public static class PdmValues
                 var ok = Enumerable.Range(1, 127).FirstOrDefault(n => KeypadOffsets.All(o => v.Boards.All(x => !Used(x, o + n))));
                 return $"Keypad node 0x{node:X2} uses ID 0x{off + node:X3}, inside {b.Role}'s block (0x{b.Device.BaseId:X3}-0x{b.Device.BaseId + UsedIds - 1:X3}): set the keypad to another node, e.g. 0x{ok:X2}.";
             }
-        // canboard: nor inside a CANBoard's block
-        foreach (var off in KeypadOffsets)
-            if (PdmCanBoard.OwnerOf(v, off + node) is { } cb)
-                return $"Keypad node 0x{node:X2} uses ID 0x{off + node:X3}, inside the ID block of {cb.Name} (0x{cb.BaseId:X3}-0x{cb.LastId:X3}): set the keypad to another node.";
         return null;
     }
 
@@ -474,7 +463,6 @@ public static class PdmValues
         if (Board(v, s.Board) is not { } q) return $"{s.Board} is not in this PDM.";
         if (s.Id is < 1 or > 0x7FF) return "The frame ID must be a standard (11-bit) ID, 0x001 to 0x7FF.";
         if (PdmEcu.IsPdmId(v, s.Id)) return $"0x{s.Id:X3} is inside a PDM board's own ID block: pick a free ID (the car's CAN ID table).";
-        if (PdmCanBoard.CanOutClash(v, s.Board, s.Id) is { } cbClash) return cbClash;   // canboard
         if (s.Length is < 1 or > 32) return "A signal is 1 to 32 bits.";
         var lastBit = s.Order == ByteOrder.LittleEndian ? s.StartBit + s.Length - 1 : (s.StartBit / 8) * 8 + 7 + 8 * ((s.Length - 1 - s.StartBit % 8 + 7) / 8);
         if (s.StartBit is < 0 or > 63 || s.Order == ByteOrder.LittleEndian && lastBit > 63) return "The signal must fit in the 8 data bytes.";
@@ -529,7 +517,6 @@ public static class PdmValues
         if (All(m).FirstOrDefault(f => f.Main == main) is not { } f) return $"{main.Text} is not a /pdm value.";
         var q = Board(v, f.Board)!;
         var d = q.Device;
-        if (f.Kind == PdmValueKind.CanBoard) return $"{f.Words.Split(':')[0]} is part of a CANBoard: remove the CANBoard on its own card.";
         if (f.Var != 0 && ReadersOf(m, f.Board, f.Var, f.Made) is { Count: > 0 } readers)
             return $"{main.Text} is used by {string.Join(", ", readers)}: change that first.";
         switch (f.Kind)

@@ -106,6 +106,8 @@
     [Parameter] public EventCallback<string> SelectedFileChanged { get; set; }
     [Parameter] public string? CurrentPath { get; set; }
     [Parameter] public EventCallback<string> CurrentPathChanged { get; set; }
+    // custom-pdm (uifix2): Enter on a typed / pasted file path opens the file (before: it was only picked; Open had to be clicked)
+    [Parameter] public EventCallback<string> FileConfirmed { get; set; }
 
     private string _currentPath = "";
     private List<string> _directories = new();
@@ -187,6 +189,7 @@
         {
             LoadDirectory(Path.GetDirectoryName(typed)!);
             await SelectFile(typed);
+            if (FileConfirmed.HasDelegate) await FileConfirmed.InvokeAsync(typed); // custom-pdm (uifix2)
         }
         else LoadDirectory(typed);
     }

@@ -100,7 +100,18 @@ public class PdmViewTests
     [Fact]
     public void MissingBoardLeavesAGapAndAWarning()
     {
-        var view = PdmView.Build([StockTests.MakeDevice(14, 0x500), StockTests.MakeDevice(15, 0x580)]);
+        // uifix2: a lone A board that was never given a role is not taken for A1 (it could be A2): shown by its ID, not numbered
+        var a = StockTests.MakeDevice(14, 0x500);
+        var b = StockTests.MakeDevice(15, 0x580);
+        var view = PdmView.Build([a, b]);
+        Assert.Equal([a], view.Unassigned);
+        Assert.True(view.EditsOff);
+        Assert.Contains("A? (0x500)", Assert.Single(view.Problems));
+        Assert.Equal(Enumerable.Range(17, 8), view.Outputs.Select(o => o.Number));
+        // the user says it is A1: the gap is A2
+        Assert.Null(PdmView.Confirm(view, a, "A1"));
+        view = PdmView.Build([a, b]);
+        Assert.False(view.EditsOff);
         Assert.Single(view.Problems);
         Assert.Contains("A2", view.Problems[0]);
         Assert.Equal(Enumerable.Range(1, 8).Concat(Enumerable.Range(17, 8)), view.Outputs.Select(o => o.Number));

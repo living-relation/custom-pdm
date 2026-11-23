@@ -136,7 +136,6 @@ public static class PdmEcu
         if (PdmTriggers.Unsettable(o) is { } no) return no;
         if (id is < 1 or > 0x7FF) return "The ECU frame ID must be a standard (11-bit) ID, 0x001 to 0x7FF.";
         if (IsPdmId(v, id)) return $"0x{id:X3} is inside a PDM board's own ID block: pick the ECU's stream ID (default 0x{DefaultId:X3}).";
-        if (PdmCanBoard.OwnerOf(v, id) is { } cb) return $"0x{id:X3} is inside the ID block of {cb.Name} (0x{cb.BaseId:X3}-0x{cb.LastId:X3}): pick the ECU's stream ID.";   // canboard
         if (byteIndex is < 0 or >= Bytes) return "The command byte must be 0 to 7.";
         if (periodMs is < 1 or > 5000) return "The ECU stream period must be 1 to 5000 ms.";
         if (loss != PdmLinkLoss.Hold && PdmLinks.BadDelay(delayMs, periodMs) is { } bad) return bad;
@@ -250,7 +249,6 @@ public static class PdmEcu
         if (q == null) { why = $"{role} is not in this PDM."; return -1; }
         if (id is < 1 or > 0x7FF) { why = "The frame ID must be a standard (11-bit) ID, 0x001 to 0x7FF."; return -1; }
         if (IsPdmId(v, id) && !allowPdmId) { why = $"0x{id:X3} is inside a PDM board's own ID block."; return -1; }
-        if (PdmCanBoard.OwnerOf(v, id) is { } cb) { why = $"0x{id:X3} is inside the ID block of {cb.Name}: its inputs are already in the lists."; return -1; }   // canboard
         if (startBit is < 0 or > 63 || length is < 1 or > 32 || (startBit + length > 64 && order == ByteOrder.LittleEndian))
         { why = "The value must fit in the 8 data bytes (first byte 0-7, length 1-32 bits)."; return -1; }
         if (factor == 0) { why = "The factor must not be 0."; return -1; }
