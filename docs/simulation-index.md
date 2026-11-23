@@ -15,6 +15,7 @@ Nothing on the boards was changed. Counts are PASS / WARN / FAIL (INFO not count
 | s3 features | pro-PDM feature parity (logic, timers, flashers, wipers, PWM, keypads, protection, tables) | host sim, one board A per scenario | 2026-11-23 | 111 of 111, 0 XFAIL | `firmware/sim/s3_features.py` |
 | s4 CAN system | whole car bus: response-time analysis and the real boards with the dummy car traffic, unplug / replug | Davis et al. 2007 RTA + host sim | 2026-11-23 | 10 of 10 | `firmware/sim/s4_can_system.py` |
 | **s5 drive cycle (new)** | a day in the car on all three boards with the ST185 starter (section 2) | host sim, three boards + dummy ECU / keypad / car traffic + PC tool, load models, 1 ms pin checks | 2026-11-23 (configfix) | 34 of 34, 0 XFAIL; 16 of 16 mutants RED | `firmware/sim/s5_drive_cycle.py` |
+| **s5 car (new, carsim)** | a day in the ST185 with the FULL car config (`docs/st185-car-config.dummy.md`, DUMMY): 20 car loads, pop-up motors with limit contacts, wiper park cam, ECU after-run hold, battery shed, auto sleep and key-off wakes (section 5) | host sim, three boards + the ECU's main relay output + car traffic, load and motor models, 1 ms pin checks | 2026-11-23 | 32 of 32, 0 XFAIL; mutants: section 5 | `firmware/sim/s5_car_cycle.py` |
 | Renode bench | the real ARM binaries of A1, A2, B on an emulated STM32F446 (CAN, ADC, I2C, FRAM, IWDG, option bytes) | Renode 1.17.0 + Robot tests | 2026-11-23 | see section 3 | `firmware/sim/renode/` |
 | UI tests | the PC app (dingoConfig copy): one-PDM view, Write All, presets, faults, live tests against the sim | xUnit; live tests drive the host sim through `ui/tests/sim_bridge.py` | 2026-11-23 | see section 3 | `ui/tests/CustomPdm.Tests` |
 | Starter export (new) | the ST185 starter as the wire values the app writes, for s5 | xUnit test that writes / checks the file | 2026-11-23 | PASS | `ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs`, `firmware/sim/data/st185-starter.params.dummy.tsv` |
@@ -154,6 +155,43 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | s5: condenser fan after key off, no auto sleep | fixed | 30 A fan on with the key off | configfix: off at loss + auto sleep (PdmKeyOff) |
 | s5: A/C on the keypad | fixed | no keypad in the car | configfix: A/C on the OEM switch IN20 |
 
+## 5. The full-PDM car config (s5 car, carsim 2026-11-23)
+
+Dan's brief: every load of the car's fuse / relay boxes on the PDM, except what the ECU controls and powers (Dan 07:44:
+pump, EPS, fans, heater, A/C, ETB, pedal, boost, injectors, coils stay on their relays). Config `ui/examples/st185-car.dummy.json`
+(map `ui/tests/CustomPdm.Tests/St185Car.cs`), wire values `firmware/sim/data/st185-car.params.dummy.tsv`, run
+`firmware/sim/s5_car_cycle.py <so dir> [--mutants]`. Sim .so built from an LF `git archive` of origin/main (no firmware
+change on the branch). Result: **32 of 32 PASS, 0 XFAIL**; mutants: **13 of 13 RED**, each by a failed check (shed level / delay / operator, reverse and brake inputs, windows and CSB3 trigger, pop-up limit contact, flasher time, mute, wiper park level, defogger latch, A1 wake mask). s0 76 of 76, s1 91 of 91, s3 111 of 111, s4 10 of 10, s5 (starter) 34 of 34 on the same .so; UI tests 486 of 486 with the live sim.
+
+| Phase | Checked (measured) |
+|---|---|
+| Write All + Burn | car config = file on all three boards, read back |
+| Parked | every board mutes 10 s after IN5 / IN7 / IN9 are off and sleeps 30 s after the bus went quiet |
+| Key on | B wakes on its ignition input, A1 / A2 on bus activity; CAN-Lambda, windows, CSB3, cluster on |
+| Crank 6 V / 9.6 V | no reset, nothing switches, no shed |
+| Lights and pop-ups | pods up on DRL + key (1.09 s) and on head / flash, down at OFF (1.03 s); each motor stops on its own limit contact (runs 0.97-1.00 s); DRL off with the head lamps |
+| Turn / hazard | first flash 27-29 ms, 352 / 352 ms |
+| Wipers + washer | LO / HI 4 turns each, INT wipes 4.006 s apart, 3 wipes after a wash, park in the cam zone |
+| Defogger | push on, push off (latched input) |
+| Night rain, all on | 56.9 A RMS in all (A1 10.4 A, A2 5.1 A, B 41.4 A): `firmware/sim/data/s5_car_currents.dummy.json` |
+| ECU CAN silent 3 s | no PDM output changes, no fault (the PDM reads no ECU frame) |
+| Low battery, engine off | defogger off 30.15 s after 11.6 V, still off at 12.4 V, back at 13.9 V; nothing else shed |
+| Key off, ECU after-run hold 37 s | CSB3, cluster, DRLs stay on (IN5), no mute, no sleep, 11.5 V sheds nothing, no fault |
+| ECU release | every output off, no fault, mute 9.94-10.0 s after IN5 (last frame), asleep 40.2 s |
+| Parking lights / hazards, key off | tail switch wakes A1, A1 wakes A2 / B; lamps on; hazards keep it awake; asleep again 40.3 s after |
+| Whole cycle | no watchdog / other reset, no CAN overrun, no output fault, current readings within 0.3 % |
+
+Finding (for the bench, not a board change): the sim's CAN model needs an acknowledging node for a frame to be seen;
+on the car a board in standby wakes on bus activity (MCP2562FD wake-up pattern), so the s5 car run models that wake.
+
+Thermal on the night-rain currents (`--case carfull`; tools/thermal_a.py, thermal_board_b.py, verify_thermal_box.py
+--carfull, all on the merged main thermal model): board A1 (10.4 A) sink 61.8 / 64.8 C, Tj max 70.6 / 73.7 C, laminate
+86.3 / 89.4 C (fans on / failed); board B (41.4 A) sink 62.2 / 65.0 C, Tj max 74.5-79.3 C, laminate 87.4-91.0 C, its own
+MCP9808 72.0 / 74.9 C (critical 104 C); box 4.0-4.5 W. Every carfull row PASS. verify_thermal_box --carfull in all:
+31 PASS / 8 WARN / 4 FAIL / 9 INFO; the 4 FAIL are the known 150 A fans-failed rows (ADR-2026-11-20-boardb-feed,
+fwsafety c), none from the car config. The car config is far lighter than the old "car" case (118 A on B) because the
+ECU's fans and pump are not on the PDM.
+
 ## 4. How to run
 
 - s5: `python3 firmware/sim/s5_drive_cycle.py <sim out dir> [--out dir] [--json file]`; `--mutants` runs the 12
@@ -161,4 +199,6 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
   (expect every XFAIL to XPASS); `--hot-a C` sets board A's hot-day temperature. About 25 s.
 - Starter values: `dotnet test ui\tests\CustomPdm.Tests --filter StarterParamsExportTests` checks the file; with
   `CUSTOMPDM_WRITE_STARTER_PARAMS=1` it writes it (after the starter changes).
+- s5 car: `python3 firmware/sim/s5_car_cycle.py <sim out dir> [--out dir] [--json file] [--mutants]` (about 3 min).
+- Car config values: `$env:CUSTOMPDM_WRITE_CAR_CONFIG='1'; dotnet test ui\tests\CustomPdm.Tests --filter St185CarTests` writes the JSON and the TSV.
 - The rest: `AGENTS.md` "Commands" and `automation.yml`.

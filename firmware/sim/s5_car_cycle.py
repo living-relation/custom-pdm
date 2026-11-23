@@ -198,7 +198,9 @@ def wire(n, on):
     k, i = where(n)
     if n in GND_ACTIVE: B[k].set_input(i, 'gnd' if on else 'open', 'up')
     else: B[k].set_input(i, '12v' if on else 'open', 'down')
-    if LEVEL.get(n) != bool(on) and n in WAKE and B[k].flags()['asleep']: wake_req.add(k)
+    # wake only where the FIRMWARE armed the input's EXTI line before STOP (sim EXTI model, pdmsim.exti_lines): the
+    # car map's wake set (WAKE) is what the logic model expects, the firmware's wake mask is what is checked
+    if LEVEL.get(n) != bool(on) and B[k].flags()['asleep'] and B[k].model['inputs'][i][0] in ps.exti_lines(B[k]).values(): wake_req.add(k)
     LEVEL[n] = bool(on)
 
 # ------------------------------------------------------------------ mechanical models: pop-up motors, wiper

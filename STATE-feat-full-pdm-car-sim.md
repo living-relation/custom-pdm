@@ -1,11 +1,11 @@
 # STATE (max 30 lines, overwrite only)
 Repo: custom-pdm
 Branch: feat/full-pdm-car-sim
-Last_Verified_SHA: b75c243
+Last_Verified_SHA: 70af676
 Updated: 2026-11-23 -- carsim worker
 
 ## Current Goal
-- Objective: full-PDM ST185 car config (all box loads mapped, pop-ups direct drive, ECU-commanded loads gated by the EFI main relay, battery shed) + s5 car run + thermal + cost study docs/pdm-vs-relays.md
+- Objective: full-PDM ST185 car config (dummy; ECU loads stay on ECU relays, Dan 07:44), pop-ups function, stay-awake auto sleep, s5 car cycle, thermal carfull, cost study docs/pdm-vs-relays.md
 - Spec_Ref: none
 
 ## Active Blocker
@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- carsim worker
 - Detail: none
 
 ## Next Single Step
-- [NEXT] build St185Car (dummy-named files), car params export, s5 car scenarios, thermal re-run, cost doc, PR
+- [NEXT] finish s5 car mutants + s0-s5 + thermal re-run, commit, PR, merge when green, archive the state file, remove the worktree
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
