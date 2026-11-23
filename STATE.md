@@ -1,7 +1,7 @@
 # STATE (max 30 lines, overwrite only)
 Repo: custom-pdm
 Branch: main
-Last_Verified_SHA: 99f3f08
+Last_Verified_SHA: 033cc60
 Updated: 2026-11-23 -- claude-cloud-orchestrator
 
 ## Current Goal
@@ -13,12 +13,12 @@ Updated: 2026-11-23 -- claude-cloud-orchestrator
 - Detail: none
 
 ## Next Single Step
-- [NEXT] HOLD the order. Drift watcher (read-only agent, re-armed every 4 h via a scheduled reminder in the coordinator chat) reports; coordinator makes the repair PRs; first run 2026-11-23 07:07. Review + merge hwtemp (fix/thermal-revF), uifix2 (fix/ui-followups + CANBoard removal), carsim (feat/full-pdm-car-sim: all car loads, Link CAN, cutout, cost study); then ONE Fusion job (re-import, re-check, Fusion thermal before 2026-12-01 trial end); restart Dan app after UI merges; c6 open (Desktop Commander 83 %)
+- [NEXT] HOLD the order. Review + merge hwtemp (fix/thermal-revF), carsim (feat/full-pdm-car-sim), isdebug (fix/board-a-current-reading); then ONE Fusion job (re-import changed boards, re-check, Fusion thermal per board + assembly before the 2026-12-01 trial end); move the old store state copies to the store _archive; drift watcher every 4 h (coordinator reminder)
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
 - Backlog: BACKLOG.md
-- Latest_ADR: ADR-2026-11-23-drift-fixes
+- Latest_ADR: ADR-2026-11-23-uifix2
 - Last_Cleanup: 2026-11-23 @ 19479b5
-- Kept_Branches: fix/thermal-revF, fix/ui-followups, feat/full-pdm-car-sim (2026-11-23)
+- Kept_Branches: fix/thermal-revF, feat/full-pdm-car-sim, fix/board-a-current-reading (2026-11-23)
 - Question_Counter: c6

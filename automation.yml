@@ -229,7 +229,7 @@ automations:
     writes: []
     committed: yes
     auto_commit: false
-    enabled: false                  # GitHub only; the repo is local-only since 2026-11-09
+    enabled: true                   # GitHub CI; runs on every PR (private remote since 2026-11-10)
     owner: claude
   - id: no-claude-files
     script: .github/workflows/no-claude-files.yml

@@ -113,8 +113,7 @@ public static class DbcExport
         return n.Length > NameMax ? n[..NameMax].TrimEnd('_') : n;
     }
 
-    // canboard: Dlc / Comment for the frames of a CANBoard (a PDM status message is always 8 bytes)
-    public record Message(int Id, int MsgNumber, string Name, string Node, List<Signal> Signals, int Dlc = 8, string? Comment = null);
+    public record Message(int Id, int MsgNumber, string Name, string Node, List<Signal> Signals);
 
     private static readonly string OutStateTable = Table(Enum.GetNames<OutState>());
     private static readonly string DeviceStateTable = Table(Enum.GetNames<DeviceState>());
@@ -214,8 +213,7 @@ public static class DbcExport
     {
         var list = boards.ToList();
         var names = ProjectNames(list);
-        var canBoards = CanBoards(list);
-        var messages = list.SelectMany(b => Messages(b, names)).Concat(canBoards.SelectMany(c => c.Messages)).OrderBy(m => m.Id).ToList();
+        var messages = list.SelectMany(b => Messages(b, names)).OrderBy(m => m.Id).ToList();
         var dup = messages.GroupBy(m => m.Id).FirstOrDefault(g => g.Count() > 1);
         if (dup != null)
             throw new InvalidOperationException($"CAN ID 0x{dup.Key:X3} is used by {string.Join(" and ", dup.Select(m => m.Name))}: base IDs overlap");
@@ -231,12 +229,12 @@ public static class DbcExport
         Line();
         Line("BS_:");
         Line();
-        Line("BU_: " + string.Join(" ", list.Select(b => b.Node).Concat(canBoards.Select(c => c.Node))));
+        Line("BU_: " + string.Join(" ", list.Select(b => b.Node)));
         Line();
         foreach (var m in messages)
         {
             Line();
-            Line($"BO_ {m.Id} {m.Name}: {m.Dlc} {m.Node}");
+            Line($"BO_ {m.Id} {m.Name}: 8 {m.Node}");
             foreach (var s in m.Signals)
             {
                 var (min, max) = Range(s);
@@ -251,10 +249,8 @@ public static class DbcExport
              "Output and input signals also carry their PDM-wide name (outputs 1-24, inputs 1-27 as on the /pdm page) in the attribute " + PdmNameAttribute + " and in their comment.\";");
         foreach (var b in list)
             Line($"CM_ BU_ {b.Node} \"{(b.Device.DeviceTypeId == 15 ? "custom-pdm board B" : "custom-pdm board A")}, base ID 0x{b.Device.BaseId:X3}\";");
-        foreach (var c in canBoards)
-            Line($"CM_ BU_ {c.Node} \"Dingo Electronics CANBoard '{c.Name}' (dingoFW), base ID 0x{c.BaseId:X3}: more inputs / outputs for the PDM over CAN\";");
         foreach (var m in messages)
-            Line($"CM_ BO_ {m.Id} \"{m.Comment ?? $"{m.Node} msg {m.MsgNumber}: {MessageComment(m.MsgNumber)}"}\";");
+            Line($"CM_ BO_ {m.Id} \"{m.Node} msg {m.MsgNumber}: {MessageComment(m.MsgNumber)}\";");
         foreach (var m in messages)
         foreach (var s in m.Signals.Where(s => s.Comment != null))
             Line($"CM_ SG_ {m.Id} {s.Name} \"{s.Comment}\";");
@@ -270,63 +266,6 @@ public static class DbcExport
         foreach (var s in m.Signals.Where(s => s.ValueTable != null))
             Line($"VAL_ {m.Id} {s.Name} {s.ValueTable} ;");
         return sb.ToString();
-    }
-
-    // canboard (2026-11-22): the frames of every CANBoard preset of the project (PdmCanBoard: read back from the boards'
-    // CAN inputs), with the user's names: its three always-sent status frames (firmware/boards/canboard_v2/msg.cpp
-    // TxMsg0-2) and the command frames the PDM sends for its outputs. None in the repo files (fresh boards).
-    public record CanBoardDbc(string Node, string Name, int BaseId, List<Message> Messages);
-
-    public static List<CanBoardDbc> CanBoards(IReadOnlyList<DbcBoard> boards)
-    {
-        var result = new List<CanBoardDbc>();
-        var used = new HashSet<string>(boards.Select(b => b.Node), StringComparer.OrdinalIgnoreCase);
-        string Unique(string n)
-        {
-            var name = n;
-            for (var i = 2; !used.Add(name); i++) name = $"{n}_{i}";
-            return name;
-        }
-
-        foreach (var cb in PdmCanBoard.All(PdmView.Build(boards.Select(b => b.Device))))
-        {
-            var node = Unique(Sanitise(cb.Name) ?? $"CANBoard_{cb.BaseId:X3}");
-            string In(PdmCanBoardSignal s) =>
-                Unique(Sanitise(PdmCanBoard.Label(cb, s, cb.Inputs.FirstOrDefault(i => i.Signal == s)?.Input)) ?? $"{node}_{s.Key}");
-            Signal Sig(PdmCanBoardSignal s) => new(In(s), s.StartBit, s.Length, false, 1, 0,
-                s.Kind == PdmCanBoardKind.Analog ? "mV" : "", s.Kind == PdmCanBoardKind.Analog ? "analog input, 0-5 V" : null);
-            var an = PdmCanBoard.Signals.Where(s => s.Kind == PdmCanBoardKind.Analog).ToList();
-            var msgs = new List<Message>
-            {
-                new(cb.BaseId + CyclicTxOffset + PdmCanBoard.AnalogMsg, PdmCanBoard.AnalogMsg, $"{node}_Msg0", node, an.Take(4).Select(Sig).ToList(),
-                    Comment: $"{node} msg 0: analog inputs 1-4 in mV, always sent every {PdmCanBoard.PeriodMs} ms"),
-                new(cb.BaseId + CyclicTxOffset + PdmCanBoard.Analog5Msg, PdmCanBoard.Analog5Msg, $"{node}_Msg1", node,
-                    [Sig(an[4]), new Signal(Unique($"{node}_Temperature"), 48, 16, false, 1, 0, "degC", "STM32 temperature")],
-                    Comment: $"{node} msg 1: analog input 5 in mV and the STM32 temperature, always sent every {PdmCanBoard.PeriodMs} ms")
-            };
-            var state = PdmCanBoard.Signals.Where(s => s.Kind == PdmCanBoardKind.Rotary).Select(Sig).ToList();
-            state.AddRange(Enumerable.Range(0, 4).Select(i => new Signal(Unique($"{node}_Flasher{i + 1}"), 24 + i, 1, false, 1, 0, "")));
-            state.AddRange(PdmCanBoard.Signals.Where(s => s.Kind == PdmCanBoardKind.Switch).Select(Sig));
-            state.AddRange(Enumerable.Range(0, PdmCanBoard.Analogs).Select(i => new Signal(Unique($"{node}_AnalogSwitch{i + 1}"), 40 + i, 1, false, 1, 0, "")));
-            state.AddRange(Enumerable.Range(0, PdmCanBoard.Outs).Select(i => new Signal(Unique($"{node}_Output{i + 1}_State"), 48 + i, 1, false, 1, 0, "", "1 = the low-side output is on")));
-            state.Add(new Signal(Unique($"{node}_Heartbeat"), 56, 8, false, 1, 0, "", "+1 with every frame"));
-            msgs.Add(new Message(cb.BaseId + CyclicTxOffset + PdmCanBoard.StateMsg, PdmCanBoard.StateMsg, $"{node}_Msg2", node, state,
-                Comment: $"{node} msg 2: rotary positions, digital inputs 1-8, analog inputs as switches, output states, heartbeat; always sent every {PdmCanBoard.PeriodMs} ms"));
-            foreach (var g in cb.Outputs.GroupBy(o => o.Id).OrderBy(g => g.Key))
-            {
-                var role = g.First().Role;
-                var sender = boards.FirstOrDefault(b => ReferenceEquals(b.Device, PdmView.Build(boards.Select(x => x.Device)).Boards.First(q => q.Role == role).Device))?.Node ?? role;
-                msgs.Add(new Message(g.Key, 0, Unique($"{node}_Cmd_{sender}"), sender,
-                    g.OrderBy(o => o.Number).Select(o => new Signal(Unique($"{node}_Output{o.Number}_Cmd"), o.StartBit, 8, false, 1, 0, "",
-                        "1 = on; the CANBoard is set to follow this byte (one of its CAN inputs)")).ToList(),
-                    g.Max(o => o.StartBit / 8) + 1,
-                    $"{sender} sends this every {g.Min(o => o.Out.Interval)} ms: the PDM signals that drive the outputs of {node}"));
-            }
-
-            result.Add(new CanBoardDbc(node, cb.Name, cb.BaseId, msgs));
-        }
-
-        return result;
     }
 
     private static (double Min, double Max) Range(Signal s)

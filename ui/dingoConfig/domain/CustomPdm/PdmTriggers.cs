@@ -100,9 +100,6 @@ public static class PdmTriggers
                 var n => $"{role} {n}"
             };
         var first = PdmFactoryDefaults.VarOf(q.Device, e.Owner) == var;
-        // canboard: an input of a CANBoard preset by its plain name ("CANBoard 1 switch 3")
-        if (e.Owner is CanInput cbIn && PdmCanBoard.LabelOf(m.View, cbIn, out var cbValue) is { } cbLabel)
-            return cbValue == !first ? cbLabel : first ? $"{cbLabel}: frames are coming" : $"{cbLabel} {e.PropertyName.ToLowerInvariant()}";
         switch (e.Owner)
         {
             case DigitalInput di:
@@ -216,8 +213,7 @@ public static class PdmTriggers
             case DigitalInput:
             case CanInput:
                 var t = Term(m, q, x, false, made);
-                // canboard: a CANBoard switch is a trigger of its own like an input (its CAN input is not the trigger's to free)
-                return t.Input > 0 || StateOwner(d, x) is CanInput cbIn && PdmCanBoard.LabelOf(m.View, cbIn, out var cbValue) != null && !cbValue ? PdmTriggerSpec.Input(t) : null;
+                return t.Input > 0 ? PdmTriggerSpec.Input(t) : null;
             case VirtualInput vi when vi is { Enabled: true, Mode: InputMode.Momentary }:
             {
                 var self = PdmFactoryDefaults.VarOf(d, vi);
@@ -328,8 +324,6 @@ public static class PdmTriggers
             var r = m.ResOf(e.Owner!);
             var ok = e.Owner switch
             {
-                // canboard: an analog / rotary input of a CANBoard is a number only (ValueChoices)
-                CanInput cbc when PdmCanBoard.LabelOf(m.View, cbc, out var isValue) != null => !isValue,
                 CanInput or Condition => r != null && m.ClaimOf(r).Kind is PdmClaimKind.Hand or PdmClaimKind.Value,
                 VirtualInput => r != null && m.ClaimOf(r).Kind == PdmClaimKind.Value,   // editor2b: a level as a signal
                 AnalogInput => true,
@@ -354,7 +348,6 @@ public static class PdmTriggers
             {
                 null => e.GetName() is "Battery Voltage" or "Temperature" || e.GetName().StartsWith("Table "),
                 AnalogInput => e.PropertyName is "Millivolts" or "Pos",
-                CanInput cbc when PdmCanBoard.LabelOf(m.View, cbc, out var isValue) != null => isValue && e.PropertyName == "Value",   // canboard: not its switches
                 CanInput c => e.PropertyName == "Value" && m.ResOf(c) is { } r && m.ClaimOf(r).Kind is PdmClaimKind.Hand or PdmClaimKind.Value,
                 MathBlock or Counter => true,
                 _ => false

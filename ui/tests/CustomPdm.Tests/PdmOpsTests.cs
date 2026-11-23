@@ -112,6 +112,7 @@ public class PdmOpsTests
     public void AMissingBoardBlocksWriteAndBurnButNotRead()
     {
         var pdm = new FakePdm("A1", "B");
+        pdm.Dev("A1").CustomPdm!.ConfirmedRole = "A1";   // uifix2: a lone A board is A1 only when it was said so (PdmView.RoleOf)
         Assert.Null(pdm.Run(PdmOpKind.ReadAll));
         Assert.Equal(["Ok: read OK", "NotDone: not in the project", "Ok: read OK"], PdmOps.Roles.Select(pdm.Line));
         Assert.Equal("A2: not in the project.", pdm.Run(PdmOpKind.WriteAll));

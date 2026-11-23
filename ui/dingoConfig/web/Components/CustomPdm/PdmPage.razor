@@ -55,14 +55,31 @@
         var writeBlocked = Pdm.BlockedReason(PdmOpKind.WriteAll, _view, AdapterManager.IsConnected);
         var burnBlocked = Pdm.BlockedReason(PdmOpKind.Burn, _view, AdapterManager.IsConnected);
         var results = Pdm.Ops.Results;
+        var noEdit = busy || _view.EditsOff; // uifix2: also while an A board's role is unknown
 
         @foreach (var problem in _view.Problems)
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2">@problem</MudAlert>
         }
 
+        @* uifix2: a lone A board of unknown role (PdmView.Unassigned): the user says which board it is *@
+        @foreach (var u in _view.Unassigned)
+        {
+            var suggest = PdmView.SuggestedRole(u);
+            <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="pdm-unassigned">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                    <MudText Typo="Typo.body2"><b>@PdmView.UnknownLabel(u)</b>: which board is it?</MudText>
+                    @foreach (var role in new[] { "A1", "A2" })
+                    {
+                        <MudButton Variant="@(role == suggest ? Variant.Filled : Variant.Outlined)" Size="Size.Small" Color="Color.Primary"
+                                   id="@($"pdm-role-{role}")" OnClick="@(() => ConfirmRole(u, role))">This is @role@(role == suggest ? $" (recommended: 0x{u.BaseId:X3} is {role}'s factory base ID)" : "")</MudButton>
+                    }
+                </MudStack>
+            </MudAlert>
+        }
+
         @* uiwalk: a board that is missing on the bus is said at the top, not only on its card *@
-        @if (PdmPageText.OfflineLine(_view, AdapterManager.IsConnected) is { } offline)
+        @if (PdmPageText.OfflineLine(_view, AdapterManager.IsConnected, null, role => PdmPageText.Handling(role, busy, results)) is { } offline)
         {
             <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-2" id="pdm-offline">@offline</MudAlert>
         }
@@ -182,13 +199,20 @@
             }
         </MudPaper>
 
+        <PdmOutputTestPanel View="@_view" />
         <PdmSimPanel View="@_view" />
-        <PdmSettingsPanel View="@_view" />
-        <PdmTriggersPanel View="@_view" />
-        <PdmLinksPanel View="@_view" />
-        <PdmFunctionsPanel View="@_view" />
-        <PdmValuesPanel View="@_view" />
-        <PdmCanBoardPanel View="@_view" />
+        @if (!_view.EditsOff)
+        {
+            <PdmSettingsPanel View="@_view" />
+            <PdmTriggersPanel View="@_view" />
+            <PdmLinksPanel View="@_view" />
+            <PdmFunctionsPanel View="@_view" />
+            <PdmValuesPanel View="@_view" />
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-2" id="pdm-edits-off">The setting panels are hidden and the grids are read-only until every board has its role (above).</MudAlert>
+        }
 
         <MudText Typo="Typo.h6" Class="mb-2">Boards</MudText>
         <MudGrid Class="mb-4">
@@ -211,7 +235,7 @@
                                 <MudLink Href="@($"device/{dev.Guid}")" Typo="Typo.body2">@dev.Name (0x@(dev.BaseId.ToString("X")))</MudLink>
                                 <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small"
                                          Color="@(dev.Connected ? Color.Success : Color.Default)">
-                                    @(dev.Connected ? "Connected" : "Offline")
+                                    @PdmPageText.LinkText(dev.Connected, PdmPageText.Handling(board.Role, busy, results), Pdm.Ops.LastOp)
                                 </MudChip>
                                 @if (!dev.FullReadDone && dev.CustomPdm?.FromFile == true)
                                 {
@@ -274,12 +298,12 @@
                 <PropertyColumn Property="x => x.RatingA" Title="Rating (A)" Editable="false" />
                 <TemplateColumn Title="Enabled" Sortable="true" SortBy="@(x => x.Output.Enabled)">
                     <EditTemplate>
-                        <MudCheckBox @bind-Value="context.Item.Output.Enabled" Dense="true" Disabled="@busy" />
+                        <MudCheckBox @bind-Value="context.Item.Output.Enabled" Dense="true" Disabled="@noEdit" />
                     </EditTemplate>
                 </TemplateColumn>
                 <TemplateColumn Title="Name" Sortable="true" SortBy="@(x => x.Output.Name)" CellStyle="min-width: 160px">
                     <EditTemplate>
-                        <MudTextField @bind-Value="context.Item.Output.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
+                        <MudTextField @bind-Value="context.Item.Output.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@noEdit" />
                     </EditTemplate>
                 </TemplateColumn>
                 @* editor2: device preset per output (domain/CustomPdm/PdmPresets.cs); every value stays editable *@
@@ -292,7 +316,7 @@
                             var pro = row.Device.CustomPdm?.OutputProtection.ElementAtOrDefault(row.BoardOutput - 1);
                         }
                         <MudSelect T="PdmDeviceKind" Value="@kind" ValueChanged="@(k => ApplyPreset(row, k))" Dense="true" Variant="Variant.Outlined"
-                                   Margin="Margin.Dense" Disabled="@(busy || PdmTriggers.IsFanOutput(row) || row.Output.PrimaryOutput >= 0)"
+                                   Margin="Margin.Dense" Disabled="@(noEdit || PdmTriggers.IsFanOutput(row) || row.Output.PrimaryOutput >= 0)"
                                    Class="@($"pdm-preset pdm-preset-{row.Number}")">
                             <MudSelectItem T="PdmDeviceKind" Value="@PdmDeviceKind.None">(none)</MudSelectItem>
                             @foreach (var p in PdmPresets.All)
@@ -387,12 +411,12 @@
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
-                            <MudCheckBox @bind-Value="di.Enabled" Dense="true" Disabled="@busy" />
+                            <MudCheckBox @bind-Value="di.Enabled" Dense="true" Disabled="@noEdit" />
                         }
                         else if (context.Item.Analog is { } an)
                         {
                             @* uipolish: analog inputs are set here like the other inputs (was: on the board's own page) *@
-                            <MudCheckBox @bind-Value="an.Enabled" Dense="true" Disabled="@busy" Class="@($"pdm-an-enabled-{context.Item.Number}")" />
+                            <MudCheckBox @bind-Value="an.Enabled" Dense="true" Disabled="@noEdit" Class="@($"pdm-an-enabled-{context.Item.Number}")" />
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -400,11 +424,11 @@
                     <EditTemplate>
                         @if (context.Item.Digital is { } di)
                         {
-                            <MudTextField @bind-Value="di.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" />
+                            <MudTextField @bind-Value="di.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@noEdit" />
                         }
                         else if (context.Item.Analog is { } an)
                         {
-                            <MudTextField @bind-Value="an.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@busy" Class="@($"pdm-an-name-{context.Item.Number}")" />
+                            <MudTextField @bind-Value="an.Name" Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="@noEdit" Class="@($"pdm-an-name-{context.Item.Number}")" />
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -441,9 +465,9 @@
                         {
                             <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                                 <MudTooltip Text="Use this analog input as an on / off switch (on above the level in the last column)">
-                                    <MudCheckBox @bind-Value="an.Switch.Enabled" Dense="true" Disabled="@(busy || !an.Enabled)" Label="switch" Class="@($"pdm-an-switch-{context.Item.Number}")" />
+                                    <MudCheckBox @bind-Value="an.Switch.Enabled" Dense="true" Disabled="@(noEdit || !an.Enabled)" Label="switch" Class="@($"pdm-an-switch-{context.Item.Number}")" />
                                 </MudTooltip>
-                                <MudSelect T="domain.Enums.InputMode" @bind-Value="an.Switch.Mode" Variant="Variant.Outlined" Dense="true" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)">
+                                <MudSelect T="domain.Enums.InputMode" @bind-Value="an.Switch.Mode" Variant="Variant.Outlined" Dense="true" Disabled="@(noEdit || !an.Enabled || !an.Switch.Enabled)">
                                     @foreach (domain.Enums.InputMode mode in Enum.GetValues(typeof(domain.Enums.InputMode)))
                                     {
                                         <MudSelectItem T="domain.Enums.InputMode" Value="@mode">@mode</MudSelectItem>
@@ -474,7 +498,7 @@
                         }
                         else if (context.Item.Analog is { } an)
                         {
-                            <MudCheckBox @bind-Value="an.Switch.Invert" Dense="true" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)" />
+                            <MudCheckBox @bind-Value="an.Switch.Invert" Dense="true" Disabled="@(noEdit || !an.Enabled || !an.Switch.Enabled)" />
                         }
                     </EditTemplate>
                 </TemplateColumn>
@@ -489,7 +513,7 @@
                         else if (context.Item.Analog is { } an)
                         {
                             <MudNumericField Style="width: 92px" @key="@($"anlevel-{context.Item.Number}-{_refreshCounter}")"
-                                             Value="@an.Switch.Threshold" Disabled="@(busy || !an.Enabled || !an.Switch.Enabled)"
+                                             Value="@an.Switch.Threshold" Disabled="@(noEdit || !an.Enabled || !an.Switch.Enabled)"
                                              Class="@($"pdm-an-level-{context.Item.Number}")"
                                              ValueChanged="@((int val) => OnAnalogLevelChanged(an, val))" />
                         }
@@ -592,8 +616,19 @@
     };
 
     // Stock rules (OutputsGrid / DigitalInputsGrid), plus: locked while a PDM run is active
-    private bool Locked(Output o) => Pdm.Ops.Busy || !o.Enabled || o.PrimaryOutput >= 0;
-    private bool Locked(DigitalInput i) => Pdm.Ops.Busy || !i.Enabled;
+    private bool Locked(Output o) => Pdm.Ops.Busy || _view.EditsOff || !o.Enabled || o.PrimaryOutput >= 0; // uifix2: EditsOff
+    private bool Locked(DigitalInput i) => Pdm.Ops.Busy || _view.EditsOff || !i.Enabled;
+
+    // uifix2: the user's answer for a lone A board of unknown role
+    private void ConfirmRole(domain.Devices.FwDevice dev, string role)
+    {
+        if (PdmView.Confirm(_view, dev, role) is { } why) Notification.NewError(why);
+        else
+        {
+            _view = Pdm.BuildView();
+            Notification.NewInfo($"{dev.Name} (0x{dev.BaseId:X3}) is {role} on this PC now (until the app is closed).");
+        }
+    }
 
     // editor2: fill the output from a device preset (PdmPresets); the notes say what else it did
     private void ApplyPreset(PdmOutputRow row, PdmDeviceKind k)
