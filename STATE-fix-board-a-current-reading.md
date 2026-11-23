@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- isdebug
 - Detail: none
 
 ## Next Single Step
-- [NEXT] Merge origin/main, re-run the checks, push, open the PR, merge when CI is green, archive this file
+- [NEXT] Coordinator: log the proposed ADR (CAN currents to the nearest amp, PR #149) in DECISIONS
 
 ## Pointers
 - Branch_States: none
