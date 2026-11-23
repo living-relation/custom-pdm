@@ -89,6 +89,8 @@ try {
     & $kc10 sch erc -o "$Out\erc.rpt" DingoPDM.kicad_sch | Select-Object -Last 2
     & $kc10 pcb drc --schematic-parity -o "$Out\drc.rpt" DingoPDM.kicad_pcb | Select-Object -Last 3
     git -C $repo checkout 542b3b9 -- hardware/board-a/DingoPDM.kicad_pro   # undo kicad-cli 10 project-file upgrade
+    python "$repo\tools\drc_erc_waivers.py" A   # drcclean 2026-11-23: DRC / ERC review stage: rules + commented exclusions, parity fields (last)
+    if ($LASTEXITCODE) { throw 'drc_erc_waivers.py A failed' }
 } finally {
     git -C $repo reset -q -- hardware/board-a                # never leave build output or baseline files staged
     Pop-Location
