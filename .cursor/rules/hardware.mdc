@@ -10,7 +10,7 @@ alwaysApply: true
 Enforcer: kicad-cli ERC / DRC, the parity tool, `tools/gen_fab_jlcpcb.py` hole check + JLC-limit DRC, `tools/pcb_board_b.py` keep-out stop; none yet for the rest.
 
 - Boards are generated: fix the generator stage in `tools/` (`build_board_a.ps1`, `build_board_b.ps1`, `build_input_board.ps1`, `sch_*` / `pcb_*` stages), never only the `.kicad_pcb` / `.kicad_sch`. `tools/build_board_a.ps1` rewrites `hardware/board-a/` in the working tree: check `git diff --cached --stat` before every commit and restore board files you did not mean to change (`git checkout HEAD -- hardware/board-a`); rebuilds churn schematic IDs: restore them and check parity.
-- Keep KiCad 9 format for files Fusion imports (Fusion's KiCad importer cannot read KiCad 10 nets).
+- Only the `.kicad_pcb` files must stay KiCad 9 format (Fusion's KiCad importer loses every net of a KiCad 10 PCB, PR #3); the `.kicad_sch` files are KiCad 10 format (20260306, as upstream ships them) and Fusion imports them directly, no KiCad 9 save-as copy (PR #138, ADR-2026-11-23-drc-erc-review, 2026-11-23).
 - KiCad DRC does not flag overlapping same-net drill holes: run the `gen_fab_jlcpcb.py` hole check. KiCad annotation compares the number in a reference (`#PWR01` and `#PWR001` clash).
 - No footprint, pad, net or terminal position changes without a check that proves one is needed; the enclosure depends on them (report any such change first).
 - KiCad 9 python: `BOARD.Remove()` corrupts item lists (collect, remove once, save, reload); a python-made `NETINFO_ITEM` needs `thisown = False`; loading a second board makes the first crash on Save.

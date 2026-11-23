@@ -6,7 +6,21 @@ run in this job on DansPC, from own scratch copies (WSL `~/scratch/finalcheck`, 
 
 ## Verdict
 
-**READY to order (updated 2026-11-22, job orderprep).** The one open choice is made: Dan chose a) board B with
+**ON HOLD (2026-11-23, coordinator; repair PR chore/state-repair-2026-11-23).** Do not order until these verification
+jobs have merged and pass:
+
+- Heat fixes from the revF heat results (job hwtemp, fix/thermal-revF): the assembly FAILS on the 70 C DIP switch at
+  80-91 C, board A's stock 80 C cut trips at the car loads, board B FRAM / 5 V module WARN at the 104 C cut
+  (ADR-2026-11-23-thermal-revF).
+- Full-PDM car sim and cost study (job carsim, feat/full-pdm-car-sim), with Dan's ECU-loss and ECU power-hold rules
+  (ADR-2026-11-23-ecu-loss, ADR-2026-11-23-ecu-power-hold, ADR-2026-11-23-link-can-dummy) and the drive-cycle config
+  fixes (job configfix, ADR-2026-11-23-drive-cycle).
+- Fusion check: re-import and re-check the changed boards in Fusion Electronics, then the Fusion thermal cross-check
+  per board and for the assembly (ADR-2026-11-23-fusion-check, ADR-2026-11-23-fusion-electronics).
+
+The 2026-11-22 verdict below stays as the record of that pass.
+
+**READY to order (updated 2026-11-22, job orderprep; superseded by ON HOLD above).** The one open choice is made: Dan chose a) board B with
 **1 oz outer + 1 oz inner copper** (2026-11-22, c1 = a), and the coordinator set the same for board A (Dan delegated
 the copper recommendation; reason in the board A row below). How to place the three orders, field by field:
 `docs/order-checklist.md`.
