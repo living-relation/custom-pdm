@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- confidence
 - Detail: none
 
 ## Next Single Step
-- [NEXT] Open the PR for docs/confidence-report.md, merge when CI is green, archive this file as the last commit
+- [NEXT] Coordinator: put the confidence report verdict to Dan with the assembly-options and harness-cost reports (c7 = a)
 
 ## Pointers
 - Branch_States: none
