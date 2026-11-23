@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- isdebug
 - Detail: none
 
 ## Next Single Step
-- [NEXT] Failing tests first (s1 S8b, Renode read-back, OutputTestLiveSimTests), then round the CAN current in port_boards.py
+- [NEXT] Merge origin/main, re-run the checks, push, open the PR, merge when CI is green, archive this file
 
 ## Pointers
 - Branch_States: none

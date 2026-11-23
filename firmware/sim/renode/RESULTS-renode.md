@@ -116,5 +116,5 @@ Update 2026-11-20 (job fwkilis, branch `fix/fw-kilis`, ADR-2026-11-20-kilis): **
 
 | Name | Test | Evidence from the run |
 |---|---|---|
-| Current Read-back On The Real Binaries | A1 OUT1 6.6 A, B OUT1 26.5 A, B OUT5 12.5 A switched on together | CAN OutputCurrent 6 / 26 / 12 (whole amps); the stock 5950 / 35000 would send 7 / 27 |
+| Current Read-back On The Real Binaries | A1 OUT1 6.6 A, B OUT1 26.5 A, B OUT5 12.5 A switched on together (since 2026-11-23, job isdebug: two rounds, 6.0 / 25.0 / 12.0 A then 5.8 / 25.8 / 11.8 A, CAN = nearest amp) | CAN OutputCurrent 6 / 26 / 12 (whole amps); the stock 5950 / 35000 would send 7 / 27. Since isdebug: 6 / 25 / 12 and 6 / 26 / 12 (stock kILIS would send 7 / 26 in round 1; truncation 5 / 25 / 11 in round 2); 39 of 39 |
 | Full Scale With A Rail-to-rail Sense Buffer | B OUT4, `SenseClamp` 2.7 V, trip time 1000 ms, inrush 100 A for 100 ms, reset None; PROFET fault 500 ms after switch-on | IN low 6 ms after the fault (2 ms steps); Fault in msg 3; Off after a power cycle |
