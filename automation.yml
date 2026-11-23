@@ -241,6 +241,17 @@ automations:
     auto_commit: false
     enabled: false                  # GitHub only; same as state-check
     owner: claude
+  - id: state-files-gate
+    script: .github/workflows/state-files-gate.yml
+    helpers: [.github/state-files-gate.sh]   # copied as-is from workstation origin/main (PR #114, 62b9124)
+    trigger: pr-check
+    reads: [the git tree of the PR merge ref]
+    writes: []
+    committed: yes
+    auto_commit: false
+    enabled: true                   # blocks a PR that leaves a top-level STATE-*.md (no label escape)
+    run_cmd: bash .github/state-files-gate.sh HEAD
+    owner: claude
   - id: enclosure-v2c-build
     script: enclosure/v2c/src/build_check_all.sh
     helpers: [enclosure/v2c/src/run.sh, enclosure/v2c/src/build_v2c.py, enclosure/v2c/src/clearance_v2c.py, enclosure/v2c/src/show_check.py,
