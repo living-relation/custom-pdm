@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace CustomPdm.Tests;
 
 // ADR-2026-11-20-temp-onepdm on the real firmware logic (A1, A2, B on one bus): the /pdm hot-spot set reaches board B
-// converted (hot spot - 20 K) and board A keeps its factory 55 / 80, through the /pdm Write All; the boards' own
+// converted (hot spot - 21 K) and board A keeps its factory 55 / 80, through the /pdm Write All; the boards' own
 // thermal flags (msg 3 byte 7) then switch at those sensor values, and a fresh PC reads the same set back.
 [Collection("sim")]
 public class PdmThermalLiveSimTests(ITestOutputHelper output)
@@ -45,13 +45,13 @@ public class PdmThermalLiveSimTests(ITestOutputHelper output)
         foreach (var b in new[] { "A1", "A2", "B" }) bus.Cmd($"TEMP {b} 30 41");
 
         // warn / recovery / margin as one set, critical through the locked path (Unlock + type twice + Change)
-        Assert.Null(PdmThermal.Set(view, new PdmHotSpotLimits(115, 124, 6, 5)));
-        Assert.Null(PdmCritical.Apply(view, PdmCriticalKind.CritTemp, "122"));
+        Assert.Null(PdmThermal.Set(view, new PdmHotSpotLimits(116, 125, 6, 5)));
+        Assert.Null(PdmCritical.Apply(view, PdmCriticalKind.CritTemp, "123"));
         Assert.Equal([new PdmTempLimits(55, 80, 6, 5), new PdmTempLimits(55, 80, 6, 5), new PdmTempLimits(95, 102, 6, 5)], rig.All.Select(PdmTempLimits.Of));
         Assert.Null(Run(rig, svc, PdmOpKind.WriteAll));
         Assert.All(svc.Ops.Results, r => Assert.Equal(PdmStepState.Ok, r.State));
 
-        // board B switches at hot spot - 20 K: warn 95, critical soon 97 (102 - 5), critical 102
+        // board B switches at hot spot - 21 K: warn 95, critical soon 97 (102 - 5), critical 102
         Assert.Equal(0, Flags(bus, rig, rig.B, "B", 94.5));
         Assert.Equal(1, Flags(bus, rig, rig.B, "B", 95.5));
         Assert.Equal(3, Flags(bus, rig, rig.B, "B", 97.5));
@@ -68,7 +68,7 @@ public class PdmThermalLiveSimTests(ITestOutputHelper output)
         var svc2 = new PdmOpsService(pc2.Mgr) { AutoTick = false };
         Assert.Null(Run(pc2, svc2, PdmOpKind.ReadAll));
         var v2 = svc2.BuildView();
-        Assert.Equal(new PdmHotSpotLimits(115, 122, 6, 5), PdmThermal.Current(v2));
+        Assert.Equal(new PdmHotSpotLimits(116, 123, 6, 5), PdmThermal.Current(v2));
         Assert.Equal([80, 80, 102], v2.Boards.Select(b => b.Device.CustomPdm!.TempCrit));
         Assert.Empty(PdmThermal.OffFactory(v2));
     }

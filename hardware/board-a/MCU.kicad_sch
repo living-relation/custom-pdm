@@ -6445,7 +6445,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "8mHz"
+		(property "Value" "8MHz"
 			(at 41.4274 47.498 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6467,7 +6467,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://ecsxtal.com/store/pdf/ECS-30Q-CES.pdf"
 			(at 38.1 46.355 0)
 			(hide yes)
 			(show_name no)
@@ -6489,7 +6489,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "535-10630-1-ND"
+		(property "Digi-Key_PN" "50-ECS-80-18-30Q-CES-TRCT-ND"
 			(at 38.1 46.355 90)
 			(hide yes)
 			(show_name no)
@@ -6500,7 +6500,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C144380"
+		(property "LCSC" ""
 			(at 38.1 46.355 0)
 			(hide yes)
 			(show_name no)
@@ -6511,7 +6511,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Abracon"
+		(property "Manufacturer" "ECS Inc."
 			(at 38.1 46.355 0)
 			(hide yes)
 			(show_name no)
@@ -6522,7 +6522,18 @@
 				)
 			)
 		)
-		(property "MPN" "ABM3-8.000MHZ-D2Y-T"
+		(property "MPN" "ECS-80-18-30Q-CES-TR"
+			(at 38.1 46.355 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "ECS ECS-80-18-30Q-VY-TR (-40..105 C, LCSC C6844210)"
 			(at 38.1 46.355 0)
 			(hide yes)
 			(show_name no)
@@ -7694,7 +7705,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C98195.pdf"
 			(at 223.52 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -7716,7 +7727,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1276-2873-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 223.52 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -7727,7 +7738,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C98195"
 			(at 223.52 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -7749,7 +7760,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A475KAQNNNE"
+		(property "MPN" "CL21B475KAFNNNE"
 			(at 223.52 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -10340,7 +10351,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C98195.pdf"
 			(at 84.455 107.95 0)
 			(hide yes)
 			(show_name no)
@@ -10362,7 +10373,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1276-2873-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 84.455 107.95 0)
 			(hide yes)
 			(show_name no)
@@ -10373,7 +10384,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C98195"
 			(at 84.455 107.95 0)
 			(hide yes)
 			(show_name no)
@@ -10395,7 +10406,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A475KAQNNNE"
+		(property "MPN" "CL21B475KAFNNNE"
 			(at 84.455 107.95 0)
 			(hide yes)
 			(show_name no)

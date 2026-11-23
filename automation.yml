@@ -11,7 +11,7 @@ automations:
               tools/sch_board_fix.py, tools/pcb_fix_board_a.py, tools/board_fix_pcb.py, tools/netlist_pins.py,
               tools/sch_board_power.py, tools/pcb_board_power.py, tools/sch_digikey.py, tools/pcb_digikey.py,
               tools/sch_tp_orphans.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py,
-              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py]
+              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py, tools/pcb_stackup.py, tools/copper_order.py]
     trigger: manual
     reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
     writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]
@@ -42,7 +42,7 @@ automations:
               tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py]
     trigger: manual
     reads: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/check_board_b.py,
-            tools/pcb_feed_board_b.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
+            tools/pcb_feed_board_b.py, tools/pcb_stackup.py, tools/copper_order.py, tools/pcb_models_board_b.py, tools/tsdso24_model.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
     writes: ["hardware/board-b-max/*.kicad_sch", "hardware/board-b-max/*.kicad_pcb"]
     committed: yes
     auto_commit: false
@@ -238,6 +238,17 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_board_b.py [--case feed150 feed150hi feed150lo car rating] [--res 0.3] [--plots docs/diagrams]'   # needs scipy + matplotlib
+  - id: copper-order
+    script: tools/copper_order.py
+    trigger: manual                 # after any change to the ordered copper, a board stackup or the fab notes
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb, "hardware/fab/*/fab-notes.md"]
+    writes: []                      # the one table of the ordered copper per board; --check: fab notes = KiCad stackup = table
+    committed: no
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/copper_order.py --check
+    check_cmd: python tools/copper_order.py --check
+    owner: claude
   - id: pcb-verify-copper
     script: tools/verify_copper.py
     trigger: manual                 # after any board change (docs/pcb-verification.md)
@@ -246,7 +257,7 @@ automations:
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_copper.py A B [--outer-um 35 --inner-um 17.5] [--plots docs/diagrams]'   # needs scipy (pip install --user scipy); plots need matplotlib
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_copper.py A B [--plots docs/diagrams]'   # copper = the ordered copper (tools/copper_order.py); --outer-um / --inner-um = what-if, exit 2;   # needs scipy (pip install --user scipy); plots need matplotlib
     owner: claude
   - id: pcb-verify-spice
     script: tools/verify_spice.py

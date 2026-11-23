@@ -9,7 +9,8 @@ sink. This puts it into the enclosure (docs/enclosure-v2c.md, docs/heat-analysis
 
 Model (finite volume, one node per cell and copper layer; cell = --res mm):
   * Copper: every copper layer's real copper of ALL nets (filled zones as stored, tracks, arcs, pads, vias) from the
-    board file, sheet conductance k_Cu * t (stackup thickness); FR-4 between the layers (k 0.3 W/mK in plane and
+    board file, sheet conductance k_Cu * t (t = the ORDERED copper, tools/copper_order.py: board B 35 um outer and
+    35 um inner, Dan 2026-11-22; --outer-um / --inner-um with another value is a labelled what-if run, exit 2); FR-4 between the layers (k 0.3 W/mK in plane and
     through, ASSUMED as docs/heat-analysis.md); every via and plated hole is a copper barrel (plating 20 um) joining
     its layers. In-plane conductance at a cell = copper sheet + half of each neighbouring dielectric.
   * Heat in: (1) driver losses on their exposed-pad outline on F.Cu: P = I^2 x R, with R from the worst-case losses
@@ -448,16 +449,16 @@ def main():
     path = a.path or os.path.join(REPO, "hardware/board-b-max/dingoPDM-Max.kicad_pcb")
     board = pcbnew.LoadBoard(path)
     th, diel = VC.stackup(path)
-    if a.outer_um:
-        th["F.Cu"] = th["B.Cu"] = a.outer_um * 1e-6
-    if a.inner_um:
-        th["In1.Cu"] = th["In2.Cu"] = a.inner_um * 1e-6
+    th, ordered, label = VC.copper_order.apply(th, "B", a.outer_um, a.inner_um)   # default: the ORDERED copper
     T = Thermal(board, th, diel, a.res)
+    print(f"board B thermal: {label}")
     print(f"board B thermal: {path}; copper um " + ", ".join(f"{n} {th[n] * 1e6:.1f}" for n in VC.CU) +
           f"; cell {a.res} mm, {T.N} nodes; gap pad k {a.kpad}; air {a.air}; h top {a.htop}, bottom {a.hbot:.1f}")
     res, fails = [], 0
     for case in a.case:
         r = run_case(board, th, diel, case, a, T, a.plots)
+        r["copper_um"] = {n: round(th[n] * 1e6, 2) for n in VC.CU}
+        r["ordered"] = ordered                       # tools/verify_thermal_box.py refuses a what-if JSON
         res.append(r)
         ok = all(r["pass"].values())
         fails += not ok
@@ -471,6 +472,10 @@ def main():
     if a.json:
         with open(a.json, "w") as f:
             json.dump(res, f, indent=1, default=str)
+    if not ordered:
+        print(f"RESULT WHAT-IF (not the ordered copper, tools/copper_order.py): {fails} case(s) over the limits; "
+              "no verdict for the order")
+        return 2
     print("RESULT", "PASS" if not fails else f"FAIL ({fails})",
           f"(limits: Tj <= {LIMITS['tj']} C, laminate <= {LIMITS['laminate']} C)")
     return 1 if fails else 0

@@ -294,11 +294,24 @@ def watchdog_fram_sleep():
     hc = open(os.path.join(P.ROOT, "firmware", "boards", "custompdm_a", "cfg", "halconf.h"), encoding="utf-8").read()
     iwdg = re.search(r"STM32_WDG_USE_IWDG\s+(\w+)", mc).group(1)
     hal = re.search(r"#define HAL_USE_WDG\s+(\w+)", hc).group(1)
-    add("Watchdog", "independent watchdog (IWDG)", f"STM32_WDG_USE_IWDG {iwdg}, HAL_USE_WDG {hal}",
-        "a hung firmware is reset", "WARN" if "TRUE" not in (iwdg, hal) else "PASS",
-        "no watchdog (stock dingoFW the same): a firmware hang leaves every output as it was, with no current "
-        "protection beyond the PROFETs' own. Adding one is a behaviour choice for Dan (a reset turns every output "
-        "off for about 0.6 s until the boards boot): question for the coordinator")
+    # ADR-2026-11-20-fwsafety (b): the IWDG is driven directly (not through the ChibiOS WDG driver, so the HAL flags
+    # stay FALSE): boards/stm32f446/mcu_safety.cpp writes IWDG->KR / PR / RLR, core/safety.cpp starts it from
+    # InitDevice with SAFETY_WDG_PR / SAFETY_WDG_RLR. Proven in the host sim S0 and the Renode bench.
+    def src(*parts):
+        f = os.path.join(P.ROOT, "firmware", *parts)
+        return open(f, encoding="utf-8").read() if os.path.exists(f) else ""
+    ms, sc, dv = src("boards", "stm32f446", "mcu_safety.cpp"), src("core", "safety.cpp"), src("core", "device.cpp")
+    direct = all((re.search(r"IWDG->KR\s*=\s*IWDG_KEY_START", ms), re.search(r"IWDG->RLR\s*=", ms),
+                  re.search(r"McuWdgStart\(SAFETY_WDG_PR,\s*SAFETY_WDG_RLR\)", sc), re.search(r"^\s*SafetyWdgStart\(\);", dv, re.M)))
+    on = direct or "TRUE" in (iwdg, hal)
+    add("Watchdog", "independent watchdog (IWDG)",
+        ("started by InitDevice -> SafetyWdgStart -> McuWdgStart (boards/stm32f446/mcu_safety.cpp, direct register "
+         "writes)" if direct else f"STM32_WDG_USE_IWDG {iwdg}, HAL_USE_WDG {hal}"),
+        "a hung firmware is reset", "PASS" if on else "WARN",
+        "ADR-2026-11-20-fwsafety b (LSI / 32, reload 1468: 1.00-2.77 s; outputs off on a reset); the ChibiOS HAL "
+        f"flags (STM32_WDG_USE_IWDG {iwdg}, HAL_USE_WDG {hal}) are not used" if on else
+        "no watchdog found: neither the direct IWDG start (mcu_safety.cpp / safety.cpp / device.cpp) nor the HAL "
+        "driver; a firmware hang would leave every output as it was")
     cfg = open(os.path.join(P.ROOT, "firmware", "core", "config_ext.cpp"), encoding="utf-8").read()
     writes = len(re.findall(r"fram\.Write\(", cfg))
     per_day = 50

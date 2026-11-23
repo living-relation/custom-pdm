@@ -14,7 +14,11 @@ Schematic (text edits, like the other sch_*.py stages; refs, footprints and nets
       USB   one ESD diode per data line, Nexperia PESD5V0F1BL,315 (DFN1006-2 / SOD-882, bidirectional, 0.4 pF, VRWM
             5.5 V, IEC 61000-4-2, Tj -40..125 C; LCSC C45961): USB_D+ / USB_D- -> GND. (A USBLC6-2 array in SOT-23-6
             or SOT-666 has no top-side site on either board with room for its taps and GND via without moving parts.)
-  * Board B only, 85 C parts -> 125 C grades in the same footprints (docs/system-verification.md section 6):
+  * 85 C parts -> 125 C grades in the same footprints (docs/system-verification.md section 6). Board B first
+    (ADR-2026-11-20-hwprotect a); board A gets the same parts (job orderprep 2026-11-22, docs/order-readiness.md 7:
+    Y1, C3 +12V, C4 +5VP, C6 +3V3, C14 +3V3, C38 VCAP_1: the same nets as B's Y1 / C3 / C4 / C6 / C15 / C10), so both
+    boards carry one crystal and one set of X7R parts. BOM fields only: `swaps-sch` / `swaps-pcb` apply just this
+    step to an already built board (idempotent).
       Y1  8 MHz ABM3-8.000MHZ-D2Y-T (-40..85 C) -> ECS ECS-80-18-30Q-CES-TR (-40..125 C, AEC-Q200, 18 pF load like the
           ABM3, ESR 100 Ohm vs 140, 5.0 x 3.2 mm 2-pad); alternate ECS-80-18-30Q-VY-TR (-40..105 C, LCSC C6844210)
       C3  +12V 10 uF 35 V X5R -> TDK CGA4J1X7R1H475KT0Y0N 4.7 uF 50 V X7R AEC-Q200 (LCSC C694229): no 0805 10 uF
@@ -92,6 +96,16 @@ SWAPS_B = {
     "C15": ("MCU.kicad_sch", "C1779", ("4.7uF", "C98195", "", "Samsung Electro-Mechanics",
             "CL21B475KAFNNNE", "https://www.lcsc.com/datasheet/C98195.pdf", "")),
 }
+# board A (orderprep 2026-11-22): the same 125 C parts on the same nets (old LCSC numbers from board A's BOM)
+SWAPS_A = {
+    "Y1": ("MCU.kicad_sch", "C144380", SWAPS_B["Y1"][2]),
+    "C3": ("Power.kicad_sch", "C162422", SWAPS_B["C3"][2]),
+    "C4": ("Power.kicad_sch", "C45783", SWAPS_B["C4"][2]),
+    "C6": ("Power.kicad_sch", "C15850", SWAPS_B["C6"][2]),
+    "C14": ("MCU.kicad_sch", "C1779", SWAPS_B["C15"][2]),
+    "C38": ("MCU.kicad_sch", "C1779", SWAPS_B["C10"][2]),
+}
+SWAPS = {"A": SWAPS_A, "B": SWAPS_B}
 FREEWHEEL_B = {"D13", "D15", "D17", "D19", "D25", "D26", "D27", "D28"}
 FREEWHEEL_LCSC = "C141573"                       # Vishay BYG23M-E3/TR
 # Kept FITTED (False): without them the A/C clutch (L 50-200 mH ASSUMED) turns off into the BTS7004 clamp at 0.55-2.2 J
@@ -333,6 +347,28 @@ def new_symbol(tpl, lib_id, x, y, ref, part, pins, project, path):
     return renew_uuids(b)
 
 
+def swaps_sch(board):
+    """85 C -> 125 C part fields in the schematic (run from the board folder). Idempotent."""
+    if not os.path.exists(ROOTS[board]):
+        raise SystemExit("run from the board folder")
+    for r, (sheet, old, part) in SWAPS[board].items():
+        t = rd(sheet)
+        s, e = symbol_by_ref(t, r)
+        b = t[s:e]
+        value, lcsc, dk, maker, mpn, ds, alt = part
+        if get_prop(b, "MPN") == mpn and get_prop(b, "Value") == value:
+            print(f"  {r}: {mpn} (already set)")
+            continue
+        if get_prop(b, "LCSC") != old:
+            raise SystemExit(f"{r}: LCSC {get_prop(b, 'LCSC')}, expected {old}")
+        for name, v in (("Value", value), ("LCSC", lcsc), ("Digi-Key_PN", dk), ("Manufacturer", maker), ("MPN", mpn),
+                        ("Datasheet", ds), ("Alternates", alt)):
+            if v or get_prop(b, name) is not None:      # no empty new property (PCB parity)
+                b = set_prop(b, name, v)
+        wr(sheet, t[:s] + b + t[e:])
+        print(f"  {r}: {mpn}")
+
+
 def sch(board):
     root = ROOTS[board]
     if not os.path.exists(root):
@@ -398,20 +434,8 @@ def sch(board):
     items.append(text(f"hwprotect: {made['esd_p']} / {made['esd_n']} USB data-line ESD diodes (IEC 61000-4-2, 0.4 pF).", ox, oy))
     wr("Connectors.kicad_sch", insert_items(t, items))
     # ---------------------------------------------------------------- board B: 125 C parts, freewheel diodes DNP
+    swaps_sch(board)
     if board == "B":
-        for r, (sheet, old, part) in SWAPS_B.items():
-            t = rd(sheet)
-            s, e = symbol_by_ref(t, r)
-            b = t[s:e]
-            if get_prop(b, "LCSC") not in (old, part[1] or "-"):
-                raise SystemExit(f"{r}: LCSC {get_prop(b, 'LCSC')}, expected {old}")
-            value, lcsc, dk, maker, mpn, ds, alt = part
-            for name, v in (("Value", value), ("LCSC", lcsc), ("Digi-Key_PN", dk), ("Manufacturer", maker), ("MPN", mpn),
-                            ("Datasheet", ds), ("Alternates", alt)):
-                if v or get_prop(b, name) is not None:      # no empty new property (PCB parity)
-                    b = set_prop(b, name, v)
-            wr(sheet, t[:s] + b + t[e:])
-            print(f"  {r}: {mpn}")
         seen = set(FREEWHEEL_B) if not FREEWHEEL_DNP else set()
         for f in (sorted(os.listdir(".")) if FREEWHEEL_DNP else []):
             if not f.endswith(".kicad_sch"):
@@ -483,6 +507,54 @@ def later_refs(netfile):
         comps[ref] = {"footprint": fp.group(1) if fp else "", "value": re.search(r'\(value\s+"([^"]*)"\)', blk).group(1)}
     import hw_5v_module                                  # hw5v: the 5 V module stage runs after this one
     return set(find_roles(comps, padnet).values()) | hw_5v_module.later_refs(netfile)
+
+
+def sync_fields(b, pcbnew, comps, netfile, refs):
+    """Value and order fields of `refs` on the board follow the schematic (netlist). Returns the number of changes."""
+    net_text = open(netfile, encoding="utf-8").read().split("(libparts")[0]
+    sheet_ds = {}
+    for blk in re.split(r'\(comp\s+\(ref\s+"', net_text)[1:]:
+        m = re.search(r'\(datasheet\s+"([^"]*)"\)', blk)
+        sheet_ds[blk[:blk.index('"')]] = m.group(1) if m else ""
+    nf = 0
+    for ref in refs:
+        fp = b.FindFootprintByReference(ref)
+        c = comps[ref]
+        want = {k: c["fields"].get(k, "") for k in ("Manufacturer", "MPN", "LCSC", "Digi-Key_PN", "Alternates")}
+        want["Datasheet"] = sheet_ds.get(ref, "")
+        if fp.GetValue() != c["value"]:
+            fp.SetValue(c["value"])
+            nf += 1
+        for name, v in want.items():
+            f = next((x for x in fp.GetFields() if x.GetName() == name), None)
+            if f is None and not v:
+                continue
+            if f is None:                               # text set before AddField (KiCad 9 stores a copy)
+                f = pcbnew.PCB_FIELD(fp, fp.GetNextFieldId(), name)
+                f.SetText(v)
+                f.SetVisible(False)
+                f.SetLayer(pcbnew.F_Fab)
+                f.SetPosition(fp.GetPosition())
+                f.thisown = False
+                fp.AddField(f)
+                nf += 1
+                continue
+            if f.GetText() != v:
+                f.SetText(v)
+                nf += 1
+    return nf
+
+
+def swaps_pcb(path, netfile, board):
+    """Only the 85 C -> 125 C part fields on an already built board (no copper, no placement)."""
+    import pcbnew
+    sys.path.insert(0, HERE)
+    import board_fix_pcb as F
+    b = pcbnew.LoadBoard(path)
+    nf = sync_fields(b, pcbnew, F.read_netlist(netfile), netfile, list(SWAPS[board]))
+    if nf:
+        pcbnew.SaveBoard(path, b)
+    print(f"hw_protect swaps-pcb {board}: fields synced on {len(SWAPS[board])} parts ({nf} changes)")
 
 
 def pcb(path, netfile, board):
@@ -624,38 +696,8 @@ def pcb(path, netfile, board):
                 if t.OutlineCount():
                     raise SystemExit(f"{ref}: courtyard overlaps {o.GetReference()}")
     # ---------------------------------------------------------------- 3b. fields of the swapped and the new parts follow the schematic
-    net_text = open(netfile, encoding="utf-8").read().split("(libparts")[0]
-    sheet_ds = {}
-    for blk in re.split(r'\(comp\s+\(ref\s+"', net_text)[1:]:
-        m = re.search(r'\(datasheet\s+"([^"]*)"\)', blk)
-        sheet_ds[blk[:blk.index('"')]] = m.group(1) if m else ""
-    sync = list(roles.values()) + (list(SWAPS_B) if board == "B" else [])
-    nf = 0
-    for ref in sync:
-        fp = b.FindFootprintByReference(ref)
-        c = comps[ref]
-        want = {k: c["fields"].get(k, "") for k in ("Manufacturer", "MPN", "LCSC", "Digi-Key_PN", "Alternates")}
-        want["Datasheet"] = sheet_ds.get(ref, "")
-        if fp.GetValue() != c["value"]:
-            fp.SetValue(c["value"])
-            nf += 1
-        for name, v in want.items():
-            f = next((x for x in fp.GetFields() if x.GetName() == name), None)
-            if f is None and not v:
-                continue
-            if f is None:                               # text set before AddField (KiCad 9 stores a copy)
-                f = pcbnew.PCB_FIELD(fp, fp.GetNextFieldId(), name)
-                f.SetText(v)
-                f.SetVisible(False)
-                f.SetLayer(pcbnew.F_Fab)
-                f.SetPosition(fp.GetPosition())
-                f.thisown = False
-                fp.AddField(f)
-                nf += 1
-                continue
-            if f.GetText() != v:
-                f.SetText(v)
-                nf += 1
+    sync = list(roles.values()) + list(SWAPS[board])
+    nf = sync_fields(b, pcbnew, comps, netfile, sync)
     print(f"  fields synced on {len(sync)} parts ({nf} changes)")
     # ---------------------------------------------------------------- 4. connections
     if added and not os.environ.get("HWP_PLACE_ONLY"):
@@ -1119,5 +1161,9 @@ if __name__ == "__main__":
         sch(sys.argv[2].upper())
     elif cmd == "pcb":
         pcb(sys.argv[2], sys.argv[3], sys.argv[4].upper())
+    elif cmd == "swaps-sch":
+        swaps_sch(sys.argv[2].upper())
+    elif cmd == "swaps-pcb":
+        swaps_pcb(sys.argv[2], sys.argv[3], sys.argv[4].upper())
     else:
         raise SystemExit(__doc__)

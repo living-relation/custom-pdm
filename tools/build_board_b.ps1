@@ -89,6 +89,9 @@ try {
     Run-Py9 (Join-Path $Repo "tools\hw_protect.py") pcb $Pcb "$Out\board-b.net" B   # hwprotect: new parts placed + connected
     Run-Py9 (Join-Path $Repo "tools\hw_5v_module.py") pcb $Pcb "$Out\board-b.net" B   # hw5v: TSR out, 125 C module in its outline (last stage)
 
+    Run-Py9 (Join-Path $Repo "tools\pcb_models_board_b.py") $Pcb               # orderprep 2026-11-22: U8-U11 3D body = Models/PG-TSDSO-24_bestguess.step (tools/tsdso24_model.py)
+    Run-Py9 (Join-Path $Repo "tools\pcb_stackup.py") $Pcb B                    # orderprep 2026-11-22: stackup copper = the ordered copper (Dan c1 = a: 1 oz inner)
+
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"
     & $Cli pcb render $Pcb -o "$Out\top.png" --side top --width 1400 --height 1300 --quality basic | Out-Null

@@ -5,10 +5,12 @@ namespace domain.CustomPdm;
 // own MCP9808 reading, so the tool converts the set per board with that board's sensor -> hot-spot offset:
 //   board B: the FEA map of docs/system-verification.md "Board B temperature limits" (tools/thermal_board_b.py +
 //            tools/verify_thermal_box.py, 10 cases: car, feed150 / hi / lo, rating; fans on / failed; 60 C cabin):
-//            laminate = U6 + 9.6 .. 19.0 K. Conservative worst case: the largest offset (19.0 K) + the MCP9808
-//            maximum error (+-1 C at -40..125 C, Microchip DS20005095B DC characteristics) = 20 K, so
-//            sensor limit = hot spot - 20 K. Board B's factory 98 / 104 C (port_boards.py, ADR-2026-11-20-fwsafety)
-//            is the hot-spot set 118 / 124 C.
+//            at the ORDERED copper (1 oz outer + 1 oz inner, Dan 2026-11-22; tools/copper_order.py), 0.3 mm grid:
+//            laminate = U6 + 10.1 .. 19.6 K. Conservative worst case: the largest offset (19.6 K) + the MCP9808
+//            maximum error (+-1 C at -40..125 C, Microchip DS20005095B DC characteristics) = 20.6, rounded up to
+//            21 K, so sensor limit = hot spot - 21 K. Board B's factory 98 / 104 C (port_boards.py,
+//            ADR-2026-11-20-fwsafety) is the hot-spot set 119 / 125 C. tools/verify_thermal_box.py fails when
+//            this constant and the map differ.
 //   board A: no thermal model yet (BACKLOG): it keeps its own limits (factory 55 / 80 C); the tool never writes
 //            another board's thermal limits onto it.
 // Recovery (hysteresis) and the critical-soon margin are differences, the same on the sensor as at the hot spot.
@@ -21,7 +23,7 @@ public record PdmBoardTempRow(string Role, PdmTempLimits Sensor, bool Converted,
 
 public static class PdmThermal
 {
-    public const double BoardBLaminateOffsetK = 19.0; // largest laminate - U6 offset of the FEA map (docs/system-verification.md)
+    public const double BoardBLaminateOffsetK = 19.6; // largest laminate - U6 offset of the FEA map (docs/system-verification.md)
     public const double SensorErrorK = 1.0;           // MCP9808 maximum error (DS20005095B), tools/verify_thermal_box.py SENSOR_ERR
     public static readonly int BoardBOffsetK = (int)Math.Ceiling(BoardBLaminateOffsetK + SensorErrorK);
     public const int LaminateMaxC = 130;              // FR-4 laminate limit, tools/verify_thermal_box.py LAMINATE_C

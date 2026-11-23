@@ -4579,7 +4579,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10uF"
+		(property "Value" "4.7uF"
 			(at 73.4568 35.433 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4601,7 +4601,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=CGA4J1X7R1H475KT0Y0N"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4623,7 +4623,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "490-10514-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4634,7 +4634,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C162422"
+		(property "LCSC" "C694229"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4645,7 +4645,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Murata"
+		(property "Manufacturer" "TDK"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4656,7 +4656,18 @@
 				)
 			)
 		)
-		(property "MPN" "GRM21BR6YA106KE43L"
+		(property "MPN" "CGA4J1X7R1H475KT0Y0N"
+			(at 71.12 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "HRE CGA0805X7R475K500MT (4.7 uF 50 V X7R 0805, LCSC C6119944)"
 			(at 71.12 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4726,7 +4737,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.murata.com/en-us/products/productdetail?partno=GRM21BZ71A226ME15L"
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4748,7 +4759,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "490-10749-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4759,7 +4770,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C45783"
+		(property "LCSC" "C907991"
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4770,7 +4781,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "Murata"
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -4781,7 +4792,18 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A226MAQNNNE"
+		(property "MPN" "GRM21BZ71A226ME15L"
+			(at 114.3 34.29 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "CCTC TCC0805X7R226M100FT (22 uF 10 V X7R 0805, LCSC C53133025)"
 			(at 114.3 34.29 0)
 			(hide yes)
 			(show_name no)
@@ -5340,7 +5362,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C32635.pdf"
 			(at 182.88 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -5362,7 +5384,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "445-11516-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 182.88 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -5373,7 +5395,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15850"
+		(property "LCSC" "C32635"
 			(at 182.88 26.67 0)
 			(hide yes)
 			(show_name no)
@@ -5395,7 +5417,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A106KAYNNNE"
+		(property "MPN" "CL21B106KPQNNNE"
 			(at 182.88 26.67 0)
 			(hide yes)
 			(show_name no)

@@ -51,7 +51,7 @@
 			)
 			(layer "F.Cu"
 				(type "copper")
-				(thickness 0.04318)
+				(thickness 0.035)
 			)
 			(layer "dielectric 1"
 				(type "core")
@@ -62,18 +62,18 @@
 			)
 			(layer "In1.Cu"
 				(type "copper")
-				(thickness 0.017272)
+				(thickness 0.035)
 			)
 			(layer "dielectric 2"
 				(type "prepreg")
-				(thickness 1.1938)
+				(thickness 1.174704)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)
 			)
 			(layer "In2.Cu"
 				(type "copper")
-				(thickness 0.017272)
+				(thickness 0.035)
 			)
 			(layer "dielectric 3"
 				(type "core")
@@ -84,7 +84,7 @@
 			)
 			(layer "B.Cu"
 				(type "copper")
-				(thickness 0.04318)
+				(thickness 0.035)
 			)
 			(layer "B.Mask"
 				(type "Bottom Solder Mask")
@@ -1119,7 +1119,7 @@
 				)
 			)
 		)
-		(property "Value" "8mHz"
+		(property "Value" "8MHz"
 			(at 0 2.799994 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1131,7 +1131,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://ecsxtal.com/store/pdf/ECS-30Q-CES.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1155,7 +1155,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "535-10630-1-ND"
+		(property "Digi-Key_PN" "50-ECS-80-18-30Q-CES-TRCT-ND"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1167,7 +1167,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C144380"
+		(property "LCSC" ""
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1179,7 +1179,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Abracon"
+		(property "Manufacturer" "ECS Inc."
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1191,11 +1191,23 @@
 				)
 			)
 		)
-		(property "MPN" "ABM3-8.000MHZ-D2Y-T"
+		(property "MPN" "ECS-80-18-30Q-CES-TR"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "52c10811-5fb0-44e0-a3e4-7db068730e2c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "ECS ECS-80-18-30Q-VY-TR (-40..105 C, LCSC C6844210)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3497f5f4-60c4-4fb4-a32a-42e5e38c8871")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11674,7 +11686,7 @@
 				)
 			)
 		)
-		(property "Value" "10uF"
+		(property "Value" "4.7uF"
 			(at 0 1.65 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11686,7 +11698,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://product.tdk.com/en/search/capacitor/ceramic/mlcc/info?part_no=CGA4J1X7R1H475KT0Y0N"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -11710,7 +11722,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "490-10514-1-ND"
+		(property "Digi-Key_PN" ""
 			(at -49.784 68.072 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11722,7 +11734,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C162422"
+		(property "LCSC" "C694229"
 			(at -49.784 68.072 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11734,7 +11746,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Murata"
+		(property "Manufacturer" "TDK"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11746,11 +11758,23 @@
 				)
 			)
 		)
-		(property "MPN" "GRM21BR6YA106KE43L"
+		(property "MPN" "CGA4J1X7R1H475KT0Y0N"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ad5e14f4-56b0-4fe8-9843-66bc5d57bf2b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "HRE CGA0805X7R475K500MT (4.7 uF 50 V X7R 0805, LCSC C6119944)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "33c90f45-0842-4343-b2fa-c176b67d480a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11924,7 +11948,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.murata.com/en-us/products/productdetail?partno=GRM21BZ71A226ME15L"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -11948,7 +11972,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "490-10749-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 10.16 75.692 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11960,7 +11984,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C45783"
+		(property "LCSC" "C907991"
 			(at 10.16 75.692 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11972,7 +11996,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "Murata"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -11984,11 +12008,23 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A226MAQNNNE"
+		(property "MPN" "GRM21BZ71A226ME15L"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ea57ed50-ffa4-45b4-8c82-110e7e07ca8a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternates" "CCTC TCC0805X7R226M100FT (22 uF 10 V X7R 0805, LCSC C53133025)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e16d8218-aa3a-4d5f-870b-d3a77cbee656")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12400,7 +12436,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C32635.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -12424,7 +12460,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "445-11516-1-ND"
+		(property "Digi-Key_PN" ""
 			(at -23.114 76.708 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12436,7 +12472,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C15850"
+		(property "LCSC" "C32635"
 			(at -23.114 76.708 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12460,7 +12496,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A106KAYNNNE"
+		(property "MPN" "CL21B106KPQNNNE"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -16828,7 +16864,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C98195.pdf"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -16852,7 +16888,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1276-2873-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 0.2808 100.4608 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -16864,7 +16900,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C98195"
 			(at 0.2808 100.4608 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -16888,7 +16924,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A475KAQNNNE"
+		(property "MPN" "CL21B475KAFNNNE"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -37205,7 +37241,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C98195.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -37229,7 +37265,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "1276-2873-1-ND"
+		(property "Digi-Key_PN" ""
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -37241,7 +37277,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C1779"
+		(property "LCSC" "C98195"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -37265,7 +37301,7 @@
 				)
 			)
 		)
-		(property "MPN" "CL21A475KAQNNNE"
+		(property "MPN" "CL21B475KAFNNNE"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

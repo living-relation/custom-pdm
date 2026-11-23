@@ -194,14 +194,17 @@ FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is wired inside the box to b
                 '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)', fl(LIMIT_A))
 FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1',
                 f'((int)(i) < 4 ? {fl(LIMIT_B_STUD)} : {fl(LIMIT_B)})')
-# Board B temperature limits (ADR-2026-11-20-presim-findings item 1; job fwsafety): board B's own MCP9808 (U6) reads
-# 95.6 C at the car loads with fans on in a 60 C cabin (tools/thermal_board_b.py + verify_thermal_box.py, FEA on the real
-# copper), above the stock 55 / 80. Map sensor -> hot spots over the 10 modelled cases (car, feed150 / hi / lo, rating;
-# fans on / failed): laminate = sensor + 9.6 .. 19.0 K, driver Tj = sensor + 1.7 .. 19.8 K. Critical 104 C = the
-# tightest of: laminate 104 + 19.0 + 1 (MCP9808 +-1 C max at -40..125 C, DS20005095B DC characteristics) = 124 <= 130 C; Tj 125 <= 150 C; the
-# logic-area parts at the sensor reading + 1 = 105 C <= the 105 C ambient rating of the STM32F446RET7 and the
-# MB85RC64TA FRAM (the 85 C TSR 1-2450 / ABM3 / X5R parts must be >= 105 C grades: hardware job). Warn 98 C = 2.4 K
-# over the car-loads reading (no warning in normal use) and below critical-soon (104 - 5). Recovery 6 C (stock rule).
+# Board B temperature limits (ADR-2026-11-20-presim-findings item 1; job fwsafety; re-derived by job orderprep
+# 2026-11-22 at the ORDERED copper, 1 oz outer + 1 oz inner, tools/copper_order.py): board B's own MCP9808 (U6) reads
+# 93.4 C at the car loads with fans on in a 60 C cabin (tools/thermal_board_b.py + verify_thermal_box.py, FEA on the real
+# copper, 0.3 mm grid), above the stock 55 / 80. Map sensor -> hot spots over the 10 modelled cases (car, feed150 / hi /
+# lo, rating; fans on / failed): laminate = sensor + 10.1 .. 19.6 K, driver Tj = sensor + 2.5 .. 20.4 K (0.4 mm grid:
+# 8.3 .. 17.5 / 4.2 .. 21.2 K). Critical 104 C = the
+# tightest of: laminate 104 + 19.6 + 1 (MCP9808 +-1 C max at -40..125 C, DS20005095B DC characteristics) = 124.6 <= 130 C;
+# Tj 104 + 21.2 + 1 = 126.2 <= 150 C; the logic-area parts at the sensor reading + 1 = 105 C <= the 105 C ambient rating
+# of the STM32F446RET7 and the MB85RC64TA FRAM (binding; crystal, capacitors and the 5 V module are 125 C parts now).
+# Warn 98 C = 4.6 K over the car-loads reading (no warning in normal use) and below critical-soon (104 - 5). Recovery
+# 6 C (stock rule). The values did not change with the copper: 98 / 104 / 6 as set by fwsafety on 2026-11-20.
 # verify_thermal_box.py checks these values against the model. Board A keeps the stock 55 / 80 (no FEA sensor map yet).
 FAN_B += '''
 #define DEFAULT_TEMP_WARN 98     // board B: see port_boards.py (FEA sensor map, part ratings)

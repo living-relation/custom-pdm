@@ -336,7 +336,9 @@ Esum s 0 POLY(2) b 0 p 0 0 1 1
 Lp v12 t {LPATH}
 Dt1 t m dtvs
 Dt2 0 m dtvs
-C3 v12 0 10u
+* C3: 4.7 uF 50 V X7R (TDK CGA4J1X7R1H475KT0Y0N) on board A and board B since hwprotect / orderprep (was 10 uF X5R);
+* BOM nominal value, as the other capacitors in these decks (DC bias leaves about 3 uF at 13.5 V, ASSUMED)
+C3 v12 0 4.7u
 Cx v12 0 0.4u
 Rload v12 0 270
 .model dtvs D(BV={vbr} IBV=1m IS=1e-12 N=1 RS={rd})

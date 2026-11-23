@@ -10,7 +10,7 @@ namespace domain.CustomPdm;
 // - Base ID: one board; moves at once with the stock Modify message (PdmOpsService.ChangeBaseId, checks PdmLinked).
 // - CAN bit rate, kept-on outputs: one value for the PDM, set on all three boards (PC edit: Write All sends it, Burn
 //   keeps it). Critical temperature: one hot-spot value for the PDM, converted per board (ADR-2026-11-20-temp-onepdm,
-//   PdmThermal: board B hot spot - 20 K, board A keeps its own).
+//   PdmThermal: board B hot spot - 21 K, board A keeps its own).
 public enum PdmCriticalKind { BaseId, BitRate, CritTemp, KeptOn }
 
 // Board = "" for a PDM-wide setting

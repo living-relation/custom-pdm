@@ -30,7 +30,7 @@ Results, not decisions: the choices this asks for are listed under "Left" and go
 | `tools/verify_cpl.py` (new) | the "JLC preview" check: every placed part's LCSC footprint (JLCEDA / EasyEDA official library, https://easyeda.com, https://lceda.cn) turned by the CPL rotation must land on our pads | `python tools/verify_cpl.py` (needs easyeda.com; since the presim job's neutral user agent it answers from DansPC too) |
 | `tools/d2_tvs.py` (d2tvs) | the D2 DO-218 footprint, its spot and clamp copper (last PCB stage of both builds; stops on a courtyard overlap or fewer than 8 vias per net) | run by `build_board_a.ps1` / `build_board_b.ps1` |
 
-Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB default order (1 oz outer finished about 35 um, 0.5 oz inner) is run as well (`--outer-um 35 --inner-um 17.5`). Copper weight is Dan's choice (not set by agents).
+Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at the copper that is ORDERED, from the one table `tools/copper_order.py`: board A and board B 1 oz outer / 1 oz inner (35 / 35 um; B: Dan 2026-11-22, c1 = a; A: coordinator 2026-11-22, because the no-sink screen read 11.9 K at 0.5 oz inner), input board 1 oz (JLCPCB default). The KiCad stackups carry the same values (`tools/pcb_stackup.py`, last build stage; upstream had 43.2 / 17.3 um) and `copper_order.py --check` fails if fab notes, stackup and table differ. `--outer-um` / `--inner-um` with another value is a what-if run (labelled, exit 2). Results in the tables below that quote 43.2 / 17.3 um copper are the 2026-11-20 runs; the ordered-copper numbers are in the section at the end.
 
 ## Board A (dingoPDM v7.5 based, built twice): 19 PASS, 0 FAIL, 3 WARN, 1 not checkable, 1 info (rows)
 
@@ -124,3 +124,22 @@ Copper: the boards' stackup says 43.2 um outer / 17.3 um inner; the JLCPCB defau
 ## Copper loss for the heat model
 
 `docs/heat-analysis.md` counts only the driver losses (31.1 W worst case). The copper adds, at every output at its rating, 2 x 2.2 W (A1, A2) + 13.6 W (B since the 2026-11-20 feed fix; 19.9 W before) + output pours 0.13 W (A) / 0.55 W (B): about 19 W more (25 W before the board B fix; stackup copper). At the 150 A feed limit it is about 0.24 x that (I^2), about 6-13 W depending on how the 150 A splits.
+
+## Re-run at the ordered copper (2026-11-22, job orderprep)
+
+| Tool | Result | Against the earlier run |
+|---|---|---|
+| `copper_order.py --check` | PASS: A and B 35 / 35 / 35 / 35 um, input no stackup block (KiCad default 35 um); fab notes rows and board B's remark agree | new |
+| `verify_copper.py A B` | A (35 / 35 um): outputs 2.2-2.8 mV, +12V 51.6 mV / 2.79 W, no-sink hot spot 10.02 K over the board mean (limit 10 K: over by 0.02 K, the tool prints FAIL; at 0.5 oz inner it was 11.9 K). B: outputs 2.4-5.9 mV, +12V 95.2 mV / 12.76 W at 184 A (ok), no-sink screen 47.3 K (FAIL, as before: the sink model is the judge) | A was 8.5 K at the KiCad file's 43 / 17 um and 11.9 K at JLCPCB's default; B better than the 116.2 mV of 35 / 17.5 um |
+| `thermal_board_b.py --res 0.3`, fans on | 150 A 116.5 / 118.2 / 116.7 C, car loads 109.5 C: PASS; 184 A 146.8 C: FAIL (150 A cap, ADR-2026-11-20-boardb-feed) | 122.7 / 124.3 / 122.9 C at the KiCad copper; 135.8-137.3 C at JLCPCB's default |
+| `thermal_board_b.py --res 0.3 --air nofan` | 150 A 131.7 / 132.5 / 133.1 C: FAIL (the 104 C cut protects); car loads 120.2 C | 135.9-137.3 C |
+| `verify_thermal_box.py` (0.3 mm grid) | 27 PASS, 4 WARN, 5 FAIL: 3 x fans-failed 150 A laminate, FRAM and MCU at fans-failed 150 A. Crystal and capacitor rows now read the BOMs: 125 C parts on A and B | was 14 / 6 / 10 with two stale 85 C rows |
+| `verify_mcu.py` | 18 PASS, 2 WARN (PA15 pull-up on B IN7, sleep current), 0 FAIL: the watchdog row reads the direct IWDG start | was 17 / 3 with the stale "no watchdog" WARN |
+| `verify_si.py` | 3 PASS, 2 WARN (VDDA loop 7.1 nH on A and B, limit 5 nH), 5 INFO | same |
+| `verify_dfm.py` | 7 PASS, 7 WARN, 0 FAIL (via-in-pad 58 / 151 / 27, thin silk 358 / 611 / 168, 3D baseline) | same |
+| `verify_cpl.py` | A 129 (124 ok + 4 symmetric + 1 "check": Y1 has no LCSC number now), B 194 (177 + 16 + 1), IN 48: RESULT PASS | A's Y1 moved from ok to check |
+| `verify_layout.py` / `verify_power.py` / `verify_switching.py` / `verify_tolerance.py` | 35 PASS 8 WARN / 29 PASS 3 WARN 2 FAIL / 17 PASS 7 WARN 4 FAIL / 23 PASS 5 WARN | same (the FAILs are the known reverse-battery, horn energy and motor-PWM ones) |
+| KiCad DRC + parity, ERC (kicad-cli 10) | A 89 errors, 0 unconnected, parity 4, ERC 29; B 209, 0, 4, ERC 80; IN 0, 0, 0, ERC 0 | identical counts |
+| `gen_fab_jlcpcb.py` twice | identical outputs; JLC-limit DRC no violations, no co-located holes, refill 0.000 % | Gerbers and drills unchanged; BOMs, fab notes and one line of board A's `jlcpcb-drc.txt` changed (parts, copper) |
+
+Board A parts (same job): Y1 ABM3 (85 C) -> ECS-80-18-30Q-CES-TR (125 C); C3 10 uF X5R -> TDK CGA4J1X7R1H475KT0Y0N 4.7 uF 50 V X7R; C4 -> GRM21BZ71A226ME15L; C6 -> CL21B106KPQNNNE; C14, C38 -> CL21B475KAFNNNE: the parts and nets of ADR-2026-11-20-hwprotect (a) for board B (`tools/hw_protect.py` SWAPS_A; fields only).

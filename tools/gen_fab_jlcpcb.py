@@ -39,6 +39,9 @@ import zipfile
 
 import pcbnew
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import copper_order  # noqa: E402
+
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CLI = os.path.expandvars(r"%LOCALAPPDATA%\Programs\KiCad\10.0\bin\kicad-cli.exe")
 BOARDS = {"A": ("board-a", "DingoPDM", "board-a"), "B": ("board-b-max", "dingoPDM-Max", "board-b"),
@@ -61,6 +64,16 @@ OFFSETS = [(r"^USB_C_Receptacle_GCT_USB4085", (2.973, 2.18)), (r"^Converter_DCDC
            (r"^Molex_Micro-Fit_3\.0_43045-1200", (7.5, 1.5)), (r"^D_DO-218AB_Vishay_SM8S", (1.912, 0.0))]
 NOT_PARTS = re.compile(r"MountingHole|DingoFace|SolderJumper|WirePads|Tag-Connect")
 PRESS_FIT = {"7461084"}                            # MPNs JLCPCB does not fit (press-fit, see fab-notes)
+# Parts with thin stock (MPN -> what was seen, where, when). Sources: docs/order-readiness.md section 4 (live look-ups
+# 2026-11-22) and docs/parts-audit.md section 13; the approved alternate comes from the part's own Alternates field.
+THIN_STOCK = {
+    "LMZM23601V5SILR": "135 at LCSC on 2026-11-22 (C2868357)",
+    "SM8S24CA-Q": "400 at Digi-Key on 2026-11-22; LCSC C1976790 not checked",
+    "BTS700121ESPXUMA1": "17 at LCSC on 2026-11-22 (C3232444)",
+    "ECS-80-18-30Q-CES-TR": "no LCSC number (global sourcing); Digi-Key 50-ECS-80-18-30Q-CES-TRCT-ND",
+    "74650074R": "no LCSC number (global sourcing); Digi-Key 732-74650074RCT-ND",
+}
+NO_ALT = "none approved: if JLCPCB cannot get it, quote the board at PCBWay by MPN (`*-bom-full.csv`)"
 # JLCPCB limits (capabilities page). 4-layer board, 1 oz outer copper (the stackup is left as it is).
 JLC_LIMITS = {
     4: dict(track=0.09, clearance=0.09, smd_pad_gap=0.15, hole=0.15, via_dia=0.25, via_ring=0.05, pth_ring=0.15,
@@ -131,7 +144,7 @@ def nat(ref):
 
 
 def write_bom_cpl(board, out, tag):
-    rows, groups, full = [], {}, {}
+    rows, groups, full, glob_src = [], {}, {}, {}
     for fp, kind in parts(board):
         ref, name = fp.GetReference(), str(fp.GetFPID().GetLibItemName())
         if kind in ("jlc-smt", "jlc-tht"):
@@ -141,8 +154,14 @@ def write_bom_cpl(board, out, tag):
             p = fp.GetPosition()
             dx, dy = jlc_offset(name, fp.GetOrientationDegrees())
             rows.append((ref, f"{mm(p.x) + dx:.4f}", f"{-(mm(p.y) + dy):.4f}", "Top", f"{rot:g}", off))
-            k = (fp.GetValue(), name, field(fp, "LCSC"))
+            # no LCSC number = JLCPCB global sourcing: the Comment is the maker part number (what JLCPCB's part
+            # search takes), the LCSC cell stays empty; fab-notes.md and the full BOM name these lines
+            lcsc = field(fp, "LCSC")
+            k = (fp.GetValue() if lcsc else field(fp, "MPN"), name, lcsc)
             groups.setdefault(k, []).append(ref)
+            if not lcsc:
+                glob_src.setdefault((field(fp, "Manufacturer"), field(fp, "MPN"), field(fp, "Digi-Key_PN"),
+                                     field(fp, "Alternates")), []).append(ref)
         if kind != "not-a-part":
             k = (fp.GetValue(), name, field(fp, "Manufacturer"), field(fp, "MPN"), field(fp, "LCSC"),
                  field(fp, "Digi-Key_PN"), field(fp, "Alternates"), kind)
@@ -165,9 +184,10 @@ def write_bom_cpl(board, out, tag):
                     "Approved alternates", "Fitted by"])
         for k, refs in sorted(full.items(), key=lambda kv: nat(sorted(kv[1], key=nat)[0])):
             value, name, mf, mpn, lcsc, dk, alt, kind = k
-            w.writerow([len(refs), ",".join(sorted(refs, key=nat)), value, name, mf, mpn, lcsc or "(none: global sourcing)",
-                        dk, alt, who[kind]])
-    return len(rows), sum(len(v) for v in groups.values()), len(groups), [r for r in rows if r[5]]
+            w.writerow([len(refs), ",".join(sorted(refs, key=nat)), value, name, mf, mpn,
+                        lcsc or "(none: JLCPCB global sourcing by MPN)", dk, alt, who[kind]])
+    gs = [(sorted(refs, key=nat), mf, mpn, dk, alt) for (mf, mpn, dk, alt), refs in glob_src.items()]
+    return len(rows), sum(len(v) for v in groups.values()), len(groups), [r for r in rows if r[5]], sorted(gs, key=lambda g: nat(g[0][0]))
 
 
 def geometry(board, lim):
@@ -312,7 +332,7 @@ def vias_in_pads(b):
     return {r: len(s) for r, s in out.items()}
 
 
-def notes(tag, layers, b, size, press):
+def notes(tag, layers, b, size, press, gsrc=()):
     vip = vias_in_pads(b)
     nv = sum(vip.values())
     fill = (f"Epoxy filled and capped (POFV, 'via in pad'): {nv} vias sit in SMD pads of "
@@ -326,7 +346,7 @@ def notes(tag, layers, b, size, press):
          "| Material | FR-4 |",
          "| Thickness | 1.6 mm |",
          "| Surface finish | ENIG |",
-         "| Copper weight | Dan's choice (not set by this script; the checks use JLCPCB's 1 oz limits) |",
+         f"| Copper weight | {copper_order.fab_row(tag)} |",
          "| Solder mask | green (Dan, DECISIONS 2026-11-17 a3a; the mask limits in the checks are the green ones) |",
          "| Silkscreen | white |",
          "| Order number | JLCPCB default |",
@@ -336,6 +356,9 @@ def notes(tag, layers, b, size, press):
          ""]
     vip_remark = (f" Via in pad: {nv} vias sit in SMD pads (fab-notes.md lists the parts): please epoxy-fill and cap them "
                   "(plated over, flat) so no solder wicks into them.") if vip else ""
+    cu_remark = copper_order.remark(tag)
+    if cu_remark:
+        vip_remark += " " + cu_remark
     if press or vip:
         a += ["Order remark (paste into the PCB remark field):", ""]
     if vip and not press:
@@ -357,6 +380,25 @@ def notes(tag, layers, b, size, press):
         a += ["Assembly: JLCPCB fits every part in `*-bom-jlcpcb.csv`.", ""]
     else:
         a += ["Order remark: none needed.", "", "Assembly: JLCPCB fits every part in `*-bom-jlcpcb.csv`.", ""]
+    if gsrc:
+        a += ["Global sourcing (parts with NO LCSC number: in `*-bom-jlcpcb.csv` their Comment is the maker part "
+              "number and the LCSC cell is empty; JLCPCB shows them as not matched until they are added through "
+              "'Global Sourcing' / 'Parts pre-order' by that part number):", "",
+              "| Parts | Qty per board | Maker | Part number (MPN) | Digi-Key | Approved alternate |", "|---|---|---|---|---|---|"]
+        a += [f"| {refs[0]}-{refs[-1]} |" .replace(f"{refs[0]}-{refs[0]}", refs[0]) + f" {len(refs)} | {mf} | {mpn} | {dk} | {alt or NO_ALT} |"
+              for refs, mf, mpn, dk, alt in gsrc]
+        a += [""]
+    thin = {}
+    for fp, kind in parts(b):
+        if kind in ("jlc-smt", "jlc-tht") and field(fp, "MPN") in THIN_STOCK:
+            thin.setdefault((field(fp, "MPN"), field(fp, "Manufacturer"), field(fp, "Alternates")), []).append(fp.GetReference())
+    if thin:
+        a += ["Thin stock (order soon; if JLCPCB shows a part short, use its approved alternate):", "",
+              "| Parts | Qty per board | Part | Stock seen | Approved alternate |", "|---|---|---|---|---|"]
+        for (mpn, mf, alt), refs in sorted(thin.items(), key=lambda kv: nat(sorted(kv[1], key=nat)[0])):
+            refs = sorted(refs, key=nat)
+            a += [f"| {', '.join(refs)} | {len(refs)} | {mf} {mpn} | {THIN_STOCK[mpn]} | {alt or NO_ALT} |"]
+        a += [""]
     return "\n".join(a)
 
 
@@ -387,13 +429,13 @@ def main():
             with zipfile.ZipFile(zf, "w", zipfile.ZIP_DEFLATED) as z:
                 for p in sorted(glob.glob(os.path.join(gdir, "*"))):
                     z.write(p, os.path.basename(p))
-            ncpl, nbom, nlines, rotated = write_bom_cpl(b, out, tag)
+            ncpl, nbom, nlines, rotated, gsrc = write_bom_cpl(b, out, tag)
             geo, coloc, close = geometry(b, JLC_LIMITS[n])
             drc, dru = jlc_drc(copy, stem, n, os.path.join(tmp, "d"))
             bb = b.GetBoardEdgesBoundingBox()
             press = sorted({fp.GetReference() for fp, k in parts(b) if k == "press-fit"}, key=nat)
             open(os.path.join(out, "fab-notes.md"), "w", encoding="utf-8", newline="\n").write(
-                notes(tag, n, b, (mm(bb.GetWidth()), mm(bb.GetHeight())), press))
+                notes(tag, n, b, (mm(bb.GetWidth()), mm(bb.GetHeight())), press, gsrc))
             L = JLC_LIMITS[n]
             rep = [f"JLCPCB check: {tag} ({n} layers). Limits: JLCPCB capabilities page, "
                    f"{'multilayer' if n > 2 else '1-2 layer'}, 1 oz outer copper (read 2026-11-16).",

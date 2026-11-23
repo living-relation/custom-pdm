@@ -6,23 +6,29 @@ run in this job on DansPC, from own scratch copies (WSL `~/scratch/finalcheck`, 
 
 ## Verdict
 
-**READY to order, with one order-form choice that has to be made first: board B copper.** The design files, the fab
-package, the firmware, the UI and the enclosure all check out: every firmware / UI test passes at the expected count,
-all three boards rebuild from their generators to the same boards that are committed, the fab files regenerate
-identical, and every connector pin traces to the right processor pin. Nothing needs a design change. The one new
-finding: the board B heat result that says "OK at the 150 A feed limit" (123 C, limit 130 C) was calculated with the
-copper thickness written in the KiCad file (43 um outside layers), but a default JLCPCB order (1 oz outside, 0.5 oz
-inside) gives 35 um, and with that the same model shows 136-137 C at 150 A (car loads, 118 A: 113 C, still fine).
-Ordering board B with **1 oz inner copper** (an order option, no file change) brings it to 117-118 C. Copper weight is
-Dan's choice (fab notes), so it is the one question below. Everything else open is either an order-time step
-(list in section 7) or a bench test for when the boards arrive.
+**READY to order (updated 2026-11-22, job orderprep).** The one open choice is made: Dan chose a) board B with
+**1 oz outer + 1 oz inner copper** (2026-11-22, c1 = a), and the coordinator set the same for board A (Dan delegated
+the copper recommendation; reason in the board A row below). How to place the three orders, field by field:
+`docs/order-checklist.md`.
 
-**Question for Dan (coordinator to give it an ID): board B copper weight on the order form**
-- a) 1 oz outside + **1 oz inside** (recommended): 116.5-118.2 C at 150 A, fans on; no file change (extra cost not checked).
-- b) JLCPCB default 1 oz outside + 0.5 oz inside: 135.8-137.3 C at 150 A (over the 130 C limit); fine at the car loads
-  (112.7 C). Would need the 150 A cap lowered in firmware.
-- c) 2 oz outside + 1 oz inside: 99-109 C, most margin, but JLCPCB's 2 oz track / gap limits must first be checked
-  against board B's 0.15 mm tracks and 0.114 mm smallest gap (not checked here).
+What job orderprep changed after this report (PR "chore: order prep"), and what it proved:
+
+| Item | Result |
+|---|---|
+| Ordered copper, one table (`tools/copper_order.py`) | A 1 oz / 1 oz, B 1 oz / 1 oz, input 1 oz (JLCPCB default); fab notes, KiCad stackups and the table agree (`copper_order.py --check` PASS); the copper and heat checks now run at the ordered copper by default, another thickness is a labelled what-if run |
+| Board B heat at the ordered copper (`thermal_board_b.py --res 0.3`, fans on, 60 C cabin) | 150 A: 116.5 / 118.2 / 116.7 C (limit 130 C) PASS; car loads 109.5 C PASS; every output at rating (184 A) 146.8 C FAIL as before (the 150 A cap stays) |
+| Board B, fans failed | 150 A: 131.7 / 132.5 / 133.1 C (was 135.9-137.3 C at the KiCad copper); car loads 120.2 C. The 104 C cut still comes first |
+| Board B `verify_copper.py` at the ordered copper | +12V 95.2 mV / 12.8 W at 184 A (limit 100 mV) ok; the no-sink screen still FAILs (47 K), as before: the sink model above is the judge |
+| Board A `verify_copper.py` at the ordered copper (35 / 35 um) | every drop ok (outputs <= 2.8 mV, +12V 51.6 mV, 2.79 W); the no-sink hot-spot screen reads **10.02 K against the 10 K limit** (peak 30.2 K, board mean 20.2 K): over by 0.02 K, so the tool still prints FAIL. At JLCPCB's default 0.5 oz inner it read 11.9 K, which is why board A is ordered with 1 oz inner too (coordinator, 2026-11-22). The screen has no heat sink; board A sits on the sink and keeps its 55 / 80 C limits |
+| Board B sensor map and firmware limits | laminate = U6 + 10.1 .. 19.6 K (was 9.6 .. 19.0); warn 98 / critical 104 / recovery 6 C **unchanged** (at 104 + 1 C: laminate 124.6 C, Tj 125.4 C; the binding limit is still the 105 C MCU / FRAM rating); UI hot-spot offset 20 -> 21 K |
+| Board A 85 C parts (section 7 "worth a look") | done: Y1, C3, C4, C6, C14, C38 now carry board B's 125 C crystal and X7R parts (fields only, same footprints) |
+| No-LCSC parts | A: Y1; B: Y1, T1-T8: marked for global sourcing in the BOMs and fab notes; thin-stock table in each `fab-notes.md` |
+| Stale tool rows | `verify_mcu.py` watchdog row now reads the real IWDG start (18 PASS, 2 WARN); `verify_thermal_box.py` reads the part grades from the BOMs (27 PASS, 4 WARN, 5 FAIL: 3 x fans-failed 150 A laminate, FRAM / MCU at fans-failed 150 A) |
+| Board checks vs this report | KiCad DRC / parity / ERC counts identical (A 89 errors, B 209, IN 0; ERC 29 / 80 / 0); JLC-limit DRC no violations; no new FAIL in any `verify_*` tool |
+
+Still to do at order time (no design change): section 7 list, now written out step by step in `docs/order-checklist.md`.
+
+The text below is the finalcheck record of 2026-11-22 as it was before these changes (its copper question is answered above).
 
 ## 1. Firmware (LF `git archive main`, own scratch HOME, WSL)
 

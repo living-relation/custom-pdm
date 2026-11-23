@@ -33,8 +33,9 @@ Pass / fail limits (printed with the result):
     also goes into the self-heating sheet.
 
 Assumptions (all printed): copper rho 1.72e-8 Ohm m at 20 C (x1.31 at 100 C); via / hole plating 20 um (same as
-docs/heat-analysis.md); stackup copper from the board file unless --outer-um / --inner-um override; FR-4 k 0.3,
-copper k 390 W/mK.
+docs/heat-analysis.md); copper thickness = the ORDERED copper of the board (tools/copper_order.py: A and B
+35 / 35 um), not whatever the board file says; --outer-um / --inner-um with another value is a what-if run
+(labelled, exit code 2, "ordered": false in the JSON: never a verdict for the order); FR-4 k 0.3, copper k 390 W/mK.
 """
 import argparse
 import json
@@ -48,6 +49,9 @@ import numpy as np
 import pcbnew
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import copper_order  # noqa: E402
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RHO = 1.72e-8          # Ohm m, copper at 20 C
@@ -547,16 +551,15 @@ def main():
     ap.add_argument("--path", help="board file to use instead of the repo one (e.g. a stock baseline)")
     a = ap.parse_args()
     out = {}
-    fails = 0
+    fails = whatif = 0
     for key in a.boards:
         cfg = board_cfg(key)
         path = a.path or os.path.join(REPO, cfg["path"])
         board = pcbnew.LoadBoard(path)
         th, diel = stackup(path)
-        if a.outer_um:
-            th["F.Cu"] = th["B.Cu"] = a.outer_um * 1e-6
-        if a.inner_um:
-            th["In1.Cu"] = th["In2.Cu"] = a.inner_um * 1e-6
+        th, ordered, label = copper_order.apply(th, key, a.outer_um, a.inner_um)
+        whatif += not ordered
+        print(f"== board {key}: {label}")
         print(f"== board {key}: {cfg['path']}  copper um " +
               ", ".join(f"{L} {th[L] * 1e6:.1f}" for L in CU) + f"  plating {TPLATE * 1e6:.0f} um  rho {RHO}")
         rs, fields = [], []
@@ -589,12 +592,16 @@ def main():
         print(f"  copper self-heating: {tr['p_total']:.2f} W I2R on the board; hot spot {tr['dt_max'] - tr['dt_mean']:.1f} K "
               f"above the board mean at {tr['at']} {'ok' if ok_t else 'FAIL'} (peak {tr['dt_max']:.1f} K, mean "
               f"{tr['dt_mean']:.1f} K with h {a.h} W/m2K both faces and no sink)")
-        out[key] = dict(nets=rs, thermal=tr, copper_um={L: th[L] * 1e6 for L in CU})
+        out[key] = dict(nets=rs, thermal=tr, copper_um={L: th[L] * 1e6 for L in CU}, ordered=ordered)
         if a.plots:
             plots(a.plots, key, fields, tg, dT, board)
     if a.json:
         with open(a.json, "w") as f:
             json.dump(out, f, indent=1, default=str)
+    if whatif:
+        print(f"RESULT WHAT-IF (not the ordered copper, tools/copper_order.py): {fails} check(s) over the limits; "
+              "no verdict for the order")
+        return 2
     print("RESULT", "PASS" if not fails else f"FAIL ({fails})")
     return 1 if fails else 0
 
