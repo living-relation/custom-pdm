@@ -312,6 +312,12 @@ def msg(d):
     assert m.count(old3) == 1
     m = m.replace(old3, '                           (GetFlasherVal(1) << 1) + GetFlasherVal(0);\n'
         '    stMsg.frame.data8[7] = GetThermalFlags(); // custom-pdm: bit 0 over warn, bit 1 critical soon, bit 2 critical')
+    # Currents on CAN: nearest whole amp (job isdebug, 2026-11-23). Stock casts the float reading to uint16 (truncates):
+    # a reading a hair under a whole amp (2 A load read 1.998 A) went out 1 A low, 0.5 A low on average. Same 1 A per
+    # count, same DBC; readings are never negative (CalculateCurrent floors to 0), so + 0.5 rounds.
+    for i in range(8):
+        m = rep(m, f'(uint16_t)GetOutputCurrent({i});', f'(uint16_t)(GetOutputCurrent({i}) + 0.5f); // custom-pdm: nearest amp (stock truncates)')
+    m = rep(m, '(uint16_t)GetTotalCurrent();', '(uint16_t)(GetTotalCurrent() + 0.5f); // custom-pdm: nearest amp (stock truncates)')
     m += '''
 
 CANTxMsg TxMsg@N@()

@@ -275,10 +275,9 @@ public class OutputTestLiveSimTests(ITestOutputHelper output)
         Assert.InRange(on!.Value, 0, 200);
         Assert.NotNull(off);
         Assert.InRange(off!.Value - on.Value, seconds * 1000 - 100, seconds * 1000 + 300);
-        // board B reads the load (5.00 A); board A reads about 1 A low in the host sim (2 A -> 1.00 A, 5 A -> 4.00 A,
-        // measured here; its current-sense chain, not the test: reported, BACKLOG)
-        if (board == "B") Assert.InRange(last.PeakA, amps * 0.9, amps * 1.1);
-        else Assert.InRange(last.PeakA, amps - 1.1, amps + 0.2);
+        // CAN sends the nearest whole amp on both boards (job isdebug: board A read 2 A as 1.00 A and 5 A as 4.00 A while
+        // the firmware's reading was 1.998 / 4.9995 A: stock msg.cpp truncated it; the custom boards now round)
+        Assert.Equal(amps, last.PeakA);
         Assert.False(bus.Pin(board, o));
         Assert.Equal((enabled, input), (outp.Enabled, outp.Input));       // PC values unchanged
 
