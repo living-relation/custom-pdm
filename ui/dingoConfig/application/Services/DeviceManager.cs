@@ -317,6 +317,13 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
     /// </summary>
     private void QueueMessage(DeviceCanFrame frame)
     {
+        // custom-pdm (uiguide): nothing to a device whose CAN ID block overlaps a custom-pdm board's (PdmIntegrity)
+        if (frame.DeviceBaseId != 0 && domain.CustomPdm.PdmIntegrity.ClashReason(frame.DeviceBaseId, _devices.Values.ToList()) is { } clash)
+        {
+            if (domain.CustomPdm.PdmIntegrity.LogNow(frame.DeviceBaseId, DateTime.UtcNow)) logger.LogError("Not sent to 0x{BaseId:X3}: {Reason}", frame.DeviceBaseId, clash);
+            return;
+        }
+
         // Queue for transmission
         if (_batchTransmitCallback != null)
         {
