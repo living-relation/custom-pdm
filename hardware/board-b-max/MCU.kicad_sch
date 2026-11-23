@@ -9035,7 +9035,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "~"
 			(at 69.85 31.115 0)
 			(hide yes)
 			(show_name no)

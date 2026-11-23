@@ -1,0 +1,18 @@
+string fn = argv[1];
+board(B) {
+  output(fn, "wt") {
+    B.elements(E) {
+      printf("EL|%s|%s|%.3f|%.3f|%.1f|%d\n", E.name, E.package.name, u2mm(E.x), u2mm(E.y), E.angle, E.mirror);
+      E.package.contacts(C) {
+        if (C.pad) printf("PAD|%s|%s|%s|%.3f|%.3f|%.3f|%.3f\n", E.name, C.name, C.signal, u2mm(C.x), u2mm(C.y), u2mm(C.pad.diameter[LAYER_TOP]), u2mm(C.pad.drill));
+        if (C.smd) printf("SMD|%s|%s|%s|%.3f|%.3f|%.3f|%.3f|%d\n", E.name, C.name, C.signal, u2mm(C.x), u2mm(C.y), u2mm(C.smd.dx), u2mm(C.smd.dy), C.smd.layer);
+      }
+      E.package.holes(H) printf("PH|%s|%.3f|%.3f|%.3f\n", E.name, u2mm(H.x), u2mm(H.y), u2mm(H.drill));
+    }
+    B.holes(H) printf("BH|%.3f|%.3f|%.3f\n", u2mm(H.x), u2mm(H.y), u2mm(H.drill));
+    B.signals(S) {
+      S.vias(V) printf("VIA|%s|%.3f|%.3f|%.3f|%.3f\n", S.name, u2mm(V.x), u2mm(V.y), u2mm(V.diameter[LAYER_TOP]), u2mm(V.drill));
+      S.wires(W) { if (W.layer == 19) printf("AIR|%s|%.3f|%.3f|%.3f|%.3f\n", S.name, u2mm(W.x1), u2mm(W.y1), u2mm(W.x2), u2mm(W.y2)); }
+    }
+  }
+}

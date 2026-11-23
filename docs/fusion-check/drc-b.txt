@@ -1,0 +1,614 @@
+30|2|1|-12.000|203.530|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,99953d710520a1c4
+30|2|304|-12.000|203.530|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,99953d710520a1c4
+30|2|1|12.000|203.530|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,99953d710520a1c4
+30|2|304|12.000|203.530|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,99953d710520a1c4
+30|2|1|68.394|208.574|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,e3535eb0a0b81d5b
+30|2|304|68.394|208.574|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,e3535eb0a0b81d5b
+30|2|1|68.394|231.864|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,01febc1ab4a10945
+30|2|304|68.394|231.864|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,01febc1ab4a10945
+30|2|1|68.394|161.994|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,2c3a91dea92414c0
+30|2|304|68.394|161.994|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,2c3a91dea92414c0
+30|2|1|68.394|185.284|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,e1585cbc4a43f7a7
+30|2|304|68.394|185.284|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,e1585cbc4a43f7a7
+30|2|1|12.000|213.030|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,b9931d7714c8b02c
+30|2|304|12.000|213.030|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,b9931d7714c8b02c
+30|2|1|-12.000|213.030|PTH Pads Top Annular Ring, Minimum Diameter = 181.10236 mil|||30,1,b9931d7714c8b02c
+30|2|304|-12.000|213.030|PTH Pads Bottom Annular Ring, Minimum Diameter = 181.10236 mil|||30,304,b9931d7714c8b02c
+30|2|1|-6.477|178.308|PTH Pads Top Annular Ring, Minimum Diameter = 50.81102 mil|||30,1,fa48f64af9c3f5c1
+30|2|304|-6.477|178.308|PTH Pads Bottom Annular Ring, Minimum Diameter = 50.81102 mil|||30,304,fa48f64af9c3f5c1
+30|2|1|-5.461|173.228|PTH Pads Top Annular Ring, Minimum Diameter = 50.81102 mil|||30,1,c05258505acbc2c9
+30|2|304|-5.461|173.228|PTH Pads Bottom Annular Ring, Minimum Diameter = 50.81102 mil|||30,304,c05258505acbc2c9
+30|2|1|-7.493|173.228|PTH Pads Top Annular Ring, Minimum Diameter = 50.81102 mil|||30,1,c05358515accc2ce
+30|2|304|-7.493|173.228|PTH Pads Bottom Annular Ring, Minimum Diameter = 50.81102 mil|||30,304,c05358515accc2ce
+3|2|1|8.794|192.837|Copper Width|||3,1,92bead42ad83927f
+3|2|1|8.871|191.483|Copper Width|||3,1,b7aacdd6cd76b70a
+3|2|1|8.855|192.821|Copper Width|||3,1,3ae63a44e7385728
+3|2|1|9.008|190.025|Copper Width|||3,1,a80eab6cb1128184
+3|2|1|10.628|172.522|Copper Width|||3,1,6b4054bc557a6a86
+3|2|1|8.890|187.810|Copper Width|||3,1,b6c2b68dcf79c938
+3|2|1|8.636|181.662|Copper Width|||3,1,5b91e86de86e5b92
+3|2|1|9.632|174.772|Copper Width|||3,1,855d855c3a2439b9
+3|2|1|13.325|186.299|Copper Width|||3,1,5c509f7263c962a2
+3|2|1|13.400|184.192|Copper Width|||3,1,3194e318bce2ffae
+3|2|1|13.208|187.240|Copper Width|||3,1,667c9b809b80667c
+3|2|1|13.442|185.208|Copper Width|||3,1,72854e794e9b7267
+3|2|1|9.399|192.251|Copper Width|||3,1,976a689668749788
+3|2|1|12.192|189.889|Copper Width|||3,1,2faa925692962f6a
+3|2|1|10.288|190.777|Copper Width|||3,1,4e0b4c0a51b46013
+1|2|20|-27.900|166.291|Drill Size|||1,20,8cf9180d186f8c9b
+1|2|20|-25.900|166.291|Drill Size|||1,20,ecf618021863ec97
+1|2|20|-26.900|166.291|Drill Size|||1,20,ccf1f805f866cc92
+3|2|1|-8.509|185.801|Copper Width|||3,1,6c973eeb3e0b6c77
+3|2|1|-7.874|187.452|Copper Width|||3,1,26fd28dc6b52b2c1
+21|4|19|-25.275|191.897|Air Wire|||21,19,7381718371837381
+21|4|19|20.874|178.478|Air Wire|||21,19,a900ab022b022900
+21|4|19|15.795|162.261|Air Wire|||21,19,cc49ce4bce4bcc49
+23|1|1|-19.304|189.611|Wire Stub|||23,1,63b923f9208760c7
+23|1|1|5.639|157.053|Wire Stub|||23,1,d1d693169372d1b2
+23|1|1|6.147|157.006|Wire Stub|||23,1,d83ebafebaf1d831
+3|2|1|-6.540|181.292|Copper Width|||3,1,a6abe4ef2a50a573
+3|2|1|-7.124|181.876|Copper Width|||3,1,41810c403f7ff9bb
+3|2|1|-7.136|182.904|Copper Width|||3,1,c974b548ba29c615
+3|2|1|-4.635|180.721|Copper Width|||3,1,39cb66b3666e3916
+3|2|303|15.367|180.594|Copper Width|||3,303,8d228e2532a734e4
+3|2|303|-3.302|180.721|Copper Width|||3,303,5cfe5c215cdf5c06
+3|2|303|5.969|180.721|Copper Width|||3,303,563c0bc40b0456fc
+3|2|1|15.869|181.096|Copper Width|||3,1,4dcdcf4c464cc1ce
+3|2|1|11.515|182.137|Copper Width|||3,1,6ed28ed1f2c9f16d
+3|2|1|14.193|181.090|Copper Width|||3,1,d38e6f0e6f4fd3cf
+3|2|1|11.534|183.153|Copper Width|||3,1,01657b597bb6018a
+3|2|1|12.010|181.604|Copper Width|||3,1,ebbce95e3421a454
+3|2|303|15.773|181.204|Copper Width|||3,303,cf73cb30f94cf70b
+23|1|1|8.853|195.872|Wire Stub|||23,1,0839106bc2915999
+23|1|1|9.295|195.872|Wire Stub|||23,1,fa1a404883eeeae5
+23|1|1|-9.063|220.569|Wire Stub|||23,1,7c660803097b7a7d
+3|2|1|10.587|226.083|Copper Width|||3,1,418641c7bd3bbdfa
+3|2|1|9.998|224.619|Copper Width|||3,1,37948a688a893775
+3|2|1|9.246|226.593|Copper Width|||3,1,c07cc0bffc43fd82
+3|2|1|9.348|225.117|Copper Width|||3,1,2a3696ca95692995
+3|2|1|7.905|225.878|Copper Width|||3,1,19339b7de506e5cf
+3|2|1|8.698|224.414|Copper Width|||3,1,11932e6f2e6c1190
+3|2|1|6.096|226.672|Copper Width|||3,1,7786aa7aaa3a77c6
+3|2|1|-6.223|189.912|Copper Width|||3,1,b464c818c9d9b5a5
+3|2|1|-7.962|190.635|Copper Width|||3,1,49454807353bb25b
+3|2|1|-8.686|192.047|Copper Width|||3,1,326d89918a76318a
+1|2|20|12.907|157.226|Drill Size|||1,20,7b89e1fde0987aec
+23|1|1|17.514|157.226|Wire Stub|||23,1,9e43ec43ec669e66
+3|2|1|9.001|174.768|Copper Width|||3,1,ac6fb44fe9b38c8d
+3|2|1|7.874|181.598|Copper Width|||3,1,f50fc9f3c94df5b1
+3|2|1|7.493|187.683|Copper Width|||3,1,8fd30cf1108c6159
+3|2|1|10.128|172.455|Copper Width|||3,1,2e5ff3a3ec63319f
+23|1|1|46.237|165.008|Wire Stub|||23,1,0a280dceedf3542f
+3|2|1|-2.223|179.959|Copper Width|||3,1,b4292855281ab466
+3|2|1|9.128|172.574|Copper Width|||3,1,8bc1b63db6fc8b00
+3|2|1|-8.636|181.102|Copper Width|||3,1,c6939affc2ded5fd
+3|2|1|6.088|176.919|Copper Width|||3,1,ac61ac6e1012309d
+3|2|1|-9.525|187.833|Copper Width|||3,1,9a4d858ddff1c62d
+3|2|1|-9.779|184.912|Copper Width|||3,1,71141568124b7637
+3|2|1|5.659|176.586|Copper Width|||3,1,833a8239fdc5e1c4
+3|2|1|8.628|172.443|Copper Width|||3,1,15f8ea04ea2715db
+3|2|1|-2.581|179.556|Copper Width|||3,1,37082b742b0a3776
+3|2|1|-11.049|187.833|Copper Width|||3,1,c7f0c2301c4eef8c
+3|2|1|-9.323|181.027|Copper Width|||3,1,b5d7f654886f88b3
+3|2|1|-10.795|185.039|Copper Width|||3,1,92f0ae8ca88e94f2
+23|1|1|1.208|169.967|Wire Stub|||23,1,98ffd8e36fe39eaf
+23|1|1|0.712|168.522|Wire Stub|||23,1,da99d9b8d37e171d
+21|4|19|-23.110|168.230|Air Wire|||21,19,50e752e552e550e7
+21|4|19|-20.649|168.443|Air Wire|||21,19,dfe4dde1dde1dfe4
+21|4|19|-26.350|163.886|Air Wire|||21,19,cd6cb36d4f6f4e90
+21|4|19|0.257|233.011|Air Wire|||21,19,9e4c604c9c4e9c30
+21|4|19|-27.684|155.829|Air Wire|||21,19,2d8e2f8c2f0c2d0e
+3|2|1|-9.303|189.944|Copper Width|||3,1,af0fd04e6d71df13
+3|2|1|-9.336|191.356|Copper Width|||3,1,8eae325232b68e4a
+21|4|19|39.919|175.817|Air Wire|||21,19,e97beb79eb79e97b
+23|1|1|43.392|162.562|Wire Stub|||23,1,cd580c9833bdf27d
+23|1|1|49.593|234.029|Wire Stub|||23,1,a00cbd71912cdfdc
+3|2|1|-14.563|234.423|Copper Width|||3,1,33320b7136f0b18c
+3|2|1|30.719|151.907|Copper Width|||3,1,09e7fa198425b46c
+3|2|1|-14.257|234.442|Copper Width|||3,1,321f4ee34e83327f
+3|2|1|29.899|152.303|Copper Width|||3,1,fde7a61ba959f2a5
+3|2|1|-13.652|234.760|Copper Width|||3,1,19ac95afe9dfa914
+3|2|1|-14.582|233.407|Copper Width|||3,1,291d172117a1299d
+3|2|303|-13.272|235.077|Copper Width|||3,303,417dbc01bb41463d
+3|2|303|31.687|151.511|Copper Width|||3,303,af16926a92b4afc8
+3|2|303|7.493|235.966|Copper Width|||3,303,355a89267666ca1a
+3|2|303|33.655|191.262|Copper Width|||3,303,7995cbe9cbef7993
+3|2|303|30.480|232.791|Copper Width|||3,303,f9dc06bd9ac66b9a
+3|2|303|-12.764|235.522|Copper Width|||3,303,0ee464c7f98bc31b
+3|2|303|32.956|152.210|Copper Width|||3,303,710ae2d2784ebfb6
+23|1|1|43.392|232.432|Wire Stub|||23,1,e346228622a0e360
+23|1|1|42.677|231.045|Wire Stub|||23,1,120577c578921d52
+3|2|1|-16.246|230.261|Copper Width|||3,1,c3d981f95fdb4aa3
+3|2|1|-16.363|231.372|Copper Width|||3,1,577f6b036b1d5761
+3|2|1|-16.385|232.388|Copper Width|||3,1,b9e9bdcaa3b569e3
+3|2|1|-16.129|229.320|Copper Width|||3,1,c615f869f808c674
+3|2|1|-11.138|225.044|Copper Width|||3,1,234fdf73de31220d
+3|2|1|-9.558|224.796|Copper Width|||3,1,5a379a0a857617fb
+3|2|1|-9.310|224.120|Copper Width|||3,1,30f20c8e0c0e3072
+3|2|1|-13.283|225.858|Copper Width|||3,1,2ef62ff6738aa384
+3|2|1|-15.113|226.672|Copper Width|||3,1,14368a4a8a0a1476
+23|1|1|49.602|188.790|Wire Stub|||23,1,519496c91bc992d6
+23|1|1|49.593|187.448|Wire Stub|||23,1,a83cb50d9936d7d0
+23|1|1|42.677|184.465|Wire Stub|||23,1,127f77bf779a125a
+23|1|1|43.392|185.852|Wire Stub|||23,1,e8ce290e2b22eae2
+23|1|1|44.361|182.810|Wire Stub|||23,1,1730c670c7751635
+23|1|1|46.477|183.044|Wire Stub|||23,1,5e17dbd7dbb45e74
+3|2|1|-8.010|224.171|Copper Width|||3,1,1174cd08cca810d4
+3|2|1|-9.022|225.660|Copper Width|||3,1,9ac85b4a45765bbb
+3|2|1|7.375|234.428|Copper Width|||3,1,a5fe659e79e3ca8b
+3|2|1|7.389|233.412|Copper Width|||3,1,8549b775b79385af
+23|1|303|31.224|153.652|Wire Stub|||23,303,574ed744d4400dc1
+3|2|1|5.205|232.051|Copper Width|||3,1,57f09a72198a1f4f
+3|2|1|5.080|229.320|Copper Width|||3,1,4615bbe9bb884674
+3|2|1|4.846|231.035|Copper Width|||3,1,136aaf96aff91305
+3|2|1|4.963|230.261|Copper Width|||3,1,c05783771ed5ebad
+3|2|1|-10.644|190.571|Copper Width|||3,1,f39494552b492bea
+3|2|1|-9.986|191.982|Copper Width|||3,1,d673ab8fab97d66b
+23|1|1|42.677|207.755|Wire Stub|||23,1,11b57475749a115a
+23|1|1|43.392|209.142|Wire Stub|||23,1,0b47ca87cbe60a26
+21|4|19|36.669|175.817|Air Wire|||21,19,eb7be979e979eb7b
+21|4|19|40.022|181.548|Air Wire|||21,19,88f68af44af448f6
+21|4|19|36.572|181.448|Air Wire|||21,19,5a0a660a9a0a99f6
+3|2|1|7.606|190.382|Copper Width|||3,1,38d830d86cc0eea5
+3|2|1|8.099|191.856|Copper Width|||3,1,97da8a268a4797bb
+23|1|1|44.361|206.100|Wire Stub|||23,1,174fc60fc54b140b
+23|1|1|46.477|206.334|Wire Stub|||23,1,5e94db54dab25f72
+23|1|1|49.602|165.500|Wire Stub|||23,1,59ab9a34178d9aeb
+23|1|1|49.593|164.159|Wire Stub|||23,1,919cb3ac9e90efc6
+23|1|1|44.361|159.520|Wire Stub|||23,1,17c1c681c7471607
+23|1|1|46.477|159.754|Wire Stub|||23,1,5950dc90dcb25972
+23|1|1|46.477|229.624|Wire Stub|||23,1,5e4ddb8ddbbc5e7c
+23|1|1|44.361|229.390|Wire Stub|||23,1,17ecc6acf9752835
+3|2|1|-8.660|224.120|Copper Width|||3,1,32f28c8e8c0f3273
+3|2|1|-10.305|225.552|Copper Width|||3,1,e1e15edd5fbce080
+3|2|1|-11.505|226.112|Copper Width|||3,1,060dc52cdb566b77
+3|2|1|-9.162|225.050|Copper Width|||3,1,b3b9b287afffd97d
+23|1|1|49.602|212.080|Wire Stub|||23,1,528b91681ceb90d3
+23|1|1|49.602|235.370|Wire Stub|||23,1,507a90fb1c3b9334
+3|2|1|-4.973|185.104|Copper Width|||3,1,5dc667ba679a5de6
+3|2|1|-5.142|184.088|Copper Width|||3,1,819bfe7ba4fbec28
+3|2|1|-5.090|186.069|Copper Width|||3,1,cc11830f9eba9e63
+3|2|1|-5.207|187.136|Copper Width|||3,1,067eda02db02077e
+23|1|1|49.593|210.739|Wire Stub|||23,1,a8bcb58e99b6d6a2
+23|1|1|24.713|157.226|Wire Stub|||23,1,78882208222a78aa
+3|2|1|29.474|151.328|Copper Width|||3,1,f86e4492450cf9f0
+19|2|1|-16.806|192.121|Overlap|||19,1,15136eea34d57b9d
+7|2|39|-29.922|186.602|Component Exclude Clearance|||7,39,0a5eca6831adf698
+7|2|39|-30.138|185.573|Component Exclude Clearance|||7,39,3e2f1049374176e5
+19|2|1|16.343|172.184|Overlap|||19,1,2f94eea487dc7748
+19|2|1|15.800|171.367|Overlap|||19,1,f346bb75d486dcc8
+5|2|1|-21.905|191.815|Copper Clearance|||5,1,ba1b45eaa4373362
+19|2|1|25.100|166.054|Overlap|||19,1,3aba387e7a0078c4
+5|2|1|-16.895|191.350|Copper Clearance|||5,1,f9af660fb91b310c
+7|2|39|6.960|217.162|Component Exclude Clearance|||7,39,438384fc7cffbb80
+7|2|39|13.398|218.070|Component Exclude Clearance|||7,39,3ed3b96d416dc6d3
+5|2|1|10.323|223.744|Copper Clearance|||5,1,c53d26440af51e0a
+5|2|1|9.673|223.744|Copper Clearance|||5,1,99a079c402f51d17
+5|2|1|9.023|223.744|Copper Clearance|||5,1,ac234d441af50214
+5|2|1|8.235|217.382|Copper Clearance|||5,1,b2acb3ee3204c62c
+19|2|1|8.698|217.470|Overlap|||19,1,59c5efe53bebf482
+19|2|1|9.348|217.472|Overlap|||19,1,cf718b3186314d5e
+19|2|1|9.853|217.402|Overlap|||19,1,02d6fe4b803cacfb
+19|2|1|11.684|219.964|Overlap|||19,1,22723bd461aa780c
+19|2|1|9.017|220.853|Overlap|||19,1,f27cf0ee24102682
+19|2|1|9.017|219.964|Overlap|||19,1,7cf2655631a8280c
+19|2|1|7.239|221.742|Overlap|||19,1,fbf9ffceec30e807
+19|2|1|10.795|221.742|Overlap|||19,1,7dfe79ce54305000
+19|2|1|6.350|219.964|Overlap|||19,1,7e7267d60da8140c
+19|2|1|7.239|219.964|Overlap|||19,1,fbf5e252f1ace80b
+19|2|1|9.906|221.742|Overlap|||19,1,fe7cfa5610281402
+19|2|1|9.017|221.742|Overlap|||19,1,7cfe78ca2c342800
+19|2|1|8.128|221.742|Overlap|||19,1,fe7ffa4604380001
+19|2|1|7.239|220.853|Overlap|||19,1,757b77eae414e685
+19|2|1|8.128|220.853|Overlap|||19,1,70fd72620c1c0e83
+19|2|1|6.350|220.853|Overlap|||19,1,f0fcf26e18101a82
+19|2|1|11.684|221.742|Overlap|||19,1,227e26487c367800
+19|2|1|11.684|220.853|Overlap|||19,1,acfcae6c74127682
+19|2|1|10.795|220.853|Overlap|||19,1,f37cf1ea5c145e82
+19|2|1|9.906|220.853|Overlap|||19,1,70fe7272180c1a80
+19|2|1|10.795|219.964|Overlap|||19,1,7df2645249ac500c
+19|2|1|9.906|219.964|Overlap|||19,1,fe70e7ca0db4140e
+19|2|1|6.350|221.742|Overlap|||19,1,7e7e7a4a10341400
+19|2|1|8.128|219.964|Overlap|||19,1,fe73e7da19a4000d
+19|2|1|1.215|193.447|Overlap|||19,1,711d819d02299bca
+19|2|1|12.907|157.226|Overlap|||19,1,34f5cac3bcc242f4
+5|2|1|3.878|159.918|Copper Clearance|||5,1,d2efde8405aaee6a
+5|2|1|4.378|159.918|Copper Clearance|||5,1,5de86d8425aaf26d
+5|2|1|4.878|159.918|Copper Clearance|||5,1,eceafc8405aaf26f
+5|2|1|5.378|159.918|Copper Clearance|||5,1,7fe773841daaf662
+5|2|1|5.878|159.918|Copper Clearance|||5,1,8ee182841daaf664
+5|2|1|6.378|159.918|Copper Clearance|||5,1,19e211841daaf267
+5|2|1|6.878|159.918|Copper Clearance|||5,1,a8dca0841daaf259
+5|2|1|7.378|159.918|Copper Clearance|||5,1,3bd9378415aafe5c
+5|2|1|7.878|159.918|Copper Clearance|||5,1,4adb468415aafe5e
+5|2|1|8.378|159.918|Copper Clearance|||5,1,d5d5d58415aaf250
+5|2|1|8.878|159.918|Copper Clearance|||5,1,64d6648415aaf253
+5|2|1|9.378|159.918|Copper Clearance|||5,1,f7d0fb841daaf655
+5|2|1|9.878|159.918|Copper Clearance|||5,1,06cd0a841daaf648
+5|2|1|10.378|159.918|Copper Clearance|||5,1,91cf99841daaf24a
+5|2|1|10.878|159.918|Copper Clearance|||5,1,20c828841daaf24d
+5|2|1|10.928|159.094|Copper Clearance|||5,1,2bea7a79b5711d6f
+5|2|1|13.053|162.093|Copper Clearance|||5,1,b249cf62746f6f45
+5|2|1|13.053|162.593|Copper Clearance|||5,1,bcd8cf62746f61d4
+5|2|1|13.053|163.093|Copper Clearance|||5,1,b96bcf6e74676463
+5|2|1|13.053|163.593|Copper Clearance|||5,1,bbfacf6e746766f2
+5|2|1|13.053|164.093|Copper Clearance|||5,1,840dcf6a74675901
+5|2|1|13.053|164.593|Copper Clearance|||5,1,869ccf6a74675b90
+5|2|1|13.053|165.093|Copper Clearance|||5,1,832fcf6e745f5e1f
+5|2|1|13.053|165.593|Copper Clearance|||5,1,8dbecf6e747f50ae
+5|2|1|13.053|166.093|Copper Clearance|||5,1,8e31ce92759f533d
+5|2|1|13.053|166.593|Copper Clearance|||5,1,8840cf72747f554c
+5|2|1|13.053|167.093|Copper Clearance|||5,1,8ad3cf6e746757db
+5|2|1|13.053|167.593|Copper Clearance|||5,1,9762cf6e74674a6a
+5|2|1|13.053|168.093|Copper Clearance|||5,1,91f5cf6a74674cf9
+5|2|1|13.053|168.593|Copper Clearance|||5,1,9204cf6a74674f08
+5|2|1|13.053|169.093|Copper Clearance|||5,1,9c97cf6e746f4197
+5|2|1|10.878|171.268|Copper Clearance|||5,1,f75da884038ba538
+5|2|1|10.378|171.268|Copper Clearance|||5,1,465a1984038ba53f
+5|2|1|9.878|171.268|Copper Clearance|||5,1,d1588a84038ba13d
+5|2|1|9.378|171.268|Copper Clearance|||5,1,20457b84038ba120
+5|2|1|8.878|171.268|Copper Clearance|||5,1,b343e4840b8ba526
+5|2|1|8.378|171.268|Copper Clearance|||5,1,024055840b8ba525
+5|2|1|7.878|171.268|Copper Clearance|||5,1,9d4ec6840b8ba92b
+5|2|1|7.378|171.268|Copper Clearance|||5,1,ec4cb7840b8ba929
+5|2|1|6.878|171.268|Copper Clearance|||5,1,7f492084038ba52c
+5|2|1|6.378|171.268|Copper Clearance|||5,1,ce779184038ba512
+5|2|1|5.878|171.268|Copper Clearance|||5,1,59740284038ba111
+5|2|1|5.378|171.268|Copper Clearance|||5,1,a872f384038ba117
+5|2|1|4.878|171.268|Copper Clearance|||5,1,3b7f7c841b8ba51a
+5|2|1|4.378|171.268|Copper Clearance|||5,1,8a7ded843b8ba518
+5|2|1|3.878|171.268|Copper Clearance|||5,1,057a5e841b8bb91f
+5|2|1|1.703|169.093|Copper Clearance|||5,1,282f639e546f41af
+5|2|1|0.878|168.644|Copper Clearance|||5,1,08ac58bd73707b17
+5|2|1|1.703|168.593|Copper Clearance|||5,1,26bc639a54674f30
+5|2|1|1.703|168.093|Copper Clearance|||5,1,254d639a54674cc1
+5|2|1|1.703|167.593|Copper Clearance|||5,1,23da639e54674a52
+5|2|1|1.703|167.093|Copper Clearance|||5,1,3e6b639e546757e3
+5|2|1|1.703|166.593|Copper Clearance|||5,1,3cf86382547f5574
+5|2|1|1.703|166.093|Copper Clearance|||5,1,3a896262559f5305
+5|2|1|1.703|165.593|Copper Clearance|||5,1,3906639e547f5096
+5|2|1|1.703|165.093|Copper Clearance|||5,1,3797639e545f5e27
+5|2|1|1.703|164.593|Copper Clearance|||5,1,3224639a54675ba8
+5|2|1|1.703|164.093|Copper Clearance|||5,1,30b5639a54675939
+5|2|1|1.703|163.593|Copper Clearance|||5,1,0f42639e546766ca
+5|2|1|1.703|163.093|Copper Clearance|||5,1,0dd3639e5467645b
+5|2|1|1.703|162.593|Copper Clearance|||5,1,08606392546f61ec
+5|2|1|0.955|162.614|Copper Clearance|||5,1,c9eff7258a4a7614
+5|2|1|1.361|162.614|Copper Clearance|||5,1,d2c9ffc3b36c76d8
+5|2|1|1.361|162.614|Copper Clearance|||5,1,d2c9ffc3b36c76d8
+5|2|1|1.703|162.093|Copper Clearance|||5,1,06f16392546f6f7d
+5|2|1|0.941|161.980|Copper Clearance|||5,1,734d4cf29d8246b8
+5|2|1|1.361|162.073|Copper Clearance|||5,1,93767c375a9a27e3
+5|2|1|1.361|162.073|Copper Clearance|||5,1,93767c375a9a27e3
+5|2|1|1.867|228.061|Copper Clearance|||5,1,14829dc4645ec932
+19|2|1|22.755|174.807|Overlap|||19,1,1da38d58048e7878
+5|2|1|21.383|178.829|Copper Clearance|||5,1,f51ebd857f56c04f
+19|2|1|37.400|187.954|Overlap|||19,1,fe7cfa6614181002
+7|2|39|-17.040|208.570|Component Exclude Clearance|||7,39,3ffdc53ac831cc1a
+7|2|39|-6.960|208.570|Component Exclude Clearance|||7,39,dce236a49a4d8ee7
+7|2|39|-17.040|208.280|Component Exclude Clearance|||7,39,3000301056165606
+7|2|39|-17.040|207.990|Component Exclude Clearance|||7,39,3f15c8c5c5d6cce2
+7|2|39|-6.960|208.280|Component Exclude Clearance|||7,39,1000101036163606
+7|2|39|-6.960|199.317|Component Exclude Clearance|||7,39,ed9a2be6d3e51599
+7|2|39|-6.960|207.990|Component Exclude Clearance|||7,39,dc203b7197888e3d
+7|2|39|-13.386|198.490|Component Exclude Clearance|||7,39,688eef281728908e
+5|2|1|-9.780|199.115|Copper Clearance|||5,1,a96969c4172e9c7e
+19|2|1|-9.336|199.048|Overlap|||19,1,fbbdb95b6328ea43
+19|2|1|-8.686|199.049|Overlap|||19,1,400e7ff48c18271d
+7|2|39|17.040|208.570|Component Exclude Clearance|||7,39,9ce1b6d595c04118
+7|2|39|6.960|208.570|Component Exclude Clearance|||7,39,3ffdc54b87bf83e5
+7|2|39|6.960|199.419|Component Exclude Clearance|||7,39,2ae9ed9d159ed2ea
+7|2|39|6.960|207.990|Component Exclude Clearance|||7,39,3f15c8b48a58831d
+7|2|39|6.960|208.280|Component Exclude Clearance|||7,39,1000101036163606
+7|2|39|17.040|208.280|Component Exclude Clearance|||7,39,3000301056165606
+7|2|39|17.040|207.990|Component Exclude Clearance|||7,39,9c23bb00980541c2
+7|2|39|13.449|198.490|Component Exclude Clearance|||7,39,9cf11857e05764f1
+19|2|1|9.894|199.180|Overlap|||19,1,74dd6cefc8f3a653
+19|2|1|9.399|199.099|Overlap|||19,1,7df45709486792d5
+19|2|1|8.749|199.098|Overlap|||19,1,aaa021ded9385bd2
+19|2|1|8.246|199.175|Overlap|||19,1,43b529f8bf32996c
+5|2|1|52.094|188.764|Copper Clearance|||5,1,4f8965e30c23614c
+5|2|1|52.094|188.750|Copper Clearance|||5,1,5102c10e6f67e168
+5|2|1|52.094|188.750|Copper Clearance|||5,1,5102c10e6f67e168
+5|2|1|52.094|188.114|Copper Clearance|||5,1,c0bee5e20c2a6e70
+5|2|1|52.094|187.464|Copper Clearance|||5,1,456265e30c256ba3
+19|2|1|55.833|185.838|Overlap|||19,1,fa60f8b61c481e9e
+19|2|1|54.944|185.838|Overlap|||19,1,78fe7a2e24502680
+19|2|1|54.055|185.838|Overlap|||19,1,3d7e3fa87c567e80
+19|2|1|55.833|186.727|Overlap|||19,1,7ce560fa0404181b
+19|2|1|54.944|186.727|Overlap|||19,1,fe7be2623c1c2005
+19|2|1|54.055|186.727|Overlap|||19,1,bbfba7e4641a7805
+19|2|1|55.833|187.616|Overlap|||19,1,ff60fe821a7c1b9e
+19|2|1|54.944|187.616|Overlap|||19,1,7dfe7c1a22642380
+19|2|1|54.055|187.616|Overlap|||19,1,387e399c7a627b80
+19|2|1|55.833|188.505|Overlap|||19,1,71a270da1424155c
+19|2|1|54.944|188.505|Overlap|||19,1,f33cf2422c3c2d42
+19|2|1|54.055|188.505|Overlap|||19,1,b6bcb7c4743a7542
+5|2|1|-16.672|152.539|Copper Clearance|||5,1,4ac45ebdd90032fb
+5|2|2|-16.672|152.539|Copper Clearance|||5,2,4ac45ebdd90032fb
+5|2|303|-16.672|152.539|Copper Clearance|||5,303,4ac45ebdd90032fb
+5|2|304|-16.672|152.539|Copper Clearance|||5,304,4ac45ebdd90032fb
+5|2|1|-15.822|152.539|Copper Clearance|||5,1,ee58ca3d0900d2e7
+5|2|2|-15.822|152.539|Copper Clearance|||5,2,ee58ca3d0900d2e7
+5|2|303|-15.822|152.539|Copper Clearance|||5,303,ee58ca3d0900d2e7
+5|2|304|-15.822|152.539|Copper Clearance|||5,304,ee58ca3d0900d2e7
+5|2|1|-14.972|152.539|Copper Clearance|||5,1,31dd23bd3900d4e2
+5|2|2|-14.972|152.539|Copper Clearance|||5,2,31dd23bd3900d4e2
+5|2|303|-14.972|152.539|Copper Clearance|||5,303,31dd23bd3900d4e2
+5|2|304|-14.972|152.539|Copper Clearance|||5,304,31dd23bd3900d4e2
+5|2|1|-14.122|152.539|Copper Clearance|||5,1,dd50d33cd90128ef
+5|2|2|-14.122|152.539|Copper Clearance|||5,2,dd50d33cd90128ef
+5|2|303|-14.122|152.539|Copper Clearance|||5,303,dd50d33cd90128ef
+5|2|304|-14.122|152.539|Copper Clearance|||5,304,dd50d33cd90128ef
+5|2|1|-11.572|152.539|Copper Clearance|||5,1,afad89bd0900d092
+5|2|2|-11.572|152.539|Copper Clearance|||5,2,afad89bd0900d092
+5|2|303|-11.572|152.539|Copper Clearance|||5,303,afad89bd0900d092
+5|2|304|-11.572|152.539|Copper Clearance|||5,304,afad89bd0900d092
+5|2|1|-11.572|151.189|Copper Clearance|||5,1,27c409bd0800dbfa
+5|2|2|-11.572|151.189|Copper Clearance|||5,2,27c409bd0800dbfa
+5|2|303|-11.572|151.189|Copper Clearance|||5,303,27c409bd0800dbfa
+5|2|304|-11.572|151.189|Copper Clearance|||5,304,27c409bd0800dbfa
+5|2|1|-12.422|151.189|Copper Clearance|||5,1,8c40e03d2000b1fe
+5|2|2|-12.422|151.189|Copper Clearance|||5,2,8c40e03d2000b1fe
+5|2|303|-12.422|151.189|Copper Clearance|||5,303,8c40e03d2000b1fe
+5|2|304|-12.422|151.189|Copper Clearance|||5,304,8c40e03d2000b1fe
+5|2|1|-13.272|151.189|Copper Clearance|||5,1,e8bcecbd4800b182
+5|2|2|-13.272|151.189|Copper Clearance|||5,2,e8bcecbd4800b182
+5|2|303|-13.272|151.189|Copper Clearance|||5,303,e8bcecbd4800b182
+5|2|304|-13.272|151.189|Copper Clearance|||5,304,e8bcecbd4800b182
+5|2|1|-14.122|151.189|Copper Clearance|||5,1,5539533cd8012387
+5|2|2|-14.122|151.189|Copper Clearance|||5,2,5539533cd8012387
+5|2|303|-14.122|151.189|Copper Clearance|||5,303,5539533cd8012387
+5|2|304|-14.122|151.189|Copper Clearance|||5,304,5539533cd8012387
+5|2|1|-16.672|151.189|Copper Clearance|||5,1,c2addebdd8003993
+5|2|2|-16.672|151.189|Copper Clearance|||5,2,c2addebdd8003993
+5|2|303|-16.672|151.189|Copper Clearance|||5,303,c2addebdd8003993
+5|2|304|-16.672|151.189|Copper Clearance|||5,304,c2addebdd8003993
+5|2|1|20.333|168.722|Copper Clearance|||5,1,d3eb9506ed6cf843
+5|2|1|-10.311|192.735|Copper Clearance|||5,1,8db99a3b15e0ea95
+5|2|1|-9.661|192.735|Copper Clearance|||5,1,f924edbb1de0e988
+5|2|1|-9.011|192.735|Copper Clearance|||5,1,2aa7c13ce5e0e88c
+19|2|1|-9.906|194.691|Overlap|||19,1,7dfb7272180c1785
+19|2|1|-9.906|196.469|Overlap|||19,1,01be0252682c6bc0
+19|2|1|-9.017|195.580|Overlap|||19,1,7bf27bd62828280c
+19|2|1|-9.017|196.469|Overlap|||19,1,843c87ce543057c2
+19|2|1|-7.239|194.691|Overlap|||19,1,7f7e70eae414eb80
+19|2|1|-6.350|195.580|Overlap|||19,1,7e727e561428140c
+19|2|1|-7.239|196.469|Overlap|||19,1,033b00ca943497c5
+19|2|1|-6.350|196.469|Overlap|||19,1,81bc824e68306bc2
+19|2|1|-7.239|195.580|Overlap|||19,1,fcf5fcd2e82ce80b
+19|2|1|-8.128|194.691|Overlap|||19,1,7df872620c1c0386
+19|2|1|-8.128|196.469|Overlap|||19,1,01bd02427c3c7fc3
+19|2|1|-6.350|194.691|Overlap|||19,1,fdf9f26e18101787
+19|2|1|-8.128|195.580|Overlap|||19,1,fe73fe5a0024000d
+19|2|1|-9.017|194.691|Overlap|||19,1,f879f7ee24102b87
+19|2|1|-9.906|195.580|Overlap|||19,1,fe70fe4a1434140e
+19|2|1|-10.795|194.691|Overlap|||19,1,ff79f0ea5c145387
+19|2|1|-11.684|194.691|Overlap|||19,1,a1f9ae6c74127b87
+19|2|1|-10.795|196.469|Overlap|||19,1,833c80ca2c342fc2
+19|2|1|-11.684|196.469|Overlap|||19,1,ddbcde4c043207c2
+19|2|1|-11.684|195.580|Overlap|||19,1,22722254782a780c
+19|2|1|-10.795|195.580|Overlap|||19,1,7cf27cd2502c500c
+7|2|39|-26.180|160.656|Component Exclude Clearance|||7,39,992cd8132013612c
+7|2|39|-24.220|160.656|Component Exclude Clearance|||7,39,0f254e1ab61af725
+19|2|1|37.400|193.154|Overlap|||19,1,fffce06e0e101182
+19|2|1|40.200|156.805|Overlap|||19,1,07650a0b6ee1238f
+19|2|1|40.200|160.555|Overlap|||19,1,7e247fa9a4eba56a
+19|2|1|40.200|161.805|Overlap|||19,1,061d0f6b6b8122f7
+19|2|1|40.122|181.554|Overlap|||19,1,2cdd2e884399cb38
+19|2|1|39.597|181.554|Overlap|||19,1,eb7769a83110c9d9
+19|2|1|36.994|181.354|Overlap|||19,1,937213d63cb0da28
+19|2|1|36.472|181.354|Overlap|||19,1,64c76d07cb11be2f
+19|2|1|-15.643|168.148|Overlap|||19,1,ca9096b87784a703
+19|2|1|-15.243|168.148|Overlap|||19,1,7945b5c6de779aa3
+7|2|39|-14.789|166.898|Component Exclude Clearance|||7,39,85c5c67f3e7f7dc5
+7|2|39|-13.793|168.636|Component Exclude Clearance|||7,39,318973b08bb0c989
+19|2|1|-16.093|168.383|Overlap|||19,1,0e84969e01a63195
+19|2|1|-16.093|167.936|Overlap|||19,1,41650bc2e690e32d
+19|2|1|-16.093|168.510|Overlap|||19,1,19cbf31a044625ab
+19|2|1|-16.093|168.360|Overlap|||19,1,f730a1e3cd8052f8
+19|2|1|-15.050|167.498|Overlap|||19,1,c8d426b3cd8b77db
+5|2|1|-14.793|168.280|Copper Clearance|||5,1,5c0fa8576218837e
+19|2|1|-14.793|167.936|Overlap|||19,1,aa3657e7a0482854
+19|2|1|-14.808|167.846|Overlap|||19,1,ba795044db03b7d5
+19|2|1|-14.793|167.913|Overlap|||19,1,cfc4b7b315ae5d71
+19|2|1|-14.793|168.360|Overlap|||19,1,3a33e3bc66a92983
+5|2|1|7.774|192.837|Copper Clearance|||5,1,20d033c41ee2ea03
+5|2|1|8.424|192.837|Copper Clearance|||5,1,f45ce0441ee2ed0f
+5|2|1|9.074|192.837|Copper Clearance|||5,1,9bd98cc406e2f40a
+19|2|1|6.477|196.596|Overlap|||19,1,e0b8e2ba02440046
+19|2|1|10.033|194.818|Overlap|||19,1,40fe4ce2141c1800
+19|2|1|11.811|196.596|Overlap|||19,1,f9bbfb8af274f045
+19|2|1|8.255|195.707|Overlap|||19,1,397c3f82fc7cfa82
+19|2|1|11.811|194.818|Overlap|||19,1,f9fff5eefc10f001
+19|2|1|10.922|196.596|Overlap|||19,1,fe39fc02ee7cec47
+19|2|1|10.922|195.707|Overlap|||19,1,7cfe7a0ae874ee80
+19|2|1|10.922|194.818|Overlap|||19,1,fe7df266e018ec03
+19|2|1|11.811|195.707|Overlap|||19,1,7b7c7d82f47cf282
+19|2|1|10.033|196.596|Overlap|||19,1,40ba42861a781844
+19|2|1|9.144|196.596|Overlap|||19,1,fe3dfc02f27cf043
+19|2|1|10.033|195.707|Overlap|||19,1,c27dc48e1c701a83
+19|2|1|8.255|196.596|Overlap|||19,1,bbbbb98afa74f845
+19|2|1|7.366|196.596|Overlap|||19,1,7e3a7c0626782444
+19|2|1|7.366|195.707|Overlap|||19,1,fcfdfa0e20702683
+19|2|1|9.144|194.818|Overlap|||19,1,fe79f266fc18f007
+19|2|1|8.255|194.818|Overlap|||19,1,bbffb7eef410f801
+19|2|1|7.366|194.818|Overlap|||19,1,7e7e7262281c2400
+19|2|1|6.477|195.707|Overlap|||19,1,627f64b2044c0281
+19|2|1|6.477|194.818|Overlap|||19,1,e0fcecde0c200002
+19|2|1|9.144|195.707|Overlap|||19,1,7cfa7a0af474f284
+7|2|39|-3.742|160.016|Component Exclude Clearance|||7,39,f68c6f87fe85df26
+7|2|39|-3.744|159.170|Component Exclude Clearance|||7,39,b4f763af7ba7b2cf
+7|2|39|-3.740|160.862|Component Exclude Clearance|||7,39,6d36ae5fa857750f
+5|2|1|-2.124|157.699|Copper Clearance|||5,1,92336d67ed0157c5
+5|2|1|52.094|165.474|Copper Clearance|||5,1,71c2e5e20c22df04
+5|2|1|52.094|164.824|Copper Clearance|||5,1,f2f665e30c25dc37
+5|2|1|52.094|165.460|Copper Clearance|||5,1,5104c11e6f77e16e
+5|2|1|52.094|165.460|Copper Clearance|||5,1,5104c11e6f77e16e
+5|2|1|52.094|164.174|Copper Clearance|||5,1,779be5dc0c1ad95b
+19|2|1|55.833|162.548|Overlap|||19,1,fd24f01a14e419da
+19|2|1|54.944|162.548|Overlap|||19,1,7fba72822cfc21c4
+19|2|1|55.833|163.437|Overlap|||19,1,7cee44c2203c1810
+19|2|1|54.055|162.548|Overlap|||19,1,3a3a370474fa79c4
+19|2|1|54.944|163.437|Overlap|||19,1,fe70c65a1824200e
+19|2|1|54.055|163.437|Overlap|||19,1,bbf083dc4022780e
+19|2|1|55.833|164.326|Overlap|||19,1,fa60f8e61c181e9e
+19|2|1|54.944|164.326|Overlap|||19,1,78fe7a7e24002680
+19|2|1|54.055|164.326|Overlap|||19,1,3d7e3ff87c067e80
+19|2|1|55.833|165.215|Overlap|||19,1,7ce570ca1434181b
+19|2|1|54.944|165.215|Overlap|||19,1,fe7bf2522c2c2005
+19|2|1|54.055|165.215|Overlap|||19,1,bbfbb7d4742a7805
+19|2|1|47.400|165.854|Overlap|||19,1,3ef23b9e75e0708c
+19|2|1|47.400|212.454|Overlap|||19,1,3cf23a767408728c
+19|2|1|3.595|156.046|Overlap|||19,1,259d2019c2167497
+19|2|1|4.039|157.025|Overlap|||19,1,25897a4bda03e7c1
+19|2|1|47.400|235.754|Overlap|||19,1,3ef2c19e8fe0708c
+7|2|39|-13.360|218.070|Component Exclude Clearance|||7,39,696cee521653916d
+7|2|39|-6.960|217.111|Component Exclude Clearance|||7,39,04bfc4c33cc0fcbc
+5|2|1|-7.685|223.693|Copper Clearance|||5,1,a555487b0b751dda
+5|2|1|-8.335|223.693|Copper Clearance|||5,1,91d874fb02751fd7
+5|2|1|-8.985|223.693|Copper Clearance|||5,1,c25b217b3b751fd4
+19|2|1|-9.870|217.385|Overlap|||19,1,92a7c143de27f022
+19|2|1|-9.310|217.446|Overlap|||19,1,396fdfb9baf0f12e
+19|2|1|-8.660|217.444|Overlap|||19,1,a094c4f1fa778369
+19|2|1|-8.180|217.347|Overlap|||19,1,481af1d3c4f8cf43
+19|2|1|-8.128|221.742|Overlap|||19,1,fe7ffa4604380001
+19|2|1|-7.239|221.742|Overlap|||19,1,fcf9f8ceec30e807
+19|2|1|-6.350|221.742|Overlap|||19,1,7e7e7a4a10341400
+19|2|1|-11.684|221.742|Overlap|||19,1,227e26487c367800
+19|2|1|-10.795|221.742|Overlap|||19,1,7cfe78ce54305000
+19|2|1|-9.906|221.742|Overlap|||19,1,fe7cfa5610281402
+19|2|1|-11.684|220.853|Overlap|||19,1,acfcae6c74127682
+19|2|1|-10.795|220.853|Overlap|||19,1,f27cf0ea5c145e82
+19|2|1|-9.906|220.853|Overlap|||19,1,70fe7272180c1a80
+19|2|1|-11.684|219.964|Overlap|||19,1,22723bd461aa780c
+19|2|1|-10.795|219.964|Overlap|||19,1,7cf2655249ac500c
+19|2|1|-9.906|219.964|Overlap|||19,1,fe70e7ca0db4140e
+19|2|1|-9.017|221.742|Overlap|||19,1,7bfe7fca2c342800
+19|2|1|-9.017|219.964|Overlap|||19,1,7bf2625631a8280c
+19|2|1|-9.017|220.853|Overlap|||19,1,f57cf7ee24102682
+19|2|1|-8.128|220.853|Overlap|||19,1,70fd72620c1c0e83
+19|2|1|-8.128|219.964|Overlap|||19,1,fe73e7da19a4000d
+19|2|1|-7.239|220.853|Overlap|||19,1,727b70eae414e685
+19|2|1|-6.350|220.853|Overlap|||19,1,f0fcf26e18101a82
+19|2|1|-7.239|219.964|Overlap|||19,1,fcf5e552f1ace80b
+19|2|1|-6.350|219.964|Overlap|||19,1,7e7267d60da8140c
+5|2|1|42.530|231.054|Copper Clearance|||5,1,0e407d97b7c5b718
+5|2|1|52.094|235.344|Copper Clearance|||5,1,ab1865e70c2685da
+5|2|1|52.094|234.694|Copper Clearance|||5,1,2fcde5ec0c2d8106
+5|2|1|52.094|235.330|Copper Clearance|||5,1,5124c0ee6e87e14e
+5|2|1|52.094|235.330|Copper Clearance|||5,1,5124c0ee6e87e14e
+5|2|1|52.094|234.044|Copper Clearance|||5,1,a0f165e30c248e33
+19|2|1|54.055|235.085|Overlap|||19,1,b860b9fc7a027b9e
+19|2|1|54.944|234.196|Overlap|||19,1,727a72522c2c2c04
+19|2|1|55.833|233.307|Overlap|||19,1,7c237b121fec18dd
+19|2|1|55.833|234.196|Overlap|||19,1,f0e4f0ca1434141a
+19|2|1|54.055|234.196|Overlap|||19,1,37fa37d4742a7404
+19|2|1|54.944|232.418|Overlap|||19,1,7efe7d9623e82080
+19|2|1|54.055|233.307|Overlap|||19,1,bb3dbc0c7ff278c3
+19|2|1|55.833|235.085|Overlap|||19,1,7f7e7ee21a1c1b80
+19|2|1|54.055|232.418|Overlap|||19,1,3b7e38107bee7880
+19|2|1|54.944|233.307|Overlap|||19,1,febdf98a27f420c3
+19|2|1|54.944|235.085|Overlap|||19,1,fde0fc7a2204239e
+19|2|1|55.833|232.418|Overlap|||19,1,fc60ff0e1bf0189e
+5|2|1|-1.200|215.870|Copper Clearance|||5,1,419bf7ad534b927c
+19|2|1|-1.017|215.043|Overlap|||19,1,b5991cde4a952a7a
+5|2|1|-1.200|215.870|Copper Clearance|||5,1,419bf7ad534b927c
+19|2|1|-1.200|215.518|Overlap|||19,1,2c416eaad60c397b
+5|2|1|-1.200|215.597|Copper Clearance|||5,1,41854e5a18b610e2
+5|2|1|-1.200|215.382|Copper Clearance|||5,1,98395b839a62a07c
+19|2|1|-1.200|215.496|Overlap|||19,1,de8683671e19dcf1
+19|2|1|-1.200|215.942|Overlap|||19,1,47593d846418c775
+5|2|1|0.100|215.870|Copper Clearance|||5,1,d89f94addd4a2e79
+19|2|1|0.100|215.518|Overlap|||19,1,b0170f33d6416bff
+19|2|1|0.100|215.808|Overlap|||19,1,56cb6f20439a8eb7
+5|2|1|0.100|215.597|Copper Clearance|||5,1,cb7fb2a52ab602e4
+19|2|1|0.100|215.942|Overlap|||19,1,45d0e5e3214a0bee
+19|2|1|0.100|215.674|Overlap|||19,1,79648c78a40a3155
+19|2|1|0.100|215.754|Overlap|||19,1,02ee33f09e6f2b43
+5|2|1|52.094|212.054|Copper Clearance|||5,1,5d51e5e40c25f392
+5|2|1|52.094|211.404|Copper Clearance|||5,1,de0565e30c5cf0bf
+5|2|1|52.094|212.040|Copper Clearance|||5,1,5122c11e6f77e148
+5|2|1|52.094|212.040|Copper Clearance|||5,1,5122c11e6f77e148
+5|2|1|52.094|210.754|Copper Clearance|||5,1,532ae5e20c25fdeb
+19|2|1|54.055|211.795|Overlap|||19,1,bb71b61c75e2788f
+19|2|1|55.833|210.906|Overlap|||19,1,fc20fee61a1818de
+19|2|1|54.944|210.906|Overlap|||19,1,7ebe7c7e220020c0
+19|2|1|54.944|211.795|Overlap|||19,1,fef1f39a2de4208f
+19|2|1|54.944|210.017|Overlap|||19,1,027f0255dc2bdc01
+19|2|1|54.055|210.017|Overlap|||19,1,47ff47d3842d8401
+19|2|1|55.833|211.795|Overlap|||19,1,7c6f710215fc1891
+19|2|1|54.055|209.128|Overlap|||19,1,3a7e39ec7a127980
+19|2|1|55.833|209.128|Overlap|||19,1,fd60fef21a0c199e
+19|2|1|54.944|209.128|Overlap|||19,1,7ffe7c6a22142180
+19|2|1|55.833|210.017|Overlap|||19,1,80e180cde433e41f
+19|2|1|54.055|210.906|Overlap|||19,1,3b3e39f87a0678c0
+19|2|1|47.400|163.854|Overlap|||19,1,3d323c467238734c
+19|2|1|-4.219|159.385|Overlap|||19,1,72c3d91945200d0e
+7|2|39|-23.110|168.979|Component Exclude Clearance|||7,39,c6844de859ee6fdf
+7|2|39|-23.110|167.280|Component Exclude Clearance|||7,39,73b6fe09222042c8
+7|2|39|-23.110|165.581|Component Exclude Clearance|||7,39,b1a9a3b128038476
+7|2|39|-25.090|168.266|Component Exclude Clearance|||7,39,1211c4d0d9caf12f
+7|2|39|-25.090|166.923|Component Exclude Clearance|||7,39,6a75db76e761444d
+7|2|39|-25.090|165.580|Component Exclude Clearance|||7,39,233d0bf7610db73a
+7|2|39|-23.110|165.581|Component Exclude Clearance|||7,39,241bad419db18478
+7|2|39|-23.110|165.580|Component Exclude Clearance|||7,39,7386fe0922105366
+7|2|39|-23.110|168.980|Component Exclude Clearance|||7,39,62dcfe0923d442c8
+7|2|39|-23.110|168.979|Component Exclude Clearance|||7,39,42e8ca5c6e217536
+19|2|1|-24.532|166.527|Overlap|||19,1,db9c1015caf5f453
+19|2|1|-24.550|165.919|Overlap|||19,1,ae76701cb7ed0400
+5|2|1|3.672|174.420|Copper Clearance|||5,1,ce787803440241e0
+19|2|1|-21.439|166.566|Overlap|||19,1,00ff489bb652e16a
+5|2|1|-21.420|165.876|Copper Clearance|||5,1,82a7624d6a68aa00
+7|2|39|-25.100|163.948|Component Exclude Clearance|||7,39,1e3c1ec51f23dbda
+7|2|39|-26.180|163.948|Component Exclude Clearance|||7,39,963ce6c5c7239bda
+7|2|39|-25.640|163.948|Component Exclude Clearance|||7,39,65f2650a7b0aabf2
+19|2|1|-25.900|166.291|Overlap|||19,1,484f48b344b3444f
+19|2|1|-26.900|166.291|Overlap|||19,1,484e484ac44ac44e
+19|2|1|-27.900|166.291|Overlap|||19,1,084d0843fc43fc4d
+19|2|1|0.581|177.705|Overlap|||19,1,6127247d64309e84
+19|2|1|2.025|178.461|Overlap|||19,1,60dbca985828e5cc
+19|2|1|39.200|195.754|Overlap|||19,1,fe80fbee659060fe
+5|2|1|28.694|152.546|Copper Clearance|||5,1,471fe7702435b0e6
+5|2|1|-1.900|156.850|Copper Clearance|||5,1,8eec23c68f5c6ff4
+19|2|1|-1.961|155.385|Overlap|||19,1,c0e1b6651183bf2e
+5|2|1|1.858|171.886|Copper Clearance|||5,1,a4b9e023ebcd6ef3
+5|2|1|7.337|157.984|Copper Clearance|||5,1,1ddf030970ec3ae2
+5|2|1|13.716|151.265|Copper Clearance|||5,1,e1aa6c58731cbaec
+20|2|1|13.754|202.992|Clearance (polygons with same rank)|||20,1,2857283590ce90ac
+20|2|1|13.741|213.716|Clearance (polygons with same rank)|||20,1,b25e7f6eb738c676
+20|2|1|-13.716|202.921|Clearance (polygons with same rank)|||20,1,0b1b0b45b18cb1d2
+20|2|1|-13.716|213.716|Clearance (polygons with same rank)|||20,1,d8e9d8f162386220
+20|2|1|66.259|206.509|Clearance (polygons with same rank)|||20,1,50c3572a35d13238
+20|2|1|66.259|229.799|Clearance (polygons with same rank)|||20,1,336e330251f95195
+20|2|1|66.259|183.219|Clearance (polygons with same rank)|||20,1,70e4715e13a5121f
+20|2|1|66.259|159.929|Clearance (polygons with same rank)|||20,1,50df51a233593224
+20|2|2|13.741|213.716|Clearance (polygons with same rank)|||20,2,6f8b78e56aedc1fd
+20|2|2|66.259|183.219|Clearance (polygons with same rank)|||20,2,70e4715e13a5121f
+20|2|2|66.259|229.799|Clearance (polygons with same rank)|||20,2,336e330251f95195
+20|2|2|66.259|159.929|Clearance (polygons with same rank)|||20,2,50df51a233593224
+20|2|2|13.754|202.992|Clearance (polygons with same rank)|||20,2,90ce90ac28572835
+20|2|2|66.259|206.509|Clearance (polygons with same rank)|||20,2,50c3572a35d13238
+20|2|2|-13.716|202.921|Clearance (polygons with same rank)|||20,2,b18cb1d20b1b0b45
+20|2|2|-13.716|213.716|Clearance (polygons with same rank)|||20,2,d8e9d8f162386220
+20|2|304|0.547|164.465|Clearance (polygons with same rank)|||20,304,2809e938f6c465bb
+20|2|304|-13.716|202.921|Clearance (polygons with same rank)|||20,304,0b1b0b45b18cb1d2
+20|2|303|-13.716|202.921|Clearance (polygons with same rank)|||20,303,0b1b0b45b18cb1d2
+20|2|1|13.766|208.366|Clearance (polygons with same rank)|||20,1,6dee2aa93577e34a
+20|2|304|13.766|208.366|Clearance (polygons with same rank)|||20,304,6dee2aa93577e34a
+20|2|304|13.754|202.992|Clearance (polygons with same rank)|||20,304,90ce90ac28572835
+20|2|2|13.766|208.366|Clearance (polygons with same rank)|||20,2,6dee2aa93577e34a
+20|2|303|13.766|208.366|Clearance (polygons with same rank)|||20,303,6dee2aa93577e34a
+20|2|303|13.754|202.992|Clearance (polygons with same rank)|||20,303,2857283590ce90ac
+20|2|304|-13.716|213.716|Clearance (polygons with same rank)|||20,304,d8e9d8f162386220
+20|2|304|13.741|213.716|Clearance (polygons with same rank)|||20,304,b25e7f6eb738c676
+20|2|304|66.259|159.929|Clearance (polygons with same rank)|||20,304,50df51a233593224
+20|2|304|66.259|183.219|Clearance (polygons with same rank)|||20,304,70e4715e13a5121f
+20|2|304|66.259|206.509|Clearance (polygons with same rank)|||20,304,50c3572a35d13238
+20|2|304|66.259|229.799|Clearance (polygons with same rank)|||20,304,336e330251f95195
+20|2|303|13.741|213.716|Clearance (polygons with same rank)|||20,303,b25e7f6eb738c676
+20|2|303|65.272|206.509|Clearance (polygons with same rank)|||20,303,0798073d9fb1c3d7
+20|2|303|65.272|159.929|Clearance (polygons with same rank)|||20,303,23e3015f9ea2e64f
+20|2|303|65.272|229.799|Clearance (polygons with same rank)|||20,303,76818044ff313145
+20|2|303|65.272|183.219|Clearance (polygons with same rank)|||20,303,10d480dcbf8e5501
+20|2|303|-13.716|213.716|Clearance (polygons with same rank)|||20,303,d8e9d8f162386220
