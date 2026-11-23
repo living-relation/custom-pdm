@@ -35,7 +35,7 @@ import copper_order  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = []
-R_SYS = {"fans": 0.47, "nofan": 0.98}
+R_SYS = {"fans": 0.54, "nofan": 1.25}      # = tools/thermal_board_b.py R_SYS (revF whole-box Elmer, 2026-11-23)
 C_SINK = 1.775 * 896.0                       # J/K
 G_LID = 0.12 * 1.8                           # W/K lid to cabin
 G_SINK_AIR = 0.010 * 3.0                     # W/K open sink top (about 0.01 m2 not under a board) to the lid air

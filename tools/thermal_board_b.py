@@ -61,11 +61,22 @@ HI = {"PF_OUT1": "U8", "PF_OUT2": "U9", "PF_OUT3": "U10", "PF_OUT4": "U11"}
 MED = {"PF_OUT5": "U23", "PF_OUT6": "U24", "PF_OUT7": "U25", "PF_OUT8": "U26"}
 R_ON = {"BTS70012": 2.37 / 31 ** 2, "BTS7004": 1.80 / 15 ** 2}
 RTHJC = {"BTS70012": 0.7, "BTS7004": 2.4}           # K/W max, Infineon Table 6 (docs/heat-analysis.md)
-EP = {"BTS70012": (6.40, 2.77), "BTS7004": (2.65, 4.00)}   # sim/heat/geometry.py (KiCad axes)
+EP = {"BTS70012": (6.40, 2.77), "BTS7004": (2.65, 4.00),   # sim/heat/geometry.py (KiCad axes)
+      "BTS7008": (4.00, 2.65)}                              # board A (tools/thermal_a.py; test: = pad 15)
 PED_B = [(-12.22, 12.32, 11.15, 14.07), (-12.22, 12.32, -14.07, -11.15), (53.623, 56.265, -27.415, 46.417)]
 PED_MARGIN = 1.5
+# gap pad: Bergquist GAP PAD TGP 3000, k 3.0 W/mK (Henkel TDS, ASTM D5470), 0.040" (1.016 mm) at 15 % squeeze =
+# 0.86 mm between the 3.14 mm pedestal tops and the board bottom (enclosure revD-revF, enclosure/v2c/src/build_v2c.py P)
+PAD_T = 0.86e-3
 R_JOINT = 20e-6
-R_SYS = {"fans": 0.47, "nofan": 0.98}
+# 5 V module LMZM23601V5 (hw5v, replaces the TSR): its own loss, ASSUMED 0.2 W (about 1.2 W out at 85 %, as
+# tools/verify_thermal_box.py), spread over its pads
+P_5V = 0.2
+# pedestal temperature per W of box heat (60 C cabin): the hottest pedestal top under board B in the whole-box Elmer model
+# of the revF enclosure (sim/heat HEAT_GEOM=revF, m2 mesh, 2026-11-23, docs/heat-analysis.md 2): fans on 0.541 K/W
+# (feed150; car 0.540) -> 0.54; fans off on a wall (fins vertical) 1.247 K/W (car; feed150 1.156) -> 1.25. Was 0.47 / 0.98
+# (the v2b-F1 sink max, fans pulling, 2026-11-12): the revF fans push west, so the warm exhaust leaves under board B.
+R_SYS = {"fans": 0.54, "nofan": 1.25}
 # J1 (Wurth 7461084 M6 press-fit feed terminal) and the BATT bar: the terminal body + press-fit pins tie every layer's
 # J1 barrels to one node (0.5 W/K per pin and layer, ASSUMED: solid CuSn pins); the BATT bar (Cu 20 x 5 mm,
 # 113.4 mm from B to A1, docs/heat-analysis.md 3) joins that node to board A1's terminal, taken at the sink + 15 K
@@ -125,8 +136,9 @@ def copper_fields(board, cur, th, diel, res, feed_res):
 
 
 class Thermal:
-    def __init__(self, board, th, diel, res):
+    def __init__(self, board, th, diel, res, peds=None, pad_t=PAD_T):
         self.board, self.th, self.diel, self.res = board, th, diel, res
+        self.peds, self.pad_t = (PED_B if peds is None else peds), pad_t     # board A: tools/thermal_a.py
         bb = board.GetBoardEdgesBoundingBox()
         x0, y0 = VC.mm(bb.GetX()), VC.mm(bb.GetY())
         self.g = g = VC.Grid(x0, y0, x0 + VC.mm(bb.GetWidth()), y0 + VC.mm(bb.GetHeight()), res)
@@ -193,7 +205,7 @@ class Thermal:
                 i, j = g.cell(VC.mm(p.GetPosition().x), VC.mm(p.GetPosition().y))
                 self.j1_nodes += [int(self.ids[k][j, i]) for k in range(self.nl) if self.ids[k][j, i] >= 0]
 
-    def matrix(self, kpad, htop, hbot, bar=True):
+    def matrix(self, kpad, htop, hbot, bar=True, g_bar=None):
         g, L, th, diel = self.g, VC.CU, self.th, self.diel
         A = (self.res * 1e-3) ** 2
         rows, cols, vals = [], [], []
@@ -236,7 +248,7 @@ class Thermal:
         G = G + G.T
         # boundaries (to the sink temperature)
         ped = np.zeros((g.ny, g.nx), bool)
-        for (a, b, c, d) in PED_B:
+        for (a, b, c, d) in self.peds:
             i0, i1, j0, j1 = g.win(a - PED_MARGIN, c - PED_MARGIN, b + PED_MARGIN, d + PED_MARGIN)
             xs = (g.xc >= a - PED_MARGIN) & (g.xc <= b + PED_MARGIN)
             ys = (g.yc >= c - PED_MARGIN) & (g.yc <= d + PED_MARGIN)
@@ -245,11 +257,11 @@ class Thermal:
         self.ped = ped
         gb = np.zeros(self.N)
         bot = self.ids[self.nl - 1]
-        gb[bot[ped]] += A * kpad / 1.0e-3
+        gb[bot[ped]] += A * kpad / self.pad_t
         gb[bot[self.edge & ~ped]] += A * hbot
         gb[self.ids[0][self.edge]] += A * htop
         self.gbar = np.zeros(self.N)
-        self.gbar[self.term] = G_BAR if bar else 0.0
+        self.gbar[self.term] = (G_BAR if g_bar is None else g_bar) if bar else 0.0
         D = sp.diags(np.asarray(G.sum(axis=1)).ravel() + gb + self.gbar)
         return (D - G).tocsc(), gb
 
@@ -326,6 +338,27 @@ class Thermal:
         return np.array([n for n in nodes if n >= 0], np.int64)
 
 
+LOGIC_REFS_B = {"U4": "MCU STM32F446RET7", "U5": "FRAM MB85RC64TA", "U27": "5 V module LMZM23601V5", "Y1": "crystal",
+                "U6": "MCP9808"}
+
+
+def part_temps(board, T, Tn, refs):
+    """Hottest F.Cu node under each footprint's body (its pads' bounding box): the board temperature the part sits on."""
+    g, out = T.g, {}
+    for ref, name in refs.items():
+        fp = board.FindFootprintByReference(ref)
+        if fp is None:
+            continue
+        xs = [VC.mm(p.GetPosition().x) for p in fp.Pads()]
+        ys = [VC.mm(p.GetPosition().y) for p in fp.Pads()]
+        m = np.outer((g.yc >= min(ys)) & (g.yc <= max(ys)), (g.xc >= min(xs)) & (g.xc <= max(xs))) & T.edge
+        nodes = T.ids[0][m]
+        nodes = nodes[nodes >= 0]
+        if len(nodes):
+            out[ref] = dict(name=name, t=round(float(Tn[nodes].max()), 1))
+    return out
+
+
 def run_case(board, th, diel, case, a, T, plots=None):
     cur, i_a = case_currents(case)
     chips = chip_list(cur)
@@ -338,6 +371,7 @@ def run_case(board, th, diel, case, a, T, plots=None):
     joints = [("J1", R_JOINT * i_b ** 2 + 0.5 * r_bar * 150.0 ** 2)]   # joint + half the bar at 150 A
     for i, net in enumerate(list(HI) + list(MED)):
         joints.append((f"T{i + 1}", (2 if net in HI else 1) * R_JOINT * cur[net] ** 2))
+    joints.append(("U27", P_5V))                                       # 5 V module (hw5v)
     p_chip = sum(c["P"] for c in chips)
     p_joint = sum(j[1] for j in joints)
     # A boards (car case only): their share of the feed spread over 16 outputs, drivers + copper (verify_copper
@@ -389,15 +423,17 @@ def run_case(board, th, diel, case, a, T, plots=None):
                copper_rise_max=round(float(dcu[:-1].max()), 1), copper_rise_at_hot=round(float(dcu[kmax]), 1),
                layers=lay, chips=[{k: c[k] for k in ("ref", "net", "type", "I", "P", "t_board", "tj")} for c in chips],
                hottest_chip=hot["ref"], tj_max=hot["tj"], t_sensor_u6=t_sensor,
+               parts=part_temps(board, T, Tn, LOGIC_REFS_B),
                feed=[dict(net=r["net"], I=round(r["I"], 1), drop_mv=round(r["drop_mv"], 1), p_w=round(r["power_w"], 2))
                      for r in rs])
+    out["assumptions"] = dict(dt_bar=DT_A1, p5v=P_5V, r_sys=R_SYS[a.air], pad_mm=PAD_T * 1e3)
     out["pass"] = dict(tj=out["tj_max"] <= LIMITS["tj"], laminate=out["laminate_max"] <= LIMITS["laminate"])
     if plots:
         plot(plots, case, a, T, Tn, dcu, out, board)
     return out
 
 
-def plot(folder, case, a, T, Tn, dcu, out, board):
+def plot(folder, case, a, T, Tn, dcu, out, board, name="b"):
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -422,11 +458,23 @@ def plot(folder, case, a, T, Tn, dcu, out, board):
             fp = board.FindFootprintByReference(c["ref"])
             axx.annotate(c["ref"], (VC.mm(fp.GetPosition().x), VC.mm(fp.GetPosition().y)), color="w", fontsize=7)
         axx.set_aspect("equal")
-    fig.suptitle(f"board B, {case}: B {out['I_B']:.0f} A, sink {out['t_sink']} C ({a.air}), pad k {a.kpad}; "
-                 f"Tj max {out['tj_max']} C ({out['hottest_chip']}), laminate max {out['laminate_max']} C")
+    cur = f"B {out['I_B']:.0f} A" if name == "b" else f"A1 {out['I_A1']:.1f} A"
+    fig.suptitle(f"board {name.upper()}, {case}: {cur}, sink {out['t_sink']} C ({a.air}), pad k {a.kpad} / "
+                 f"{T.pad_t * 1e3:.2f} mm; Tj max {out['tj_max']} C ({out['hottest_chip']}), laminate max "
+                 f"{out['laminate_max']} C")
     fig.tight_layout()
-    fig.savefig(os.path.join(folder, f"thermal-board-b-{case}-{a.air}.png"), dpi=110)
+    fig.savefig(os.path.join(folder, f"thermal-board-{name}-{case}-{a.air}.png"), dpi=110)
     plt.close(fig)
+
+
+def set_assumptions(a):
+    """--dt-bar / --p5v / --rsys: change the module values for this run (printed; used by thermal_a too)."""
+    global DT_A1, P_5V
+    DT_A1, P_5V = a.dt_bar, a.p5v
+    if a.rsys is not None:
+        R_SYS[a.air] = a.rsys
+    print(f"assumptions: bar far end sink + {DT_A1} K, 5 V module {P_5V} W, R_sys {a.air} {R_SYS[a.air]} K/W, "
+          f"pad {PAD_T * 1e3:.2f} mm")
 
 
 def main():
@@ -445,7 +493,11 @@ def main():
     ap.add_argument("--path")
     ap.add_argument("--plots")
     ap.add_argument("--json")
+    ap.add_argument("--dt-bar", type=float, default=DT_A1, help="sensitivity: BATT bar far end over the sink (K)")
+    ap.add_argument("--p5v", type=float, default=P_5V, help="sensitivity: 5 V module loss (W)")
+    ap.add_argument("--rsys", type=float, help="sensitivity / box result: sink K per W for --air")
     a = ap.parse_args()
+    set_assumptions(a)
     path = a.path or os.path.join(REPO, "hardware/board-b-max/dingoPDM-Max.kicad_pcb")
     board = pcbnew.LoadBoard(path)
     th, diel = VC.stackup(path)

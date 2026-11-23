@@ -244,14 +244,45 @@ automations:
     owner: claude
   - id: heat-sim
     script: sim/heat/run_cases.py
-    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py]
+    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py, sim/heat/report_revf.py]
     trigger: manual
-    reads: ["sim/heat/*.py"]        # HEAT_GEOM env: "" = Grok TEST 2 sink, v2b-F1 / v2b-F2 = enclosure v2b variants
+    reads: ["sim/heat/*.py", sim/heat/loads_revF.json]   # HEAT_GEOM env: "" = Grok TEST 2 sink, v2b-F1 / v2b-F2 = enclosure v2b, revF = current enclosure (docs/heat-analysis.md 2026-11-23)
     writes: ["docs/diagrams/heat-*.png", sim/heat/example_worst_fans_k3.sif]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/scratch/heat/runs/m2"
+    run_cmd: wsl -e bash -c "export HEAT_GEOM=revF; python3 -I sim/heat/mesh_heat.py ~/cad-parts/custom-pdm-thermal3/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/cad-parts/custom-pdm-thermal3/runs/m2 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/report_revf.py ~/cad-parts/custom-pdm-thermal3/runs/m2 docs/diagrams"
+    owner: claude
+  - id: heat-sim-loads
+    script: sim/heat/make_loads.py
+    trigger: manual                 # after the board models change: their fans-on JSONs feed the whole-box model
+    reads: [tools/thermal_a.py, tools/thermal_board_b.py]
+    writes: [sim/heat/loads_revF.json]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python sim/heat/make_loads.py <thermal_a fans JSON> <thermal_board_b fans JSON (--case feed150 car rating)>
+    owner: claude
+  - id: pcb-thermal-board-a
+    script: tools/thermal_a.py
+    helpers: [tools/test_thermal_models.py]
+    trigger: manual                 # after any board A change (docs/heat-analysis.md); tests: tools/test_thermal_models.py
+    reads: [hardware/board-a/DingoPDM.kicad_pcb]
+    writes: ["docs/diagrams/thermal-board-a-*.png"]   # only with --plots
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_a.py [--air fans|nofan] [--plots docs/diagrams]'
+    owner: claude
+  - id: pcb-thermal-input-board
+    script: tools/thermal_input.py
+    trigger: manual                 # after any input-board change (docs/heat-analysis.md)
+    reads: [hardware/input-board/input-board.kicad_pcb]
+    writes: ["docs/diagrams/thermal-board-in-*.png"]   # only with --plots
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_input.py [--air 60] [--plots docs/diagrams]'
     owner: claude
   - id: pcb-thermal-board-b
     script: tools/thermal_board_b.py

@@ -30,24 +30,35 @@ for n in ("B", "A1", "A2"):
 CH = G.chips()
 for c in CH:
     x0, x1, y0, y1 = c["rect"]; ents.append(box(x0, x1, y0, y1, G.Z_BOT, G.Z_TOP))
+BOSSES = G.bosses()                      # revF: aluminium board-mount bosses, plate top to the board bottom
+for (X, Y) in BOSSES:
+    ents.append(occ.addCylinder(X, Y, 0.0, 0.0, 0.0, G.Z_BOT, G.BOSS_D / 2))
 occ.fragment([(3, t) for t in ents], [])
 occ.synchronize()
 
 eps = 1e-3
 def bb(d, t): return gmsh.model.getBoundingBox(d, t)
 def inrect(b, r): return abs(b[0] - r[0]) < eps and abs(b[3] - r[1]) < eps and abs(b[1] - r[2]) < eps and abs(b[4] - r[3]) < eps
+def is_boss(b): return b[2] > -eps and b[5] <= G.Z_BOT + eps and b[3] - b[0] < G.BOSS_D + 0.1 and b[4] - b[1] < G.BOSS_D + 0.1 \
+    and any(abs((b[0] + b[3]) / 2 - X) < 0.5 and abs((b[1] + b[4]) / 2 - Y) < 0.5 for (X, Y) in BOSSES)
+def board_of(b):
+    xc = (b[0] + b[3]) / 2
+    for n, tag in (("B", 3), ("A1", 6), ("A2", 7)):
+        if G.X0[n] - eps <= xc <= G.X0[n] + G.BOARD_W[n] + eps: return tag
+    raise SystemExit(f"board volume outside the boards: {b}")
 
-vol = {1: [], 2: [], 3: [], 4: [], 5: []}
+vol = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: []}
 for (_, t) in gmsh.model.getEntities(3):
     b = bb(3, t)
-    if b[5] <= G.PED_H + eps:
+    if b[5] <= G.PED_H + eps or is_boss(b):
         vol[1].append(t)
     elif b[2] >= G.PED_H - eps and b[5] <= G.Z_BOT + eps:
         vol[2].append(t)
     else:
         hit = [c for c in CH if inrect(b, c["rect"])]
-        vol[(5 if hit[0]["type"] == "BTS70012" else 4) if hit else 3].append(t)
+        vol[(5 if hit[0]["type"] == "BTS70012" else 4) if hit else board_of(b)].append(t)
 assert len(vol[4]) + len(vol[5]) == len(CH), (len(vol[4]), len(vol[5]))
+vol = {k: v for k, v in vol.items() if v}
 
 sink_faces = set()
 for t in vol[1]:
@@ -75,7 +86,7 @@ def size(tags, lc):
     pts = gmsh.model.getBoundary([(3, t) for t in tags], combined=False, recursive=True)
     gmsh.model.mesh.setSize(pts, lc)
 size(vol[1], 4.0 * f)
-size(vol[3], 2.0 * f)
+size(vol[3] + vol.get(6, []) + vol.get(7, []), 2.0 * f)
 size(vol[2], 1.2 * f)
 size(vol[4] + vol[5], 0.7 * f)
 gmsh.option.setNumber("Mesh.Algorithm3D", 10)   # HXT
@@ -85,7 +96,10 @@ gmsh.write(os.path.join(out, "mesh.msh"))
 ne = sum(len(e) for e in gmsh.model.mesh.getElements(3)[1])
 area = lambda ss: sum(gmsh.model.occ.getMass(2, s) for s in ss)
 info = dict(size_factor=f, n_tets=int(ne), chips=CH, fin_field_area_mm2=area(fin_field), edge_area_mm2=area(edges),
-            chip_boundary={c["id"]: 3 + i for i, c in enumerate(CH)}, n_fins=len(G.fins()))
+            chip_boundary={c["id"]: 3 + i for i, c in enumerate(CH)}, n_fins=len(G.fins()), heat_geom=G.HEAT_GEOM,
+            bodies=sorted(vol), n_bosses=len(BOSSES),
+            board_vol_mm3={n: sum(gmsh.model.occ.getMass(3, t) for t in vol.get(tag, [])) for n, tag in
+                           (("B", 3), ("A1", 6), ("A2", 7))})
 json.dump(info, open(os.path.join(out, "groups.json"), "w"), indent=1)
 print("tets", ne, "fin field mm2 %.0f edges mm2 %.0f" % (info["fin_field_area_mm2"], info["edge_area_mm2"]))
 gmsh.finalize()
