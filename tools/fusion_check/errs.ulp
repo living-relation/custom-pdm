@@ -1,0 +1,15 @@
+string fn = argv[1];
+if (board) board(B) {
+  output(fn, "wt") {
+    B.errors(ER) {
+      printf("%d|%d|%d|%.3f|%.3f|%s|%s|%s|%s\n", ER.code, ER.type, ER.layer, u2mm(ER.x), u2mm(ER.y), ER.description, ER.s1, ER.s2, ER.signature);
+    }
+  }
+}
+if (schematic) schematic(S) {
+  output(fn, "wt") {
+    S.errors(ER) {
+      printf("%d|%d|%d|%.3f|%.3f|%s|%s|%s|%s|%d\n", ER.code, ER.type, ER.layer, u2mm(ER.x), u2mm(ER.y), ER.description, ER.s1, ER.s2, ER.signature, ER.sheet);
+    }
+  }
+}

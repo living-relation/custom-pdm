@@ -434,3 +434,15 @@ automations:
     run_cmd: python harness/src/enclosure_harness.py build && python harness/src/enclosure_harness.py diagram   # optional Excel copy (git-ignored): ... xlsx
     check_cmd: python harness/src/enclosure_harness.py check
     owner: claude
+  - id: fusion-electronics-check
+    script: tools/fusion_check/compare2.py
+    helpers: [tools/fusion_check/kicad_ref.py, tools/fusion_check/classify.py, tools/fusion_check/ercsum.py, tools/fusion_check/mkdru.py,
+              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru]
+    trigger: manual                 # after a board change; Fusion steps (upload, ULPs, DRC / ERC) in docs/fusion-electronics-check.md "How to re-run"
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
+    writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-*.png"]   # copied in by hand from the Fusion ULP outputs
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/fusion_check/kicad_ref.py ref.json && python tools/fusion_check/compare2.py ref.json A <brdinfo out>'
+    owner: claude
