@@ -1,7 +1,7 @@
 # STATE (max 30 lines, overwrite only)
 Repo: custom-pdm
 Branch: fix/thermal-revF
-Last_Verified_SHA: f9143d8
+Last_Verified_SHA: 71035fd
 Updated: 2026-11-23 -- hwtemp worker
 
 ## Current Goal
@@ -13,9 +13,9 @@ Updated: 2026-11-23 -- hwtemp worker
 - Detail: none
 
 ## Next Single Step
-- [NEXT] check board A / B rebuild diff (keep only U5 fields), commit, WSL firmware builds + s0/s1/s3/s4/s5 + Renode + md5, dotnet test, docs (heat-analysis 0/5, system-verification), merge origin/main, PR, merge, remove worktree .claude/worktrees/hwtemp
+- [NEXT] finish checks on the merge with main (dotnet test, s0-s5), open the PR, merge when CI green, archive the state file, remove worktree .claude/worktrees/hwtemp
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
 - Backlog: BACKLOG.md
-- Latest_ADR: ADR-2026-11-23-canboard
+- Latest_ADR: ADR-2026-11-23-state-in-repo
