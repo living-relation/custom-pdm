@@ -135,6 +135,27 @@ automations:
     enabled: true
     run_cmd: firmware/sim/build.sh custompdm_a /tmp/simout 1   # Linux / WSL, g++; then python3 firmware/sim/s0_board_audit.py /tmp/simout
     owner: claude
+  - id: firmware-drive-cycle
+    script: firmware/sim/s5_drive_cycle.py
+    helpers: [tools/presim_parts.py]   # loads (CAR_LOADS) and RDS(ON); pdmsim.py is listed under firmware-sim
+    trigger: manual
+    reads: [firmware/sim/data/st185-starter.params.dummy.tsv, tools/presim_parts.py]
+    writes: [firmware/sim/data/s5_board_power.csv]   # copied from the run's --out folder (also s5_current_trace.csv, s5_edges.json: not committed)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --proposals --out /tmp/s5   # after firmware/sim/build.sh x 3; --mutants: 12 of 12 RED
+    owner: claude
+  - id: starter-params
+    script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs
+    trigger: manual
+    reads: [ui/examples/st185-starter.json]
+    writes: [firmware/sim/data/st185-starter.params.dummy.tsv]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: $env:CUSTOMPDM_WRITE_STARTER_PARAMS='1'; dotnet test ui\tests\CustomPdm.Tests --filter StarterParamsExportTests   # without the variable it only checks the file
+    owner: claude
   - id: renode-sandbox
     script: firmware/sim/renode/install_wsl.sh
     helpers: [firmware/sim/renode/check_wsl.sh, firmware/sim/renode/build_wsl.sh]
@@ -244,14 +265,45 @@ automations:
     owner: claude
   - id: heat-sim
     script: sim/heat/run_cases.py
-    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py]
+    helpers: [sim/heat/geometry.py, sim/heat/mesh_heat.py, sim/heat/convection.py, sim/heat/make_report.py, sim/heat/report_revf.py]
     trigger: manual
-    reads: ["sim/heat/*.py"]        # HEAT_GEOM env: "" = Grok TEST 2 sink, v2b-F1 / v2b-F2 = enclosure v2b variants
+    reads: ["sim/heat/*.py", sim/heat/loads_revF.json]   # HEAT_GEOM env: "" = Grok TEST 2 sink, v2b-F1 / v2b-F2 = enclosure v2b, revF = current enclosure (docs/heat-analysis.md 2026-11-23)
     writes: ["docs/diagrams/heat-*.png", sim/heat/example_worst_fans_k3.sif]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: wsl -e bash -c "python3 -I sim/heat/mesh_heat.py ~/scratch/heat/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/scratch/heat/runs/m2"
+    run_cmd: wsl -e bash -c "export HEAT_GEOM=revF; python3 -I sim/heat/mesh_heat.py ~/cad-parts/custom-pdm-thermal3/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/cad-parts/custom-pdm-thermal3/runs/m2 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/report_revf.py ~/cad-parts/custom-pdm-thermal3/runs/m2 docs/diagrams"
+    owner: claude
+  - id: heat-sim-loads
+    script: sim/heat/make_loads.py
+    trigger: manual                 # after the board models change: their fans-on JSONs feed the whole-box model
+    reads: [tools/thermal_a.py, tools/thermal_board_b.py]
+    writes: [sim/heat/loads_revF.json]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python sim/heat/make_loads.py <thermal_a fans JSON> <thermal_board_b fans JSON (--case feed150 car rating)>
+    owner: claude
+  - id: pcb-thermal-board-a
+    script: tools/thermal_a.py
+    helpers: [tools/test_thermal_models.py]
+    trigger: manual                 # after any board A change (docs/heat-analysis.md); tests: tools/test_thermal_models.py
+    reads: [hardware/board-a/DingoPDM.kicad_pcb]
+    writes: ["docs/diagrams/thermal-board-a-*.png"]   # only with --plots
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_a.py [--air fans|nofan] [--plots docs/diagrams]'
+    owner: claude
+  - id: pcb-thermal-input-board
+    script: tools/thermal_input.py
+    trigger: manual                 # after any input-board change (docs/heat-analysis.md)
+    reads: [hardware/input-board/input-board.kicad_pcb]
+    writes: ["docs/diagrams/thermal-board-in-*.png"]   # only with --plots
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_input.py [--air 60] [--plots docs/diagrams]'
     owner: claude
   - id: pcb-thermal-board-b
     script: tools/thermal_board_b.py
@@ -402,4 +454,16 @@ automations:
     enabled: true
     run_cmd: python harness/src/enclosure_harness.py build && python harness/src/enclosure_harness.py diagram   # optional Excel copy (git-ignored): ... xlsx
     check_cmd: python harness/src/enclosure_harness.py check
+    owner: claude
+  - id: fusion-electronics-check
+    script: tools/fusion_check/compare2.py
+    helpers: [tools/fusion_check/kicad_ref.py, tools/fusion_check/classify.py, tools/fusion_check/ercsum.py, tools/fusion_check/mkdru.py,
+              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru]
+    trigger: manual                 # after a board change; Fusion steps (upload, ULPs, DRC / ERC) in docs/fusion-electronics-check.md "How to re-run"
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
+    writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-*.png"]   # copied in by hand from the Fusion ULP outputs
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/fusion_check/kicad_ref.py ref.json && python tools/fusion_check/compare2.py ref.json A <brdinfo out>'
     owner: claude
