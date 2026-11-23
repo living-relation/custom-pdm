@@ -14,13 +14,16 @@ Loads:
   feed150   150 A on board B (thermal_board_b feed150), A boards idle (5 V module only): the hottest board B case
   feed150a  both A boards at rating (120 A) + 30 A on B: the hottest board A case the feed limit allows
   car       docs/car-loads.dummy.md loads (B 118.1 A, A1 20.35 A, A2 3.53 A)
+  drive     s5 drive cycle (firmware/sim/data/s5_board_power.csv, PR #140): RMS currents of the coolant / fan phase
+            (thermal_a / thermal_board_b case drive)
+The 5 V module loss is the board models' own (their JSON "assumptions" p5v: TI SNVSAQ4C Figure 8-46, job hwtemp).
 """
 import json
 import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-P_5V = 0.2          # tools/thermal_board_b.py P_5V (ASSUMED)
+P_5V = None         # tools/thermal_board_b.py P_5V, read from the board B JSON (main)
 
 
 def contacts_harness(a1, a2, b15):
@@ -36,7 +39,10 @@ def main():
     for r in list(a.values()) + list(b.values()):
         if r.get("ordered") is not True or r.get("air") != "fans":
             raise SystemExit(f"{r['case']}: not an ordered-copper fans-on run")
-    out = {"_source": f"sim/heat/make_loads.py from {os.path.basename(sys.argv[1])}, {os.path.basename(sys.argv[2])}"}
+    global P_5V
+    P_5V = b["feed150"]["assumptions"]["p5v"]
+    out = {"_source": f"sim/heat/make_loads.py from {os.path.basename(sys.argv[1])}, {os.path.basename(sys.argv[2])}",
+           "_p5v_w": P_5V}
 
     def b_part(rb, scale=1.0):
         chips = {f"B-{c['ref']}": c["P"] * scale ** 2 for c in rb["chips"]}
@@ -58,6 +64,7 @@ def main():
     # A currents per output (thermal_a.case_currents): from the chips' I0 / I1 is not in the JSON; use the case
     A_CUR = {"rating": ([7.5] * 8, [7.5] * 8), "feed150a": ([7.5] * 8, [7.5] * 8),
              "car": ([2.0, 2.5, 0.5, 0.2, 5.0, 0.15, 5.0, 5.0], [0.2, 0.13, 0.2, 3.0, 0, 0, 0, 0])}
+    A_CUR.update({k: (r["currents"]["A1"], r["currents"]["A2"]) for k, r in a.items() if "currents" in r})
     # rating
     cb, wb, ib, b15 = b_part(b["rating"])
     ca, wa1, wa2 = a_part(a["rating"])
@@ -75,6 +82,12 @@ def main():
     ca, wa1, wa2 = a_part(a["car"])
     out["car"] = case({**cb, **ca}, wb, wa1, wa2, ib + a["car"]["I_A1"] + a["car"]["I_A2"], *A_CUR["car"], b15,
                       ["fans", "passive_upper", "passive_lower"])
+    # drive cycle (fans on only)
+    if "drive" in a and "drive" in b:
+        cb, wb, ib, b15 = b_part(b["drive"])
+        ca, wa1, wa2 = a_part(a["drive"])
+        out["drive"] = case({**cb, **ca}, wb, wa1, wa2, ib + a["drive"]["I_A1"] + a["drive"]["I_A2"], *A_CUR["drive"],
+                            b15, ["fans"])
     for k, v in out.items():
         if not k.startswith("_"):
             print(f"{k:9} chips {sum(v['chips'].values()):5.1f} W + boards {sum(v['board_w'].values()):5.1f} W "

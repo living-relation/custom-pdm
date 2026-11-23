@@ -69,7 +69,7 @@ The day, step by step (all PASS):
 | Lights, turn signals, hazard, horn, wipers | as the starter | 25-29 ms; 352 / 352 ms flashing; wiper parks on the cam, intermittent 4.006 s |
 | Coolant 80 -> 105 -> 85 C | radiator fan from the CAN value, condenser fan from the ECU byte | on at 92, off at 88; 1 s soft start ramps the duty (0.12 / 0.37 / 0.70 / 1.0) |
 | A/C | IN20 (OEM A/C switch) | 15-32 ms |
-| Hot day | boards to the thermal model's temperatures (B 93.4 C, A 84.6 C) and back | A1 / A2 cut at 80 C (box fan kept), back below 74 C; B runs on |
+| Hot day | boards to the thermal model's temperatures (B 94.4 C, A 79.2 C since hwtemp; were 93.4 / 84.6 C) and back | no cut since hwtemp (board A factory 98 / 104 C from its FEA map; was: A1 / A2 cut at 80 C); B runs on |
 | ECU frames lost 3 s | ECU silent, pump, radiator and condenser fans on | all three OFF 1004-1006 ms after the last frame (the ECU keeps control), back with the frames |
 | Board B unplugged 3 s | B's CAN off | A1 switchboard off at 961 ms, cluster kept by its off-delay, all back |
 | Overcurrent | 0.25 Ohm short on the low beams | cut in 4 ms, 4 retries 1102 ms apart, latched, Reset faults: on again |
@@ -97,7 +97,7 @@ What the first run (drivecycle, 2026-11-23) found, and what configfix did (coord
 3. The PDM never slept by itself: auto sleep on all three boards (`ui PdmKeyOff`: stock `device.sleepEnabled` +
    `device.muteCanTxInput`, stock `core/sleep.cpp` CheckEnterSleep; SLEEP_TIMEOUT 30 s in `boards/custompdm_*/port.h`).
 4. A/C on a keypad button: the starter now has the OEM A/C switch on IN20 (no keypad).
-5. Still open: hot day board A cuts its lamps at the estimated 84.6 C (board A has no FEA sensor map; BACKLOG,
+5. Closed by hwtemp (2026-11-23: board A FEA map, U6 79.2 C, factory 98 / 104 C): hot day board A cut its lamps at the estimated 84.6 C (board A has no FEA sensor map; BACKLOG,
    ADR-2026-11-20-fwsafety c); board B unplugged stops the pump after 1 s and drops A1's switchboard (as designed).
    The low-voltage cutout / load shed is researched in the carsim job (not in the starter).
 
@@ -140,16 +140,16 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | copper: self-heating A (10.0 K) and B (47.3 K) | FAIL x 2 | at every output at rating with no sink the copper heats past the screen line | ADR-2026-11-22-copper (worst cases, not blockers) + ADR-2026-11-20-boardb-feed (150 A cap) |
 | thermal_box: 150 A on B, fans failed (3 splits) | FAIL x 3 | laminate 131.7-133.1 C over 130 C | ADR-2026-11-20-boardb-feed + fwsafety (c): board B cuts at 104 C first (transient PASS) |
 | thermal_box: FRAM / MCU at 150 A, fans failed | FAIL x 2 | 121 C local, over the 105 C rating | same: the 104 C cut comes first |
-| thermal_box: FRAM / MCU at 150 A, fans on | WARN x 2 | 106 C local vs 105 C | ADR-2026-11-20-fwsafety (c) (binding limit) |
-| thermal_box: input-board DIP switches at 150 A | WARN x 2 (main bc32eca: WARN 75 C + FAIL 81 C) | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | **NOT COVERED** (parts-audit 10 lists options, no decision) |
-| thermal_box (main bc32eca): UI hot-spot offset | FAIL | the new heat map's largest laminate offset is 20.0 K, the UI constant `PdmThermal.BoardBLaminateOffsetK` is 19.6 K | **NOT COVERED** (new with the merged thermal model: set the constant to 20.0 K and re-run the UI thermal tests) |
+| thermal_box: FRAM / MCU at 150 A, fans on | WARN x 2 | 106 C local vs 105 C | ADR-2026-11-20-fwsafety (c) (binding limit); FRAM: COVERED by hwtemp (CY15B064J-SXE, 125 C) |
+| thermal_box: input-board DIP switches at 150 A | WARN x 2 (main bc32eca: WARN 75 C + FAIL 81 C) | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | COVERED by hwtemp: solder jumpers JP1-JP16 (laminate 130 C), `docs/parts-audit.md` 17 |
+| thermal_box (main bc32eca): UI hot-spot offset | FAIL | the new heat map's largest laminate offset is 20.0 K, the UI constant `PdmThermal.BoardBLaminateOffsetK` is 19.6 K | COVERED by hwtemp: 20.0 K (board A 19.8 K, both hot spot - 21 K) |
 | thermal_box (main bc32eca): 150 A fans failed, part ratings | FAIL x 5, WARN x 6 | the new model runs hotter with the fans failed (board B sensor 128-131 C, laminate 139-142 C; 5 V module, crystals, X7R caps 128 C) | as above: board B cuts at its sensor's 104 C first (fwsafety c, boardb-feed); re-check the transient with the new model |
 | spice: ISO 7637-2 pulse 1 | WARN x 2 | -29 to -32 V on +12 V | accept list (BACKLOG hwfix) |
 | spice: 8 inputs at 14.4 V into +3V3 | WARN | 27 mA pushed into +3V3 | accept list (pcb-verification Left 4) |
 | spice: analog 5 V at 125 C | WARN | reads 3 % low | bench list; analog via ECU (Dan 2026-11-08) |
 | spice: three 120R on the bus | WARN | a closed PDM termination jumper weakens CAN | Dan 2026-11-08 (termination install-specific) + order-checklist: JP1 open |
 | s5: CAN-Lambda inrush | fixed | tripped at key-on | configfix: inrush 20 A / 200 ms, UI inrush rule |
-| s5: hot day board A cut | finding | lamps / cluster off at the estimated 84.6 C | partly: fwsafety (c) / BACKLOG board A model; the consequence is new |
+| s5: hot day board A cut | finding | lamps / cluster off at the estimated 84.6 C | COVERED by hwtemp: board A FEA map (U6 79.2 C) and factory 98 / 104 C |
 | s5: fans at ECU loss | fixed | radiator off / condenser on at loss | Dan 2026-11-23: every ECU-commanded load off at ECU loss (configfix) |
 | s5: condenser fan after key off, no auto sleep | fixed | 30 A fan on with the key off | configfix: off at loss + auto sleep (PdmKeyOff) |
 | s5: A/C on the keypad | fixed | no keypad in the car | configfix: A/C on the OEM switch IN20 |

@@ -9,13 +9,13 @@ namespace CustomPdm.Tests;
 
 // ADR-2026-11-20-temp-onepdm: /pdm keeps ONE temperature set, entered as the board hot-spot (laminate) temperature;
 // the tool converts it per board with that board's sensor -> hot-spot offset (board B: the FEA map of
-// docs/system-verification.md); board A has no thermal model yet, so it keeps its own (factory) limits and never gets
-// another board's. The live proof on the firmware: PdmThermalLiveSimTests.
+// docs/system-verification.md; board A: its FEA map since hwtemp, tools/thermal_a.py). Both offsets are 21 K, so one set
+// gives both boards the same sensor limits. The live proof on the firmware: PdmThermalLiveSimTests.
 public class PdmThermalTests
 {
     private static PdmView NewPdm() => PdmLinkedTests.NewPdm();
     private static FwDevice Dev(PdmView v, string role) => v.Boards.Single(b => b.Role == role).Device;
-    private static readonly PdmTempLimits FactoryA = new(55, 80, 6, 5), FactoryB = new(98, 104, 6, 5);
+    private static readonly PdmTempLimits FactoryA = new(98, 104, 6, 5), FactoryB = new(98, 104, 6, 5);
 
     private static string Repo(params string[] parts)
     {
@@ -40,25 +40,40 @@ public class PdmThermalTests
     public void BoardBOffsetIsTheFeaMapPlusSensorError()
     {
         var doc = Repo("docs", "system-verification.md");
-        Assert.Equal(PdmThermal.BoardBLaminateOffsetK, Num(doc, @"laminate = U6 \+ [0-9.]+ \.\. ([0-9.]+) K"));
+        Assert.Equal(PdmThermal.BoardBLaminateOffsetK, Num(doc, @"Board B temperature limits[\s\S]*?laminate = U6 \+ [0-9.]+ \.\. ([0-9.]+) K"));
         var box = Repo("tools", "verify_thermal_box.py");
         Assert.Equal(PdmThermal.SensorErrorK, Num(box, @"SENSOR_ERR = ([0-9.]+)"));
         Assert.Equal(PdmThermal.LaminateMaxC, Num(box, @"LAMINATE_C, TJ_C = ([0-9.]+),"));
         var py = Repo("firmware", "tools_custom", "port_boards.py");
-        Assert.Equal(PdmThermal.BoardBLaminateOffsetK, Num(py, @"laminate = sensor \+ [0-9.]+ \.\. ([0-9.]+) K"));
+        Assert.Equal(PdmThermal.BoardBLaminateOffsetK, Num(py, @"# Board B temperature limits[\s\S]*?laminate = sensor \+ [0-9.]+ \.\. ([0-9.]+) K"));
         Assert.Equal(21, PdmThermal.BoardBOffsetK);
-        // the binding limit of ADR-2026-11-20-fwsafety: logic-area parts at the sensor + 1 K <= 105 C
+        // the binding limit of ADR-2026-11-20-fwsafety: the MCU beside the sensor at the sensor + 1 K <= 105 C
         Assert.Equal(104, PdmThermal.BoardBSensorCritMaxC);
         // board B's factory critical as a hot spot = the documented laminate result (124.6 C) rounded up
         Assert.Equal(Math.Ceiling(Num(doc, @"critical 104 C \(\+1 C MCP9808, largest offset\) \| ([0-9.]+) /")), CustomPdmSettings.DefaultTempCritB + PdmThermal.BoardBOffsetK);
     }
 
+    // Board A offset (hwtemp) = the largest laminate - U6 offset of its 8 FEA cases + the sensor error, as cited by
+    // port_boards.py (FAN_A block) and docs/heat-analysis.md; its factory critical as a hot spot = board B's
     [Fact]
-    public void OnlyBoardBHasAThermalModel()
+    public void BoardAOffsetIsItsFeaMapPlusSensorError()
+    {
+        var py = Repo("firmware", "tools_custom", "port_boards.py");
+        Assert.Equal(PdmThermal.BoardALaminateOffsetK, Num(py, @"# Board A temperature limits[\s\S]*?laminate = sensor \+ [0-9.]+ \.\. ([0-9.]+) K"));
+        var heat = Repo("docs", "heat-analysis.md");
+        Assert.Equal(PdmThermal.BoardALaminateOffsetK, Num(heat, @"\| A \| laminate \+([0-9.]+) K"));
+        Assert.Equal(21, PdmThermal.BoardAOffsetK);
+        Assert.Equal(104, PdmThermal.BoardASensorCritMaxC);
+        Assert.Equal(CustomPdmSettings.DefaultTempCritB + PdmThermal.BoardBOffsetK, CustomPdmSettings.DefaultTempCritA + PdmThermal.BoardAOffsetK);
+        Assert.Equal(CustomPdmSettings.DefaultTempWarnB + PdmThermal.BoardBOffsetK, CustomPdmSettings.DefaultTempWarnA + PdmThermal.BoardAOffsetK);
+    }
+
+    [Fact]
+    public void EveryBoardHasAThermalModel()
     {
         var v = NewPdm();
-        Assert.Equal([null, null, 21], v.Boards.Select(b => PdmThermal.OffsetK(b.Device)));
-        Assert.Equal(15, Dev(v, "B").DeviceTypeId);
+        Assert.Equal([21, 21, 21], v.Boards.Select(b => PdmThermal.OffsetK(b.Device)));
+        Assert.Equal([14, 14, 15], v.Boards.Select(b => b.Device.DeviceTypeId));
     }
 
     // ---------------- conversion ----------------
@@ -72,26 +87,29 @@ public class PdmThermalTests
         Assert.Equal(new PdmHotSpotLimits(119, 125, 6, 5), PdmThermal.FromSensor(FactoryB, 21));
     }
 
+    // Without board B the set comes from board A (its own FEA map); with no custom board at all there is none
     [Fact]
-    public void NoHotSpotSetWithoutBoardB()
+    public void HotSpotSetFromBoardAWithoutBoardB()
     {
         var v = PdmView.Build(NewPdm().Boards.Where(b => b.Role != "B").Select(b => b.Device).ToList());
-        Assert.Null(PdmThermal.Current(v));
-        Assert.Equal(PdmThermal.NoModelBoard, PdmThermal.Set(v, new PdmHotSpotLimits(110, 120, 6, 5)));
-        Assert.All(v.Boards, b => Assert.Equal(FactoryA, PdmTempLimits.Of(b.Device)));
+        Assert.Equal(new PdmHotSpotLimits(119, 125, 6, 5), PdmThermal.Current(v));
+        Assert.Null(PdmThermal.Set(v, new PdmHotSpotLimits(110, 120, 6, 5)));
+        Assert.All(v.Boards, b => Assert.Equal(new PdmTempLimits(89, 99, 6, 5), PdmTempLimits.Of(b.Device)));
+        var none = PdmView.Build([]);
+        Assert.Null(PdmThermal.Current(none));
+        Assert.Equal(PdmThermal.NoModelBoard, PdmThermal.Set(none, new PdmHotSpotLimits(110, 120, 6, 5)));
     }
 
-    // 'Set on A1, A2, B' must not copy A's values to B (nor B's to A): B gets the converted set, A keeps its own
+    // 'Set on A1, A2, B': every board gets the set converted with its own offset; whatever A1 held is replaced
     [Fact]
-    public void SetConvertsForBoardBAndLeavesBoardAAlone()
+    public void SetConvertsForEveryBoard()
     {
         var v = NewPdm();
         var a1 = Dev(v, "A1").CustomPdm!;
-        (a1.TempWarn, a1.TempCrit) = (60, 85);              // A1 holds something else: still not copied anywhere
+        (a1.TempWarn, a1.TempCrit) = (60, 85);              // A1 holds something else: the B view still leads Current
+        Assert.Equal(new PdmHotSpotLimits(119, 125, 6, 5), PdmThermal.Current(v));
         Assert.Null(PdmThermal.Set(v, new PdmHotSpotLimits(116, 123, 4, 7)));
-        Assert.Equal(new PdmTempLimits(95, 102, 4, 7), PdmTempLimits.Of(Dev(v, "B")));
-        Assert.Equal(new PdmTempLimits(60, 85, 6, 5), PdmTempLimits.Of(Dev(v, "A1")));
-        Assert.Equal(FactoryA, PdmTempLimits.Of(Dev(v, "A2")));
+        Assert.All(v.Boards, b => Assert.Equal(new PdmTempLimits(95, 102, 4, 7), PdmTempLimits.Of(b.Device)));
         Assert.Equal(new PdmHotSpotLimits(116, 123, 4, 7), PdmThermal.Current(v));
         Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.IsValid()));
     }
@@ -102,17 +120,18 @@ public class PdmThermalTests
         var v = NewPdm();
         var rows = PdmThermal.Preview(v, new PdmHotSpotLimits(116, 123, 4, 7));
         Assert.Equal(["A1", "A2", "B"], rows.Select(r => r.Role));
-        Assert.Equal([FactoryA, FactoryA, new PdmTempLimits(95, 102, 4, 7)], rows.Select(r => r.Sensor));
-        Assert.Equal([false, false, true], rows.Select(r => r.Converted));
-        Assert.Equal("no thermal model yet: keeps its own limits (factory 55 / 80 C)", rows[0].Note);
-        Assert.Equal("sensor = hot spot - 21 K (FEA map: largest laminate offset 19.6 K + 1 K sensor error)", rows[2].Note);
+        Assert.All(rows, r => Assert.Equal(new PdmTempLimits(95, 102, 4, 7), r.Sensor));
+        Assert.Equal([true, true, true], rows.Select(r => r.Converted));
+        Assert.Equal("sensor = hot spot - 21 K (FEA map: largest laminate offset 19.8 K + 1 K sensor error)", rows[0].Note);
+        Assert.Equal("sensor = hot spot - 21 K (FEA map: largest laminate offset 20.0 K + 1 K sensor error)", rows[2].Note);
+        Assert.Equal(FactoryA, PdmTempLimits.Of(Dev(v, "A1")));
         Assert.Equal(FactoryB, PdmTempLimits.Of(Dev(v, "B")));
     }
 
     [Theory]
     [InlineData(125, 125, 6, 5, "Warn must be below critical.")]
-    [InlineData(20, 125, 6, 5, "Warn must be 21 to 146 C hot spot (board B sensor 0 to 125 C).")]
-    [InlineData(119, 147, 6, 5, "Critical must be 21 to 146 C hot spot (board B sensor 0 to 125 C).")]
+    [InlineData(20, 125, 6, 5, "Warn must be 21 to 146 C hot spot (board A1 sensor 0 to 125 C).")]
+    [InlineData(119, 147, 6, 5, "Critical must be 21 to 146 C hot spot (board A1 sensor 0 to 125 C).")]
     [InlineData(119, 125, 0, 5, "Recovery hysteresis must be 1 to 30 C.")]
     [InlineData(119, 125, 31, 5, "Recovery hysteresis must be 1 to 30 C.")]
     [InlineData(119, 125, 6, 31, "Critical-soon margin must be 0 to 30 C.")]
@@ -134,28 +153,26 @@ public class PdmThermalTests
     {
         var v = NewPdm();
         Assert.Empty(PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 125, 6, 5)));
-        Assert.Equal(["Board B sensor critical 105 C is above 104 C: the MCU and FRAM beside the sensor are rated 105 C (ADR-2026-11-20-fwsafety)."],
-            PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 126, 6, 5)));
-        Assert.Equal(["Critical 132 C is above the 130 C laminate limit.",
-                      "Board B sensor critical 111 C is above 104 C: the MCU and FRAM beside the sensor are rated 105 C (ADR-2026-11-20-fwsafety)."],
+        static string Note(string b, int s) => $"Board {b} sensor critical {s} C is above 104 C: the MCU beside the sensor is rated 105 C (ADR-2026-11-20-fwsafety).";
+        Assert.Equal([Note("A1", 105), Note("A2", 105), Note("B", 105)], PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 126, 6, 5)));
+        Assert.Equal(["Critical 132 C is above the 130 C laminate limit.", Note("A1", 111), Note("A2", 111), Note("B", 111)],
             PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 132, 6, 5)));
-        Assert.Single(PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 130, 6, 5)));
+        Assert.Equal(3, PdmThermal.RatingNotes(v, new PdmHotSpotLimits(119, 130, 6, 5)).Count);
     }
 
-    // ---------------- board A not on its factory limits (e.g. written by an older /pdm that copied one set) ----------------
+    // ---------------- boards without a thermal model not on their factory limits: none since hwtemp ----------------
 
     [Fact]
-    public void BoardANotOnFactoryIsShownAndCanBeRestored()
+    public void EveryBoardIsSetFromTheHotSpotSetSoNoneIsListedOffFactory()
     {
         var v = NewPdm();
         Assert.Empty(PdmThermal.OffFactory(v));
         var a2 = Dev(v, "A2").CustomPdm!;
-        (a2.TempWarn, a2.TempCrit, a2.TempCritHyst) = (98, 104, 4);
-        Dev(v, "B").CustomPdm!.TempWarn = 90;                  // B is set from the hot-spot set: never listed here
-        Assert.Equal(["A2 holds 98 / 104 / 4 / 5, factory 55 / 80 / 6 / 5 (warn / critical / recovery / margin)."], PdmThermal.OffFactory(v));
-        PdmThermal.RestoreFactory(v);
-        Assert.Empty(PdmThermal.OffFactory(v));
-        Assert.All(v.Boards.Where(b => b.Role != "B"), b => Assert.Equal(FactoryA, PdmTempLimits.Of(b.Device)));
+        (a2.TempWarn, a2.TempCrit, a2.TempCritHyst) = (55, 80, 4);   // e.g. an older /pdm wrote the stock values
+        Dev(v, "B").CustomPdm!.TempWarn = 90;
+        Assert.Empty(PdmThermal.OffFactory(v));                     // every board has a model: the hot-spot set rules
+        PdmThermal.RestoreFactory(v);                               // nothing to restore
+        Assert.Equal(new PdmTempLimits(55, 80, 4, 5), PdmTempLimits.Of(Dev(v, "A2")));
         Assert.Equal(90, Dev(v, "B").CustomPdm!.TempWarn);
         Assert.Null(PdmCritical.RestoreCheck("factory"));
         Assert.Null(PdmCritical.RestoreCheck(" Factory "));
@@ -169,23 +186,23 @@ public class PdmThermalTests
     {
         var item = PdmCritical.Items(NewPdm()).Single(i => i.Kind == PdmCriticalKind.CritTemp);
         Assert.Equal("Critical hot-spot temperature, all outputs off", item.Label);
-        Assert.Equal("125 C hot spot (A1 sensor 80 C, kept; A2 sensor 80 C, kept; B sensor 104 C)", item.Current);
+        Assert.Equal("125 C hot spot (A1 sensor 104 C; A2 sensor 104 C; B sensor 104 C)", item.Current);
         Assert.Equal("hot spot, whole C, 120 to 146 (above warn 119 C)", item.Hint);
     }
 
     [Fact]
-    public void CriticalChangeConvertsForBoardBOnly()
+    public void CriticalChangeConvertsForEveryBoard()
     {
         var v = NewPdm();
         Assert.Equal("Warn must be below critical.", PdmCritical.Problem(v, PdmCriticalKind.CritTemp, "", "119"));
         Assert.Equal("Type a whole number of degrees C.", PdmCritical.Problem(v, PdmCriticalKind.CritTemp, "", "12x"));
-        Assert.Equal(["A1 sensor critical stays 80 C (no thermal model yet)", "A2 sensor critical stays 80 C (no thermal model yet)", "B sensor critical becomes 102 C"],
+        Assert.Equal(["A1 sensor critical becomes 102 C", "A2 sensor critical becomes 102 C", "B sensor critical becomes 102 C"],
             PdmCritical.Notes(v, PdmCriticalKind.CritTemp, "123 C"));
         Assert.Contains("rated 105 C", PdmCritical.Notes(v, PdmCriticalKind.CritTemp, "127").Last());
         Assert.Empty(PdmCritical.Notes(v, PdmCriticalKind.CritTemp, "abc"));
         Assert.Null(PdmCritical.Apply(v, PdmCriticalKind.CritTemp, "123 C"));
-        Assert.Equal([80, 80, 102], v.Boards.Select(b => b.Device.CustomPdm!.TempCrit));
-        Assert.Equal([55, 55, 98], v.Boards.Select(b => b.Device.CustomPdm!.TempWarn));
+        Assert.Equal([102, 102, 102], v.Boards.Select(b => b.Device.CustomPdm!.TempCrit));
+        Assert.Equal([98, 98, 98], v.Boards.Select(b => b.Device.CustomPdm!.TempWarn));
     }
 
     // ---------------- boot warnings in words (fwsafety: firmware/core/safety.h SAFETY_MSG_*) ----------------

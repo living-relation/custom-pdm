@@ -4,7 +4,8 @@ using domain.Devices.Functions;
 namespace domain.CustomPdm;
 
 // custom-pdm route B, phase B1 (docs/ui-route-b-plan.md): the three boards shown as one PDM.
-// Roles: the type 14 boards sorted by base ID are A1 then A2; the type 15 board is B.
+// Roles: the type 14 boards sorted by base ID are A1 then A2; the type 15 board is B. uifix2: ONE type 14 board keeps the
+// role it was given (New PDM's factory role or the user's answer), else it is "A? (0x540)" (Unassigned) and /pdm edits are off.
 // Numbers are fixed (outputs A1 1-8, A2 9-16, B 17-24; digital inputs A1 1-7, A2 8-14, B 15-24), so a missing board
 // leaves a gap instead of renumbering. Connector labels and ratings: docs/box-connectors.md.
 public record PdmBoard(string Role, FwDevice Device);
@@ -38,6 +39,10 @@ public class PdmView
     private static readonly string[] BCavities = ["B", "D", "E", "G"];                        // OUT5-8, size 12
 
     public List<PdmBoard> Boards { get; } = [];
+    // uifix2: a custom-pdm A board whose role the PC cannot tell (the only A board, never given a role): shown by its ID,
+    // not numbered, and every edit on /pdm is off while there is one (EditsOff)
+    public List<FwDevice> Unassigned { get; } = [];
+    public bool EditsOff => Unassigned.Count > 0;
     public List<string> Problems { get; } = [];
     // uiguide: the problems that stop Read All / Write All / Burn (PdmIntegrity.IdClashes); also in Problems
     public List<string> Blocking { get; } = [];
@@ -46,7 +51,7 @@ public class PdmView
 
     public double TotalCurrent => Boards.Sum(b => b.Device.TotalCurrent);
     public List<PdmOutputRow> OverRating => Outputs.Where(o => o.OverRating).ToList();
-    public bool Any => Boards.Count > 0;
+    public bool Any => Boards.Count > 0 || Unassigned.Count > 0; // uifix2: also a board of unknown role
 
     // uifix (BACKLOG 2026-11-21): the board a panel shows when it wants `wanted`: wanted when this view has it, else
     // the first board other than `not` (null: none). A view can lack a board: a project without B, or the 10 Hz
@@ -59,7 +64,7 @@ public class PdmView
     public bool SameBoards(PdmView other) =>
         Boards.Count == other.Boards.Count
         && Boards.Zip(other.Boards).All(p => p.First.Role == p.Second.Role && ReferenceEquals(p.First.Device, p.Second.Device))
-        && Problems.SequenceEqual(other.Problems);
+        && Problems.SequenceEqual(other.Problems) && Unassigned.SequenceEqual(other.Unassigned);
 
     public static PdmView Build(IEnumerable<FwDevice> devices)
     {
@@ -73,8 +78,24 @@ public class PdmView
         var b = custom.Where(d => d.DeviceTypeId == 15).OrderBy(d => d.BaseId).ToList();
         if (custom.Count == 0) return view;
 
-        if (a.Count > 0) view.Boards.Add(new PdmBoard("A1", a[0])); else view.Problems.Add("No board A1 (custom-pdm A) in the project.");
-        if (a.Count > 1) view.Boards.Add(new PdmBoard("A2", a[1])); else view.Problems.Add("No board A2 (second custom-pdm A) in the project.");
+        // uifix2: two A boards: A1 is the lower base ID (the base ID checks keep A1 below A2). ONE A board: the role it was
+        // given (RoleOf), never "the first one left": after A1 was deleted the board at 0x540 was labelled A1 and edits
+        // meant for A1 went to it (docs/ui-setup-guide.md, protection row 14).
+        var lone = a.Count == 1 ? RoleOf(a[0]) : null;
+        if (a.Count == 1 && lone == null)
+        {
+            view.Unassigned.Add(a[0]);
+            view.Problems.Add($"{UnknownLabel(a[0])} ('{a[0].Name}'): the only custom-pdm A board of the project, and the PC cannot tell " +
+                "whether it is A1 or A2 (a base ID can be moved, so it does not say). It is not numbered, and edits on the PDM page are " +
+                "off until the PDM has its three boards or you say which board it is.");
+        }
+        else
+        {
+            if (a.Count > 1 || lone == "A1") view.Boards.Add(new PdmBoard("A1", a[0])); else view.Problems.Add("No board A1 (custom-pdm A) in the project.");
+            if (a.Count > 1) view.Boards.Add(new PdmBoard("A2", a[1]));
+            else if (lone == "A2") view.Boards.Add(new PdmBoard("A2", a[0]));
+            else view.Problems.Add("No board A2 (second custom-pdm A) in the project.");
+        }
         if (b.Count > 0) view.Boards.Add(new PdmBoard("B", b[0])); else view.Problems.Add("No board B (custom-pdm B) in the project.");
         if (a.Count > 2) view.Problems.Add($"{a.Count - 2} extra custom-pdm A device(s) not shown (only the two lowest base IDs are used).");
         if (b.Count > 1) view.Problems.Add($"{b.Count - 1} extra custom-pdm B device(s) not shown (only the lowest base ID is used).");
@@ -101,6 +122,22 @@ public class PdmView
         }
 
         return view;
+    }
+
+    // uifix2: the role a lone A board was given: the user's answer on /pdm, else New PDM's factory role (this session only)
+    public static string? RoleOf(FwDevice d) => d.CustomPdm?.ConfirmedRole ?? d.CustomPdm?.FactoryRole;
+    public static string UnknownLabel(FwDevice d) => $"A? (0x{d.BaseId:X3})";
+    // the role /pdm recommends for an unassigned board: the role whose factory base ID it sits on, else none
+    public static string? SuggestedRole(FwDevice d) =>
+        d.BaseId == PdmFactoryDefaults.BaseFor("A1") ? "A1" : d.BaseId == PdmFactoryDefaults.BaseFor("A2") ? "A2" : null;
+
+    // the user's answer "this board is A1 / A2" for an unassigned board. Returns why it was refused, or null.
+    public static string? Confirm(PdmView v, FwDevice d, string role)
+    {
+        if (role is not ("A1" or "A2")) return $"{role} is not a board A role.";
+        if (!v.Unassigned.Contains(d) || d.CustomPdm == null) return $"{d.Name} does not wait for a role.";
+        d.CustomPdm.ConfirmedRole = role;
+        return null;
     }
 
     // also our firmware's factory current limit (PdmFactoryDefaults.CurrentLimit, w3a)

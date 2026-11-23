@@ -10,8 +10,8 @@ A1	0x0000	6	01000000	device.connectUsbToCan
 A1	0x0000	7	E2000000	device.muteCanTxInput
 A1	0x0000	8	00000000	device.forceSleepInput
 A1	0x0000	9	01000000	device.canSpeed2
-A1	0x7F00	0	37000000	customPdm.tempWarn
-A1	0x7F00	1	50000000	customPdm.tempCrit
+A1	0x7F00	0	62000000	customPdm.tempWarn
+A1	0x7F00	1	68000000	customPdm.tempCrit
 A1	0x7F00	2	06000000	customPdm.tempCritHyst
 A1	0x7F00	3	00000000	customPdm.critExemptMask
 A1	0x7F00	4	05000000	customPdm.tempCritSoonMargin
@@ -2655,8 +2655,8 @@ A2	0x0000	6	01000000	device.connectUsbToCan
 A2	0x0000	7	E2000000	device.muteCanTxInput
 A2	0x0000	8	00000000	device.forceSleepInput
 A2	0x0000	9	01000000	device.canSpeed2
-A2	0x7F00	0	37000000	customPdm.tempWarn
-A2	0x7F00	1	50000000	customPdm.tempCrit
+A2	0x7F00	0	62000000	customPdm.tempWarn
+A2	0x7F00	1	68000000	customPdm.tempCrit
 A2	0x7F00	2	06000000	customPdm.tempCritHyst
 A2	0x7F00	3	02000000	customPdm.critExemptMask
 A2	0x7F00	4	05000000	customPdm.tempCritSoonMargin

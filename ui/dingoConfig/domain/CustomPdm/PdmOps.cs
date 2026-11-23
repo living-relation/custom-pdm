@@ -147,8 +147,12 @@ public class PdmOps(PdmOpsLinks links)
         return integrity.Count == 0 ? refused : string.Join(" ", new[] { refused }.Concat(integrity).Where(s => s != null));
     }
 
+    // uifix2: a reason from outside why no run may start (PdmOutputTestService: an output test runs, or its values are not
+    // back on the board yet: a Burn would keep the test value, a Read All would copy it into the PC)
+    public Func<string?>? Hold { get; set; }
+
     public string? BlockedReason(PdmOpKind op, PdmView view, bool adapterConnected) =>
-        Busy ? BusyReason : BlockedReason(op, view, adapterConnected, links.IsConnected);
+        Busy ? BusyReason : Hold?.Invoke() ?? BlockedReason(op, view, adapterConnected, links.IsConnected);
 
     // Starts the operation on the boards of this view. Returns why it was refused, or null when it started.
     // onConnect (p2a, PdmAutoRead): a Read All of just these roles, the boards that have just connected. The result

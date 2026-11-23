@@ -84,9 +84,7 @@
             @if (_edit is { } row)
             {
                 var spec = Spec();
-                // custom-pdm canboard: a picked CANBoard signal that is not on this board yet is made there on Apply
-                var pending = Pending();
-                var why = spec == null ? "Pick the signals." : pending ? PendingProblem() : PdmTriggers.Problem(m, row, spec);
+                var why = spec == null ? "Pick the signals." : PdmTriggers.Problem(m, row, spec);
                 <MudPaper Outlined="true" Class="pa-3 mb-2" id="trigger-editor">
                     <MudText Typo="Typo.subtitle1">Output @row.Number (@row.Board OUT@(row.BoardOutput)) @row.Output.Name</MudText>
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center" Class="mt-2">
@@ -134,11 +132,6 @@
                                 {
                                     <MudSelectItem T="int" Value="@c.Var">@c.Text</MudSelectItem>
                                 }
-                                @* custom-pdm canboard: a CANBoard number that is not on this board yet (made there on Apply) *@
-                                @foreach (var (c, i) in PdmCanBoard.Choices(View, row.Board, true).Select((c, i) => (c, i)).Where(x => x.c.Var == 0))
-                                {
-                                    <MudSelectItem T="int" Value="@(-1 - i)">@c.Text</MudSelectItem>
-                                }
                             </MudSelect>
                             <MudSelect T="bool" @bind-Value="_above" Label="On when" Variant="Variant.Outlined" Dense="true" Style="min-width: 160px" id="trigger-level-dir">
                                 <MudSelectItem T="bool" Value="true">at or above</MudSelectItem>
@@ -171,13 +164,7 @@
                         </MudStack>
                     }
 
-                    @if (spec != null && why == null && pending)
-                    {
-                        <MudText Typo="Typo.body2" Class="mt-2" id="trigger-preview">
-                            Apply brings the picked CANBoard signal onto @row.Board first (1 CAN input each; any board can hear a CANBoard).
-                        </MudText>
-                    }
-                    else if (spec != null && why == null)
+                    @if (spec != null && why == null)
                     {
                         <MudText Typo="Typo.body2" Class="mt-2" id="trigger-preview">
                             Will be: <b>@PdmTriggers.Words(m, row.Board, spec)</b>.
@@ -225,15 +212,12 @@
         View.Inputs.Where(r => r.Digital != null)
             .Select(r => ($"i:{r.Number}", $"IN{r.Number} ({r.Board} IN{r.BoardInput}{(r.Board == role ? "" : ", over CAN")}){(r.Name.StartsWith("digitalInput") ? "" : " " + r.Name)}"))
             .Concat(PdmTriggers.SignalChoices(m, role).Select(c => ($"v:{c.Var}", c.Text)))
-            // canboard: a CANBoard switch that is not on this board yet (any board can hear it; made there on Apply)
-            .Concat(PdmCanBoard.Choices(View, role, false).Where(c => c.Var == 0).Select(c => (c.Key, c.Text)))
             .ToList();
 
     private static string Key(PdmTerm t) => t.Input > 0 ? $"i:{t.Input}" : $"v:{t.Var}";
 
     private static PdmTerm? Term(string key, bool not) =>
-        key.StartsWith("cb:", StringComparison.Ordinal) ? PdmTerm.Of(PdmTriggers.AlwaysOnVar, not)   // canboard: placeholder until Apply (Resolve)
-        : key.Length > 2 && int.TryParse(key[2..], out var n)
+        key.Length > 2 && int.TryParse(key[2..], out var n)
             ? key[0] == 'i' ? PdmTerm.In(n, not) : PdmTerm.Of(n, not)
             : null;
 
@@ -303,70 +287,18 @@
         return core;
     }
 
-    private bool Pending() =>
-        _kind == "level" ? _levelVar < 0
-        : _kind != "none" && _terms.Take(_kind == "input" ? 1 : _termCount).Any(t => t.StartsWith("cb:", StringComparison.Ordinal));
-
-    private string? PendingProblem()
-    {
-        var used = _terms.Take(_kind == "input" ? 1 : _kind == "level" ? 0 : _termCount).ToList();
-        return used.Distinct().Count() != used.Count ? "Each term must be a different signal." : null;
-    }
-
-    // canboard: bring the picked CANBoard signals onto the output's board (one CAN input each), then the real spec
-    private PdmTriggerSpec? Resolve(PdmOutputRow row, out string? why)
-    {
-        why = null;
-        var n = _kind is "input" ? 1 : _kind is "and" or "or" or "nor" ? _termCount : 0;
-        for (var i = 0; i < n; i++)
-            if (PdmCanBoard.Choice(View, row.Board, _terms[i]) is { } c)
-            {
-                var v = PdmCanBoard.Ensure(View, row.Board, c.BaseId, c.Signal, out why);
-                if (v == 0) return null;
-                _terms[i] = $"v:{v}";
-            }
-        if (_kind == "level" && _levelVar < 0)
-        {
-            var list = PdmCanBoard.Choices(View, row.Board, true);
-            if (-1 - _levelVar >= list.Count) { why = "Pick the value again."; return null; }
-            var c = list[-1 - _levelVar];
-            var v = PdmCanBoard.Ensure(View, row.Board, c.BaseId, c.Signal, out why);
-            if (v == 0) return null;
-            _levelVar = v;
-        }
-        return Spec();
-    }
-
     private async Task Apply(PdmOutputRow row, PdmTriggerSpec spec)
     {
-        var before = PdmSnapshot.Take(View);
-        var (terms, level) = (_terms.ToArray(), _levelVar);
-        if (Resolve(row, out var cbWhy) is not { } real)
-        {
-            before.Restore();
-            Notification.NewError($"Trigger not set: {cbWhy ?? "pick the signals again."}");
-            return;
-        }
-        spec = real;
         var overwrite = false;
         if (PdmTriggers.Conflict(View, row.Number) is { } taken)
         {
             // DECISIONS g1: never replace something already assigned without asking
             var yes = await DialogService.ShowMessageBox("Already assigned", $"{taken} Overwrite?", yesText: "Overwrite", cancelText: "Cancel");
-            if (yes != true)
-            {
-                before.Restore();
-                terms.CopyTo(_terms, 0);
-                _levelVar = level;
-                return;
-            }
+            if (yes != true) return;
             overwrite = true;
         }
         if (PdmTriggers.Set(View, row.Number, spec, overwrite) is { } why)
         {
-            before.Restore();
-            terms.CopyTo(_terms, 0);
-            _levelVar = level;
             Notification.NewError($"Trigger not set: {why}");
             return;
         }

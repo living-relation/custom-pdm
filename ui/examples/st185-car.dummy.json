@@ -3715,8 +3715,8 @@
         }
       ],
       "customPdm": {
-        "tempWarn": 55,
-        "tempCrit": 80,
+        "tempWarn": 98,
+        "tempCrit": 104,
         "tempCritHyst": 6,
         "critExemptMask": 0,
         "tempCritSoonMargin": 5,
@@ -3943,7 +3943,7 @@
           }
         ],
         "completeSettings": true,
-        "criticalSeal": "9364130260B7710A"
+        "criticalSeal": "7B8F7D7BCD89BE9B"
       }
     },
     {
@@ -7661,8 +7661,8 @@
         }
       ],
       "customPdm": {
-        "tempWarn": 55,
-        "tempCrit": 80,
+        "tempWarn": 98,
+        "tempCrit": 104,
         "tempCritHyst": 6,
         "critExemptMask": 2,
         "tempCritSoonMargin": 5,
@@ -7889,7 +7889,7 @@
           }
         ],
         "completeSettings": true,
-        "criticalSeal": "DD88FA50FE52197B"
+        "criticalSeal": "9DDC1C4DBD9BD128"
       }
     },
     {

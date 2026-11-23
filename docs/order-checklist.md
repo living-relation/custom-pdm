@@ -29,6 +29,7 @@ JLCPCB's live stock (needs your login).
 | Remark to paste | yes | yes (longer) | yes (short) |
 | Parts through global sourcing | Y1 | Y1, T1-T8 | none |
 | Press-fit terminals you fit yourself | J1, J2 | J1, J3 | none |
+| Solder jumpers you bridge yourself | none | none | JP1-JP16 as the table in the input-board section 8 |
 
 Why board B gets 1 oz inner copper: with the default 0.5 oz the board runs 136-137 C at the 150 A limit (limit 130 C);
 with 1 oz it runs 117-118 C (Dan's choice c1 = a, 2026-11-22; numbers in `docs/order-readiness.md`).
@@ -252,7 +253,7 @@ Left off on purpose (not in the BOM / CPL files, so nothing to do): D5, R3, U1, 
 | Silkscreen | White |
 | Surface Finish | ENIG (gold thickness: leave the default) |
 | Outer Copper Weight | 1 oz |
-| Via Covering | **Epoxy Filled & Capped** (JLCPCB may call it "via-in-pad" / POFV): 27 vias sit inside solder pads |
+| Via Covering | **Epoxy Filled & Capped** (JLCPCB may call it "via-in-pad" / POFV): 21 vias sit inside solder pads |
 | Mark on PCB | Remove Mark (the default) |
 | Electrical Test, Board Outline Tolerance, Min via hole size/diameter, Via Plating Method | leave the defaults |
 | Gold Fingers, Castellated Holes | No |
@@ -260,7 +261,7 @@ Left off on purpose (not in the BOM / CPL files, so nothing to do): D5, R3, U1, 
 
 ### 3. PCB remark (paste this whole paragraph)
 
-> Via in pad: 27 vias sit in SMD pads (fab-notes.md lists the parts): please epoxy-fill and cap them (plated over, flat) so no solder wicks into them.
+> Via in pad: 21 vias sit in SMD pads (fab-notes.md lists the parts): please epoxy-fill and cap them (plated over, flat) so no solder wicks into them.
 
 ### 4. Assembly (PCBA) options
 
@@ -280,16 +281,30 @@ Every line has an LCSC number: all lines should match by themselves.
 
 ### 6. In the placement preview (the picture of the parts on the board)
 
-- SW1 (the DIP switch) and J1 / J2 (connectors) sit square on their pads.
+- J1 / J2 (connectors) sit square on their pads. JP1-JP16 are bare solder jumpers: no part there.
 - D2-D5 and every other diode: the stripe end of the part sits on the pad marked with the bar / the square pad.
 
 ### 7. What JLCPCB must confirm before they build
 
 - Epoxy-filled and capped vias as asked. Nothing else.
 
-### 8. What arrives NOT fitted
+### 8. What arrives NOT fitted: the pull-up / pull-down solder jumpers
 
-- Nothing: the input board comes complete.
+Every input board arrives with all 16 solder jumpers open. They replace the two DIP switches (the lid air reaches
+75-91 C, the Omron A6S switch was rated 70 C and no SMD DIP switch rated 105 C exists: `docs/parts-audit.md` 17).
+Bridge a jumper with a blob of solder across its two pads (or a 0603 0 ohm resistor); remove the solder with wick to
+open it again. The silkscreen numbers the channels 1-8 over each row: left row "PULL-UP" (JP1-JP8, 10 k to +3V3, for an
+input switched to ground), right row "PULL-DOWN" (JP9-JP16, 10 k to GND, for a 12 V input). Never bridge both jumpers of
+one channel. Channel n of an input board = board input IN(n+2) of its main board (`docs/firmware-pin-map.md` 8).
+
+| Input board | Fits on | Bridge (pull-up row) | Bridge (pull-down row) | Leave open | Why (`docs/st185-car-config.md` Inputs) |
+|---|---|---|---|---|---|
+| #1 | A1 (J6) | 1 (IN3 DRL switch), 2 (IN4 horn switch) | 3 (IN5 ignition IG2) | 4-8 | IN3 / IN4 switch to ground; IN5 is a 12 V input |
+| #2 | A2 (J6) | none | none | all | A2 has no input in use |
+| #3 | B (J7) | none | none | all | B IN3-IN10 are not in use (B IN1 / IN2 sit on board B itself) |
+
+When an input is added later: pull-up for a switch to ground, pull-down for a 12 V signal, set the input's invert in
+the tool to match, and note it here.
 
 ## After all three orders are in
 

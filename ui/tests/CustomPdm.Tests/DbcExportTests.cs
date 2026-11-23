@@ -261,7 +261,7 @@ public class DbcLiveSimTests(ITestOutputHelper output)
         var ids = dbc.Select(s => s.Id).ToHashSet();
         using var bus = new SimBus();
         bus.Run(1500);
-        var temps = new Dictionary<string, double> { ["A1"] = 62.5, ["A2"] = 77.0, ["B"] = 48.0 };
+        var temps = new Dictionary<string, double> { ["A1"] = 98.5, ["A2"] = 101.0, ["B"] = 48.0 };   // factory 98 / 104 on A and B (hwtemp)
         foreach (var (node, t) in temps) bus.Cmd($"TEMP {node} {t} 41");
         var frames = bus.Run(1500);
 
@@ -281,7 +281,7 @@ public class DbcLiveSimTests(ITestOutputHelper output)
             foreach (var f in mine) DefinitionsTests.Feed(dev, f.Id, f.Data);
 
             Assert.Equal(b.DeviceType, Get("PdmType"));
-            Assert.Equal(temps[b.Node] > 55 ? 2 : 0, Get("DeviceState"));           // OverTemp above warn 55, else Run
+            Assert.Equal(temps[b.Node] > 98 ? 2 : 0, Get("DeviceState"));           // OverTemp above warn 98, else Run
             Assert.Equal((int)dev.DeviceState, Get("DeviceState"));
             Assert.Equal(temps[b.Node], Get("BoardTemp"), 3);
             Assert.Equal(dev.BoardTempC, Get("BoardTemp"), 3);
@@ -289,9 +289,9 @@ public class DbcLiveSimTests(ITestOutputHelper output)
             Assert.Equal((int)((30.0 + (raw - 943) / (1199.0 - 943) * 80.0) * 10.0) / 10.0, Get("DieTemp"), 3);
             Assert.Equal(dev.CustomPdm!.DieTempC, Get("DieTemp"), 3);
             Assert.Equal(dev.BatteryVoltage, Get("BatteryVoltage"), 3);
-            // warn 55, critical 80, critical-soon margin 5 (factory defaults)
+            // warn 98, critical 104, critical-soon margin 5 (factory defaults, A and B since hwtemp)
             var flags = (Get("ThermalOverWarn"), Get("ThermalCritSoon"), Get("ThermalCritical"));
-            Assert.Equal(temps[b.Node] switch { > 75 => (1.0, 1.0, 0.0), > 55 => (1.0, 0.0, 0.0), _ => (0.0, 0.0, 0.0) }, flags);
+            Assert.Equal(temps[b.Node] switch { >= 99 => (1.0, 1.0, 0.0), > 98 => (1.0, 0.0, 0.0), _ => (0.0, 0.0, 0.0) }, flags);
             Assert.Equal(dev.CustomPdm.ThermalFlags, (int)(flags.Item1 + 2 * flags.Item2 + 4 * flags.Item3));
             output.WriteLine($"{b.Node}: {mine.Select(f => f.Id).Distinct().Count()} status IDs seen, board {Get("BoardTemp")} C, die {Get("DieTemp")} C, batt {Get("BatteryVoltage")} V, flags {flags}");
         }

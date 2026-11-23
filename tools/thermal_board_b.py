@@ -39,6 +39,8 @@ Cases (board B outputs OUT1-4 BTS70012 31 A, OUT5-8 BTS7004 15 A):
   car         docs/car-loads.dummy.md (dummy test copy): OUT1 radiator fan 30 A, OUT2 condenser fan 30 A, OUT3 fuel
               pump 25 A, OUT5 CAN lambda 8.1 A, OUT6 A/C clutch 10 A, OUT7 wiper 15 A (one speed at a time):
               118.1 A on B, the other 31.9 A of the feed on the A boards
+  drive       firmware/sim/data/s5_board_power.csv (s5 drive cycle, PR #140): each output at its RMS current over the
+              coolant / fan phase, held steady (drive_currents)
 """
 import argparse
 import json
@@ -69,9 +71,35 @@ PED_MARGIN = 1.5
 # 0.86 mm between the 3.14 mm pedestal tops and the board bottom (enclosure revD-revF, enclosure/v2c/src/build_v2c.py P)
 PAD_T = 0.86e-3
 R_JOINT = 20e-6
-# 5 V module LMZM23601V5 (hw5v, replaces the TSR): its own loss, ASSUMED 0.2 W (about 1.2 W out at 85 %, as
-# tools/verify_thermal_box.py), spread over its pads
-P_5V = 0.2
+# 5 V module LMZM23601V5 (hw5v, replaces the TSR): its own loss from TI's data, not the 0.2 W ASSUMED before (job hwtemp,
+# 2026-11-23). TI SNVSAQ4C rev C Figure 8-46 "Power Dissipation for VOUT = 5 V" (5-V fixed output, MODE low = auto PFM as
+# fitted, TA 25 C, TI EVM), read off the 12 V and 24 V PFM curves at IOUT 0 / 0.1 / 0.2 / 0.3 / 0.4 / 0.5 A (W). Cross-check:
+# Figure 8-42 efficiency at 0.2 A, 12 V in, about 90.7 % -> 0.103 W (curve 0.101 W).
+FIG846 = {12.0: (0.0, 0.060, 0.101, 0.146, 0.197, 0.267), 24.0: (0.0, 0.096, 0.139, 0.231, 0.296, 0.375)}
+# 5 V load per board (A and B alike): MCP2562FD 70 mA max with the bus dominant (DS20005284B IDD) + all of +3V3 through U2,
+# about 155 mA awake worst case (docs/parts-audit.md 10 (d)) = 0.22 A (tools/presim_parts.py LMZM23601 i_load_max,
+# tools/hw_5v_module.py); input: a running car, 13.5 V (the module sees +12P one Schottky lower: rounded up).
+I_5V, VIN_5V = 0.22, 13.5
+# hot board: the conduction part I^2 (HS RDS(on) 0.22 + inductor DCR 0.39 Ohm, SNVSAQ4C 6.5) grows by HOT_COND from TI's
+# 25 C curve to a 100-120 C board (copper +0.39 %/K x 100 K = +39 %; MOSFET RDS(on) typically +40..60 %): ASSUMED +50 %
+R_COND_5V, HOT_COND = 0.61, 0.5
+PSI_JB_5V = 20.0                    # K/W junction to board, SNVSAQ4C table 6.4
+TJ_MAX_5V = 125.0                   # SNVSAQ4C 6.3
+
+
+def p5v_loss(i=I_5V, vin=VIN_5V):
+    """Module loss (W): TI Figure 8-46 at i, linear in VIN between the 12 V and 24 V curves, + the hot-board conduction share."""
+    pts = [0.1 * k for k in range(6)]
+    at = {v: float(np.interp(i, pts, c)) for v, c in FIG846.items()}
+    return at[12.0] + (vin - 12.0) / 12.0 * (at[24.0] - at[12.0]) + i * i * R_COND_5V * HOT_COND
+
+
+P_5V = round(p5v_loss(), 3)         # 0.131 W at 0.22 A, 13.5 V (spread over the module's pads)
+
+
+def board_limit_5v(p=None):
+    """Highest board temperature under the 5 V module: TJ max less its own heat (PsiJB x loss)."""
+    return TJ_MAX_5V - PSI_JB_5V * (P_5V if p is None else p)
 # pedestal temperature per W of box heat (60 C cabin): the hottest pedestal top under board B in the whole-box Elmer model
 # of the revF enclosure (sim/heat HEAT_GEOM=revF, m2 mesh, 2026-11-23, docs/heat-analysis.md 2): fans on 0.541 K/W
 # (feed150; car 0.540) -> 0.54; fans off on a wall (fins vertical) 1.247 K/W (car; feed150 1.156) -> 1.25. Was 0.47 / 0.98
@@ -86,16 +114,39 @@ G_BAR = K_CU * 20e-3 * 5e-3 / 113.4e-3
 DT_A1 = 15.0
 T_CABIN = 60.0
 LIMITS = dict(tj=150.0, laminate=130.0)
+# FRAM U5 (both main boards): Infineon CY15B064J-SXE since job hwtemp (2026-11-23), -40..125 C (Automotive-E; was
+# MB85RC64TA, 105 C); MCU STM32F446RET7 105 C ambient (DS10693 Table 16)
+PART_LIMITS = {"U4": 105.0, "U5": 125.0}
+# drive cycle (firmware/sim/s5_drive_cycle.py, PR #140): mean current per output every 0.5 s. Case "drive" = each output at its
+# RMS current over the hottest sustained phase (the coolant / fan phase, about 50 s), held as a steady state (the sink's
+# time constant is minutes, so this is on the hot side for that phase)
+S5_CSV = os.path.join(REPO, "firmware", "sim", "data", "s5_board_power.csv")
+DRIVE_PHASE = "coolant"
 
 
 # carsim (2026-11-23): the full-PDM ST185 car config (DUMMY), every car load on (night rain), RMS current per output from
-# firmware/sim/s5_car_cycle.py (firmware/sim/data/s5_car_currents.dummy.json, DUMMY test data)
-CARFULL_JSON = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "firmware", "sim", "data", "s5_car_currents.dummy.json")
+# firmware/sim/s5_car_cycle.py (firmware/sim/data/s5_car_currents.dummy.json, DUMMY test data); case "carfull"
+CARFULL_JSON = os.path.join(REPO, "firmware", "sim", "data", "s5_car_currents.dummy.json")
 
 
 def carfull():
     with open(CARFULL_JSON, encoding="utf-8") as f:
         return json.load(f)
+
+
+def drive_currents(path=S5_CSV, phase=DRIVE_PHASE):
+    """{"A1" | "A2" | "B": {PF_OUTn: RMS A}} over the drive-cycle phase whose name starts with `phase`, and its name."""
+    import csv
+    with open(path, encoding="utf-8") as f:
+        rows = [r for r in csv.DictReader(ln for ln in f if not ln.startswith("#")) if r["phase"].startswith(phase)]
+    if not rows:
+        raise SystemExit(f"{path}: no phase starting with {phase!r}")
+    out = {"A1": {}, "A2": {}, "B": {}}
+    for c in rows[0]:
+        if c.startswith("I") and c.endswith("_A") and c.count("_") == 3:     # I17_B_OUT1_A
+            _, board, o, _ = c.split("_")
+            out[board][f"PF_{o}"] = math.sqrt(sum(float(r[c]) ** 2 for r in rows) / len(rows))
+    return out, rows[0]["phase"]
 
 
 def case_currents(name):
@@ -113,6 +164,9 @@ def case_currents(name):
         cur = dict(PF_OUT1=30.0, PF_OUT2=30.0, PF_OUT3=25.0, PF_OUT4=0.0, PF_OUT5=8.1, PF_OUT6=10.0, PF_OUT7=15.0,
                    PF_OUT8=0.0)
         return cur, 150.0 - sum(cur.values())
+    if name == "drive":
+        d, _ = drive_currents()
+        return {n: d["B"].get(n, 0.0) for n in o}, sum(d["A1"].values()) + sum(d["A2"].values())
     if name == "carfull":                    # carsim: the full-PDM car config, every load on (s5_car_cycle.py)
         j = carfull()
         return {f"PF_OUT{i + 1}": float(x) for i, x in enumerate(j["B"])}, float(sum(j["A1"]) + sum(j["A2"]))
@@ -351,7 +405,7 @@ class Thermal:
         return np.array([n for n in nodes if n >= 0], np.int64)
 
 
-LOGIC_REFS_B = {"U4": "MCU STM32F446RET7", "U5": "FRAM MB85RC64TA", "U27": "5 V module LMZM23601V5", "Y1": "crystal",
+LOGIC_REFS_B = {"U4": "MCU STM32F446RET7", "U5": "FRAM CY15B064J-SXE", "U27": "5 V module LMZM23601V5", "Y1": "crystal",
                 "U6": "MCP9808"}
 
 
@@ -440,6 +494,7 @@ def run_case(board, th, diel, case, a, T, plots=None):
                feed=[dict(net=r["net"], I=round(r["I"], 1), drop_mv=round(r["drop_mv"], 1), p_w=round(r["power_w"], 2))
                      for r in rs])
     out["assumptions"] = dict(dt_bar=DT_A1, p5v=P_5V, r_sys=R_SYS[a.air], pad_mm=PAD_T * 1e3)
+    out["limit_5v_board"] = round(board_limit_5v(), 1)
     out["pass"] = dict(tj=out["tj_max"] <= LIMITS["tj"], laminate=out["laminate_max"] <= LIMITS["laminate"])
     if plots:
         plot(plots, case, a, T, Tn, dcu, out, board)
@@ -492,7 +547,7 @@ def set_assumptions(a):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--case", nargs="+", default=["feed150", "feed150hi", "feed150lo", "car", "rating"])
+    ap.add_argument("--case", nargs="+", default=["feed150", "feed150hi", "feed150lo", "car", "drive", "rating"])
     ap.add_argument("--res", type=float, default=0.4)
     ap.add_argument("--cu-res", type=float, default=0.2)
     ap.add_argument("--feed-res", type=float, default=0.3)

@@ -33,9 +33,10 @@ import presim_parts as PP                                  # CAR_LOADS, RDS(ON) 
 OUT_DIR = arg('--out', os.path.join(SO, 's5'))
 MUTATE = int(arg('--mutate', '-1'))
 # Hot day (docs/system-verification.md section 6, tools/verify_thermal_box.py, 60 C cabin, car loads, fans on):
-# board B's own MCP9808 U6 93.4 C (FEA sensor map); board A has no map: sink 69.6 C + 15 K (DT_BOARD_A, ASSUMED) = 84.6 C
-HOT_B = 93.4
-HOT_A = float(arg('--hot-a', '84.6'))
+# board B's own MCP9808 U6 94.4 C, board A1's U6 79.2 C (FEA sensor maps, tools/thermal_board_b.py / tools/thermal_a.py
+# car case, fans on, job hwtemp 2026-11-23; board A was sink + 15 K ASSUMED = 84.6 C before it had a model)
+HOT_B = 94.4
+HOT_A = float(arg('--hot-a', '79.2'))
 SLEEP_TIMEOUT_MS = 30000                                   # firmware/boards/custompdm_*/port.h SLEEP_TIMEOUT
 MUTE_MS = 10000                                            # ui PdmKeyOff.MuteDelayMs (key off -> mute CAN TX)
 res, info = [], {}
@@ -70,7 +71,7 @@ MUTATIONS = [
     ('A2', 'customPdm.critExemptMask', 0, 'box fan not exempt at critical'),
     ('B', 'wiper.parkStopLevel', 0, 'wiper park level inverted'),
     ('A1', 'output[1].resetCountLimit', 2, 'low beams: 2 tries before latching (was 5)'),
-    ('A1', 'customPdm.tempCrit', 90, 'board A1 critical 90 C (was 80)'),
+    ('A1', 'customPdm.tempCrit', 75, 'board A1 critical 75 C (factory 104 since hwtemp; was 80): cuts on a hot day'),
     # configfix 2026-11-23: one per fix
     ('B', 'output[5].inrushCurrentLimit', ps.f32(10.0), 'CAN-Lambda inrush back to 10 A (trips at key-on)'),
     ('B', 'canInput[2].timeoutEnabled', 0, 'condenser-fan CAN input without time-out (stays on at ECU loss)'),
@@ -504,7 +505,7 @@ def hot_day():
     phase_ok('hot day: board temperatures from the thermal model')
     cut = [g for g in OUT if before_hot[g] and not at_hot[g]]
     if HOT_A >= ps.TEMP_DEFAULT['crit']:
-        FINDINGS.append(f'hot day (60 C cabin, car loads, fans on): board A at {HOT_A:.1f} C (sink + 15 K, ASSUMED) is over its 80 C critical: '
+        FINDINGS.append(f'hot day (60 C cabin, car loads, fans on): board A at {HOT_A:.1f} C (thermal_a.py) is over its {ps.TEMP_DEFAULT["crit"]} C critical: '
                         f'A1 and A2 cut every output but the box fan ({", ".join(gname(g) for g in cut)}) until < 74 C; board B at {HOT_B} C runs on (warn 98)')
     info['hot_day_cut'] = [gname(g) for g in cut]
 

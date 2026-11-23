@@ -188,20 +188,40 @@ Press **Export DBC**. Your browser downloads `custompdm_PDM.dbc`: every PDM mess
 4. Press **Burn**.
 5. Power cycle the PDM. The PDM page reads the boards by itself: the Output triggers list must show the same triggers.
 6. Check each output. With real boards there is no Simulator panel: work each real switch (head lamps, horn, ...) and
-   watch the **State** and **Current** columns and the fault line. The tool has no "turn this output on" test button:
-   an output only comes on from its trigger (BACKLOG proposal below).
+   watch the **State** and **Current** columns and the fault line. To check one output's wiring without its switch, use
+   the **Output test** (step 14).
 
 ![Checking outputs](ui-guide/27-check-outputs.png)
 
+## 14. Output test: one output on for a few seconds (real hardware)
+
+On the PDM page open **Output test**. Pick the output and the time (0.5 to 10 s; 2 s to start with), then press
+**Switch on for 2 s**. The output goes on whatever its trigger says, the line under it shows its current (now and peak),
+then the board gets its own settings back by itself. **Stop** ends it early. Nothing is burned: a power cycle brings the
+burned settings back too.
+
+- An output that runs the fuel pump, EPS / power steering or the starter (by its device preset or its name) needs a
+  tick first: "I checked that it is safe to switch it on now".
+- Read All, Write All and Burn wait while a test runs, and the test waits while one of them runs. The test is also off
+  while the PC holds changes for that board that are not on it yet (Write All first).
+- If the adapter or the board goes away during a test, the tool sends the old settings as soon as it is back (the top of
+  the page says so until then). Closing the app or pressing Disconnect sends them first.
+
+![Output test](ui-guide/30-output-test.png)
+
+(Picture: output 19 = B OUT3 with a 5 A load on the simulated boards, test copy on port 5044.)
+
 ## Problems found while writing this guide
 
-- A red "Error processing RX frame: 505" popped up once when the starter was loaded while the boards were talking. It is
-  a stock dingoConfig thread race (a CAN frame read while the device list was being replaced); one frame is dropped, nothing
-  else. Not fixed here (stock code; BACKLOG).
-- File > Open: typing a full path in the Browse tab and pressing Enter only selects the file; you still click **Open**.
-- During Write All a board briefly shows "offline" at the top, then "read on connect" reads it again after the write.
-  Harmless (it reads back what was just written), but it looks alarming.
-- There is no output test button for real hardware (step 13).
+All four were fixed after this guide was written (job uifix2, 2026-11-23):
+
+- A red "Error processing RX frame: 505" popped up once when the starter was loaded while the boards were talking: a
+  stock dingoConfig thread race (a CAN frame read while the device list was being replaced). Fixed: the device list can
+  be read while it changes (a stress test showed the error first).
+- File > Open: typing a full path in the Browse tab and pressing Enter only selected the file. Now Enter opens it.
+- During Write All a board briefly showed "offline" at the top. Now the board the run is handling is not said to be
+  offline (its card says "Writing"); "read on connect" may still read it again after the write (harmless).
+- There was no output test for real hardware. Now there is (step 14).
 
 ## How the one-PDM feel is protected
 
@@ -224,13 +244,9 @@ boards. "Broke it" means it went through before this job; each one is now a test
 | 11 | File > Open of an edited file: critical temperature / outputs kept on at critical changed | **broke it** (same path as 10; proven in tests) | fixed: same rule; board A's temperature only back to factory. A file saved by the app carries a seal of these values, so your own saved setups load without questions |
 | 12 | Two browser tabs: both trigger editors open on A2 at once (A2 OUT3 = IN8 AND IN9, A2 OUT4 = IN8 AND IN10), Apply in one tab, then the other | blocked: each Apply plans on the current settings: A2 virtual inputs 1 and 2, nothing shared, both triggers read back right (the engine still lists IN8-10 as not enabled, true in the car config) | blocked |
 | 13 | Write All with one board missing (sim `LINK A2 off`) | blocked: "A2 is offline" at the top, "Write All and Burn are off: A2: offline." | blocked |
-| 14 | Delete A1 on /devices | warned: "No board A2 in the project", Write All / Burn off; but the remaining A board (0x540) is then LABELLED A1 (outputs 1-8, X1-H..R pins) because the page tells A1 from A2 by base ID only. Nothing reaches a board; edits made in that state land on the board at 0x540 (BACKLOG proposal) | warned |
+| 14 | Delete A1 on /devices | **broke it**: the remaining A board (0x540) was LABELLED A1 (outputs 1-8, X1-H..R pins), so edits meant for A1 landed on it | fixed (uifix2): a lone A board is shown as "A? (0x540)", not numbered; the setting panels are hidden and the grids read-only until the PDM has its three boards or you press "This is A1" / "This is A2". A New PDM board keeps its factory role |
 | 15 | Stock menus: CAN Log, Plot, Messages | blocked: they only show frames / signals (CAN Log: Clear, Log to file; Plot: Signals, Record); nothing can be sent from them | blocked |
 
 ![A duplicate-ID file](ui-guide/28-protect-dup-file.png)
 ![A swapped file](ui-guide/29-protect-swapped-file.png)
 Rows 6 and 7 after the fix are proven by `OnePdmGuardTests` (a real DeviceManager on stand-in boards: no frame reaches A1); a browser picture of them was not taken.
-
-Also fixed (coordinator, carconfig PR #137): the CANBoard panel suggested base 0x640, which is the car's CSB3
-switchboard (0x640-0x643). The CANBoard ID check now also refuses the car's own IDs (`PdmCarIds`, kept equal to the used and
-planned rows of `docs/car-can-dummy/can-id-table.dummy.md` by a test), and the suggestion is the first free base (0x660).

@@ -24,11 +24,13 @@ public static partial class PdmPageText
 
     // A board of the project that is not on the bus while the adapter is connected (null = all there, or no adapter:
     // then the "off" lines already say so). Before: only the small chip on the board's card said "Offline".
-    public static string? OfflineLine(PdmView view, bool adapterConnected, Func<FwDevice, bool>? isConnected = null)
+    // uifix2: handling = the board the running operation handles now (Handling): not said, it comes back by itself
+    public static string? OfflineLine(PdmView view, bool adapterConnected, Func<FwDevice, bool>? isConnected = null,
+        Func<string, bool>? handling = null)
     {
         isConnected ??= d => d.Connected;
         if (!adapterConnected) return null;
-        var off = view.Boards.Where(b => !isConnected(b.Device)).Select(b => b.Role).ToList();
+        var off = view.Boards.Where(b => !isConnected(b.Device) && handling?.Invoke(b.Role) != true).Select(b => b.Role).ToList();
         if (off.Count == 0) return null;
         var all = off.Count == view.Boards.Count;
         return $"{string.Join(", ", off)} {(off.Count == 1 ? "is" : "are")} offline (no CAN messages" +
@@ -36,6 +38,21 @@ public static partial class PdmPageText
                $"{(off.Count == 1 ? "Its" : "Their")} outputs and inputs below show the last values received; " +
                "Write All and Burn wait until the PDM is complete.";
     }
+
+    // uifix2: the board the running Read All / Write All / Burn is handling right now. During its own Write All a board
+    // drops off the bus for a moment (seen on the simulated boards) and the page said "A1 is offline" in the middle of
+    // the write: not said for that board (top line and card chip) while the run handles it.
+    public static bool Handling(string role, bool busy, IReadOnlyList<PdmBoardResult> results) =>
+        busy && results.Any(r => r.Role == role && r.State == PdmStepState.Running);
+
+    // the board card's link chip
+    public static string LinkText(bool connected, bool handling, PdmOpKind? op) =>
+        connected ? "Connected" : !handling ? "Offline" : op switch
+        {
+            PdmOpKind.ReadAll => "Reading",
+            PdmOpKind.Burn => "Burning",
+            _ => "Writing"
+        };
 
     [GeneratedRegex(@"\bIN(\d+)\b")]
     private static partial Regex InRef();

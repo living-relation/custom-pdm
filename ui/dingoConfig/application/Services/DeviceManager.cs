@@ -12,7 +12,9 @@ namespace application.Services;
 
 public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerFactory, SystemLogger systemLogger, FwDeviceDefManager fwDeviceDefManager)
 {
-    private readonly Dictionary<Guid, IDevice> _devices = new();
+    // custom-pdm (uifix2): concurrent (was Dictionary): the RX pipeline thread walks it in OnCanDataReceived while File > Open /
+    // the starter replace the devices on the UI thread ("Collection was modified" = "Error processing RX frame: 505")
+    private readonly ConcurrentDictionary<Guid, IDevice> _devices = new();
     private ConcurrentDictionary<(int BaseId, int Index, int SubIndex), DeviceCanFrame> _requestQueue = new();
 
     private Action<List<DeviceCanFrame>>? _batchTransmitCallback;
@@ -156,7 +158,7 @@ public class DeviceManager(ILogger<DeviceManager> logger, ILoggerFactory loggerF
     {
         RemoveCyclicTimer(deviceId);
 
-        if (_devices.Remove(deviceId, out var device))
+        if (_devices.TryRemove(deviceId, out var device)) // custom-pdm (uifix2): ConcurrentDictionary
         {
             logger.LogInformation("Device removed: {Name} (Guid: {Guid})", device.Name, deviceId);
 
