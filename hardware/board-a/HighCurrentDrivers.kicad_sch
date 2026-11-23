@@ -2874,4 +2874,313 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Amplifier_Operational:LM324")
+		(at 27.94 20.32 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3288fa31-1a67-50a6-a88d-feeb84c71af1")
+		(property "Reference" "U7"
+			(at 27.94 12.2301 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "TLV9004IPWR"
+			(at 27.94 14.1511 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_SO:TSSOP-14_4.4x5mm_P0.65mm"
+			(at 26.67 17.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9004.pdf"
+			(at 29.21 15.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Digi-Key_PN" "296-51827-1-ND"
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC" "C2058050"
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "MPN" "TLV9004IPWR"
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Alternates" "Microchip MCP6004T-E/ST (RRIO, -40 to 125 C, same TSSOP-14 pinout, DS20001733)"
+			(at 27.94 20.32 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "a44a9fae-0026-5c26-a095-7deea55774fe")
+		)
+		(pin "2"
+			(uuid "62dc84a1-cf61-52d2-87f6-d90f32244226")
+		)
+		(pin "3"
+			(uuid "3ca89537-48a2-565b-a1ac-6272e42ce4d0")
+		)
+		(pin "5"
+			(uuid "4a28eeed-aadb-5e38-b492-23a1d0074b48")
+		)
+		(pin "6"
+			(uuid "19765891-dbeb-51ee-a416-215f30c6f013")
+		)
+		(pin "7"
+			(uuid "12b1786a-273d-5a18-abb5-7a5e49aea637")
+		)
+		(pin "10"
+			(uuid "1c723c98-c788-55c3-9447-ede846a38f15")
+		)
+		(pin "8"
+			(uuid "ace0e983-12aa-51bc-b2df-adb66656af1b")
+		)
+		(pin "9"
+			(uuid "44e97211-8278-56c6-bcc8-5ab34fea027d")
+		)
+		(pin "12"
+			(uuid "3fd83b1d-aa8f-5f90-8a17-d87ba4a38754")
+		)
+		(pin "13"
+			(uuid "644a3cdf-93a3-5042-853b-0040194d843a")
+		)
+		(pin "14"
+			(uuid "606f8b3d-7fba-5ec9-82aa-f154ec11b19e")
+		)
+		(pin "11"
+			(uuid "c6175f4e-a9f5-5290-9bb3-d02c55fb0871")
+		)
+		(pin "4"
+			(uuid "2b301429-9c6d-539c-8df6-fd7f3fea9271")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
+					(reference "U7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 35.56 20.32) (xy 35.56 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85aec556-332a-5fb8-a3e6-3f3c1ba434d2")
+	)
+	(wire
+		(pts
+			(xy 35.56 27.94) (xy 17.78 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e0f4af0-2e32-5c42-affc-8273888bb58f")
+	)
+	(wire
+		(pts
+			(xy 17.78 27.94) (xy 17.78 22.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d8d701fa-da25-5489-98f4-c0478a819477")
+	)
+	(wire
+		(pts
+			(xy 17.78 22.86) (xy 20.32 22.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8551c97c-db4d-5953-8bcc-50bc8fa3ca0f")
+	)
+	(wire
+		(pts
+			(xy 20.32 17.78) (xy 15.24 17.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2640eb38-0f89-59c6-b405-a6ce4910fcc3")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 15.24 17.78 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "05423d08-5d11-5627-b3ad-b66df88af891")
+		(property "Reference" "#PWR0135"
+			(at 15.24 24.13 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 15.367 22.1742 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 15.24 17.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 15.24 17.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 15.24 17.78 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "5e9c6057-063d-5bca-8da0-ea3257ff98e0")
+		)
+		(instances
+			(project "DingoPDM"
+				(path "/8948e307-9174-4227-9c28-3ff885e6e83d/00000000-0000-0000-0000-00005f54b02a"
+					(reference "#PWR0135")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(text "tlvunused: U7 channel A not used: follower, IN+ to GND (TI SBOA204A; TLV9004 VCM (V-)-0.1 V .. (V+)+0.1 V, SBOS833R 7.5)"
+		(exclude_from_sim no)
+		(at 10.16 10.16 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3f26f2a0-cf65-5f8f-83a9-f92d762a3381")
+	)
 )

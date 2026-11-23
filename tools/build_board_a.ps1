@@ -12,6 +12,7 @@
 # Then (2026-11-16): tools/sch_bom_fields.py A + tools/pcb_bom_fields.py - order fields (Manufacturer / MPN / LCSC / ...).
 # Then (ADR-2026-11-20-d2-move): tools/d2_tvs.py lib / sch / pcb - DO-218 load-dump TVS D2 in its new spot.
 # Last (hwprotect, ADR-2026-11-20-presim-findings): tools/hw_protect.py sch / pcb - NRST / VDDA caps, USB ESD diodes.
+# Then (tlvunused, 2026-11-23): tools/tlv_unused.py sch / pcb - unused TLV9004 channels U7 A, U12 A / B as followers, IN+ to GND.
 param([string]$Out = "$env:LOCALAPPDATA\Workstation\claude-fusion\kicad9", [switch]$NoInputs)
 $repo = Split-Path $PSScriptRoot -Parent
 $py9 = "$env:LOCALAPPDATA\Programs\KiCad\9.0\bin\python.exe"
@@ -65,6 +66,12 @@ try {
         if ($LASTEXITCODE) { throw 'pcb_inputs_board_a.py failed' }
     }
     & $kc10 sch export netlist -o "$Out\board-a.net" DingoPDM.kicad_sch | Out-Null
+    # tlvunused 2026-11-23: unused TLV9004 channels = followers, IN+ to GND. The schematic stage runs AFTER the two
+    # netlist exports above, so every earlier PCB stage sees the same nets as before (pcb_inputs_board_a.py would
+    # otherwise try to stitch the new GND pad U7.3 itself); its PCB stage reads the netlist exported after it.
+    & $py9 "$repo\tools\tlv_unused.py" sch
+    if ($LASTEXITCODE) { throw 'tlv_unused.py sch failed' }
+    & $kc10 sch export netlist -o "$Out\board-a-tlv.net" DingoPDM.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_fix_board_a.py" DingoPDM.kicad_pcb "$Out\board-a.net" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
     if ($LASTEXITCODE) { throw 'pcb_fix_board_a.py failed' }
     & $py9 "$repo\tools\wirepads.py" pcb DingoPDM.kicad_pcb J3 2>&1 | Where-Object { $_ -notmatch 'memory leak' }
@@ -83,6 +90,8 @@ try {
     if ($LASTEXITCODE) { throw 'hw_protect.py pcb failed' }
     & $py9 "$repo\tools\hw_5v_module.py" pcb DingoPDM.kicad_pcb "$Out\board-a.net" A 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # hw5v: TSR out, 125 C module in its outline (last stage)
     if ($LASTEXITCODE) { throw 'hw_5v_module.py pcb failed' }
+    & $py9 "$repo\tools\tlv_unused.py" pcb DingoPDM.kicad_pcb "$Out\board-a-tlv.net" 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # tlvunused: OUT-IN- tracks, IN+ GND vias
+    if ($LASTEXITCODE) { throw 'tlv_unused.py pcb failed' }
     & $py9 "$repo\tools\pcb_stackup.py" DingoPDM.kicad_pcb A   # orderprep 2026-11-22: stackup copper = the ordered copper (tools/copper_order.py)
     if ($LASTEXITCODE) { throw 'pcb_stackup.py failed' }
     Remove-Item -Force "$b\BTS700n_1EPP.kicad_sch"
