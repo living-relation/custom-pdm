@@ -163,6 +163,16 @@ automations:
     enabled: true
     run_cmd: python3 firmware/sim/s5_car_cycle.py /tmp/simout --out /tmp/s5car   # after firmware/sim/build.sh x 3; 32 of 32; --mutants: 13 of 13 RED
     owner: claude
+  - id: harness-cost-study
+    script: tools/harness_cost_study.py
+    trigger: manual
+    reads: [harness/enclosure-wire-list.csv]   # + a read-only clone of st185-link-ecu-config (--st185): MASTER-wirelist.csv, its layout tree, PROJECT-BOM.csv, cad/fusebox/rev8/fusebox-parts-*.csv
+    writes: [docs/harness-cost/breakpoint.dummy.csv, docs/harness-cost/routes.dummy.csv, docs/harness-cost/sleeving.dummy.csv, docs/harness-cost/parts.dummy.csv, docs/diagrams/harness-breakpoint.png]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/harness_cost_study.py --st185 <clone of st185-link-ecu-config>   # harnesscost 2026-11-23, st185 @ e047a17; docs/pdm-vs-relays.md quotes its numbers
+    owner: claude
   - id: starter-params
     script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs
     trigger: manual

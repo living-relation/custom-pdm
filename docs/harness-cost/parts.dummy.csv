@@ -1,0 +1,72 @@
+# DUMMY / DERIVED - harness cost study (tools/harness_cost_study.py); source: st185-link-ecu-config @ e047a17 (read only) + this repo; not a source of truth
+route,group,part,part number,qty,unit USD,line USD,price source,labour min each
+relay,common: new heater / starter relays,heater + starter relays 1-1393304-0 (on hand),1-1393304-0,2,0.0,0.0,st185 te-on-hand-bom.csv,1.0
+relay,common: new heater / starter relays,their seat receptacles 280756-4 x4 + 42281-1 x4,280756-4/42281-1,1,2.0,2.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups","popup: new relay 301-1C-C-R1-U01-12VDC (35 A micro, Song Chuan)",301-1C-C-R1-U01-12VDC,2,4.69,9.38,customconnectorkits.com products.json 2026-11-23,0.5
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups",popup: Metri-Pack 280 terminals 12129409-L x10,12129409-L,10,0.26,2.6,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups","GEP FRH-A12 holder (holds up to 2 micro relays, GEP drawing via st185 BOM)",FRH-A12,1,8.99,8.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups",FRH-A12-T TPA,FRH-A12-T,1,0.65,0.65,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups",FRH-A12-C cover,FRH-A12-C,1,5.99,5.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups",FRH-A12-MB-B1 bracket,FRH-A12-MB-B1,1,1.59,1.59,customconnectorkits.com products.json 2026-11-23,30.0
+relay,"relay route only: Front lamps: low, high, DRL, pop-ups",pop-up relay circuit design (replaces R8; ASSUMED),-,1,0.0,0.0,ASSUMED,90
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-HL relay 5-1393292-8 (on hand),5-1393292-8,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-HL receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-HR relay 5-1393292-8 (on hand),5-1393292-8,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-HR receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-DRL relay 4-1904124-2 (on hand),4-1904124-2,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-DRL receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-POD relay 4-1904124-3 (on hand),4-1904124-3,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups",K-POD receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups","HL 15 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups","HR 15 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups","DRL 7.5 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,"st185 box seats: Front lamps: low, high, DRL, pop-ups","POWER AMI seat (AMI-30, 2R5 lug, M5 bolts / nuts, PEM stud, C-strap share)",AMI-30,1,10.63,10.63,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),6.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",RLY-DRL relay 301-1C (B5),301-1C-C-R1-U01-12VDC,1,4.69,4.69,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",RLY-DRL terminals 12129409-L x4,12129409-L,4,0.26,1.04,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups","GEP FRH-A12 holder (holds up to 2 micro relays, GEP drawing via st185 BOM)",FRH-A12,1,8.99,8.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",FRH-A12-T TPA,FRH-A12-T,1,0.65,0.65,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",FRH-A12-C cover,FRH-A12-C,1,5.99,5.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",FRH-A12-MB-B1 bracket,FRH-A12-MB-B1,1,1.59,1.59,customconnectorkits.com products.json 2026-11-23,30.0
+relay,"st185 harness parts: Front lamps: low, high, DRL, pop-ups",D1 / D2 inline diodes DT04-2P-RT01 (MUR460),DT04-2P-RT01,2,8.99,17.98,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,st185 box seats: Horns,K-HORN relay 4-1904124-3 (on hand),4-1904124-3,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,st185 box seats: Horns,K-HORN receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,relay route only: Turn signals + hazards,"new LED flasher CF13JL-02 (st185 BOM line, unpriced there; ASSUMED $15)",CF13JL-02,1,15.0,15.0,ASSUMED,2
+relay,st185 box seats: Turn signals + hazards,"HZ 15 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,relay route only: Tail / park lamps,"tail: new relay 301-1A-C-R1-U03-12VDC (35 A micro, Song Chuan)",301-1A-C-R1-U03-12VDC,1,3.79,3.79,customconnectorkits.com products.json 2026-11-23,0.5
+relay,relay route only: Tail / park lamps,tail: Metri-Pack 280 terminals 12129409-L x4,12129409-L,4,0.26,1.04,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: Tail / park lamps,relay retrofit design share (ASSUMED),-,1,0.0,0.0,ASSUMED,30
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds",K-ON relay 6-1419137-4 (on hand),6-1419137-4,1,0.0,0.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.5
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds",K-ON receptacles 280919-2 x2 + 42281-1 x2,280919-2/42281-1,1,0.44,0.44,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds",K-ON 85 ground ring 320572,320572,1,0.3,0.3,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),3
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds","LAM 10 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds","CSB 5 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,"st185 box seats: CAN-Lambda, CSB3, cluster feeds","DEV 5 A fuse seat (ATM fuse, 2 x MCP 2.8, jumper, lug, M4 hardware, PEM)",ATM+1-968849-1,1,1.93,1.93,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),5.3
+relay,relay route only: Rear defogger,"defog: new relay 301-1A-C-R1-U03-12VDC (35 A micro, Song Chuan)",301-1A-C-R1-U03-12VDC,1,3.79,3.79,customconnectorkits.com products.json 2026-11-23,0.5
+relay,relay route only: Rear defogger,defog: Metri-Pack 280 terminals 12129409-L x4,12129409-L,4,0.26,1.04,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: Rear defogger,relay retrofit design share (ASSUMED),-,1,0.0,0.0,ASSUMED,30
+relay,relay route only: Power windows,"windows: new relay 301-1A-C-R1-U03-12VDC (35 A micro, Song Chuan)",301-1A-C-R1-U03-12VDC,1,3.79,3.79,customconnectorkits.com products.json 2026-11-23,0.5
+relay,relay route only: Power windows,windows: Metri-Pack 280 terminals 12129409-L x4,12129409-L,4,0.3,1.2,ASSUMED (Metri-Pack 280 12-10 AWG terminal),0.0
+relay,relay route only: Power windows,relay retrofit design share (ASSUMED),-,1,0.0,0.0,ASSUMED,30
+relay,relay route only: body holder B1,"GEP FRH-A12 holder (holds up to 2 micro relays, GEP drawing via st185 BOM)",FRH-A12,1,8.99,8.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B1,FRH-A12-T TPA,FRH-A12-T,1,0.65,0.65,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B1,FRH-A12-C cover,FRH-A12-C,1,5.99,5.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B1,FRH-A12-MB-B1 bracket,FRH-A12-MB-B1,1,1.59,1.59,customconnectorkits.com products.json 2026-11-23,30.0
+relay,relay route only: body holder B2,"GEP FRH-A12 holder (holds up to 2 micro relays, GEP drawing via st185 BOM)",FRH-A12,1,8.99,8.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B2,FRH-A12-T TPA,FRH-A12-T,1,0.65,0.65,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B2,FRH-A12-C cover,FRH-A12-C,1,5.99,5.99,customconnectorkits.com products.json 2026-11-23,0.0
+relay,relay route only: body holder B2,FRH-A12-MB-B1 bracket,FRH-A12-MB-B1,1,1.59,1.59,customconnectorkits.com products.json 2026-11-23,30.0
+pdm,common: new heater / starter relays,heater + starter relays 1-1393304-0 (on hand),1-1393304-0,2,0.0,0.0,st185 te-on-hand-bom.csv,1.0
+pdm,common: new heater / starter relays,their seat receptacles 280756-4 x4 + 42281-1 x4,280756-4/42281-1,1,2.0,2.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+pdm,PDM,"Boards A1, A2, B assembled (JLCPCB / PCBWay) with spares: $650-850",boards,1,750.0,750.0,"docs/order-checklist.md order, coordinator figure (first estimate)",0.0
+pdm,PDM,"Enclosure: machined sink + lid, printed parts, fasteners, seals: $80-200",enclosure,1,140.0,140.0,ASSUMED (first estimate),0.0
+pdm,PDM,"Box internal wiring, fans: $20-40",box-internal,1,30.0,30.0,ASSUMED (first estimate),0.0
+pdm,PDM,USB-CAN adapter for setup: $0-40,usb-can,1,20.0,20.0,ASSUMED (the RealDash CANable may do),0.0
+pdm,PDM,X1 harness plug HD36-24-21PN + X2 plug HDP26-24-47PE-L015 (on hand),HD36/HDP26,2,0.0,0.0,st185 te-on-hand-bom.csv,0.0
+pdm,PDM,"X1 / X2 boots HD30-24BT-BK (on hand, 5)",HD30-24BT-BK,2,0.0,0.0,st185 te-on-hand-bom.csv,0.0
+pdm,PDM,PDM feed fuse AMI-100 + single AMI holder,AMI-100,1,17.3,17.3,AMI price st185 (Waytek $5.30) + holder ASSUMED $12,0.0
+pdm,PDM,"Feed / ground lugs (2 x Klauke 3R5MS, 2 x M6 ring)",3R5MS,4,1.1,4.4,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+pdm,PDM,Y transition at the glove-box PDM breakout 382A023-25-0,382A023-25-0,1,46.9,46.9,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),8.0
+pdm,PDM,PDM design of the harness changes (ASSUMED),-,1,0.0,0.0,ASSUMED,240
+pdm,PDM,"PDM setup: bench + car, UI config (first estimate 4-6 h)",-,1,0.0,0.0,first estimate,300
+pdm,PDM,"PDM mechanical assembly (sink, boards, lid, fans; ASSUMED)",-,1,0.0,0.0,ASSUMED,240
+pdm,PDM,PDM mounted in the glove box,-,1,0.0,0.0,ASSUMED,30.0
