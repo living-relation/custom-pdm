@@ -91,6 +91,8 @@ try {
 
     Run-Py9 (Join-Path $Repo "tools\pcb_models_board_b.py") $Pcb               # orderprep 2026-11-22: U8-U11 3D body = Models/PG-TSDSO-24_bestguess.step (tools/tsdso24_model.py)
     Run-Py9 (Join-Path $Repo "tools\pcb_stackup.py") $Pcb B                    # orderprep 2026-11-22: stackup copper = the ordered copper (Dan c1 = a: 1 oz inner)
+    python (Join-Path $Repo "tools\drc_erc_waivers.py") B                      # drcclean 2026-11-23: DRC / ERC review stage (last; docs/drc-erc-review.md)
+    if ($LASTEXITCODE) { throw "drc_erc_waivers.py B failed" }
 
     & $Cli pcb drc --schematic-parity --severity-all --format json -o "$Out\drc.json" $Pcb | Out-Null
     python -c "import json,collections;d=json.load(open(r'$Out\drc.json'));c=collections.Counter((v['severity'],v['type']) for v in d.get('violations',[]));print('DRC', sum(c.values()), '| unconnected', len(d.get('unconnected_items',[])), '| parity', len(d.get('schematic_parity',[])));[print(' ',k,n) for k,n in sorted(c.items())]"

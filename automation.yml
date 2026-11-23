@@ -11,7 +11,8 @@ automations:
               tools/sch_board_fix.py, tools/pcb_fix_board_a.py, tools/board_fix_pcb.py, tools/netlist_pins.py,
               tools/sch_board_power.py, tools/pcb_board_power.py, tools/sch_digikey.py, tools/pcb_digikey.py,
               tools/sch_tp_orphans.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py,
-              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py, tools/pcb_stackup.py, tools/copper_order.py]
+              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py, tools/pcb_stackup.py, tools/copper_order.py,
+              tools/drc_erc_waivers.py]
     trigger: manual
     reads: ["tools/*_board_a.py"]   # plus the baseline commit 542b3b9 of hardware/board-a
     writes: ["hardware/board-a/*.kicad_sch", hardware/board-a/DingoPDM.kicad_pcb]
@@ -24,7 +25,7 @@ automations:
   - id: input-board-build
     script: tools/build_input_board.ps1
     helpers: [tools/gen_input_board_sch.py, tools/gen_input_board_pcb.py, tools/route_board_a.py, tools/pcb_rework.py,
-              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/board_fix_pcb.py]
+              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/board_fix_pcb.py, tools/drc_erc_waivers.py]
     trigger: manual
     reads: ["tools/gen_input_board_*.py"]
     writes: [hardware/input-board/input-board.kicad_sch, hardware/input-board/input-board.kicad_pcb]
@@ -39,7 +40,7 @@ automations:
     helpers: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/board_b_geom.py, tools/check_board_b.py, tools/netlist_pins.py,
               tools/sch_board_fix.py, tools/board_fix_pcb.py, tools/sch_board_power.py, tools/pcb_board_power.py,
               tools/sch_digikey.py, tools/pcb_digikey.py, tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_hole_keepout.py,
-              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py]
+              tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py, tools/drc_erc_waivers.py]
     trigger: manual
     reads: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/check_board_b.py,
             tools/pcb_feed_board_b.py, tools/pcb_stackup.py, tools/copper_order.py, tools/pcb_models_board_b.py, tools/tsdso24_model.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
@@ -80,6 +81,17 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python tools/drc_diff.py <baseline.json> <new.json> [type ...]
+    owner: claude
+  - id: drc-erc-waivers
+    script: tools/drc_erc_waivers.py
+    trigger: manual                 # also the last stage of build_board_a.ps1 / build_board_b.ps1 / build_input_board.ps1
+    reads: ["hardware/*/*.kicad_pcb", "hardware/*/*.kicad_sch"]
+    writes: ["hardware/*/*.kicad_pro", "hardware/*/*.kicad_dru", "hardware/*/*.kicad_sch"]   # exclusions + rules with reasons, parity Datasheet fields, duplicate sheet UUIDs; never the .kicad_pcb
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python tools/drc_erc_waivers.py A|B|IN   # kicad-cli 10; docs/drc-erc-review.md
+    check_cmd: python tools/drc_erc_waivers.py A --check   # same for B, IN: exit 1 on an unwaived DRC / ERC item or a file that would change
     owner: claude
   - id: pcb-info
     script: tools/pcb_info.py
