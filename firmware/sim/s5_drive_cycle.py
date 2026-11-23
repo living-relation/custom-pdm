@@ -163,8 +163,8 @@ if '--mutants' in sys.argv:
         out = list(ex.map(one, range(len(MUTATIONS))))
     red = 0
     for k, rc, fails in out:
-        red += rc != 0
-        print(f"{'RED  ' if rc else 'GREEN'} mutant {k}: {MUTATIONS[k][3]} ({len(fails)} FAIL)" + (f": {fails[0][5:120]}" if fails else ''))
+        red += rc != 0 and len(fails) > 0                          # RED = a check failed (a crash is not a kill)
+        print(f"{'RED  ' if rc and fails else 'GREEN'} mutant {k}: {MUTATIONS[k][3]} ({len(fails)} FAIL)" + (f": {fails[0][5:120]}" if fails else ''))
     print(f'S5 mutants ({CFG}): {red} of {len(MUTATIONS)} RED')
     sys.exit(0 if red == len(MUTATIONS) else 1)
 
