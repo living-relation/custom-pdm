@@ -14,7 +14,7 @@ Update 2026-11-23 (job drcclean): every KiCad DRC / ERC / parity item below is n
 2. **Fixed today:** the JLCPCB placement file would have put 8 parts in turned the wrong way (3.3 V regulator on A and B, 4 connectors, 2 DIP switches) and 3 part types off-centre (USB socket, 5 V module, wire connector); and the +12 V copper on the bottom of A and B came within 0.1 mm of the aluminium posts under the screws (now 0.6 mm clear).
 3. **Fixed 2026-11-20 (hwfix):** the current-sense amplifier is now rail-to-rail (TLV9004): board A reads to about 15 A, hot or cold, and every switch fault reads 3.28 V, above the firmware's 2.475 V fault level, with a 5.1 V clamp diode. **Fixed 2026-11-20 (d2tvs):** the input surge diode D2 is now the bigger load-dump part (SM8S24CA) in a new spot on both boards (A: 16 mm from the 12 V terminal; B: beside the output section), so the alternator's 35 V load dump no longer overheats it; nothing else moved, and the enclosure clears it by 2.6 mm or more.
 4. Everything else passed: rule checks (KiCad, JLCPCB limits, holes), output copper (2-5 mV drop per output), 3.3 V start-up, CAN, USB, inputs.
-5. Not checkable here: Fusion's own ERC / DRC (the Fusion MCP add-in was not connected on DansPC today); KiCad + JLCPCB-rule checks cover the same rules.
+5. Fusion's own ERC / DRC (run 2026-11-23, job fusionelec, `docs/fusion-electronics-check.md`): all three boards import whole (same parts, nets, layers, outline); no new real defect (only board A's 3 floating op-amp channels, already known).
 
 ![board B current and copper heating](diagrams/pcbverify-current-board-b.png)
 
@@ -37,7 +37,7 @@ Update 2026-11-23 (job drcclean): every KiCad DRC / ERC / parity item below is n
 
 Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at the copper that is ORDERED, from the one table `tools/copper_order.py`: board A and board B 1 oz outer / 1 oz inner (35 / 35 um; B: Dan 2026-11-22, c1 = a; A: coordinator 2026-11-22, because the no-sink screen read 11.9 K at 0.5 oz inner), input board 1 oz (JLCPCB default). The KiCad stackups carry the same values (`tools/pcb_stackup.py`, last build stage; upstream had 43.2 / 17.3 um) and `copper_order.py --check` fails if fab notes, stackup and table differ. `--outer-um` / `--inner-um` with another value is a what-if run (labelled, exit 2). Results in the tables below that quote 43.2 / 17.3 um copper are the 2026-11-20 runs; the ordered-copper numbers are in the section at the end.
 
-## Board A (dingoPDM v7.5 based, built twice): 20 PASS, 0 FAIL, 3 WARN, 1 not checkable, 1 info (rows)
+## Board A (dingoPDM v7.5 based, built twice): 21 PASS, 0 FAIL, 3 WARN, 1 info (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | Schematic parity | kicad-cli 10 | 4 field notes ('Datasheet' '~' vs ''), no net / part mismatch. PASS | DRC json | cosmetic, none |
 | KiCad ERC | kicad-cli 10 ERC | 30 errors, all pin-type artefacts: PROFET output pins tied (16), alternate 5 V modules on one rail (2, one fitted), LDO tab (1), power-in pins fed through resistors / ferrite (9), NRST + unused SWO input pin (2). Stock: 37. PASS | ERC json | none |
 | JLCPCB limits + holes | gen_fab_jlcpcb.py | 0 violations; co-located holes 0; refill change 0.000 %. PASS | `hardware/fab/board-a/jlcpcb-drc.txt` | none |
-| Fusion ERC / DRC | Fusion MCP | not checkable: add-in not connected (DansPC device info: autodesk-fusion-mcp failed) | - | re-run when Fusion is up |
+| Fusion ERC / DRC | Fusion Electronics (JLCPCB rule set) | 2026-11-23: DRC 221 items, ERC 229, all known / rule / import artefacts except U7 A, U12 A-B floating op-amp inputs (known, fix/tlv-unused). PASS | `docs/fusion-electronics-check.md` | re-run after fix/tlv-unused |
 | PF_OUT1-8, 7.5 A each | verify_copper | drop 2.0-2.6 mV, 15-20 mW each, peak 4.4 A/mm at the driver pins; 1 oz: 2.4-3.1 mV. PASS | `verify_copper.py A` | none |
 | +12V feed, 60 A (8 x 7.5 A) | verify_copper | J1 to the farthest driver 41 mV (1 oz: 50 mV), I^2R 2.2 W (1 oz: 2.7 W); hot spot 8.5 K over the board mean (1 oz: 11.7 K, limit 10 K, no-sink model). PASS (1 oz: marginal) | same | add the copper I^2R to the heat model (below) |
 | Vias | verify_copper | worst 2.05 A in one +12V via at U13; barrel self-heating < 0.2 K (fin model); 1 via over the long-trace IPC-2221 chart. PASS | same | none |
@@ -69,7 +69,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | Fiducials | verify_layout | none; JLCPCB adds rails with fiducials and tooling holes when it panelises. INFO | same | none |
 | CPL polarity / rotation | verify_cpl | was 2 FAIL: U2 SOT-223 (TLV1117LV, C15578) turned 90 deg, J6 JST GH turned 180 deg; centre offsets J5 USB-C 3.7 mm, U15 TSR 2.5 mm. FIXED in `gen_fab_jlcpcb.py` (rotation table checked part by part, new OFFSETS). Now 121 of 121 placements land on their pads. PASS. Re-run 2026-11-20 after the D2 move (d2tvs): 116 ok + 4 ok-sym + 1 check: D2 (DO-218, LCSC C20036943, CPL rot 270) has no footprint in the EasyEDA library (the API answers 404), so JLCPCB places it from our CPL (pin 1 = the lead, pad 2 = the tab) | `verify_cpl.py`; `board-a-cpl-jlcpcb.csv` | D2: check the assembler's placement preview at order time (BACKLOG) |
 
-## Board B (dingoPDM-Max based): 13 PASS, 0 FAIL, 1 WARN, 1 not checkable, 1 info (rows)
+## Board B (dingoPDM-Max based): 14 PASS, 0 FAIL, 1 WARN, 1 info (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -77,7 +77,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | Schematic parity | kicad-cli 10 | 4 'Datasheet' field notes. PASS | DRC json | none |
 | KiCad ERC | kicad-cli 10 | 81 errors, same pin-type artefacts as A (+19 pin-to-pin / +4 power-pin from the four added BTS7004; stock 58). PASS | ERC json | none |
 | JLCPCB limits + holes | gen_fab_jlcpcb.py | 0 violations, 0 co-located holes. PASS | `hardware/fab/board-b/jlcpcb-drc.txt` | none |
-| Fusion ERC / DRC | Fusion MCP | not checkable (add-in not connected) | - | re-run when Fusion is up |
+| Fusion ERC / DRC | Fusion Electronics (JLCPCB rule set) | 2026-11-23: DRC 614 items, ERC 344, all known / rule / import artefacts. PASS | `docs/fusion-electronics-check.md` | none |
 | PF_OUT1-4, 31 A each | verify_copper | 2.1 mV, 65 mW each, 23 vias each, worst via 1.5 A. PASS | `verify_copper.py B` | none |
 | PF_OUT5-8, 15 A each | verify_copper | 4.8 mV, 72 mW each (F.Cu carries it: the inner / bottom pours of these nets have no vias at the driver, only the terminal holes join them). PASS | same | none |
 | +12V feed | verify_copper / thermal_board_b | was FAIL (B.Cu only: 184 A 143 mV / 19.9 W, 150 A 117 mV / 13.3 W; in the sink model 163-165 C at 150 A, limit 130 C). FIXED 2026-11-20 by `tools/pcb_feed_board_b.py` (In2 +12V pour over the board, In1 +12V band over the J1 corridor with GND channels for D14 / D16, B.Cu +12V edge moved into the +3V3 pour, 135 stitching vias; no part moved): 150 A 82 mV / 9.1 W, 184 A 99.9 mV / 13.6 W (20 C copper; verify_copper's no-sink screen: hot spot 59 K over the board mean, was 106 K, screen 10 K: the sink model below is the judge); worst via 4.5 A (fin limit 22 A). Heat model, fans on, gap pad k 3: 150 A laminate max 122.7-124.3 C (3 splits), Tj max 110.5-121.0 C; car load (118 A, car-loads.dummy.md) 109.9 C / Tj 114.2 C. PASS at the 150 A feed limit. Every output at rating (184 A): 157.5 C FAIL (above the feed limit: firmware cap). Fans off (wall): 150 A 138.6-140.1 C FAIL, car load 120.7 C PASS; gap pad k 1 instead of the decided k >= 3 (b3a): 137.4 C FAIL | `thermal_board_b.py --res 0.3` (`--air nofan`) | firmware keeps the 150 A cap; fans-off full load needs the thermal limit (e3c) |

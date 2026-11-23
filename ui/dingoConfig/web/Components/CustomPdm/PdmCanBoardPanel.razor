@@ -22,7 +22,7 @@
                 var free = View.Boards.Select(b => (b.Role, N: m.FreeOf(b.Role, PdmResKind.CanInput).Count)).ToList();
                 var need = PdmCanBoard.Need(_rotary);
                 var baseId = Hex(_base);
-                var clash = baseId is { } id ? PdmCanBoard.Clash(View, id) : "The base ID is a hex number, e.g. 640.";
+                var clash = baseId is { } id ? PdmCanBoard.Clash(View, id) : "The base ID is a hex number, e.g. 660.";
                 var sources = PdmCanBoard.OutputSources(m, View);
             }
             <MudText Typo="Typo.body2" Class="mb-2">
@@ -133,7 +133,7 @@
 
     private void Add()
     {
-        if (Hex(_base) is not { } id) { Notification.NewError("The base ID is a hex number, e.g. 640."); return; }
+        if (Hex(_base) is not { } id) { Notification.NewError("The base ID is a hex number, e.g. 660."); return; }
         var name = string.IsNullOrWhiteSpace(_name) ? PdmCanBoard.NextName(View) : _name.Trim();
         if (!Done(PdmCanBoard.Add(View, id, name, _rotary, _timeout), $"{name} added: {PdmCanBoard.Need(_rotary)} inputs")) return;
         _name = "";
