@@ -18,9 +18,9 @@ public class CustomParamsTests
         Assert.Equal(Enumerable.Range(0, 10).Select(s => (0x0000, s)), p.Take(10).Select(x => (x.Index, x.SubIndex)));
         var block = p.Skip(10).Take(7).ToList();
         Assert.Equal(Enumerable.Range(0, 7).Select(s => (0x7F00, s)), block.Select(x => (x.Index, x.SubIndex)));
-        // defaults: warn 55, critical 80 (board B 98 / 104: fwsafety), hysteresis 6, exempt mask 0 (A2 firmware: 2), margin 5,
+        // defaults: warn 98, critical 104 (A and B: their FEA maps, fwsafety / hwtemp), hysteresis 6, exempt mask 0 (A2 firmware: 2), margin 5,
         // wake mask 0, master retry 0 (off)
-        Assert.Equal([type == 15 ? 98 : 55, type == 15 ? 104 : 80, 6, 0, 5, 0, 0], block.Select(x => (int)x.DefaultValue));
+        Assert.Equal([98, 104, 6, 0, 5, 0, 0], block.Select(x => (int)x.DefaultValue));
         Assert.All(block, x => Assert.Equal((typeof(int), false), (x.ValueType, x.IsSignedInt)));
         var ext = p.Skip(17).Take(24).ToList();
         Assert.Equal(Enumerable.Range(0, 8).SelectMany(o => Enumerable.Range(0, 3).Select(s => (0x7D00 + o, s))), ext.Select(x => (x.Index, x.SubIndex)));
