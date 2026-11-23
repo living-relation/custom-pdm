@@ -568,17 +568,20 @@ class pdm_bench:
 
     # ------------------------------------------------------------------ current read-back and full scale (ADR-2026-11-20-kilis)
     def current_reads_back_at_the_data_sheet_kilis(s):
-        # the bench plant uses the data sheet's typ. kILIS (pdmsim.py KILIS); loads picked so the whole-amp CAN value
-        # shows a wrong constant: stock 5950 / 35000 would read 6.6 A as 7 and 26.5 A as 27
-        pts = {1: 6.6, 21: 26.5, 17: 12.5}                     # A1 OUT1 BTS7008-2EPA, B OUT1 BTS70012-1ESP, B OUT5 BTS7004-1EPP
-        for g, a in pts.items(): s._load(g, a)
-        s._set_cmd(list(pts)); s._run(400)
-        got = {g: s._status(s.OUT[g][0], (1, 2)).current(s.OUT[g][1]) for g in pts}; on = s._pins_on()
-        s._set_cmd([])
-        for g in pts: s._load(g, s.LIMIT[g] * 0.6)
+        # the bench plant uses the data sheet's typ. kILIS (pdmsim.py KILIS); CAN sends the nearest whole amp (job isdebug:
+        # the custom boards round, stock msg.cpp truncates). Round 1 shows a wrong constant: stock 5950 / 35000 would
+        # read 6.0 A as 7 and 25.0 A as 26. Round 2 shows truncation: 0.2 A under a whole amp must send that whole amp.
+        got, want, on = {}, {}, []
+        for pts in ({1: 6.0, 21: 25.0, 17: 12.0}, {1: 5.8, 21: 25.8, 17: 11.8}):   # A1 OUT1 BTS7008-2EPA, B OUT1 BTS70012-1ESP, B OUT5 BTS7004-1EPP
+            for g, a in pts.items(): s._load(g, a)
+            s._set_cmd(list(pts)); s._run(400)
+            for g, a in pts.items():
+                got[(g, a)] = s._status(s.OUT[g][0], (1, 2)).current(s.OUT[g][1]); want[(g, a)] = int(a + 0.5)
+            p = s._pins_on(); on.append(all(g in p for g in pts))
+            s._set_cmd([]); s._run(100)
+        for g in (1, 21, 17): s._load(g, s.LIMIT[g] * 0.6)
         s._run(300)
-        want = {g: int(a) for g, a in pts.items()}
-        s._check(got == want and all(g in on for g in pts), f'CAN OutputCurrent (whole amps) {got}, want {want}; pins on {on}')
+        s._check(got == want and all(on), f'CAN OutputCurrent (nearest whole amp) {got}, want {want}; all pins on per round {on}')
 
     def full_scale_fault_cuts_at_once_with_a_low_sense_top(s):
         # rail-to-rail IS buffer: the chain tops out at the PDZ3.3B zener, about 2.7 V at the fault current (pdmsim.py

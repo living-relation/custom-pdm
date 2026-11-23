@@ -612,12 +612,27 @@ for k, b, o, drv, pts in S8:
     got = []
     for a in pts:
         b.set_load(o, b.vbat / a); bus8.run_for(300)
-        got.append((a, round(b.L.sim_out_current(o), 3), st8[k].current(o), b.L.sim_out_state(o)))
+        raw = b.L.sim_out_current(o)
+        got.append((a, round(raw, 3), st8[k].current(o), b.L.sim_out_state(o), int(raw + 0.5)))
     b.set_load(o, 0); t8.write(BASE[k], 0x1000 + o, 1, 0); bus8.run_for(100)
     readback[f'{k} OUT{o + 1} {drv}'] = got
-    check(f'S8 {k} OUT{o + 1} {drv}: a known load reads back within 2 % (data-sheet kILIS, 1.2k sense) at {" / ".join(f"{a:g}" for a in pts)} A, output stays ON; CAN OutputCurrent = the reading in whole amps (msg.cpp casts to uint16, s0 info)',
-          all(abs(g / a - 1) <= 0.02 and s == 1 and c is not None and c == int(g) for a, g, c, s in got), got)
+    check(f'S8 {k} OUT{o + 1} {drv}: a known load reads back within 2 % (data-sheet kILIS, 1.2k sense) at {" / ".join(f"{a:g}" for a in pts)} A, output stays ON; CAN OutputCurrent = the reading to the nearest whole amp (msg.cpp, ADR isdebug)',
+          all(abs(g / a - 1) <= 0.02 and s == 1 and c is not None and c == n for a, g, c, s, n in got), got)
 info['s8_readback'] = readback
+# S8b whole amps on CAN (job isdebug, PR #146 finding "board A reads about 1 A low"): the firmware reading is within
+# 0.2 % of the load, but stock msg.cpp casts it to uint16 (truncates), so a reading a hair under a whole amp went out
+# 1 A low (2 A load = 1.998 A read = 1 on CAN). The custom boards round to the nearest amp: an exact whole-amp load
+# must come back as that number on every PROFET type, and the total (msg 0) as the nearest amp of the sum.
+s8b = []
+for k, b, o, pts in (('A1', a8, 0, (1.0, 2.0, 5.0)), ('A1', a8, 1, (2.0, 5.0)), ('B', bb8, 0, (2.0, 7.0)), ('B', bb8, 4, (3.0, 5.0, 7.0))):
+    t8.write(BASE[k], 0x1000 + o, 0, 1); t8.write(BASE[k], 0x1000 + o, 1, 1)
+    for a in pts:
+        b.set_load(o, b.vbat / a); bus8.run_for(300)
+        s8b.append((k, o + 1, a, round(b.L.sim_out_current(o), 4), st8[k].current(o), st8[k].total()))
+    b.set_load(o, 0); t8.write(BASE[k], 0x1000 + o, 1, 0); bus8.run_for(100)
+check('S8b CAN OutputCurrent of an exact whole-amp load = that number (nearest amp, not truncated) on A1 OUT1 / OUT2 (BTS7008, both DSEL channels), B OUT1 (BTS70012), B OUT5 (BTS7004); TotalCurrent the same',
+      all(c == int(a) and tot == int(a) for k, o, a, g, c, tot in s8b), s8b)
+info['s8b_whole_amps'] = s8b
 # Full scale on board B (rail-to-rail buffer, ADR-2026-11-20-is-buffer): a PROFET fault after the inrush window is a hard
 # overcurrent at both ends of the IS chain's top (PDZ3.3B knee estimate 2.7 V, VDDA 3.3 V): cut at once, not after the trip time.
 # Inrush limit 100 A (the parameter maximum) so the reading (BTS70012 75.8 / 92.7 A, BTS7004 45 / 55 A) stays under it
