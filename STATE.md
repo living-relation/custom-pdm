@@ -1,7 +1,7 @@
 # STATE (max 30 lines, overwrite only)
 Repo: custom-pdm
 Branch: main
-Last_Verified_SHA: e9bfe34
+Last_Verified_SHA: 526c4fc
 Updated: 2026-11-23 -- claude-cloud-orchestrator
 
 ## Current Goal
@@ -13,12 +13,12 @@ Updated: 2026-11-23 -- claude-cloud-orchestrator
 - Detail: none
 
 ## Next Single Step
-- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$760-840 (rec) / b JLCPCB set ~$1,265-1,420 / c board B test only ~$280-460 / d no build, relays) and c11 (Spark pitch as a shareable doc: a yes (rec) / b markdown only); then lock the order files for that route
-- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$760-840 (rec) / b JLCPCB set ~$1,265-1,420 / c board B test only ~$280-460 / d no build, relays) and c11 (Spark pitch as a shareable doc: a yes (rec) / b markdown only); then lock the order files for that route
+- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$650-870 if its SMT line is free (rec) / b NextPCB quote first / c JLCPCB SMT-only ~$1,165-1,321 / d JLCPCB full ~$1,265-1,422 / e no build, relays); then lock the order files or the Spark build list for that route
+- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$650-870 if its SMT line is free (rec) / b NextPCB quote first / c JLCPCB SMT-only ~$1,165-1,321 / d JLCPCB full ~$1,265-1,422 / e no build, relays); then lock the order files or the Spark build list for that route
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
 - Backlog: BACKLOG.md
-- Latest_ADR: ADR-2026-11-23-proof-and-assembly
+- Latest_ADR: ADR-2026-11-23-cheaper-assembly
 - Last_Cleanup: 2026-11-23 @ 19479b5
 - Question_Counter: c11
