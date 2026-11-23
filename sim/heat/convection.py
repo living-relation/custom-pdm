@@ -51,7 +51,7 @@ def h_elenbaas(p, dT, S, L):
 
 S_CH = (G.FIN_PITCH - G.FIN_T) / 1000.0       # 4 mm channel gap
 H_F = G.FIN_H / 1000.0                         # 30 mm fin depth
-L_F = (G.fins()[2][1] - G.fins()[2][0]) / 1000.0   # fin length, east-west
+L_F = max(f[1] - f[0] for f in G.fins()) / 1000.0  # fin length, east-west (longest fin; revF: the foot keep-outs shorten 9)
 N_CH = len(G.fins()) - 1                       # channels between fins
 ENV_X, ENV_Y = (G.LX1 - G.LX0) / 1000.0, (G.LY1 - G.LY0) / 1000.0
 ENV_H = (G.PLATE_T + G.FIN_H) / 1000.0
