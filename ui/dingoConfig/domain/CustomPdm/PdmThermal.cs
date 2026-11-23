@@ -4,15 +4,18 @@ namespace domain.CustomPdm;
 // margin), entered as the board hot-spot (laminate) temperature. Each board's firmware compares its limits with its
 // own MCP9808 reading, so the tool converts the set per board with that board's sensor -> hot-spot offset:
 //   board B: the FEA map of docs/system-verification.md "Board B temperature limits" (tools/thermal_board_b.py +
-//            tools/verify_thermal_box.py, 10 cases: car, feed150 / hi / lo, rating; fans on / failed; 60 C cabin):
-//            at the ORDERED copper (1 oz outer + 1 oz inner, Dan 2026-11-22; tools/copper_order.py), 0.3 mm grid:
-//            laminate = U6 + 10.1 .. 19.6 K. Conservative worst case: the largest offset (19.6 K) + the MCP9808
-//            maximum error (+-1 C at -40..125 C, Microchip DS20005095B DC characteristics) = 20.6, rounded up to
-//            21 K, so sensor limit = hot spot - 21 K. Board B's factory 98 / 104 C (port_boards.py,
-//            ADR-2026-11-20-fwsafety) is the hot-spot set 119 / 125 C. tools/verify_thermal_box.py fails when
-//            this constant and the map differ.
-//   board A: no thermal model yet (BACKLOG): it keeps its own limits (factory 55 / 80 C); the tool never writes
-//            another board's thermal limits onto it.
+//            tools/verify_thermal_box.py, 12 cases: car, drive, feed150 / hi / lo, rating; fans on / failed; 60 C
+//            cabin; job hwtemp 2026-11-23 with the TI 5 V module loss): at the ORDERED copper (1 oz outer + 1 oz
+//            inner, Dan 2026-11-22; tools/copper_order.py), 0.3 mm grid: laminate = U6 + 9.9 .. 20.0 K. Conservative
+//            worst case: the largest offset (20.0 K) + the MCP9808 maximum error (+-1 C at -40..125 C, Microchip
+//            DS20005095B DC characteristics) = 21 K, so sensor limit = hot spot - 21 K. Board B's factory 98 / 104 C
+//            (port_boards.py, ADR-2026-11-20-fwsafety) is the hot-spot set 119 / 125 C.
+//   board A: its FEA map since job hwtemp (tools/thermal_a.py, 8 cases: rating, feed150a, car, drive; fans on /
+//            failed): laminate = U6 + 14.5 .. 19.8 K, + 1 K sensor error = 20.8, rounded up to 21 K: the same
+//            offset as board B, so its factory 98 / 104 C (port_boards.py) is the same hot-spot set 119 / 125 C.
+//   tools/verify_thermal_box.py fails when these constants and the maps differ.
+//   Sensor critical maximum, both boards: 104 C (ADR-2026-11-20-fwsafety: the MCU beside the sensor, 105 C, at the
+//   sensor reading + 1 K; the hwtemp part maps allow 105.2 C on A and 106.7 C on B, bound by the 5 V module).
 // Recovery (hysteresis) and the critical-soon margin are differences, the same on the sensor as at the hot spot.
 // Everything here is a PC edit: Write All sends it, Burn keeps it.
 public record PdmHotSpotLimits(int Warn, int Crit, int Hyst, int Margin);
@@ -23,18 +26,24 @@ public record PdmBoardTempRow(string Role, PdmTempLimits Sensor, bool Converted,
 
 public static class PdmThermal
 {
-    public const double BoardBLaminateOffsetK = 19.6; // largest laminate - U6 offset of the FEA map (docs/system-verification.md)
+    public const double BoardBLaminateOffsetK = 20.0; // largest laminate - U6 offset of the FEA map (docs/system-verification.md)
+    public const double BoardALaminateOffsetK = 19.8; // the same for board A (tools/thermal_a.py, docs/heat-analysis.md 5)
     public const double SensorErrorK = 1.0;           // MCP9808 maximum error (DS20005095B), tools/verify_thermal_box.py SENSOR_ERR
     public static readonly int BoardBOffsetK = (int)Math.Ceiling(BoardBLaminateOffsetK + SensorErrorK);
+    public static readonly int BoardAOffsetK = (int)Math.Ceiling(BoardALaminateOffsetK + SensorErrorK);
     public const int LaminateMaxC = 130;              // FR-4 laminate limit, tools/verify_thermal_box.py LAMINATE_C
-    // ADR-2026-11-20-fwsafety binding limit: the logic-area parts (STM32F446RET7, MB85RC64TA, 105 C ambient) sit at the
-    // sensor reading + 1 K, so board B's sensor critical must stay <= 104 C
+    // ADR-2026-11-20-fwsafety binding limit: the MCU (STM32F446RET7, 105 C ambient) sits at the sensor reading + 1 K, so
+    // each board's sensor critical must stay <= 104 C (the FRAM is a 125 C part since hwtemp)
     public const int BoardBSensorCritMaxC = 104;
+    public const int BoardASensorCritMaxC = 104;
 
-    public const string NoModelBoard = "No board B in the project: the hot-spot set is converted for board B only (board A has no thermal model yet and keeps its own limits).";
+    public const string NoModelBoard = "No custom-pdm board in the project: there is no board to convert the hot-spot set for.";
 
     // sensor -> hot-spot offset in K, null = no thermal model (the board keeps its own limits)
-    public static int? OffsetK(domain.Devices.FwDevice d) => d.CustomPdm == null ? null : d.DeviceTypeId == 15 ? BoardBOffsetK : null;
+    public static int? OffsetK(domain.Devices.FwDevice d) => d.CustomPdm == null ? null
+        : d.DeviceTypeId == 15 ? BoardBOffsetK : d.DeviceTypeId == 14 ? BoardAOffsetK : null;
+    private static double LaminateOffsetK(domain.Devices.FwDevice d) => d.DeviceTypeId == 15 ? BoardBLaminateOffsetK : BoardALaminateOffsetK;
+    public static int SensorCritMaxC(domain.Devices.FwDevice d) => d.DeviceTypeId == 15 ? BoardBSensorCritMaxC : BoardASensorCritMaxC;
 
     public static PdmTempLimits ToSensor(PdmHotSpotLimits h, int offset) => new(h.Warn - offset, h.Crit - offset, h.Hyst, h.Margin);
     public static PdmHotSpotLimits FromSensor(PdmTempLimits s, int offset) => new(s.Warn + offset, s.Crit + offset, s.Hyst, s.Margin);
@@ -46,9 +55,11 @@ public static class PdmThermal
         new(CustomPdmSettings.TempWarnDefault(d.DeviceTypeId), CustomPdmSettings.TempCritDefault(d.DeviceTypeId),
             CustomPdmSettings.DefaultTempCritHyst, CustomPdmSettings.DefaultTempCritSoonMargin);
 
-    // The PDM's hot-spot set as the PC holds it (from board B); null = no board with a thermal model in the project
+    // The PDM's hot-spot set as the PC holds it (from board B, else the first board A); null = no board with a thermal
+    // model in the project
     public static PdmHotSpotLimits? Current(PdmView v) =>
-        Modelled(v).Select(m => FromSensor(PdmTempLimits.Of(m.Board.Device)!, m.Offset)).FirstOrDefault();
+        Modelled(v).OrderBy(m => m.Board.Device.DeviceTypeId == 15 ? 0 : 1)
+            .Select(m => FromSensor(PdmTempLimits.Of(m.Board.Device)!, m.Offset)).FirstOrDefault();
 
     // null = the set can be written; else why not
     public static string? Problem(PdmView v, PdmHotSpotLimits h)
@@ -71,7 +82,7 @@ public static class PdmThermal
     public static IReadOnlyList<PdmBoardTempRow> Preview(PdmView v, PdmHotSpotLimits h) =>
         v.Boards.Where(b => b.Device.CustomPdm != null).Select(b => OffsetK(b.Device) is { } off
             ? new PdmBoardTempRow(b.Role, ToSensor(h, off), true,
-                FormattableString.Invariant($"sensor = hot spot - {off} K (FEA map: largest laminate offset {BoardBLaminateOffsetK:0.0} K + {SensorErrorK:0} K sensor error)"))
+                FormattableString.Invariant($"sensor = hot spot - {off} K (FEA map: largest laminate offset {LaminateOffsetK(b.Device):0.0} K + {SensorErrorK:0} K sensor error)"))
             : new PdmBoardTempRow(b.Role, PdmTempLimits.Of(b.Device)!, false,
                 $"no thermal model yet: keeps its own limits (factory {FactoryLimits(b.Device).Warn} / {FactoryLimits(b.Device).Crit} C)")).ToList();
 
@@ -94,8 +105,8 @@ public static class PdmThermal
         var list = new List<string>();
         if (h.Crit > LaminateMaxC) list.Add($"Critical {h.Crit} C is above the {LaminateMaxC} C laminate limit.");
         foreach (var (b, off) in Modelled(v))
-            if (ToSensor(h, off).Crit is var s && s > BoardBSensorCritMaxC)
-                list.Add($"Board {b.Role} sensor critical {s} C is above {BoardBSensorCritMaxC} C: the MCU and FRAM beside the sensor are rated 105 C (ADR-2026-11-20-fwsafety).");
+            if (ToSensor(h, off).Crit is var s && s > SensorCritMaxC(b.Device))
+                list.Add($"Board {b.Role} sensor critical {s} C is above {SensorCritMaxC(b.Device)} C: the MCU beside the sensor is rated 105 C (ADR-2026-11-20-fwsafety).");
         return list;
     }
 

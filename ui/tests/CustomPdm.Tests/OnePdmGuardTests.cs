@@ -147,12 +147,11 @@ public class OnePdmGuardTests
     [Fact]
     public async Task ACriticalTemperatureFromAFileIsRefusedUntilSetWithUnlock()
     {
-        // board A has no thermal model: only "back to factory" (Unlock, type factory) clears it
+        // board A has its thermal model since hwtemp: the hot-spot value typed in the Unlock dialog sets and confirms it
         var a = Opened(await EditedFile(("A2", "customPdm.tempCrit", 120)));
         Assert.Contains("A2: critical temperature 120 C from the project file", a.Blocked(PdmOpKind.WriteAll));
-        Assert.Null(PdmCritical.Apply(a.View, PdmCriticalKind.CritTemp, "125"));   // the hot-spot set changes board B only
-        Assert.Contains("A2: critical temperature 120 C", a.Blocked(PdmOpKind.WriteAll));
-        PdmThermal.RestoreFactory(a.View);
+        Assert.Null(PdmCritical.Apply(a.View, PdmCriticalKind.CritTemp, "125"));   // the hot-spot set converts every board
+        Assert.Equal(125 - PdmThermal.BoardAOffsetK, a.Dev("A2").CustomPdm!.TempCrit);
         Assert.Null(a.Blocked(PdmOpKind.WriteAll));
 
         // board B: the hot-spot value typed in the Unlock dialog confirms it, also when it is the file's value

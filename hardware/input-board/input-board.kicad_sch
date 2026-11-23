@@ -658,18 +658,21 @@
 			)
 			(embedded_fonts no)
 		)
-	(symbol "Switch:SW_DIP_x08"
+	(symbol "Jumper:SolderJumper_2_Open"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 				(hide yes)
 			)
 			(exclude_from_sim no)
-			(in_bom yes)
+			(in_bom no)
 			(on_board yes)
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "SW"
-				(at 0 13.97 0)
+			(property "Reference" "JP"
+				(at 0 2.032 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -678,8 +681,8 @@
 					)
 				)
 			)
-			(property "Value" "SW_DIP_x08"
-				(at 0 -11.43 0)
+			(property "Value" "SolderJumper_2_Open"
+				(at 0 -2.54 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -700,6 +703,28 @@
 				)
 			)
 			(property "Datasheet" ""
+				(at 0 -7.62 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Solder Jumper, 2-pole, open"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "solder jumper SPST"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -710,7 +735,7 @@
 					)
 				)
 			)
-			(property "Description" "8x DIP Switch, Single Pole Single Throw (SPST) switch, small symbol"
+			(property "ki_fp_filters" "SolderJumper*Open*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -721,295 +746,49 @@
 					)
 				)
 			)
-			(property "ki_keywords" "dip switch"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
+			(symbol "SolderJumper_2_Open_0_1"
+				(polyline
+					(pts
+						(xy -0.254 1.016) (xy -0.254 -1.016)
 					)
-				)
-			)
-			(property "ki_fp_filters" "SW?DIP?x8*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "SW_DIP_x08_0_0"
-				(circle
-					(center -2.032 10.16)
-					(radius 0.508)
 					(stroke
-						(width 0)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
 						(type none)
 					)
 				)
-				(circle
-					(center -2.032 7.62)
-					(radius 0.508)
+				(arc
+					(start -0.254 -1.016)
+					(mid -1.2656 0)
+					(end -0.254 1.016)
 					(stroke
-						(width 0)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type outline)
 					)
 				)
-				(circle
-					(center -2.032 5.08)
-					(radius 0.508)
+				(arc
+					(start 0.254 1.016)
+					(mid 1.2656 0)
+					(end 0.254 -1.016)
 					(stroke
-						(width 0)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 0)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 -2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 -5.08)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.032 -7.62)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
+						(type outline)
 					)
 				)
 				(polyline
 					(pts
-						(xy -1.524 10.287) (xy 2.3622 11.3284)
+						(xy 0.254 1.016) (xy 0.254 -1.016)
 					)
 					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 7.747) (xy 2.3622 8.7884)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 5.207) (xy 2.3622 6.2484)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 2.667) (xy 2.3622 3.7084)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 0.127) (xy 2.3622 1.1684)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 -2.3876) (xy 2.3622 -1.3462)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 -4.9276) (xy 2.3622 -3.8862)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.524 -7.4676) (xy 2.3622 -6.4262)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 10.16)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 7.62)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 5.08)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 0)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 -2.54)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 -5.08)
-					(radius 0.508)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.032 -7.62)
-					(radius 0.508)
-					(stroke
-						(width 0)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
@@ -1017,24 +796,11 @@
 					)
 				)
 			)
-			(symbol "SW_DIP_x08_0_1"
-				(rectangle
-					(start -3.81 12.7)
-					(end 3.81 -10.16)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-			)
-			(symbol "SW_DIP_x08_1_1"
+			(symbol "SolderJumper_2_Open_1_1"
 				(pin passive line
-					(at -7.62 10.16 0)
-					(length 5.08)
-					(name ""
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "A"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1050,9 +816,9 @@
 					)
 				)
 				(pin passive line
-					(at -7.62 7.62 0)
-					(length 5.08)
-					(name ""
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "B"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1060,258 +826,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 5.08 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 2.54 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 0 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 -2.54 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 -5.08 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -7.62 -7.62 0)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 -7.62 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "9"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 -5.08 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "10"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 -2.54 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "11"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 0 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "12"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 2.54 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "13"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 5.08 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "14"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 7.62 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "15"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 7.62 10.16 180)
-					(length 5.08)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "16"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2865,7 +2379,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP1"
 			(at 132.08 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -3024,7 +2538,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP9"
 			(at 152.4 30.48 0)
 			(hide yes)
 			(show_name no)
@@ -3673,7 +3187,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP2"
 			(at 132.08 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -3832,7 +3346,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP10"
 			(at 152.4 50.8 0)
 			(hide yes)
 			(show_name no)
@@ -4481,7 +3995,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP3"
 			(at 132.08 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -4640,7 +4154,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP11"
 			(at 152.4 71.12 0)
 			(hide yes)
 			(show_name no)
@@ -5289,7 +4803,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP4"
 			(at 132.08 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -5448,7 +4962,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP12"
 			(at 152.4 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -6097,7 +5611,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP5"
 			(at 132.08 111.76 0)
 			(hide yes)
 			(show_name no)
@@ -6256,7 +5770,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP13"
 			(at 152.4 111.76 0)
 			(hide yes)
 			(show_name no)
@@ -6905,7 +6419,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP6"
 			(at 132.08 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -7064,7 +6578,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP14"
 			(at 152.4 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -7713,7 +7227,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP7"
 			(at 132.08 152.4 0)
 			(hide yes)
 			(show_name no)
@@ -7872,7 +7386,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP15"
 			(at 152.4 152.4 0)
 			(hide yes)
 			(show_name no)
@@ -8521,7 +8035,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-up via SW1"
+		(property "Description" "pull-up via JP8"
 			(at 132.08 172.72 0)
 			(hide yes)
 			(show_name no)
@@ -8680,7 +8194,7 @@
 				(justify left)
 			)
 		)
-		(property "Description" "pull-down via SW2"
+		(property "Description" "pull-down via JP16"
 			(at 152.4 172.72 0)
 			(hide yes)
 			(show_name no)
@@ -9432,18 +8946,18 @@
 		(uuid "55c90163-2e3c-5d71-84d7-6be6cd1a27a5")
 	)
 	(symbol
-		(lib_id "Switch:SW_DIP_x08")
-		(at 210.82 50.8 0)
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 30.48 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "0b23ca08-8400-5265-905a-9d78e70fc981")
-		(property "Reference" "SW1"
-			(at 213.36 46.99 0)
+		(uuid "f21b58df-5b13-551f-b7b5-a84dceb559b0")
+		(property "Reference" "JP1"
+			(at 193.04 26.67 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9453,8 +8967,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "A6S-8104 pull-up"
-			(at 213.36 54.61 0)
+		(property "Value" "PU1"
+			(at 193.04 34.29 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9464,8 +8978,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Button_Switch_SMD:SW_DIP_SPSTx08_Slide_Omron_A6S-810x_W8.9mm_P2.54mm"
-			(at 210.82 50.8 0)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9477,7 +8991,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 210.82 50.8 0)
+			(at 190.5 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9488,8 +9002,8 @@
 				(justify left)
 			)
 		)
-		(property "Description" "per input: ON = 10k pull-up to +3V3"
-			(at 210.82 50.8 0)
+		(property "Description" "input 1: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9498,50 +9012,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-			)
-		)
-		(property "Manufacturer" "Omron"
-			(at 210.82 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "A6S-8104-H"
-			(at 210.82 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C231310"
-			(at 210.82 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Digi-Key_PN" "39-A6S-8104-H-ND"
-			(at 210.82 50.8 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
@@ -9550,230 +9020,48 @@
 		(pin "2"
 			(uuid "3ce12cc6-f52c-556d-8810-8210009a007a")
 		)
-		(pin "3"
-			(uuid "f21b58df-5b13-551f-b7b5-a84dceb559b0")
-		)
-		(pin "4"
-			(uuid "318d50d8-6b4b-5418-9bdf-2463d534e22c")
-		)
-		(pin "5"
-			(uuid "2d760060-1be4-5a46-9d40-99b5dfda8af9")
-		)
-		(pin "6"
-			(uuid "2dc90cdf-c74f-5b38-941e-4e2cbb151972")
-		)
-		(pin "7"
-			(uuid "c3553171-f088-5c1d-8c76-14d75fff2c36")
-		)
-		(pin "8"
-			(uuid "78726499-bc8a-5abd-bb25-ec8c1a432c2e")
-		)
-		(pin "9"
-			(uuid "e1fcf5e4-8e9d-56bb-969d-bc07a0ef2a39")
-		)
-		(pin "10"
-			(uuid "971931ba-07c3-5e0c-95c3-72fc2e418ba5")
-		)
-		(pin "11"
-			(uuid "f6505c82-1c80-522b-9ca3-756271fd92d5")
-		)
-		(pin "12"
-			(uuid "b132275d-b1de-5006-a37d-d2cf9b2b07d8")
-		)
-		(pin "13"
-			(uuid "ef7553ff-8912-593f-bd60-d1628cea0104")
-		)
-		(pin "14"
-			(uuid "459b9950-59d6-58e6-924b-3672d3edadbd")
-		)
-		(pin "15"
-			(uuid "8d585a0d-73e2-50a4-8c27-a083346fc789")
-		)
-		(pin "16"
-			(uuid "5a1e8c3a-7457-5072-82cd-20c07d834d30")
-		)
 		(instances
 			(project "input-board"
 				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
-					(reference "SW1")
+					(reference "JP1")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(label "PU_1"
-		(at 203.2 40.64 180)
+		(at 185.42 30.48 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "087cc2a5-9d4d-5082-8086-352feaac4f65")
-	)
-	(label "PU_2"
-		(at 203.2 43.18 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2ab084fc-5d13-5900-a52b-1919ef2ebdbf")
-	)
-	(label "PU_3"
-		(at 203.2 45.72 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "d28c5588-3c16-5b4f-9da2-a955f4be42bb")
-	)
-	(label "PU_4"
-		(at 203.2 48.26 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f68c2add-9902-5a24-a2ab-e48b8c29d53e")
-	)
-	(label "PU_5"
-		(at 203.2 50.8 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2ebbc830-5038-5f9a-b0e7-f75f14d6c9fe")
-	)
-	(label "PU_6"
-		(at 203.2 53.34 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "1cf19d9c-171b-5f23-bfef-17a1a2d7d7c8")
-	)
-	(label "PU_7"
-		(at 203.2 55.88 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2d77e5f8-253a-5aac-998c-9f40496e174d")
-	)
-	(label "PU_8"
-		(at 203.2 58.42 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3a0ff92e-990f-5648-9f8f-ac8b8eb55edf")
+		(uuid "318d50d8-6b4b-5418-9bdf-2463d534e22c")
 	)
 	(label "+3V3"
-		(at 218.44 40.64 0)
+		(at 195.58 30.48 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "af044382-4279-5c89-a343-963e43bd9403")
-	)
-	(label "+3V3"
-		(at 218.44 43.18 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "fcbeaf46-cc02-5ab5-9bb5-28232bb21fbb")
-	)
-	(label "+3V3"
-		(at 218.44 45.72 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "216122e0-d719-57c5-966b-08af37a63a6a")
-	)
-	(label "+3V3"
-		(at 218.44 48.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a9499951-a5db-5de4-9e38-32f3ec3291bd")
-	)
-	(label "+3V3"
-		(at 218.44 50.8 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "587359fb-cae9-539a-91d2-1a0e9aa0a80d")
-	)
-	(label "+3V3"
-		(at 218.44 53.34 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "dc21133c-f0de-5ba9-a81a-0eee4d49ea43")
-	)
-	(label "+3V3"
-		(at 218.44 55.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "7f1e11bb-6712-5245-b17e-05b34818337b")
-	)
-	(label "+3V3"
-		(at 218.44 58.42 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "4a3b726f-cb2f-5c62-8b26-360f26654b52")
+		(uuid "2d760060-1be4-5a46-9d40-99b5dfda8af9")
 	)
 	(symbol
-		(lib_id "Switch:SW_DIP_x08")
-		(at 210.82 101.6 0)
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 30.48 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "9a30e1d5-8950-5038-be7f-a95f5cbe5cf2")
-		(property "Reference" "SW2"
-			(at 213.36 97.79 0)
+		(uuid "78726499-bc8a-5abd-bb25-ec8c1a432c2e")
+		(property "Reference" "JP9"
+			(at 223.52 26.67 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9783,8 +9071,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "A6S-8104 pull-down"
-			(at 213.36 105.41 0)
+		(property "Value" "PD1"
+			(at 223.52 34.29 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9794,8 +9082,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Button_Switch_SMD:SW_DIP_SPSTx08_Slide_Omron_A6S-810x_W8.9mm_P2.54mm"
-			(at 210.82 101.6 0)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9807,7 +9095,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 210.82 101.6 0)
+			(at 220.98 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9818,8 +9106,8 @@
 				(justify left)
 			)
 		)
-		(property "Description" "per input: ON = 10k pull-down to GND"
-			(at 210.82 101.6 0)
+		(property "Description" "input 1: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 30.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9828,141 +9116,961 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-			)
-		)
-		(property "Manufacturer" "Omron"
-			(at 210.82 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "MPN" "A6S-8104-H"
-			(at 210.82 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC" "C231310"
-			(at 210.82 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Digi-Key_PN" "39-A6S-8104-H-ND"
-			(at 210.82 101.6 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
 			)
 		)
 		(pin "1"
-			(uuid "4deb147e-a101-5db1-93ec-1b6c51fc360b")
+			(uuid "2dc90cdf-c74f-5b38-941e-4e2cbb151972")
 		)
 		(pin "2"
-			(uuid "5fd2bcc7-54b6-5a49-b291-46e881d11f2b")
-		)
-		(pin "3"
-			(uuid "36456073-e21d-506b-9b18-2add8f68e945")
-		)
-		(pin "4"
-			(uuid "36e6f1d1-4236-550f-9f27-29ed5239e4c4")
-		)
-		(pin "5"
-			(uuid "9d97a5fa-d69b-529c-9437-969f4de1a293")
-		)
-		(pin "6"
-			(uuid "5f8d0afc-8602-517e-be43-2e7616ebbfc2")
-		)
-		(pin "7"
-			(uuid "42c276e4-9166-54f8-b08f-c22227032037")
-		)
-		(pin "8"
-			(uuid "d6205c57-7126-5870-8165-107076461325")
-		)
-		(pin "9"
-			(uuid "9358db22-6508-5395-9836-54caab94ff6b")
-		)
-		(pin "10"
-			(uuid "6c0302de-3da6-5ec8-80a5-475c3af80f27")
-		)
-		(pin "11"
-			(uuid "dc7331e1-650b-5f75-b459-26dfbe799d70")
-		)
-		(pin "12"
-			(uuid "542f0ffa-7fd3-5f16-b608-644620dd1155")
-		)
-		(pin "13"
-			(uuid "34c4b684-d69f-5aca-bb72-0c35588262d5")
-		)
-		(pin "14"
-			(uuid "9542d909-1e9a-5535-9027-85da0532b2ff")
-		)
-		(pin "15"
-			(uuid "a358c892-f4c9-563e-9db8-7abaaacb1979")
-		)
-		(pin "16"
-			(uuid "5e966e55-ccb5-5495-817e-4dddd2c87edc")
+			(uuid "c3553171-f088-5c1d-8c76-14d75fff2c36")
 		)
 		(instances
 			(project "input-board"
 				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
-					(reference "SW2")
+					(reference "JP9")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(label "PD_1"
-		(at 203.2 91.44 180)
+		(at 215.9 30.48 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "99d1e416-faaa-51f9-90d5-c9e56bbe0b2b")
+		(uuid "e1fcf5e4-8e9d-56bb-969d-bc07a0ef2a39")
+	)
+	(label "GND"
+		(at 226.06 30.48 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "971931ba-07c3-5e0c-95c3-72fc2e418ba5")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 50.8 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ef7553ff-8912-593f-bd60-d1628cea0104")
+		(property "Reference" "JP2"
+			(at 193.04 46.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU2"
+			(at 193.04 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 2: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "f6505c82-1c80-522b-9ca3-756271fd92d5")
+		)
+		(pin "2"
+			(uuid "b132275d-b1de-5006-a37d-d2cf9b2b07d8")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_2"
+		(at 185.42 50.8 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "459b9950-59d6-58e6-924b-3672d3edadbd")
+	)
+	(label "+3V3"
+		(at 195.58 50.8 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8d585a0d-73e2-50a4-8c27-a083346fc789")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 50.8 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "087cc2a5-9d4d-5082-8086-352feaac4f65")
+		(property "Reference" "JP10"
+			(at 223.52 46.99 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD2"
+			(at 223.52 54.61 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 2: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 50.8 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "5a1e8c3a-7457-5072-82cd-20c07d834d30")
+		)
+		(pin "2"
+			(uuid "0b23ca08-8400-5265-905a-9d78e70fc981")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP10")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(label "PD_2"
-		(at 203.2 93.98 180)
+		(at 215.9 50.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "be3049e0-7680-5c6f-bc60-3f8ad23a8359")
+		(uuid "2ab084fc-5d13-5900-a52b-1919ef2ebdbf")
+	)
+	(label "GND"
+		(at 226.06 50.8 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d28c5588-3c16-5b4f-9da2-a955f4be42bb")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 71.12 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "1cf19d9c-171b-5f23-bfef-17a1a2d7d7c8")
+		(property "Reference" "JP3"
+			(at 193.04 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU3"
+			(at 193.04 74.93 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 3: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "f68c2add-9902-5a24-a2ab-e48b8c29d53e")
+		)
+		(pin "2"
+			(uuid "2ebbc830-5038-5f9a-b0e7-f75f14d6c9fe")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_3"
+		(at 185.42 71.12 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2d77e5f8-253a-5aac-998c-9f40496e174d")
+	)
+	(label "+3V3"
+		(at 195.58 71.12 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3a0ff92e-990f-5648-9f8f-ac8b8eb55edf")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 71.12 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "216122e0-d719-57c5-966b-08af37a63a6a")
+		(property "Reference" "JP11"
+			(at 223.52 67.31 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD3"
+			(at 223.52 74.93 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 3: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "af044382-4279-5c89-a343-963e43bd9403")
+		)
+		(pin "2"
+			(uuid "fcbeaf46-cc02-5ab5-9bb5-28232bb21fbb")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP11")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(label "PD_3"
-		(at 203.2 96.52 180)
+		(at 215.9 71.12 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
-		(uuid "2581e058-5d3f-57ea-9d80-ba133ebd7b9f")
+		(uuid "a9499951-a5db-5de4-9e38-32f3ec3291bd")
+	)
+	(label "GND"
+		(at 226.06 71.12 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "587359fb-cae9-539a-91d2-1a0e9aa0a80d")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 91.44 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "4a3b726f-cb2f-5c62-8b26-360f26654b52")
+		(property "Reference" "JP4"
+			(at 193.04 87.63 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU4"
+			(at 193.04 95.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 4: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "dc21133c-f0de-5ba9-a81a-0eee4d49ea43")
+		)
+		(pin "2"
+			(uuid "7f1e11bb-6712-5245-b17e-05b34818337b")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_4"
+		(at 185.42 91.44 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "4deb147e-a101-5db1-93ec-1b6c51fc360b")
+	)
+	(label "+3V3"
+		(at 195.58 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5fd2bcc7-54b6-5a49-b291-46e881d11f2b")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 91.44 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9d97a5fa-d69b-529c-9437-969f4de1a293")
+		(property "Reference" "JP12"
+			(at 223.52 87.63 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD4"
+			(at 223.52 95.25 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 4: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "36456073-e21d-506b-9b18-2add8f68e945")
+		)
+		(pin "2"
+			(uuid "36e6f1d1-4236-550f-9f27-29ed5239e4c4")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP12")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(label "PD_4"
-		(at 203.2 99.06 180)
+		(at 215.9 91.44 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5f8d0afc-8602-517e-be43-2e7616ebbfc2")
+	)
+	(label "GND"
+		(at 226.06 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "42c276e4-9166-54f8-b08f-c22227032037")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 111.76 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6c0302de-3da6-5ec8-80a5-475c3af80f27")
+		(property "Reference" "JP5"
+			(at 193.04 107.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU5"
+			(at 193.04 115.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 5: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "d6205c57-7126-5870-8165-107076461325")
+		)
+		(pin "2"
+			(uuid "9358db22-6508-5395-9836-54caab94ff6b")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_5"
+		(at 185.42 111.76 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "dc7331e1-650b-5f75-b459-26dfbe799d70")
+	)
+	(label "+3V3"
+		(at 195.58 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "542f0ffa-7fd3-5f16-b608-644620dd1155")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 111.76 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "a358c892-f4c9-563e-9db8-7abaaacb1979")
+		(property "Reference" "JP13"
+			(at 223.52 107.95 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD5"
+			(at 223.52 115.57 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 5: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 111.76 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "34c4b684-d69f-5aca-bb72-0c35588262d5")
+		)
+		(pin "2"
+			(uuid "9542d909-1e9a-5535-9027-85da0532b2ff")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PD_5"
+		(at 215.9 111.76 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5e966e55-ccb5-5495-817e-4dddd2c87edc")
+	)
+	(label "GND"
+		(at 226.06 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "9a30e1d5-8950-5038-be7f-a95f5cbe5cf2")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "2581e058-5d3f-57ea-9d80-ba133ebd7b9f")
+		(property "Reference" "JP6"
+			(at 193.04 128.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU6"
+			(at 193.04 135.89 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 6: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "99d1e416-faaa-51f9-90d5-c9e56bbe0b2b")
+		)
+		(pin "2"
+			(uuid "be3049e0-7680-5c6f-bc60-3f8ad23a8359")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_6"
+		(at 185.42 132.08 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9971,58 +10079,112 @@
 		)
 		(uuid "e4a71f5e-55c0-509b-8817-555f4383e47b")
 	)
-	(label "PD_5"
-		(at 203.2 101.6 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3ff3dcbe-34e0-50fd-8453-1a34f5a28354")
-	)
-	(label "PD_6"
-		(at 203.2 104.14 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "aa9dfb03-e1b3-576b-a152-9c7394c2c006")
-	)
-	(label "PD_7"
-		(at 203.2 106.68 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "4318a713-ef07-5c94-bf56-1825c32318b1")
-	)
-	(label "PD_8"
-		(at 203.2 109.22 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "fe11782c-172a-5cb4-8d98-ebb085f250ff")
-	)
-	(label "GND"
-		(at 218.44 91.44 0)
+	(label "+3V3"
+		(at 195.58 132.08 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
+		(uuid "3ff3dcbe-34e0-50fd-8453-1a34f5a28354")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 132.08 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "fe11782c-172a-5cb4-8d98-ebb085f250ff")
+		(property "Reference" "JP14"
+			(at 223.52 128.27 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD6"
+			(at 223.52 135.89 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 6: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "aa9dfb03-e1b3-576b-a152-9c7394c2c006")
+		)
+		(pin "2"
+			(uuid "4318a713-ef07-5c94-bf56-1825c32318b1")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PD_6"
+		(at 215.9 132.08 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
 		(uuid "1fbea690-4b98-51f0-a8e3-bb910d7b6b16")
 	)
 	(label "GND"
-		(at 218.44 93.98 0)
+		(at 226.06 132.08 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10031,48 +10193,102 @@
 		)
 		(uuid "74dea43d-477b-5f0a-b216-08eaa2d7a430")
 	)
-	(label "GND"
-		(at 218.44 96.52 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "dcb771f0-ecf4-5a1d-a616-668715a7250f")
-	)
-	(label "GND"
-		(at 218.44 99.06 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "21cf82dd-20a8-54de-8c7c-161d326ef64d")
-	)
-	(label "GND"
-		(at 218.44 101.6 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 152.4 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
 		(uuid "74ea0f0f-b1c1-5318-b56d-cc12fdfba56f")
+		(property "Reference" "JP7"
+			(at 193.04 148.59 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU7"
+			(at 193.04 156.21 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 7: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "dcb771f0-ecf4-5a1d-a616-668715a7250f")
+		)
+		(pin "2"
+			(uuid "21cf82dd-20a8-54de-8c7c-161d326ef64d")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP7")
+					(unit 1)
+				)
+			)
+		)
 	)
-	(label "GND"
-		(at 218.44 104.14 0)
+	(label "PU_7"
+		(at 185.42 152.4 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "b8510e5d-f969-5a2c-b35d-4c34f27c2ad5")
 	)
-	(label "GND"
-		(at 218.44 106.68 0)
+	(label "+3V3"
+		(at 195.58 152.4 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10081,15 +10297,317 @@
 		)
 		(uuid "88e453f2-50c0-536f-931e-aae5bdd205bc")
 	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 152.4 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5d3d7f03-8238-5860-a5f6-e64cba578b5e")
+		(property "Reference" "JP15"
+			(at 223.52 148.59 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD7"
+			(at 223.52 156.21 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 7: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 152.4 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "b48b42b5-f10f-5d5d-8c64-33af42f95ef1")
+		)
+		(pin "2"
+			(uuid "f3cc8905-2f9a-5222-9210-3c019ff1ce42")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PD_7"
+		(at 215.9 152.4 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "e9b1db42-c59e-58e5-a238-e2309351dcec")
+	)
 	(label "GND"
-		(at 218.44 109.22 0)
+		(at 226.06 152.4 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "b48b42b5-f10f-5d5d-8c64-33af42f95ef1")
+		(uuid "0d021ee3-a463-575c-8af0-747a577d87f6")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 190.5 172.72 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5a58def0-61cc-577c-978e-cb5a0e62384c")
+		(property "Reference" "JP8"
+			(at 193.04 168.91 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PU8"
+			(at 193.04 176.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 190.5 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 190.5 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 8: bridged = 10k pull-up to +3V3 (open as built)"
+			(at 190.5 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "e5ac39ac-9e50-5924-b2b6-a482846508c3")
+		)
+		(pin "2"
+			(uuid "6d42d57c-2788-548a-b58f-7be009b4e1dc")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PU_8"
+		(at 185.42 172.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "cce72fc0-277b-5da9-bc11-6e315ebc71b9")
+	)
+	(label "+3V3"
+		(at 195.58 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "97017764-d25d-5911-a025-0f8bd9d65ec3")
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 220.98 172.72 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ad2998e0-6a32-5635-904f-fd89756d8e74")
+		(property "Reference" "JP16"
+			(at 223.52 168.91 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD8"
+			(at 223.52 176.53 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 220.98 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Datasheet" ""
+			(at 220.98 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Description" "input 8: bridged = 10k pull-down to GND (open as built)"
+			(at 220.98 172.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "1"
+			(uuid "cb60a121-5842-564a-b3ae-6ea660a6adce")
+		)
+		(pin "2"
+			(uuid "ff0e9796-2237-5284-9021-1a5a1d4378a8")
+		)
+		(instances
+			(project "input-board"
+				(path "/eb9d1dd8-0b65-5ecd-af7d-32e7774a00db"
+					(reference "JP16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "PD_8"
+		(at 215.9 172.72 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "42b6a538-8735-563d-aaaa-1f9f1cb5eb12")
+	)
+	(label "GND"
+		(at 226.06 172.72 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "75f94601-ba0b-5f9a-9441-b8774845a131")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x12")
@@ -10101,7 +10619,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "42b6a538-8735-563d-aaaa-1f9f1cb5eb12")
+		(uuid "8f2a231c-d8c7-554c-9571-6363e2558d37")
 		(property "Reference" "J1"
 			(at 269.24 46.99 0)
 			(show_name no)
@@ -10205,40 +10723,40 @@
 			)
 		)
 		(pin "1"
-			(uuid "f3cc8905-2f9a-5222-9210-3c019ff1ce42")
+			(uuid "dea25bbd-2ebb-5f34-9612-c6e952e0950a")
 		)
 		(pin "2"
-			(uuid "5d3d7f03-8238-5860-a5f6-e64cba578b5e")
+			(uuid "55ccf964-a0ad-51c3-9e33-10e6b9a73bdd")
 		)
 		(pin "3"
-			(uuid "e9b1db42-c59e-58e5-a238-e2309351dcec")
+			(uuid "2413e35e-32a8-5f98-a7f2-4af8de40dfdb")
 		)
 		(pin "4"
-			(uuid "0d021ee3-a463-575c-8af0-747a577d87f6")
+			(uuid "1c6f490e-3c91-5436-bcd2-40d34e3db995")
 		)
 		(pin "5"
-			(uuid "e5ac39ac-9e50-5924-b2b6-a482846508c3")
+			(uuid "c8654be7-c4b1-57ed-964e-2dbf5b4cc424")
 		)
 		(pin "6"
-			(uuid "6d42d57c-2788-548a-b58f-7be009b4e1dc")
+			(uuid "b36edd4e-9a9e-586c-baf7-113065000201")
 		)
 		(pin "7"
-			(uuid "5a58def0-61cc-577c-978e-cb5a0e62384c")
+			(uuid "08e80379-afc5-5cb0-80f7-d46cf175092c")
 		)
 		(pin "8"
-			(uuid "cce72fc0-277b-5da9-bc11-6e315ebc71b9")
+			(uuid "30a40f5b-519d-5e5a-8fe2-fbf9e0b55ffb")
 		)
 		(pin "9"
-			(uuid "97017764-d25d-5911-a025-0f8bd9d65ec3")
+			(uuid "0927f519-db4e-5a3f-88c7-16330c681e44")
 		)
 		(pin "10"
-			(uuid "cb60a121-5842-564a-b3ae-6ea660a6adce")
+			(uuid "74ca477c-70a5-5927-a59e-3c81a8d15213")
 		)
 		(pin "11"
-			(uuid "ff0e9796-2237-5284-9021-1a5a1d4378a8")
+			(uuid "08ffa268-c4a2-5cd6-9a9e-ae4a2571bbc0")
 		)
 		(pin "12"
-			(uuid "ad2998e0-6a32-5635-904f-fd89756d8e74")
+			(uuid "1b45ae00-ec4a-5b50-a0dc-4086c0e3547e")
 		)
 		(instances
 			(project "input-board"
@@ -10257,7 +10775,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "75f94601-ba0b-5f9a-9441-b8774845a131")
+		(uuid "8cc2cb3a-4ef9-5055-9667-ec605c0d1314")
 	)
 	(label "IN_2"
 		(at 261.62 40.64 180)
@@ -10267,7 +10785,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "dea25bbd-2ebb-5f34-9612-c6e952e0950a")
+		(uuid "5ab215d8-6828-5aea-98f3-20b0dc0f0908")
 	)
 	(label "IN_3"
 		(at 261.62 43.18 180)
@@ -10277,7 +10795,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "55ccf964-a0ad-51c3-9e33-10e6b9a73bdd")
+		(uuid "6fc68260-8408-5e8b-9fae-a34c89e905a6")
 	)
 	(label "IN_4"
 		(at 261.62 45.72 180)
@@ -10287,7 +10805,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "2413e35e-32a8-5f98-a7f2-4af8de40dfdb")
+		(uuid "c305bc99-1034-5de2-bcf4-7d8964101872")
 	)
 	(label "IN_5"
 		(at 261.62 48.26 180)
@@ -10297,7 +10815,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "1c6f490e-3c91-5436-bcd2-40d34e3db995")
+		(uuid "de284e27-3f52-5ad6-9b96-3e8f8865bf98")
 	)
 	(label "IN_6"
 		(at 261.62 50.8 180)
@@ -10307,7 +10825,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "c8654be7-c4b1-57ed-964e-2dbf5b4cc424")
+		(uuid "c9bd9790-5616-5f86-bca1-9838afe48136")
 	)
 	(label "IN_7"
 		(at 261.62 53.34 180)
@@ -10317,7 +10835,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "b36edd4e-9a9e-586c-baf7-113065000201")
+		(uuid "0c103bb5-f23f-5a44-bb4c-dac29fba9e7c")
 	)
 	(label "IN_8"
 		(at 261.62 55.88 180)
@@ -10327,7 +10845,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "08e80379-afc5-5cb0-80f7-d46cf175092c")
+		(uuid "061c22bc-0a2e-533c-9702-ddb7a2f7e024")
 	)
 	(label "AIN"
 		(at 261.62 58.42 180)
@@ -10337,7 +10855,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "30a40f5b-519d-5e5a-8fe2-fbf9e0b55ffb")
+		(uuid "2e4dafa0-ce41-50b8-bf77-9f4f8b50e6bb")
 	)
 	(label "+3V3"
 		(at 261.62 60.96 180)
@@ -10347,7 +10865,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "0927f519-db4e-5a3f-88c7-16330c681e44")
+		(uuid "ebd618c4-e7a4-52d9-90b2-828ab6c0b181")
 	)
 	(label "GND"
 		(at 261.62 63.5 180)
@@ -10357,7 +10875,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "74ca477c-70a5-5927-a59e-3c81a8d15213")
+		(uuid "1429d375-1dc3-5287-8e50-a483a522480e")
 	)
 	(label "GND"
 		(at 261.62 66.04 180)
@@ -10367,7 +10885,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "08ffa268-c4a2-5cd6-9a9e-ae4a2571bbc0")
+		(uuid "53e1829f-5898-5b7f-996a-a8a99c48eaf3")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_02x06_Odd_Even")
@@ -10379,7 +10897,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "1429d375-1dc3-5287-8e50-a483a522480e")
+		(uuid "fb5b4a21-bfb6-5c0a-988e-d86124d3a18f")
 		(property "Reference" "J2"
 			(at 269.24 113.03 0)
 			(show_name no)
@@ -10483,40 +11001,40 @@
 			)
 		)
 		(pin "1"
-			(uuid "1b45ae00-ec4a-5b50-a0dc-4086c0e3547e")
+			(uuid "2cbed83c-cb8a-56e5-9b04-0bca19b53766")
 		)
 		(pin "2"
-			(uuid "8f2a231c-d8c7-554c-9571-6363e2558d37")
+			(uuid "cb6efb41-c3e9-5bf0-9a87-d66f2f3cc0e1")
 		)
 		(pin "3"
-			(uuid "8cc2cb3a-4ef9-5055-9667-ec605c0d1314")
+			(uuid "c1e75c9c-eeaf-5a24-abc5-19e1321bfbd9")
 		)
 		(pin "4"
-			(uuid "5ab215d8-6828-5aea-98f3-20b0dc0f0908")
+			(uuid "b35f816a-cec3-533a-bd5f-a2c2d0f82b14")
 		)
 		(pin "5"
-			(uuid "6fc68260-8408-5e8b-9fae-a34c89e905a6")
+			(uuid "e47817ad-7563-5b99-9c38-9fd6245aef9b")
 		)
 		(pin "6"
-			(uuid "c305bc99-1034-5de2-bcf4-7d8964101872")
+			(uuid "bbc3a6f4-2132-5722-88c8-65ee6512f7f2")
 		)
 		(pin "7"
-			(uuid "de284e27-3f52-5ad6-9b96-3e8f8865bf98")
+			(uuid "d016aa50-6444-5748-9cae-bfc300a393ed")
 		)
 		(pin "8"
-			(uuid "c9bd9790-5616-5f86-bca1-9838afe48136")
+			(uuid "88db1c8b-4bce-5c9e-b051-d444ee5c2ccf")
 		)
 		(pin "9"
-			(uuid "0c103bb5-f23f-5a44-bb4c-dac29fba9e7c")
+			(uuid "b6d0deda-78c4-5a07-967c-26775974dfba")
 		)
 		(pin "10"
-			(uuid "061c22bc-0a2e-533c-9702-ddb7a2f7e024")
+			(uuid "14a1ba55-0bcc-5509-9f70-b37efac9b253")
 		)
 		(pin "11"
-			(uuid "2e4dafa0-ce41-50b8-bf77-9f4f8b50e6bb")
+			(uuid "58eee257-eb22-5320-beea-f221d9be010e")
 		)
 		(pin "12"
-			(uuid "ebd618c4-e7a4-52d9-90b2-828ab6c0b181")
+			(uuid "62505748-b1dc-56c6-87c7-bbd3f5d014b0")
 		)
 		(instances
 			(project "input-board"
@@ -10535,7 +11053,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "53e1829f-5898-5b7f-996a-a8a99c48eaf3")
+		(uuid "6d416b9b-f4f8-5a3f-b812-7409aa202589")
 	)
 	(label "INW_2"
 		(at 274.32 111.76 0)
@@ -10545,7 +11063,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2cbed83c-cb8a-56e5-9b04-0bca19b53766")
+		(uuid "9fcfd5a2-f7f0-58a8-8862-36d9278f4db8")
 	)
 	(label "INW_3"
 		(at 261.62 114.3 180)
@@ -10555,7 +11073,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "cb6efb41-c3e9-5bf0-9a87-d66f2f3cc0e1")
+		(uuid "66b27a30-2111-582b-ab64-c1c2073c3ee8")
 	)
 	(label "INW_4"
 		(at 274.32 114.3 0)
@@ -10565,7 +11083,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "c1e75c9c-eeaf-5a24-abc5-19e1321bfbd9")
+		(uuid "f75227c2-d764-5c0a-96ce-54848243e390")
 	)
 	(label "INW_5"
 		(at 261.62 116.84 180)
@@ -10575,7 +11093,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "b35f816a-cec3-533a-bd5f-a2c2d0f82b14")
+		(uuid "c3c6f441-ff42-5a97-9d36-83e48e428501")
 	)
 	(label "INW_6"
 		(at 274.32 116.84 0)
@@ -10585,7 +11103,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "e47817ad-7563-5b99-9c38-9fd6245aef9b")
+		(uuid "2b439081-e0b9-582e-8639-67e7f9355ecf")
 	)
 	(label "INW_7"
 		(at 261.62 119.38 180)
@@ -10595,7 +11113,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "bbc3a6f4-2132-5722-88c8-65ee6512f7f2")
+		(uuid "b19cc336-fda3-5b3e-bf07-5f29a043da97")
 	)
 	(label "INW_8"
 		(at 274.32 119.38 0)
@@ -10605,7 +11123,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "d016aa50-6444-5748-9cae-bfc300a393ed")
+		(uuid "1e187d43-0892-5796-a10a-ecf20dd59746")
 	)
 	(label "AINW"
 		(at 261.62 121.92 180)
@@ -10615,7 +11133,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "88db1c8b-4bce-5c9e-b051-d444ee5c2ccf")
+		(uuid "fc24430f-a121-5f61-b3b7-8e933c16a13a")
 	)
 	(label "GND"
 		(at 274.32 121.92 0)
@@ -10625,7 +11143,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b6d0deda-78c4-5a07-967c-26775974dfba")
+		(uuid "e3a1bead-6e2a-5381-bba3-000f5269b8b5")
 	)
 	(label "GND"
 		(at 261.62 124.46 180)
@@ -10635,7 +11153,7 @@
 			)
 			(justify right bottom)
 		)
-		(uuid "14a1ba55-0bcc-5509-9f70-b37efac9b253")
+		(uuid "1ff6a04b-9258-5d76-987b-6e4f0a400e99")
 	)
 	(label "GND"
 		(at 274.32 124.46 0)
@@ -10645,7 +11163,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "58eee257-eb22-5320-beea-f221d9be010e")
+		(uuid "7fc3f25c-44de-5aa9-b5dd-e4b8248eb614")
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
@@ -10657,7 +11175,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "62505748-b1dc-56c6-87c7-bbd3f5d014b0")
+		(uuid "1212cc36-8da7-539e-8962-0c856310014d")
 		(property "Reference" "H1"
 			(at 256.54 156.21 0)
 			(show_name no)
@@ -10735,7 +11253,7 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "fb5b4a21-bfb6-5c0a-988e-d86124d3a18f")
+		(uuid "e0b7d4d3-2896-5e63-ae09-2b5d4ae02120")
 		(property "Reference" "H2"
 			(at 271.78 156.21 0)
 			(show_name no)
@@ -10803,7 +11321,7 @@
 			)
 		)
 	)
-	(text "Input board (custom-pdm). 8 on/off inputs + 1 analog 0-5 V.\nPer input: 4.7k series, BAT54S clamp, 10 nF; 10k pull-up (SW1) and 10k pull-down (SW2) on the wire side.\nBoth DIP OFF = MCU weak pull (firmware). Generated by tools/gen_input_board_sch.py - edit the script, not this file."
+	(text "Input board (custom-pdm). 8 on/off inputs + 1 analog 0-5 V.\nPer input: 4.7k series, BAT54S clamp, 10 nF; 10k pull-up (JP1-8) and 10k pull-down (JP9-16) on the wire side, solder jumpers bridged at assembly.\nBoth open = MCU weak pull (firmware). Generated by tools/gen_input_board_sch.py - edit the script, not this file."
 		(exclude_from_sim no)
 		(at 30.48 12.7 0)
 		(effects
@@ -10812,7 +11330,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "6d416b9b-f4f8-5a3f-b812-7409aa202589")
+		(uuid "7f3959d7-e9fa-502b-af60-7552ec3de753")
 	)
 	(sheet_instances
 		(path "/"

@@ -192,20 +192,36 @@ def thermal(note, fan, out_limit):
 FAN_A = thermal('board A unit 2 (A2) OUT2 (index 1) is wired inside the box to both fans; its X1 cavity T is spare.\n'
                 '// A2 is the board at the fan end (enclosure v2b F1 fan bay, east end); OUT2 has the east-most J3 pad (tied with OUT5)\n'
                 '// and the east-most driver (U8). Other units: -1 = no fan output', '(PDM_UNIT == 2 ? 1 : -1)', fl(LIMIT_A))
+# Board A temperature limits (job hwtemp, 2026-11-23; coordinator item c, re-derived with the TI 5 V module loss): board
+# A's own MCP9808 (U6) reads 79.2 C at the car loads with fans on in a 60 C cabin (tools/thermal_a.py, FEA on the real
+# copper, 0.3 mm grid), on the stock 80 C cut. Map sensor -> parts over the 8 modelled cases (rating, feed150a, car, drive;
+# fans on / failed): laminate = sensor + 14.5 .. 19.8 K, driver Tj = sensor - 5.0 .. + 22.3 K, 5 V module U21 board =
+# sensor + 3.0 .. 16.2 K, FRAM = sensor - 5.0 .. + 2.1 K, MCU = sensor - 9.8 .. - 2.2 K. Allowed critical (rating - offset
+# - 1 C MCP9808 error, DS20005095B): laminate 109.2, Tj 126.7, 5 V module 105.2 (TJ 125 C - 20 K/W x 0.131 W, TI
+# SNVSAQ4C), MCU 106.2, FRAM 121.9 C (CY15B064J, 125 C). Critical 104 C = board B's (the ADR-2026-11-20-fwsafety rule:
+# logic area at the sensor + 1 C <= the MCU's 105 C) and inside every limit above; with board A's offset equal to board
+# B's (21 K, ui PdmThermal.cs) the one PDM hot-spot set 119 / 125 C gives both boards 98 / 104, so board A uses B's
+# warn 98 C too (18.8 K over the car-loads reading: no warning in normal use). Recovery 6 C (stock rule).
+# tools/verify_thermal_box.py (--afans / --anofan) checks these values against the model.
+FAN_A += '''
+#define DEFAULT_TEMP_WARN 98     // board A: see port_boards.py (FEA sensor map tools/thermal_a.py, part ratings)
+#define DEFAULT_TEMP_CRIT 104'''
 FAN_B = thermal('the fans are on board A unit 2 (see custompdm_a/port.h); none on this board', '-1',
                 f'((int)(i) < 4 ? {fl(LIMIT_B_STUD)} : {fl(LIMIT_B)})')
 # Board B temperature limits (ADR-2026-11-20-presim-findings item 1; job fwsafety; re-derived by job orderprep
-# 2026-11-22 at the ORDERED copper, 1 oz outer + 1 oz inner, tools/copper_order.py): board B's own MCP9808 (U6) reads
-# 93.4 C at the car loads with fans on in a 60 C cabin (tools/thermal_board_b.py + verify_thermal_box.py, FEA on the real
-# copper, 0.3 mm grid), above the stock 55 / 80. Map sensor -> hot spots over the 10 modelled cases (car, feed150 / hi /
-# lo, rating; fans on / failed): laminate = sensor + 10.1 .. 19.6 K, driver Tj = sensor + 2.5 .. 20.4 K (0.4 mm grid:
+# 2026-11-22 at the ORDERED copper, 1 oz outer + 1 oz inner, tools/copper_order.py; re-run by job hwtemp 2026-11-23 with
+# the TI 5 V module loss and the s5 drive cycle): board B's own MCP9808 (U6) reads 94.4 C at the car loads with fans on
+# in a 60 C cabin (tools/thermal_board_b.py + verify_thermal_box.py, FEA on the real copper, 0.3 mm grid), above the
+# stock 55 / 80. Map sensor -> hot spots over the 12 modelled cases (car, drive, feed150 / hi / lo, rating; fans on /
+# failed): laminate = sensor + 9.9 .. 20.0 K, driver Tj = sensor + 1.0 .. 20.0 K (orderprep, 0.4 mm grid:
 # 8.3 .. 17.5 / 4.2 .. 21.2 K). Critical 104 C = the
-# tightest of: laminate 104 + 19.6 + 1 (MCP9808 +-1 C max at -40..125 C, DS20005095B DC characteristics) = 124.6 <= 130 C;
+# tightest of: laminate 104 + 20.0 + 1 (MCP9808 +-1 C max at -40..125 C, DS20005095B DC characteristics) = 125.0 <= 130 C;
 # Tj 104 + 21.2 + 1 = 126.2 <= 150 C; the logic-area parts at the sensor reading + 1 = 105 C <= the 105 C ambient rating
-# of the STM32F446RET7 and the MB85RC64TA FRAM (binding; crystal, capacitors and the 5 V module are 125 C parts now).
-# Warn 98 C = 4.6 K over the car-loads reading (no warning in normal use) and below critical-soon (104 - 5). Recovery
+# of the STM32F446RET7 (binding; crystal, capacitors, the 5 V module and, since hwtemp, the CY15B064J FRAM are 125 C
+# parts; hwtemp part map with the TI 5 V module loss: 5 V module U27 allows 106.7, MCU 107.1, laminate 109.0 C).
+# Warn 98 C = 3.6 K over the car-loads reading (no warning in normal use) and below critical-soon (104 - 5). Recovery
 # 6 C (stock rule). The values did not change with the copper: 98 / 104 / 6 as set by fwsafety on 2026-11-20.
-# verify_thermal_box.py checks these values against the model. Board A keeps the stock 55 / 80 (no FEA sensor map yet).
+# verify_thermal_box.py checks these values against the model. Board A: its own block above (hwtemp).
 FAN_B += '''
 #define DEFAULT_TEMP_WARN 98     // board B: see port_boards.py (FEA sensor map, part ratings)
 #define DEFAULT_TEMP_CRIT 104'''

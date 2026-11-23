@@ -249,7 +249,7 @@ public class PdmEngineTests
         var v = NewPdm();
         var items = PdmCritical.Items(v);
         // critical temperature: one hot-spot value, converted per board (ADR-2026-11-20-temp-onepdm, PdmThermalTests)
-        Assert.Equal(["0x500", "0x540", "0x580", "1000K", "125 C hot spot (A1 sensor 80 C, kept; A2 sensor 80 C, kept; B sensor 104 C)", "10"], items.Select(i => i.Current));
+        Assert.Equal(["0x500", "0x540", "0x580", "1000K", "125 C hot spot (A1 sensor 104 C; A2 sensor 104 C; B sensor 104 C)", "10"], items.Select(i => i.Current));
         Dev(v, "B").BitRate = CanBitRate.BitRate500K;
         Assert.Equal("differs: A1 1000K, A2 1000K, B 500K", PdmCritical.Items(v).Single(i => i.Kind == PdmCriticalKind.BitRate).Current);
     }
@@ -263,7 +263,7 @@ public class PdmEngineTests
         Assert.All(v.Boards, b => Assert.Equal(CanBitRate.BitRate500K, b.Device.BitRate));
         Assert.Equal("Warn must be below critical.", PdmCritical.Apply(v, PdmCriticalKind.CritTemp, "119"));
         Assert.Null(PdmCritical.Apply(v, PdmCriticalKind.CritTemp, "121"));
-        Assert.Equal([80, 80, 100], v.Boards.Select(b => b.Device.CustomPdm!.TempCrit)); // hot spot 121 -> B 100, A kept
+        Assert.Equal([100, 100, 100], v.Boards.Select(b => b.Device.CustomPdm!.TempCrit)); // hot spot 121 -> 100 on A and B (21 K each)
         Assert.Null(PdmCritical.Apply(v, PdmCriticalKind.KeptOn, "10, 17, 24"));
         Assert.Equal([0, 1 << 1, 1 | 1 << 7], v.Boards.Select(b => b.Device.CustomPdm!.CritExemptMask));
         Assert.Equal([10, 17, 24], PdmCritical.KeptOn(v));

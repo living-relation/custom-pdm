@@ -332,7 +332,7 @@ MSG_WDG_RESET, MSG_BOR_RESET, MSG_BOR_LOW_VBAT, MSG_BOR_FAILED = 1, 2, 3, 4
 TEMP_INDEX = 0x7F00                                  # custom-pdm thermal parameter block (core/param_defs.h THERMAL_PARAM_BASE)
 TEMP_PARAM = {'warn': 0, 'crit': 1, 'hyst': 2, 'soon': 4}   # sub-index; 3 = critical-exempt output mask
 TEMP_EXEMPT_SUB = 3
-TEMP_DEFAULT = {'warn': 55, 'crit': 80, 'hyst': 6, 'soon': 5}   # expected factory defaults, board A (core/param_defs.h, stock)
+TEMP_DEFAULT = {'warn': 98, 'crit': 104, 'hyst': 6, 'soon': 5}  # expected factory defaults, board A (port_boards.py: its FEA sensor map, hwtemp; stock 55 / 80)
 # board B (ADR-2026-11-20-presim-findings item 1): from its FEA sensor map and part ratings (tools/verify_thermal_box.py)
 TEMP_DEFAULT_B = {'warn': 98, 'crit': 104, 'hyst': 6, 'soon': 5}
 def temp_default(model): return TEMP_DEFAULT_B if model['fw'] == 'custompdm_b' else TEMP_DEFAULT

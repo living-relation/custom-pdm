@@ -26,8 +26,11 @@ public class CustomPdmSettings
     // custom-pdm (fwsafety, ADR-2026-11-20-presim-findings item 1): board B (type 15) ships with its own limits, from its
     // FEA sensor map (tools/verify_thermal_box.py) and the 105 C MCU / FRAM rating: firmware port_boards.py DEFAULT_TEMP_*
     public const int DefaultTempWarnB = 98, DefaultTempCritB = 104;
-    public static int TempWarnDefault(int deviceType) => deviceType == 15 ? DefaultTempWarnB : DefaultTempWarn;
-    public static int TempCritDefault(int deviceType) => deviceType == 15 ? DefaultTempCritB : DefaultTempCrit;
+    // custom-pdm (hwtemp, 2026-11-23): board A (type 14) ships with its own limits too, from its FEA sensor map
+    // (tools/thermal_a.py, tools/verify_thermal_box.py --afans / --anofan): firmware port_boards.py DEFAULT_TEMP_* (FAN_A)
+    public const int DefaultTempWarnA = 98, DefaultTempCritA = 104;
+    public static int TempWarnDefault(int deviceType) => deviceType switch { 15 => DefaultTempWarnB, 14 => DefaultTempWarnA, _ => DefaultTempWarn };
+    public static int TempCritDefault(int deviceType) => deviceType switch { 15 => DefaultTempCritB, 14 => DefaultTempCritA, _ => DefaultTempCrit };
     public const int DefaultCritExemptMask = 0, DefaultTempCritSoonMargin = 5, DefaultWakeInputMask = 0;
 
     [JsonPropertyName("tempWarn")] public int TempWarn { get; set; } = DefaultTempWarn;

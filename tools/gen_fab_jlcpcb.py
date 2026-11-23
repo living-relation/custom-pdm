@@ -53,10 +53,10 @@ DRILL_OPTS = ["--format", "excellon", "--drill-origin", "absolute", "--excellon-
 # 2026-11-20 (pcbverify): every entry checked part by part against the LCSC part's own footprint in the JLCEDA /
 # EasyEDA library by tools/verify_cpl.py (pads turned by the CPL rotation must land on ours). Changed from KiBot's
 # table: SOT-223 180 -> 270 (C15578), JST GH SM horizontal 180 -> 0 (C265421), new: JST GH BM vertical 180
-# (C20089173), Molex Micro-Fit 43045 horizontal 180 (C277636), Omron A6S DIP switch 270 (C231310).
+# (C20089173), Molex Micro-Fit 43045 horizontal 180 (C277636); Omron A6S DIP switch 270 (C231310) until hwtemp
+# (2026-11-23: the input-board DIP switches became solder jumpers, no part).
 ROTATIONS = [(r"^SOT-223", 270), (r"^SOT-23", 180), (r"^SOIC-", 270), (r"^MSOP-", 270), (r"^TSSOP-", 270),
              (r"^LQFP-", 270), (r"^JST_GH_BM", 180), (r"^T?S?DSO-\d+$", 270), (r"^Molex_Micro-Fit_3\.0_43045", 180),
-             (r"^SW_DIP_SPSTx08_Slide_Omron_A6S", 270),
              (r"^D_DO-218AB_Vishay_SM8S", 180)]   # hwprotect 2026-11-20: D2 Bourns SM8S24CA-Q (C1976790), verify_cpl
 # Placement centre: JLCPCB puts its footprint's origin (the part centre) on Mid X / Mid Y. Where our KiCad origin is
 # a pin instead, shift by this footprint-local offset (mm, KiCad footprint frame; tools/verify_cpl.py measures it).
@@ -72,6 +72,7 @@ THIN_STOCK = {
     "BTS700121ESPXUMA1": "17 at LCSC on 2026-11-22 (C3232444)",
     "ECS-80-18-30Q-CES-TR": "no LCSC number (global sourcing); Digi-Key 50-ECS-80-18-30Q-CES-TRCT-ND",
     "74650074R": "no LCSC number (global sourcing); Digi-Key 732-74650074RCT-ND",
+    "CY15B064J-SXE": "0 at LCSC on 2026-11-23 (C2953601, global sourcing); Digi-Key 448-CY15B064J-SXE-ND (hwtemp FRAM)",
 }
 NO_ALT = "none approved: if JLCPCB cannot get it, quote the board at PCBWay by MPN (`*-bom-full.csv`)"
 # JLCPCB limits (capabilities page). 4-layer board, 1 oz outer copper (the stackup is left as it is).

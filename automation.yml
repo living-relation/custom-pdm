@@ -305,7 +305,7 @@ automations:
     script: tools/thermal_a.py
     helpers: [tools/test_thermal_models.py]
     trigger: manual                 # after any board A change (docs/heat-analysis.md); tests: tools/test_thermal_models.py
-    reads: [hardware/board-a/DingoPDM.kicad_pcb]
+    reads: [hardware/board-a/DingoPDM.kicad_pcb, firmware/sim/data/s5_board_power.csv]   # s5: case drive (hwtemp)
     writes: ["docs/diagrams/thermal-board-a-*.png"]   # only with --plots
     committed: yes
     auto_commit: false
@@ -325,12 +325,12 @@ automations:
   - id: pcb-thermal-board-b
     script: tools/thermal_board_b.py
     trigger: manual                 # after any board B change (docs/pcb-verification.md, ADR-2026-11-20-boardb-feed)
-    reads: [hardware/board-b-max/dingoPDM-Max.kicad_pcb]
+    reads: [hardware/board-b-max/dingoPDM-Max.kicad_pcb, firmware/sim/data/s5_board_power.csv]   # s5: case drive (hwtemp)
     writes: ["docs/diagrams/thermal-board-b-*.png"]   # only with --plots; prints the table otherwise
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_board_b.py [--case feed150 feed150hi feed150lo car rating] [--res 0.3] [--plots docs/diagrams]'   # needs scipy + matplotlib
+    run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_board_b.py [--case feed150 feed150hi feed150lo car drive rating] [--res 0.3] [--plots docs/diagrams]'   # needs scipy + matplotlib
   - id: copper-order
     script: tools/copper_order.py
     trigger: manual                 # after any change to the ordered copper, a board stackup or the fab notes

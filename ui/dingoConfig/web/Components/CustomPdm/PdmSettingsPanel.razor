@@ -24,8 +24,8 @@
                         <MudText Typo="Typo.body1">Board temperature limits (hot spot, one set for the PDM)</MudText>
                         <MudText Typo="Typo.caption" Style="display: block; max-width: 460px" Class="mb-1">
                             Entered as the hottest point of the board (laminate). Each board compares its own sensor, so
-                            the tool converts the set per board: board B sensor = hot spot - @(PdmThermal.BoardBOffsetK) K
-                            (FEA map). Board A has no thermal model yet and keeps its own limits.
+                            the tool converts the set per board: board B sensor = hot spot - @(PdmThermal.BoardBOffsetK) K,
+                            board A sensor = hot spot - @(PdmThermal.BoardAOffsetK) K (each board's FEA map).
                         </MudText>
                         @if (PdmThermal.Current(View) == null)
                         {

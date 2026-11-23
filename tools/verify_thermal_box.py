@@ -70,26 +70,36 @@ def bom_grades(tag):
 
 
 GRADE = {k: bom_grades(tag) for k, tag in (("A", "board-a"), ("B", "board-b"))}
+# 5 V module board limit: TJ 125 C less its own loss x PsiJB 20 K/W; the loss is the board models' (TI SNVSAQ4C Figure
+# 8-46 at 0.22 A, 13.5 V + hot conduction share, thermal_board_b P_5V, job hwtemp): set from the JSON in main()
+LIMIT_5V = [125.0 - 20.0 * 0.131]
 # board B logic-area parts at its MCP9808 reading: rating C (crystal / capacitors: from board B's BOM)
-LOGIC_PARTS = [("STM32F446RET7 (ambient, suffix 7)", 105.0), ("MB85RC64TA FRAM", 105.0),
-               (f"crystal Y1 {GRADE['B'][0]}", GRADE["B"][1]), (GRADE["B"][2], GRADE["B"][3]),
-               ("TI LMZM23601V5 5 V module (hw5v; TJ 125 C less its own ~0.2 W x PsiJB 20 K/W)", 121.0)]
+LOGIC_PARTS = [("STM32F446RET7 (ambient, suffix 7)", 105.0), ("CY15B064J-SXE FRAM (Automotive-E, hwtemp)", 125.0),
+               (f"crystal Y1 {GRADE['B'][0]}", GRADE["B"][1]), (GRADE["B"][2], GRADE["B"][3])]
+# parts the board models report on their own (thermal_*.py "parts": hottest board cell under the part), with ratings
+PART_RATING = {"U4": ("MCU STM32F446RET7 (105 C ambient)", 105.0), "U5": ("FRAM CY15B064J-SXE (125 C)", 125.0),
+               "U21": ("5 V module LMZM23601V5 (board under it)", None), "U27": ("5 V module LMZM23601V5 (board under it)", None)}
+
+
+def board_limits(board="B"):
+    """A board's factory warn / critical from firmware/tools_custom/port_boards.py (board B: the FAN_B block, board A:
+    the FAN_A block)."""
+    py = open(os.path.join(ROOT, "firmware", "tools_custom", "port_boards.py"), encoding="utf-8").read()
+    m = re.search(rf"#define DEFAULT_TEMP_WARN (\d+)\s+// board {board}\b.*?\n#define DEFAULT_TEMP_CRIT (\d+)", py, re.S)
+    return (int(m.group(1)), int(m.group(2))) if m else None
 
 
 def board_b_limits():
-    """Board B's factory warn / critical from firmware/tools_custom/port_boards.py (the FAN_B block)."""
-    py = open(os.path.join(ROOT, "firmware", "tools_custom", "port_boards.py"), encoding="utf-8").read()
-    warn = int(re.search(r"#define DEFAULT_TEMP_WARN (\d+)", py).group(1))
-    crit = int(re.search(r"#define DEFAULT_TEMP_CRIT (\d+)", py).group(1))
-    return warn, crit
+    return board_limits("B")
 
 
 CRIT_C = float(board_b_limits()[1])
 # parts rated below the board limit (docs/parts-audit.md section 10 table): name, rating C, where it sits
-RATED = [("TI LMZM23601V5 5 V module (hw5v; TJ 125 C - 4 K own heat)", 121.0, "board")] + [
+RATED = [("TI LMZM23601V5 5 V module (hw5v; TJ 125 C less its own loss x PsiJB)", None, "board")] + [
          (f"board {k}: {name}", rating, "board") for k in ("A", "B") for name, rating in
          ((f"crystal Y1 {GRADE[k][0]}", GRADE[k][1]), (GRADE[k][2], GRADE[k][3]))] + [
-         ("Omron A6S DIP switches (input boards)", 70.0, "air"), ("MB85RC64TA FRAM", 105.0, "board"),
+         ("input-board solder jumpers JP1-JP16 (FR-4 laminate; the 70 C DIP switches until hwtemp)", 130.0, "air"),
+         ("CY15B064J-SXE FRAM (Automotive-E)", 125.0, "board"),
          ("STM32F446RET7 (ambient)", 105.0, "board"), ("MCP2562FD / MCP9808 / TLV9004 / TLV1117LV", 125.0, "board")]
 
 
@@ -99,11 +109,30 @@ def add(group, check, value, limit, verdict, note=""):
 
 def contacts_harness(case):
     """Heat into the lid air from the X1 / X2 contacts and the internal harness, W (docs/heat-analysis.md 3)."""
+    if case == "drive":      # s5 drive cycle RMS currents (thermal_board_b.drive_currents, same file and phase)
+        d = drive_currents()
+        a7 = [d["A1"].get(f"PF_OUT{i}", 0.0) for i in range(1, 9)] + [d["A2"].get(f"PF_OUT{i}", 0.0) for i in range(1, 9)]
+        b15 = [d["B"].get(f"PF_OUT{i}", 0.0) for i in range(5, 9)]
+        return sum(i * i * (2e-3 + 3.3e-3) for i in a7) + sum(i * i * (1e-3 + 0.78e-3) for i in b15)
     a7 = {"car": [2.0, 2.5, 0.5, 0.2, 5.0, 0.15, 5.0, 5.0, 0.2, 0.13, 0.2, 3.0, 0, 0, 0, 0],
           "feed150": [7.5 * 0.4] * 16, "feed150hi": [7.5 * 0.4] * 16, "feed150lo": [7.5 * 0.4] * 16, "rating": [7.5] * 16}[case]
     b15 = {"car": [8.1, 3.6, 6.0, 0], "feed150": [15.0 * 0.815] * 4, "feed150hi": [26.0 / 4] * 4, "feed150lo": [15.0] * 4,
            "rating": [15.0] * 4}[case]   # board B OUT5-8 (thermal_board_b.py case_currents)
     return sum(i * i * (2e-3 + 3.3e-3) for i in a7) + sum(i * i * (1e-3 + 0.78e-3) for i in b15)
+
+
+def drive_currents():
+    """thermal_board_b.drive_currents without pcbnew: RMS per output over the s5 coolant / fan phase."""
+    import csv
+    path = os.path.join(ROOT, "firmware", "sim", "data", "s5_board_power.csv")
+    with open(path, encoding="utf-8") as f:
+        rows = [r for r in csv.DictReader(ln for ln in f if not ln.startswith("#")) if r["phase"].startswith("coolant")]
+    out = {"A1": {}, "A2": {}, "B": {}}
+    for c in rows[0]:
+        if c.startswith("I") and c.endswith("_A") and c.count("_") == 3:
+            _, board, o, _ = c.split("_")
+            out[board][f"PF_{o}"] = math.sqrt(sum(float(r[c]) ** 2 for r in rows) / len(rows))
+    return out
 
 
 def run_board_b(air, cases):
@@ -117,10 +146,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--fans")
     ap.add_argument("--nofan")
+    ap.add_argument("--afans", help="tools/thermal_a.py --air fans JSON: board A's limits are checked too")
+    ap.add_argument("--anofan", help="tools/thermal_a.py --air nofan JSON")
     ap.add_argument("--cabin", type=float, default=60.0)
     ap.add_argument("--json")
     a = ap.parse_args()
-    cases = ["car", "feed150", "feed150hi", "feed150lo", "rating"]
+    cases = ["car", "drive", "feed150", "feed150hi", "feed150lo", "rating"]
     data = {}
     for air in ("fans", "nofan"):
         path = getattr(a, air) or run_board_b(air, cases)
@@ -130,6 +161,9 @@ def main():
             raise SystemExit(f"{path}: cases {notord} were not run at the ordered copper ({copper_order.text('B')}): "
                              "re-run tools/thermal_board_b.py without --outer-um / --inner-um")
     print(f"board B copper: {copper_order.text('B')} (ordered, tools/copper_order.py)")
+    lim5 = next((r["limit_5v_board"] for r in data["fans"].values() if "limit_5v_board" in r), None)
+    if lim5 is not None:
+        LIMIT_5V[0] = lim5
     for air in ("fans", "nofan"):
         for case in cases:
             r = data[air].get(case)
@@ -163,6 +197,7 @@ def main():
                 "limit while the laminate is over its limit: the firmware does not see it (see the transient row)")
             if case == "feed150":
                 for name, rating, where in RATED:
+                    rating = LIMIT_5V[0] if rating is None else rating
                     t = t_air if where == "air" else max(tb_a, sens)
                     v = "PASS" if t <= rating else ("WARN" if t <= rating + 10 else "FAIL")
                     add("Part ratings", f"{name} at {label}", f"local {t:.0f} C (" + ("lid air" if where == "air" else
@@ -199,6 +234,11 @@ def main():
             f"{2.3 * R_SYS['fans'] * C_SINK / 60:.0f} min", "information", "INFO", "a 30 s fan-curve or a short run "
             "never sees the steady numbers above")
     firmware_limits(data, a.cabin)
+    for tag, path_f, path_n in (("A", a.afans, a.anofan),):
+        if path_f and path_n:
+            dA = {air: {r["case"]: r for r in json.load(open(p))} for air, p in (("fans", path_f), ("nofan", path_n))}
+            part_map(tag, dA, a.cabin)
+    part_map("B", data, a.cabin)
     for r in RES:
         print(f"{r['verdict']:<5} [{r['group']}] {r['check']}: {r['value']} (limit {r['limit']})" + (f" - {r['note']}" if r['note'] else ""))
     cnt = {v: sum(r["verdict"] == v for r in RES) for v in ("PASS", "WARN", "FAIL", "INFO")}
@@ -245,6 +285,57 @@ def firmware_limits(data, cabin):
             f"{t:.0f} C", f"<= {rating:.0f} C", "PASS" if t <= rating else ("FAIL" if rating < 100 else "WARN"),
             "" if t <= rating else f"would need critical <= {rating - SENSOR_ERR:.0f} C, which trips at the car loads "
             f"({car[2]:.1f} C) unless the part is a higher grade" if car else "")
+
+
+def part_map(tag, data, cabin):
+    """Every reported part against U6 over every modelled case of one board: the critical limit each one needs, the
+    binding one, and the board's factory warn / critical (port_boards.py) against it (job hwtemp)."""
+    lim = board_limits(tag)
+    rows = []
+    for air in ("fans", "nofan"):
+        for r in data[air].values():
+            u6 = r.get("t_sensor_u6")
+            if u6 is None:
+                continue
+            offs = {"laminate": (r["laminate_max"] - u6, LAMINATE_C), "Tj": (r["tj_max"] - u6, TJ_C)}
+            for ref, p in r.get("parts", {}).items():
+                if ref in PART_RATING:
+                    name, rating = PART_RATING[ref]
+                    offs[name] = (p["t"] - u6, LIMIT_5V[0] if rating is None else rating)
+            rows.append((air, r["case"], u6, offs))
+    if not rows:
+        return
+    need = {}                                     # item -> (critical it allows, largest offset over U6)
+    for _, _, _, offs in rows:
+        for k, (d, rating) in offs.items():
+            allow = rating - d - SENSOR_ERR
+            prev = need.get(k, (float("inf"), float("-inf")))
+            need[k] = (min(prev[0], allow), max(prev[1], d))
+    bind = min(need, key=lambda k: need[k][0])
+    add(f"Board {tag} limits (part map)", "largest offset over U6 of every reported part (all modelled cases) and the "
+        "critical it allows (rating - offset - 1 C sensor error)",
+        "; ".join(f"{k} +{v[1]:.1f} K -> <= {v[0]:.1f} C" for k, v in need.items()), "information", "INFO",
+        f"binding: {bind}")
+    if lim is None:
+        add(f"Board {tag} limits (part map)", "factory warn / critical in port_boards.py", "none (stock 55 / 80)",
+            "board's own limits", "FAIL", "board has a thermal model now: set DEFAULT_TEMP_WARN / _CRIT for it")
+        return
+    warn, crit = lim
+    add(f"Board {tag} limits (part map)", f"factory critical {crit} C vs the binding part ({bind})",
+        f"critical {crit} C, allowed <= {need[bind][0]:.1f} C", f"<= {need[bind][0]:.1f} C",
+        "PASS" if crit <= need[bind][0] + 1e-9 else "FAIL")
+    cs = os.path.join(ROOT, "ui", "dingoConfig", "domain", "CustomPdm", "PdmThermal.cs")
+    if tag == "A" and os.path.exists(cs):      # board B: firmware_limits() checks its constant
+        ui = float(re.search(r"BoardALaminateOffsetK = ([0-9.]+)", open(cs, encoding="utf-8").read()).group(1))
+        lam = need["laminate"][1]
+        ok = round(lam, 1) <= ui <= round(lam, 1) + 1.0
+        add(f"Board {tag} limits (part map)", "UI hot-spot offset (PdmThermal.BoardALaminateOffsetK) vs the largest laminate "
+            "offset of this map", f"UI {ui:.1f} K, map {lam:.1f} K (UI sensor limit = hot spot - {math.ceil(ui + SENSOR_ERR)} K)",
+            "map <= UI <= map + 1 K", "PASS" if ok else "FAIL", "" if ok else "set the constant to the map value")
+    car = [x for x in rows if x[0] == "fans" and x[1] in ("car", "drive")]
+    for air, case, u6, _ in car:
+        add(f"Board {tag} limits (part map)", f"no warning in normal use: U6 at {case}, fans on, cabin {cabin:.0f} C, "
+            f"vs warn {warn} C", f"{u6 + cabin - 60.0:.1f} C", f"< {warn} C", "PASS" if u6 + cabin - 60.0 < warn else "FAIL")
 
 
 if __name__ == "__main__":

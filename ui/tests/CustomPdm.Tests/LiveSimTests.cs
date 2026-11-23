@@ -34,7 +34,7 @@ public class LiveSimTests(ITestOutputHelper output)
             .Select(s => (s.Data[2] << 8 | s.Data[1], (int)s.Data[3])).ToList();
         Assert.Equal(pc.Dev.Params.Select(p => (p.Index, p.SubIndex)), fw);
         var c = pc.Dev.CustomPdm!;
-        Assert.Equal((type == 15 ? 98 : 55, type == 15 ? 104 : 80, 6, board == "A2" ? 2 : 0, 5, 0),   // board B: its own limits (fwsafety)
+        Assert.Equal((98, 104, 6, board == "A2" ? 2 : 0, 5, 0),   // A and B: their own limits from their FEA maps (fwsafety, hwtemp)
             (c.TempWarn, c.TempCrit, c.TempCritHyst, c.CritExemptMask, c.TempCritSoonMargin, c.WakeInputMask));
         var differ = pc.Dev.Params.Where(p => p.IsModified).Select(p => p.Name).ToList();
         output.WriteLine($"{board}: {fw.Count} params; firmware factory values that differ from the PC defaults: {differ.Count}: {string.Join(", ", differ.Take(40))}");
@@ -83,8 +83,8 @@ public class LiveSimTests(ITestOutputHelper output)
 
         byte[] Last(int offset) => pc.Seen.Last(s => s.Id == baseId + offset).Data;
         int flags = 0;
-        // factory limits: A 55 / 80, B 98 / 104 (fwsafety): warn, critical soon (critical - 5), critical
-        foreach (var (temp, expectBit) in type == 15 ? new[] { (98.5, 1), (101.0, 2), (105.0, 4) } : new[] { (62.5, 1), (77.0, 2), (81.0, 4) })
+        // factory limits 98 / 104 on A and B (fwsafety, hwtemp): warn, critical soon (critical - 5), critical
+        foreach (var (temp, expectBit) in new[] { (98.5, 1), (101.0, 2), (105.0, 4) })
         {
             bus.Cmd($"TEMP {board} {temp} 41");
             pc.Run(1500);
