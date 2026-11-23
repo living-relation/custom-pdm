@@ -33,8 +33,8 @@ Pass / fail limits (printed with the result):
     also goes into the self-heating sheet.
 
 Assumptions (all printed): copper rho 1.72e-8 Ohm m at 20 C (x1.31 at 100 C); via / hole plating 20 um (same as
-docs/heat-analysis.md); copper thickness = the ORDERED copper of the board (tools/copper_order.py: A 35 / 17.5 um,
-B 35 / 35 um), not whatever the board file says; --outer-um / --inner-um with another value is a what-if run
+docs/heat-analysis.md); copper thickness = the ORDERED copper of the board (tools/copper_order.py: A and B
+35 / 35 um), not whatever the board file says; --outer-um / --inner-um with another value is a what-if run
 (labelled, exit code 2, "ordered": false in the JSON: never a verdict for the order); FR-4 k 0.3, copper k 390 W/mK.
 """
 import argparse

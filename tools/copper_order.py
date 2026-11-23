@@ -9,8 +9,9 @@ usage (repo root, any python 3; no KiCad needed):
 Decisions:
   board B   1 oz outer + 1 oz inner (35 / 35 um): Dan, 2026-11-22, c1 = a (docs/order-readiness.md 3.3: JLCPCB's
             default 0.5 oz inner gives 136-137 C laminate at the 150 A feed limit, limit 130 C; 1 oz inner 115-120 C).
-  board A   JLCPCB default 1 oz outer + 0.5 oz inner (35 / 17.5 um): nothing else was decided; tools/verify_copper.py
-            is run at this copper (docs/pcb-verification.md).
+  board A   1 oz outer + 1 oz inner (35 / 35 um): coordinator, 2026-11-22 (Dan delegated the copper recommendation):
+            at JLCPCB's default 0.5 oz inner tools/verify_copper.py reads an 11.9 K no-sink hot spot (limit 10 K),
+            at 1 oz inner 10.0 K; and one inner-copper setting for boards A and B is simpler on the order form.
   input     2 layers, 1 oz (35 um): JLCPCB default; the board carries no load current.
 Sources: JLCPCB "Copper Weight" help article (read 2026-11-22): FR-4 outer 1 oz (= 35 um) or 2 oz; inner 0.5 oz
 (default), 1 oz or 2 oz, https://jlcpcb.com/help/article/jlcpcb-copper-weight . 0.5 oz = 17.5 um is half of the 1 oz
@@ -29,8 +30,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UM_PER_OZ = 35.0
 # key: outer / inner copper weight in oz (inner None = 2-layer board), board file, fab folder, who decided
 ORDER = {
-    "A": dict(outer_oz=1.0, inner_oz=0.5, pcb="hardware/board-a/DingoPDM.kicad_pcb", fab="board-a",
-              why="kept at JLCPCB's default, 2026-11-22 (only board B was changed)"),
+    "A": dict(outer_oz=1.0, inner_oz=1.0, pcb="hardware/board-a/DingoPDM.kicad_pcb", fab="board-a",
+              why="coordinator, 2026-11-22 (copper screen 11.9 K at 0.5 oz inner; same setting as board B)"),
     "B": dict(outer_oz=1.0, inner_oz=1.0, pcb="hardware/board-b-max/dingoPDM-Max.kicad_pcb", fab="board-b",
               why="Dan, 2026-11-22, c1 = a (docs/order-readiness.md 3.3)"),
     "IN": dict(outer_oz=1.0, inner_oz=None, pcb="hardware/input-board/input-board.kicad_pcb", fab="input-board",
