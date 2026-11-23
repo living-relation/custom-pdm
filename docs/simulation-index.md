@@ -28,7 +28,7 @@ Nothing on the boards was changed. Counts are PASS / WARN / FAIL (INFO not count
 | verify_cpl | every placement on its pads (JLC footprint overlay) | EasyEDA footprints vs our pads | 2026-11-23 | RESULT PASS (A 129, B 194 with 1 "check" Y1, IN 48) | `tools/verify_cpl.py` |
 | verify_layout | crystal, I2C rise time, decoupling distance, mask dams, USB / CAN length | KiCad 9 pcbnew geometry | 2026-11-23 | RESULT PASS, 8 WARN | `tools/verify_layout.py` |
 | verify_copper | +12 V feed drop and copper self-heating at every output at rating (184 A), no sink | finite-difference current flow on the real copper | 2026-11-23 | RESULT FAIL (2) | `tools/verify_copper.py` |
-| verify_thermal_box | whole box: sink, lid air, board B FEA, fans on / failed, part ratings, board B limits | runs `thermal_board_b.py` (finite volume, 0.3 mm grid) + box nodes | 2026-11-23 | 27 / 4 / 5 | `tools/verify_thermal_box.py`, `tools/thermal_board_b.py` |
+| verify_thermal_box | whole box: sink, lid air, board B FEA, fans on / failed, part ratings, board B limits | runs `thermal_board_b.py` (finite volume, 0.3 mm grid) + box nodes | 2026-11-23 | 27 / 4 / 5 on 19479b5; 20 / 9 / 7 on main bc32eca (new current-dependent model, job thermal) | `tools/verify_thermal_box.py`, `tools/thermal_board_b.py` |
 | heat-sim (enclosure) | the enclosure and sink in air (R_sys fans on / off) | Gmsh + Elmer FEA | before 2026-11-20 (presim uses its R_sys); not run in this job | R_sys 0.47 / 0.98 K/W | `sim/heat/` |
 | KiCad DRC / ERC / parity | board rules, schematic vs PCB | kicad-cli | 2026-11-22 (finalcheck) | known stock-pattern errors only | `docs/order-readiness.md` section 3 |
 | gen_fab_jlcpcb hole check + JLC DRC | fab outputs, co-located holes, JLC limits | KiCad 9 python | 2026-11-22 (finalcheck) | PASS | `tools/gen_fab_jlcpcb.py` |
@@ -37,7 +37,7 @@ Nothing on the boards was changed. Counts are PASS / WARN / FAIL (INFO not count
 | DbcGen --check | DBC files vs the firmware messages | dotnet tool | not run in this job (no firmware message change) | - | `ui/tools/DbcGen` |
 
 Last known counts before this job (docs/order-readiness.md): power 3 W 2 F, switching 7 W 4 F, thermal_box 4 W 5 F,
-dfm 7 W, tolerance 5 W: all the same today.
+dfm 7 W, tolerance 5 W: the same today on 19479b5; on main bc32eca (merged here) verify_thermal_box gives 9 W 7 F with the new heat model.
 
 ## 2. Part 1: the drive cycle (s5)
 
@@ -116,7 +116,10 @@ frames, STOP mode itself (a wake is modelled as the MCU reset that follows it), 
 ## 3. Part 2: every check re-run, and every FAIL / WARN
 
 Firmware and UI on `main` 19479b5 (host sim .so built from an LF `git archive`): s0 76 of 76, s1 91 of 91, s3 111 of
-111, s4 10 of 10, s5 35 of 35 + 1 XFAIL. Renode bench and UI tests: RESULTS_RENODE_UI.
+111, s4 10 of 10, s5 35 of 35 + 1 XFAIL. Renode bench 39 of 39 (binaries built from main 63053b9, own scratch HOME;
+no firmware change between that and bc32eca). UI tests 467 of 467 with the live sim on this branch merged with main
+bc32eca (first run before the merge: 458 of 459, the wall-clock test `WriteAllSpeedTests` A1 8.8 s vs 8.5 s while
+Renode and s5 ran beside it; 4 of 4 alone). s5 re-run on the merged branch: same result.
 
 Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or accepted disposition found):
 
@@ -147,7 +150,9 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | thermal_box: 150 A on B, fans failed (3 splits) | FAIL x 3 | laminate 131.7-133.1 C over 130 C | ADR-2026-11-20-boardb-feed + fwsafety (c): board B cuts at 104 C first (transient PASS) |
 | thermal_box: FRAM / MCU at 150 A, fans failed | FAIL x 2 | 121 C local, over the 105 C rating | same: the 104 C cut comes first |
 | thermal_box: FRAM / MCU at 150 A, fans on | WARN x 2 | 106 C local vs 105 C | ADR-2026-11-20-fwsafety (c) (binding limit) |
-| thermal_box: input-board DIP switches at 150 A | WARN x 2 | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | **NOT COVERED** (parts-audit 10 lists options, no decision) |
+| thermal_box: input-board DIP switches at 150 A | WARN x 2 (main bc32eca: WARN 75 C + FAIL 81 C) | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | **NOT COVERED** (parts-audit 10 lists options, no decision) |
+| thermal_box (main bc32eca): UI hot-spot offset | FAIL | the new heat map's largest laminate offset is 20.0 K, the UI constant `PdmThermal.BoardBLaminateOffsetK` is 19.6 K | **NOT COVERED** (new with the merged thermal model: set the constant to 20.0 K and re-run the UI thermal tests) |
+| thermal_box (main bc32eca): 150 A fans failed, part ratings | FAIL x 5, WARN x 6 | the new model runs hotter with the fans failed (board B sensor 128-131 C, laminate 139-142 C; 5 V module, crystals, X7R caps 128 C) | as above: board B cuts at its sensor's 104 C first (fwsafety c, boardb-feed); re-check the transient with the new model |
 | spice: ISO 7637-2 pulse 1 | WARN x 2 | -29 to -32 V on +12 V | accept list (BACKLOG hwfix) |
 | spice: 8 inputs at 14.4 V into +3V3 | WARN | 27 mA pushed into +3V3 | accept list (pcb-verification Left 4) |
 | spice: analog 5 V at 125 C | WARN | reads 3 % low | bench list; analog via ECU (Dan 2026-11-08) |
