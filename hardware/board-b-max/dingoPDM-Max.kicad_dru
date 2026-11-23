@@ -96,3 +96,55 @@
 (rule "Pad to Track clearance"
 	(constraint clearance (min 0.2mm))
 	(condition "A.Type == 'pad' && A.isPlated() && B.Type == 'track'"))
+
+# >>> custom-pdm tools/drc_erc_waivers.py (generated; edit the tool, not this block)
+# USB-C J2 (GCT USB4085 maker land pattern, stock dingoPDM): 0.85 mm pin pitch leaves 0.15 mm pad gap and
+# 0.15 mm ring. JLCPCB limits (min ring 0.13 mm, min gap 0.1 mm) pass: tools/gen_fab_jlcpcb.py JLC-limit DRC.
+(rule "custom-pdm: USB-C J2 maker land pattern"
+	(condition "A.memberOfFootprint('J2') && B.memberOfFootprint('J2')")
+	(constraint clearance (min 0.15mm))
+	(constraint hole_clearance (min 0.1mm)))
+(rule "custom-pdm: USB-C J2 maker ring"
+	(condition "A.memberOfFootprint('J2')")
+	(constraint annular_width (min 0.15mm)))
+# The J2 silk outline is drawn to the board edge (the receptacle sits on the edge); the fab clips it.
+(rule "custom-pdm: USB-C J2 silk at board edge (cosmetic, clipped by the fab)"
+	(severity exclusion)
+	(condition "(A.memberOfFootprint('J2') || B.memberOfFootprint('J2')) && (A.Layer == 'Edge.Cuts' || B.Layer == 'Edge.Cuts')")
+	(constraint silk_clearance (min 0mm)))
+# Courtyard overlaps, no copper or body clash (DRC copper clearance is clean for every pair):
+#  U12 (OKI-78SR, DNP alternate 5 V footprint, kept from stock) vs the fitted LMZM23601V5 module + caps (hw5v);
+#  J1 / H1 (12 V terminal beside its mounting hole), JP1 / U2: stock dingoPDM patterns;
+#  board B T1-T4 terminals vs U8-U11 and T1/T3, T2/T4: courtyard margins only, bodies 2.3 mm apart (docs/pcb-verification.md).
+(rule "custom-pdm: courtyard overlap without body or copper clash"
+	(severity exclusion)
+	(condition "(A.Reference == 'U12' && B.Reference == 'U27') || (A.Reference == 'U27' && B.Reference == 'U12') || (A.Reference == 'U12' && B.Reference == 'C66') || (A.Reference == 'C66' && B.Reference == 'U12') || (A.Reference == 'U12' && B.Reference == 'C67') || (A.Reference == 'C67' && B.Reference == 'U12') || (A.Reference == 'U12' && B.Reference == 'C68') || (A.Reference == 'C68' && B.Reference == 'U12') || (A.Reference == 'U12' && B.Reference == 'C4') || (A.Reference == 'C4' && B.Reference == 'U12') || (A.Reference == 'J1' && B.Reference == 'H1') || (A.Reference == 'H1' && B.Reference == 'J1') || (A.Reference == 'JP1' && B.Reference == 'U2') || (A.Reference == 'U2' && B.Reference == 'JP1') || (A.Reference == 'T1' && B.Reference == 'U8') || (A.Reference == 'U8' && B.Reference == 'T1') || (A.Reference == 'T2' && B.Reference == 'U9') || (A.Reference == 'U9' && B.Reference == 'T2') || (A.Reference == 'U10' && B.Reference == 'T3') || (A.Reference == 'T3' && B.Reference == 'U10') || (A.Reference == 'U11' && B.Reference == 'T4') || (A.Reference == 'T4' && B.Reference == 'U11') || (A.Reference == 'T1' && B.Reference == 'T3') || (A.Reference == 'T3' && B.Reference == 'T1') || (A.Reference == 'T2' && B.Reference == 'T4') || (A.Reference == 'T4' && B.Reference == 'T2')")
+	(constraint courtyard_clearance (min 0mm)))
+# Silk lines / text of Y1, SW1, R38 run over pad openings: the fab removes silk from the mask openings
+# (cosmetic: the line is printed shorter; no solderability effect).
+(rule "custom-pdm: silk clipped by solder mask (cosmetic)"
+	(severity exclusion)
+	(condition "(A.memberOfFootprint('Y1') || B.memberOfFootprint('Y1') || A.memberOfFootprint('SW1') || B.memberOfFootprint('SW1') || A.memberOfFootprint('R38') || B.memberOfFootprint('R38')) && (A.Type == 'pad' || B.Type == 'pad')")
+	(constraint silk_clearance (min 0mm)))
+# The stock dingoPDM-Max rules above ask 8 mil (0.2032 mm) for tracks and spacing; the stock and our routing use
+# 0.2 mm. JLCPCB 4-layer limit is 0.09 mm / 0.09 mm (tools/gen_fab_jlcpcb.py JLC-limit DRC: no violations).
+# Zones keep the stock 8 mil (the rule skips them), so a refill gives the same copper as before.
+(rule "custom-pdm: 0.2 mm design minimum track width"
+	(condition "A.Type == 'track'")
+	(constraint track_width (min 0.2mm)))
+(rule "custom-pdm: 0.2 mm design minimum track spacing"
+	(condition "A.Type == 'track' && B.Type != 'zone'")
+	(constraint clearance (min 0.2mm)))
+# U4 (STM32 LQFP-64, 0.5 mm pitch): the GND track that leaves VSS pin 63 passes 0.11-0.17 mm from pins 62 / 64,
+# as in stock dingoPDM-Max (JLCPCB min 0.09 mm).
+(rule "custom-pdm: U4 LQFP VSS fan-out"
+	(condition "A.Type == 'track' && A.NetName == 'GND' && B.memberOfFootprint('U4')")
+	(constraint clearance (min 0.1mm)))
+# SW1 'BOOT' value text 1.0 mm / 0.15 mm vs the stock board minimum 1.016 / 0.1524 mm (cosmetic label;
+# JLCPCB prints legend from 0.8 mm high).
+(rule "custom-pdm: SW1 BOOT label size (cosmetic)"
+	(severity exclusion)
+	(condition "A.memberOfFootprint('SW1')")
+	(constraint text_height (min 1.016mm))
+	(constraint text_thickness (min 0.1524mm)))
+# <<< custom-pdm tools/drc_erc_waivers.py

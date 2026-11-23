@@ -4,6 +4,10 @@ Job pcbverify, 2026-11-20 (DECISIONS 2026-11-17: automated checks replace Dan's 
 produced by a tool run; the command is in the Evidence column and in `automation.yml` (`pcb-verify-*`).
 Results, not decisions: the choices this asks for are listed under "Left" and go to the coordinator.
 
+Update 2026-11-23 (job drcclean): every KiCad DRC / ERC / parity item below is now fixed or waived with a reason by
+`tools/drc_erc_waivers.py` (last build stage): DRC 0, parity 0, ERC errors 0 on all three boards; groups and reasons in
+`docs/drc-erc-review.md`. The DRC / ERC / parity counts in the tables below are the older raw counts.
+
 ## For Dan (plain English)
 
 1. **Board A (x2) and the input board: OK to order.** **Board B: its +12 V copper is fixed in layout (hwfix, 2026-11-20)**: more copper on two inner layers and 135 extra vias; in a heat model with the heat sink, the gap pad and the lid it now stays at 123 C or less at the 150 A feed limit with the fans on (was 165 C; limit 130 C). Still above the limit only with every output at full rating at once (184 A, more than the feed allows) or at 150 A with the fans off: the firmware's 150 A cap and thermal limit cover those.

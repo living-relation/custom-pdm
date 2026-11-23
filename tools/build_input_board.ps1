@@ -24,5 +24,7 @@ try {
     & $kc10 sch erc -o "$Out\ib-erc.rpt" input-board.kicad_sch | Select-Object -Last 1
     & $kc10 pcb drc --schematic-parity -o "$Out\ib-drc.rpt" input-board.kicad_pcb | Select-Object -Last 2
     Set-Content -Path input-board.kicad_pro -Value $pro -NoNewline -Encoding utf8
+    python "$repo\tools\drc_erc_waivers.py" IN                    # drcclean 2026-11-23: DRC / ERC review stage (last; docs/drc-erc-review.md)
+    if ($LASTEXITCODE) { throw 'drc_erc_waivers.py IN failed' }
 } finally { Pop-Location }
 Select-String -Path "$d\input-board.kicad_pcb" -Pattern '^\s*\(version' | Select-Object -First 1 | ForEach-Object { 'pcb format: ' + $_.Line.Trim() }

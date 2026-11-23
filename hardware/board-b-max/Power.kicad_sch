@@ -6308,7 +6308,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "~"
 			(at 138.43 40.64 0)
 			(hide yes)
 			(show_name no)
@@ -6590,7 +6590,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "~"
 			(at 199.39 37.465 0)
 			(hide yes)
 			(show_name no)
@@ -6671,7 +6671,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "~"
 			(at 133.35 40.64 0)
 			(hide yes)
 			(show_name no)
