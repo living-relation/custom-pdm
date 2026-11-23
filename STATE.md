@@ -1,8 +1,8 @@
 # STATE (max 30 lines, overwrite only)
 Repo: custom-pdm
 Branch: main
-Last_Verified_SHA: f3eb0c8
-Updated: 2026-11-23 -- driftrepair2
+Last_Verified_SHA: e9bfe34
+Updated: 2026-11-23 -- claude-cloud-orchestrator
 
 ## Current Goal
 - Objective: this chat coordinates all work: PDM ready to order at JLCPCB, firmware feature parity, enclosure released, one-PDM PC tool (open, affordable, fully featured PDM)
@@ -13,13 +13,12 @@ Updated: 2026-11-23 -- driftrepair2
 - Detail: none
 
 ## Next Single Step
-- [NEXT] HOLD the order (c7 = a, ADR-2026-11-23-order-gates): decide only after the Fusion re-check + heat cross-check, the proof (confidence) report, the assembly-options report and the harness cost study (docs/order-readiness.md ON HOLD list)
-- [NEXT] Open question for Dan, c10 Restart the 5 stopped jobs? a) restart all 5 with the new instructions (rec) · b) restart only the proof report, assembly options and cost study · c) leave them stopped
+- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$760-840 (rec) / b JLCPCB set ~$1,265-1,420 / c board B test only ~$280-460 / d no build, relays) and c11 (Spark pitch as a shareable doc: a yes (rec) / b markdown only); then lock the order files for that route
+- [NEXT] Waiting on Dan: c7 go / no-go (a Spark build ~$760-840 (rec) / b JLCPCB set ~$1,265-1,420 / c board B test only ~$280-460 / d no build, relays) and c11 (Spark pitch as a shareable doc: a yes (rec) / b markdown only); then lock the order files for that route
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
 - Backlog: BACKLOG.md
-- Latest_ADR: ADR-2026-11-23-order-gates
+- Latest_ADR: ADR-2026-11-23-proof-and-assembly
 - Last_Cleanup: 2026-11-23 @ 19479b5
-- Kept_Branches: docs/assembly-options, docs/confidence-report, chore/fusion-recheck-thermal, docs/harness-cost-breakeven (stopped jobs, Dan 09:04 interrupt, 2026-11-23)
-- Question_Counter: c10
+- Question_Counter: c11
