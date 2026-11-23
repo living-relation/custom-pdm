@@ -489,9 +489,21 @@ automations:
               tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru]
     trigger: manual                 # after a board change; Fusion steps (upload, ULPs, DRC / ERC) in docs/fusion-electronics-check.md "How to re-run"
     reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
-    writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-*.png"]   # copied in by hand from the Fusion ULP outputs
+    writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-board-*.png", "docs/diagrams/fusion-input-board.png"]   # copied in by hand from the Fusion ULP outputs
     committed: yes
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/fusion_check/kicad_ref.py ref.json && python tools/fusion_check/compare2.py ref.json A <brdinfo out>'
+    owner: claude
+  - id: fusion-thermal-check
+    script: tools/fusion_thermal/plot_compare.py
+    helpers: [tools/fusion_thermal/export_board.py, tools/fusion_thermal/build_fusion_board.py, tools/fusion_thermal/sim_select.py,
+              tools/fusion_thermal/probe_points.py, tools/fusion_thermal/smeared_check.py]
+    trigger: manual                 # Fusion steps (build, loads, cloud solve, probes) in docs/fusion-thermal-check.md "How to re-run"
+    reads: [docs/fusion-check/thermal-compare.json, tools/thermal_a.py, tools/thermal_board_b.py, tools/thermal_input.py]
+    writes: ["docs/diagrams/fusion-thermal-*.png"]   # thermal-compare.json probe values typed in by hand from Fusion
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: 'python tools/fusion_thermal/plot_compare.py'
     owner: claude
