@@ -20,6 +20,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: powershell -File tools/build_board_a.ps1
+    slow: true
     check_cmd: kicad-cli pcb drc --schematic-parity hardware/board-a/DingoPDM.kicad_pcb
     owner: claude
   - id: input-board-build
@@ -33,6 +34,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: powershell -File tools/build_input_board.ps1
+    slow: true
     check_cmd: kicad-cli pcb drc --schematic-parity hardware/input-board/input-board.kicad_pcb
     owner: claude
   - id: board-b-build
@@ -49,6 +51,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: powershell -File tools/build_board_b.ps1
+    slow: true
     check_cmd: python tools/check_board_b.py <netlist>
     owner: claude
   - id: fab-jlcpcb
@@ -60,6 +63,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/gen_fab_jlcpcb.py [A] [B] [IN]'   # KiCad 9 python + kicad-cli 10
+    slow: true
     check_cmd: git diff --exit-code hardware/fab   # a re-run on unchanged boards writes identical files
     owner: claude
   - id: connector-maps
@@ -97,6 +101,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python tools/drc_erc_waivers.py A|B|IN   # kicad-cli 10; docs/drc-erc-review.md
+    slow: true
     check_cmd: python tools/drc_erc_waivers.py A --check   # same for B, IN: exit 1 on an unwaived DRC / ERC item or a file that would change
     owner: claude
   - id: pcb-info
@@ -118,6 +123,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python tools/gen_parts_audit_csv.py [--offline]   # uses KiCad 10 kicad-cli
+    slow: true
     owner: claude
   - id: firmware-port
     script: firmware/tools_custom/port_boards.py
@@ -151,6 +157,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --out /tmp/s5   # after firmware/sim/build.sh x 3; 34 of 34; --mutants: 16 of 16 RED
+    slow: true
     owner: claude
   - id: firmware-car-cycle
     script: firmware/sim/s5_car_cycle.py
@@ -162,6 +169,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python3 firmware/sim/s5_car_cycle.py /tmp/simout --out /tmp/s5car   # after firmware/sim/build.sh x 3; 32 of 32; --mutants: 13 of 13 RED
+    slow: true
     owner: claude
   - id: starter-params
     script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs
@@ -172,6 +180,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: $env:CUSTOMPDM_WRITE_STARTER_PARAMS='1'; dotnet test ui\tests\CustomPdm.Tests --filter StarterParamsExportTests   # without the variable it only checks the file
+    slow: true
     owner: claude
   - id: renode-sandbox
     script: firmware/sim/renode/install_wsl.sh
@@ -194,6 +203,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: dotnet run --project ui/tools/DbcGen
+    slow: true
     check_cmd: dotnet run --project ui/tools/DbcGen -- --check   # also ui/tests DbcExportTests.RepoFilesEqualGenerator
     owner: claude
   - id: car-can-dummy
@@ -206,6 +216,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: dotnet run --project ui/tools/DbcGen   # same run as dbc-gen; exits 1 on an ID clash in the dummy table
+    slow: true
     check_cmd: dotnet run --project ui/tools/DbcGen -- --check   # also ui/tests CarCanDummyTests, LinkDummyTests, BusLoadDummyTests
     owner: claude
   - id: st185-car-config
@@ -218,6 +229,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: powershell -Command "$env:CUSTOMPDM_WRITE_CAR_CONFIG='1'; dotnet test ui\tests\CustomPdm.Tests --filter St185CarTests"
+    slow: true
     check_cmd: dotnet test ui\tests\CustomPdm.Tests --filter St185CarTests   # TheCarFileIsWhatTheMapBuilds, TheDocTableIsTheMap
     owner: claude
   - id: ui-launcher
@@ -290,6 +302,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: wsl -e bash -c "bash enclosure/v2c/src/run.sh render_v2c.py F1 iso front"   # views as args
+    slow: true
     owner: claude
   - id: heat-sim
     script: sim/heat/run_cases.py
@@ -301,6 +314,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: wsl -e bash -c "export HEAT_GEOM=revF; python3 -I sim/heat/mesh_heat.py ~/cad-parts/custom-pdm-thermal3/runs/m2 0.6 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/run_cases.py ~/cad-parts/custom-pdm-thermal3/runs/m2 && ~/.venvs/handbuilt-cad/bin/python -I sim/heat/report_revf.py ~/cad-parts/custom-pdm-thermal3/runs/m2 docs/diagrams"
+    slow: true
     owner: claude
   - id: heat-sim-loads
     script: sim/heat/make_loads.py
@@ -311,6 +325,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: python sim/heat/make_loads.py <thermal_a fans JSON> <thermal_board_b fans JSON (--case feed150 car rating)>
+    slow: true
     owner: claude
   - id: pcb-thermal-board-a
     script: tools/thermal_a.py
@@ -322,6 +337,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_a.py [--air fans|nofan] [--plots docs/diagrams]'
+    slow: true
     owner: claude
   - id: pcb-thermal-input-board
     script: tools/thermal_input.py
@@ -332,6 +348,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_input.py [--air 60] [--plots docs/diagrams]'
+    slow: true
     owner: claude
   - id: pcb-thermal-board-b
     script: tools/thermal_board_b.py
@@ -342,6 +359,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/thermal_board_b.py [--case feed150 feed150hi feed150lo car drive rating] [--res 0.3] [--plots docs/diagrams]'   # needs scipy + matplotlib
+    slow: true
   - id: copper-order
     script: tools/copper_order.py
     trigger: manual                 # after any change to the ordered copper, a board stackup or the fab notes
@@ -362,6 +380,7 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/verify_copper.py A B [--plots docs/diagrams]'   # copper = the ordered copper (tools/copper_order.py); --outer-um / --inner-um = what-if, exit 2;   # needs scipy (pip install --user scipy); plots need matplotlib
+    slow: true
     owner: claude
   - id: pcb-verify-spice
     script: tools/verify_spice.py
@@ -494,4 +513,5 @@ automations:
     auto_commit: false
     enabled: true
     run_cmd: '"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/fusion_check/kicad_ref.py ref.json && python tools/fusion_check/compare2.py ref.json A <brdinfo out>'
+    slow: true
     owner: claude
