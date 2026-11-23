@@ -5,6 +5,34 @@ schematic waivers / IDs). Fusion 2706.1.17 (trial, Ultimate, ends 2026-12-01). E
 the scripts are in `tools/fusion_check/` (registered in `automation.yml` as `fusion-electronics-check`), the raw Fusion
 reports in `docs/fusion-check/`.
 
+## Re-check after PR #142 / #148 (job fusion2, 2026-11-23)
+
+Boards changed since the first check: A (PR #142 op-amp ties, #148 FRAM U5), B (#148 FRAM U5), input board (#148 DIP
+switches -> solder jumpers JP1-JP16, re-routed). Hardware on main a422adf = the files imported (SHA-256 equal). Re-imported
+to Fusion folder `electronics-2026-11-23b` (board-A / board-B / input-board, v1 each; the 2026-11-23 folder untouched).
+
+| Item (KiCad / Fusion) | Board A | Board B | Input board |
+|---|---|---|---|
+| Parts | 145 / 145 | 211 / 211 | 64 / 64 (was 50: 2 DIP switches -> 16 jumpers) |
+| Nets with 2+ pads (split / merged / pins missing) | 116 / 116 (0 / 0 / 0; was 113: the 3 op-amp ties) | 139 / 139 (0 / 0 / 0) | 36 / 36 (0 / 0 / 0) |
+| Pads | 528 / 517 (same 11 paste-only openings) | 798 / 755 (same 43) | 159 / 159 |
+| Vias | 328 / 328 (was 325) | 678 / 678 | 117 / 117 (was 136) |
+| Copper layers, outline | 4 / 4, 72.39 x 95.25 mm | 4 / 4, 111.39 x 95.25 mm | 2 / 2, 66.0 x 64.0 mm |
+
+Fusion DRC (JLC rules) and ERC, what changed against section 3 / 4 (raw lists `docs/fusion-check/drc-*.txt`, `erc-*.txt`):
+
+| Change | Board | Class | Why |
+|---|---|---|---|
+| ERC "uninvoked op-amp gates with unconnected inputs" U7 A, U12 A / B: 6 -> 0 | A | real defect fixed | PR #142 ties them as followers (ADR-2026-11-23-tlv-unused). |
+| Copper clearance 55 -> 59 (new at U12 pins 2-5 and U7 pin 3) | A | rule artefact | New GND tie vias / tracks; KiCad gap 0.205-0.255 mm (> class 0.2 mm, > JLC 0.09 mm), Fusion reads the TSSOP pads tighter. |
+| Air wires 8 -> 11 (U7 pins 11-12, U12 pins 10-12) | A | import artefact | The tie track runs across the adjacent GND pin; KiCad: 0 unconnected, parity 0. |
+| Overlap 50 -> 192, copper clearance 0 -> 69, all at JP1-JP16 (+ same-net vias in pads) | IN | import artefact | KiCad `SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm` custom-shape pads become several overlapping Fusion pads (as JP1 / JP3 on A and B). Real pad-to-pad gap 0.305 mm (KiCad shapes), JLC 2-layer 0.10 mm; KiCad DRC 0. |
+| ERC input board: 64 info items only (FOOTPRINT not found, sync off) | IN | import artefact | as section 4 |
+| Board B | B | unchanged | Same counts and items as section 3 / 4 (U5 is a part swap in the same footprint). |
+
+**Real defects from the re-check: none new; the one known (floating op-amp inputs) is gone.** Wire-stub warnings no longer
+appear in this Fusion build's DRC output. Fusion heat cross-check: `docs/fusion-thermal-check.md` (it replaces section 5).
+
 ## For Dan (plain English)
 
 1. **All three boards came into Fusion whole.** Same parts, same connections, same 4 / 4 / 2 copper layers, same outline.
@@ -15,8 +43,8 @@ reports in `docs/fusion-check/`.
    project settings, or a side effect of the translation (Fusion re-pours the copper fills and reads track joins its own
    way). The one real item, board A's 3 unused op-amp channels with floating inputs, was already found by KiCad and the
    drcclean job; its fix is on branch `fix/tlv-unused` (board A needs this check re-run after it merges).
-3. **Fusion heat study: not run.** See section 5 (it cannot put the copper's current heating on the board, so it would
-   not check what the Elmer / `thermal_board_b.py` models check).
+3. **Fusion heat study: run later by job fusion2** with the copper heating lumped in as extra heat sources:
+   `docs/fusion-thermal-check.md`.
 
 ![board A in Fusion](diagrams/fusion-board-a.png)
 
@@ -99,7 +127,7 @@ Totals: A 221, B 614, input board 58 (raw lists in `docs/fusion-check/drc-*.txt`
 | Only input pins / one pin on MCU_SWO_UNUSED | 2 | 0 | 0 | intentional (drcclean group 7) |
 | **Uninvoked op-amp gates with unconnected inputs: U7 A, U12 A and B** | 6 | 0 | 0 | **real (small, known)**: 3 unused TLV9004 channels on board A float; KiCad `missing_unit` shows the same; fix on `fix/tlv-unused` |
 
-## 5. Fusion thermal cross-check: not run
+## 5. Fusion thermal cross-check: not run here (superseded: run by job fusion2, `docs/fusion-thermal-check.md`)
 
 - Licence (Fusion MCP `licensing`, 2026-11-23): trial, Simulation extension active until 2026-12-01, no Flex tokens.
   Autodesk: Fusion solves Thermal and Electronics Cooling studies only in the cloud; without the Simulation Extension they

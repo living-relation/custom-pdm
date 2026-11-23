@@ -43,9 +43,6 @@
 21|4|19|-25.275|191.897|Air Wire|||21,19,7381718371837381
 21|4|19|20.874|178.478|Air Wire|||21,19,a900ab022b022900
 21|4|19|15.795|162.261|Air Wire|||21,19,cc49ce4bce4bcc49
-23|1|1|-19.304|189.611|Wire Stub|||23,1,63b923f9208760c7
-23|1|1|5.639|157.053|Wire Stub|||23,1,d1d693169372d1b2
-23|1|1|6.147|157.006|Wire Stub|||23,1,d83ebafebaf1d831
 3|2|1|-6.540|181.292|Copper Width|||3,1,a6abe4ef2a50a573
 3|2|1|-7.124|181.876|Copper Width|||3,1,41810c403f7ff9bb
 3|2|1|-7.136|182.904|Copper Width|||3,1,c974b548ba29c615
@@ -59,9 +56,6 @@
 3|2|1|11.534|183.153|Copper Width|||3,1,01657b597bb6018a
 3|2|1|12.010|181.604|Copper Width|||3,1,ebbce95e3421a454
 3|2|303|15.773|181.204|Copper Width|||3,303,cf73cb30f94cf70b
-23|1|1|8.853|195.872|Wire Stub|||23,1,0839106bc2915999
-23|1|1|9.295|195.872|Wire Stub|||23,1,fa1a404883eeeae5
-23|1|1|-9.063|220.569|Wire Stub|||23,1,7c660803097b7a7d
 3|2|1|10.587|226.083|Copper Width|||3,1,418641c7bd3bbdfa
 3|2|1|9.998|224.619|Copper Width|||3,1,37948a688a893775
 3|2|1|9.246|226.593|Copper Width|||3,1,c07cc0bffc43fd82
@@ -73,12 +67,10 @@
 3|2|1|-7.962|190.635|Copper Width|||3,1,49454807353bb25b
 3|2|1|-8.686|192.047|Copper Width|||3,1,326d89918a76318a
 1|2|20|12.907|157.226|Drill Size|||1,20,7b89e1fde0987aec
-23|1|1|17.514|157.226|Wire Stub|||23,1,9e43ec43ec669e66
 3|2|1|9.001|174.768|Copper Width|||3,1,ac6fb44fe9b38c8d
 3|2|1|7.874|181.598|Copper Width|||3,1,f50fc9f3c94df5b1
 3|2|1|7.493|187.683|Copper Width|||3,1,8fd30cf1108c6159
 3|2|1|10.128|172.455|Copper Width|||3,1,2e5ff3a3ec63319f
-23|1|1|46.237|165.008|Wire Stub|||23,1,0a280dceedf3542f
 3|2|1|-2.223|179.959|Copper Width|||3,1,b4292855281ab466
 3|2|1|9.128|172.574|Copper Width|||3,1,8bc1b63db6fc8b00
 3|2|1|-8.636|181.102|Copper Width|||3,1,c6939affc2ded5fd
@@ -91,18 +83,19 @@
 3|2|1|-11.049|187.833|Copper Width|||3,1,c7f0c2301c4eef8c
 3|2|1|-9.323|181.027|Copper Width|||3,1,b5d7f654886f88b3
 3|2|1|-10.795|185.039|Copper Width|||3,1,92f0ae8ca88e94f2
-23|1|1|1.208|169.967|Wire Stub|||23,1,98ffd8e36fe39eaf
-23|1|1|0.712|168.522|Wire Stub|||23,1,da99d9b8d37e171d
 21|4|19|-23.110|168.230|Air Wire|||21,19,50e752e552e550e7
 21|4|19|-20.649|168.443|Air Wire|||21,19,dfe4dde1dde1dfe4
+21|4|19|-24.100|168.443|Air Wire|||21,19,7d177f157f157d17
+21|4|19|-22.120|168.443|Air Wire|||21,19,7f177d157d157f17
 21|4|19|-26.350|163.886|Air Wire|||21,19,cd6cb36d4f6f4e90
+21|4|19|-25.200|163.378|Air Wire|||21,19,fb8cf98ef98efb8c
 21|4|19|0.257|233.011|Air Wire|||21,19,9e4c604c9c4e9c30
 21|4|19|-27.684|155.829|Air Wire|||21,19,2d8e2f8c2f0c2d0e
+21|4|19|-27.369|154.056|Air Wire|||21,19,3bddc7dfc7a1c55c
 3|2|1|-9.303|189.944|Copper Width|||3,1,af0fd04e6d71df13
 3|2|1|-9.336|191.356|Copper Width|||3,1,8eae325232b68e4a
+21|4|19|51.898|168.263|Air Wire|||21,19,fea0fca1fca1fea0
 21|4|19|39.919|175.817|Air Wire|||21,19,e97beb79eb79e97b
-23|1|1|43.392|162.562|Wire Stub|||23,1,cd580c9833bdf27d
-23|1|1|49.593|234.029|Wire Stub|||23,1,a00cbd71912cdfdc
 3|2|1|-14.563|234.423|Copper Width|||3,1,33320b7136f0b18c
 3|2|1|30.719|151.907|Copper Width|||3,1,09e7fa198425b46c
 3|2|1|-14.257|234.442|Copper Width|||3,1,321f4ee34e83327f
@@ -116,8 +109,6 @@
 3|2|303|30.480|232.791|Copper Width|||3,303,f9dc06bd9ac66b9a
 3|2|303|-12.764|235.522|Copper Width|||3,303,0ee464c7f98bc31b
 3|2|303|32.956|152.210|Copper Width|||3,303,710ae2d2784ebfb6
-23|1|1|43.392|232.432|Wire Stub|||23,1,e346228622a0e360
-23|1|1|42.677|231.045|Wire Stub|||23,1,120577c578921d52
 3|2|1|-16.246|230.261|Copper Width|||3,1,c3d981f95fdb4aa3
 3|2|1|-16.363|231.372|Copper Width|||3,1,577f6b036b1d5761
 3|2|1|-16.385|232.388|Copper Width|||3,1,b9e9bdcaa3b569e3
@@ -127,50 +118,36 @@
 3|2|1|-9.310|224.120|Copper Width|||3,1,30f20c8e0c0e3072
 3|2|1|-13.283|225.858|Copper Width|||3,1,2ef62ff6738aa384
 3|2|1|-15.113|226.672|Copper Width|||3,1,14368a4a8a0a1476
-23|1|1|49.602|188.790|Wire Stub|||23,1,519496c91bc992d6
-23|1|1|49.593|187.448|Wire Stub|||23,1,a83cb50d9936d7d0
-23|1|1|42.677|184.465|Wire Stub|||23,1,127f77bf779a125a
-23|1|1|43.392|185.852|Wire Stub|||23,1,e8ce290e2b22eae2
-23|1|1|44.361|182.810|Wire Stub|||23,1,1730c670c7751635
-23|1|1|46.477|183.044|Wire Stub|||23,1,5e17dbd7dbb45e74
+21|4|19|51.898|191.553|Air Wire|||21,19,fd2cff31ff31fd2c
+21|4|19|49.253|184.060|Air Wire|||21,19,0449064b064b0449
 3|2|1|-8.010|224.171|Copper Width|||3,1,1174cd08cca810d4
 3|2|1|-9.022|225.660|Copper Width|||3,1,9ac85b4a45765bbb
 3|2|1|7.375|234.428|Copper Width|||3,1,a5fe659e79e3ca8b
 3|2|1|7.389|233.412|Copper Width|||3,1,8549b775b79385af
-23|1|303|31.224|153.652|Wire Stub|||23,303,574ed744d4400dc1
 3|2|1|5.205|232.051|Copper Width|||3,1,57f09a72198a1f4f
 3|2|1|5.080|229.320|Copper Width|||3,1,4615bbe9bb884674
 3|2|1|4.846|231.035|Copper Width|||3,1,136aaf96aff91305
 3|2|1|4.963|230.261|Copper Width|||3,1,c05783771ed5ebad
 3|2|1|-10.644|190.571|Copper Width|||3,1,f39494552b492bea
 3|2|1|-9.986|191.982|Copper Width|||3,1,d673ab8fab97d66b
-23|1|1|42.677|207.755|Wire Stub|||23,1,11b57475749a115a
-23|1|1|43.392|209.142|Wire Stub|||23,1,0b47ca87cbe60a26
+21|4|19|51.898|214.843|Air Wire|||21,19,fdacffafffaffdac
 21|4|19|36.669|175.817|Air Wire|||21,19,eb7be979e979eb7b
 21|4|19|40.022|181.548|Air Wire|||21,19,88f68af44af448f6
 21|4|19|36.572|181.448|Air Wire|||21,19,5a0a660a9a0a99f6
 3|2|1|7.606|190.382|Copper Width|||3,1,38d830d86cc0eea5
 3|2|1|8.099|191.856|Copper Width|||3,1,97da8a268a4797bb
-23|1|1|44.361|206.100|Wire Stub|||23,1,174fc60fc54b140b
-23|1|1|46.477|206.334|Wire Stub|||23,1,5e94db54dab25f72
-23|1|1|49.602|165.500|Wire Stub|||23,1,59ab9a34178d9aeb
-23|1|1|49.593|164.159|Wire Stub|||23,1,919cb3ac9e90efc6
-23|1|1|44.361|159.520|Wire Stub|||23,1,17c1c681c7471607
-23|1|1|46.477|159.754|Wire Stub|||23,1,5950dc90dcb25972
-23|1|1|46.477|229.624|Wire Stub|||23,1,5e4ddb8ddbbc5e7c
-23|1|1|44.361|229.390|Wire Stub|||23,1,17ecc6acf9752835
+21|4|19|49.253|160.770|Air Wire|||21,19,e7c8e5cae5cae7c8
+21|4|19|49.253|207.350|Air Wire|||21,19,e828ea2aea2ae828
 3|2|1|-8.660|224.120|Copper Width|||3,1,32f28c8e8c0f3273
 3|2|1|-10.305|225.552|Copper Width|||3,1,e1e15edd5fbce080
 3|2|1|-11.505|226.112|Copper Width|||3,1,060dc52cdb566b77
 3|2|1|-9.162|225.050|Copper Width|||3,1,b3b9b287afffd97d
-23|1|1|49.602|212.080|Wire Stub|||23,1,528b91681ceb90d3
-23|1|1|49.602|235.370|Wire Stub|||23,1,507a90fb1c3b9334
 3|2|1|-4.973|185.104|Copper Width|||3,1,5dc667ba679a5de6
 3|2|1|-5.142|184.088|Copper Width|||3,1,819bfe7ba4fbec28
 3|2|1|-5.090|186.069|Copper Width|||3,1,cc11830f9eba9e63
 3|2|1|-5.207|187.136|Copper Width|||3,1,067eda02db02077e
-23|1|1|49.593|210.739|Wire Stub|||23,1,a8bcb58e99b6d6a2
-23|1|1|24.713|157.226|Wire Stub|||23,1,78882208222a78aa
+21|4|19|49.253|230.640|Air Wire|||21,19,f42bf629f629f42b
+21|4|19|51.898|238.133|Air Wire|||21,19,fd2cff2fff2ffd2c
 3|2|1|29.474|151.328|Copper Width|||3,1,f86e4492450cf9f0
 19|2|1|-16.806|192.121|Overlap|||19,1,15136eea34d57b9d
 7|2|39|-29.922|186.602|Component Exclude Clearance|||7,39,0a5eca6831adf698
@@ -575,7 +552,7 @@
 5|2|1|1.858|171.886|Copper Clearance|||5,1,a4b9e023ebcd6ef3
 5|2|1|7.337|157.984|Copper Clearance|||5,1,1ddf030970ec3ae2
 5|2|1|13.716|151.265|Copper Clearance|||5,1,e1aa6c58731cbaec
-20|2|1|13.754|202.992|Clearance (polygons with same rank)|||20,1,2857283590ce90ac
+20|2|1|13.754|202.992|Clearance (polygons with same rank)|||20,1,90ce90ac28572835
 20|2|1|13.741|213.716|Clearance (polygons with same rank)|||20,1,b25e7f6eb738c676
 20|2|1|-13.716|202.921|Clearance (polygons with same rank)|||20,1,0b1b0b45b18cb1d2
 20|2|1|-13.716|213.716|Clearance (polygons with same rank)|||20,1,d8e9d8f162386220
@@ -583,13 +560,13 @@
 20|2|1|66.259|229.799|Clearance (polygons with same rank)|||20,1,336e330251f95195
 20|2|1|66.259|183.219|Clearance (polygons with same rank)|||20,1,70e4715e13a5121f
 20|2|1|66.259|159.929|Clearance (polygons with same rank)|||20,1,50df51a233593224
-20|2|2|13.741|213.716|Clearance (polygons with same rank)|||20,2,6f8b78e56aedc1fd
+20|2|2|13.741|213.716|Clearance (polygons with same rank)|||20,2,b25e7f6eb738c676
 20|2|2|66.259|183.219|Clearance (polygons with same rank)|||20,2,70e4715e13a5121f
 20|2|2|66.259|229.799|Clearance (polygons with same rank)|||20,2,336e330251f95195
 20|2|2|66.259|159.929|Clearance (polygons with same rank)|||20,2,50df51a233593224
-20|2|2|13.754|202.992|Clearance (polygons with same rank)|||20,2,90ce90ac28572835
-20|2|2|66.259|206.509|Clearance (polygons with same rank)|||20,2,50c3572a35d13238
-20|2|2|-13.716|202.921|Clearance (polygons with same rank)|||20,2,b18cb1d20b1b0b45
+20|2|2|13.754|202.992|Clearance (polygons with same rank)|||20,2,2857283590ce90ac
+20|2|2|66.259|206.509|Clearance (polygons with same rank)|||20,2,35d1323850c3572a
+20|2|2|-13.716|202.921|Clearance (polygons with same rank)|||20,2,0b1b0b45b18cb1d2
 20|2|2|-13.716|213.716|Clearance (polygons with same rank)|||20,2,d8e9d8f162386220
 20|2|304|0.547|164.465|Clearance (polygons with same rank)|||20,304,2809e938f6c465bb
 20|2|304|-13.716|202.921|Clearance (polygons with same rank)|||20,304,0b1b0b45b18cb1d2
@@ -599,7 +576,7 @@
 20|2|304|13.754|202.992|Clearance (polygons with same rank)|||20,304,90ce90ac28572835
 20|2|2|13.766|208.366|Clearance (polygons with same rank)|||20,2,6dee2aa93577e34a
 20|2|303|13.766|208.366|Clearance (polygons with same rank)|||20,303,6dee2aa93577e34a
-20|2|303|13.754|202.992|Clearance (polygons with same rank)|||20,303,2857283590ce90ac
+20|2|303|13.754|202.992|Clearance (polygons with same rank)|||20,303,90ce90ac28572835
 20|2|304|-13.716|213.716|Clearance (polygons with same rank)|||20,304,d8e9d8f162386220
 20|2|304|13.741|213.716|Clearance (polygons with same rank)|||20,304,b25e7f6eb738c676
 20|2|304|66.259|159.929|Clearance (polygons with same rank)|||20,304,50df51a233593224

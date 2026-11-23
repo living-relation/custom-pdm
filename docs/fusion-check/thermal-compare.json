@@ -1,0 +1,29 @@
+{
+ "about": "fusion2, 2026-11-23. Board-side temperature per hot spot (C). real = our board model on the real KiCad copper with the Elmer box sink temperature (docs/heat-analysis.md); lite = the same model on the Fusion lite board (tools/fusion_thermal/smeared_check.py); fusion = Fusion Thermal study (Simulation trial, cloud solve, 0 Flex tokens), point probe at the same spot (tools/fusion_thermal/probe_points.py). Drivers: board top under the exposed pad (Tj = this + P x RthJC). Fusion 'max' = the study's own maximum (not the J1 bar). null = not probed.",
+ "cases": [
+  {"board": "A", "case": "feed150a", "label": "Board A, feed150a (A1 at 60 A), fans on, sink 70.8 C",
+   "spots": [
+    ["board max", 117.1, 99.5, 98.0], ["U13 driver", 117.1, 99.1, 96.0], ["U11 driver", 115.3, 99.5, 96.2],
+    ["U10 driver", 114.5, 97.3, 94.6], ["U8 driver", 114.1, 97.6, 94.0], ["U21 5 V module", 102.2, 89.7, 88.2],
+    ["U6 sensor", 97.3, 93.6, 92.1], ["U5 FRAM", 93.2, 91.1, 89.6], ["U4 MCU", 88.9, 88.6, 87.3]]},
+  {"board": "A", "case": "drive", "label": "Board A, drive cycle, fans on, sink 62.6 C",
+   "spots": [
+    ["U21 5 V module", 86.8, 75.2, 74.6], ["U6 sensor", 70.7, 72.0, 72.9], ["U13 driver", 65.5, 64.8, 64.7],
+    ["U8 driver", 64.8, 64.7, 64.7]]},
+  {"board": "B", "case": "feed150", "label": "Board B, feed150 (150 A on B), fans on, sink 74.1 C",
+   "spots": [
+    ["board max", 117.6, 107.9, 107.1], ["U27 5 V module", 111.3, 98.0, 96.7], ["U9 driver", 108.0, 100.6, 97.0],
+    ["U5 FRAM", 107.7, 101.6, 99.3], ["U6 sensor", 107.5, 103.5, 101.4], ["U11 driver", 104.6, 95.6, 93.0],
+    ["U8 driver", 103.3, 94.3, 92.8], ["U23 driver", 102.4, 88.6, 85.5], ["U25 driver", 101.7, 87.8, 85.3],
+    ["U26 driver", 100.5, 88.8, 86.5], ["U24 driver", 98.7, 87.2, 84.5], ["U10 driver", 98.3, 91.0, 89.5],
+    ["U4 MCU", 96.8, 95.1, 92.5]]},
+  {"board": "B", "case": "drive", "label": "Board B, drive cycle, fans on, sink 63.3 C",
+   "spots": [
+    ["U27 5 V module", 89.8, 76.8, 76.0], ["U8 driver", 80.1, 73.4, 72.0], ["U10 driver", 76.7, 71.8, 70.5],
+    ["U6 sensor", 75.1, 74.6, 75.1]]},
+  {"board": "IN", "case": "in60", "label": "Input board alone, 60 C air (h 9 W/m2K both sides)",
+   "spots": [
+    ["board max", 72.8, null, 69.6], ["BAT54S (max D1-D9 / D1)", 69.1, null, 67.6],
+    ["jumpers (max JP1-16 / JP9)", 64.5, null, 65.1]]}
+ ]
+}
