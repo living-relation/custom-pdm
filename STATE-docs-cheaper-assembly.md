@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- cheaperpcba
 - Detail: none
 
 ## Next Single Step
-- [NEXT] Research the duty stack and other assemblers, then rewrite docs/assembly-options.md (old numbers kept as first estimate)
+- [NEXT] Merge main, open the PR, merge when CI is green, archive this file; proposed ADR text goes to the coordinator in the report
 
 ## Pointers
 - Branch_States: none

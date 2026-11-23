@@ -1,5 +1,116 @@
 # Assembly options and costs (for Dan's go / no-go)
 
+Updated 2026-11-23 by job cheaperpcba (branch `docs/cheaper-assembly`), after Dan (18:12): "There has got to be
+cheaper options ... there's no way import duties are that much. Look for other options." The first estimate (job
+assemblyquotes, PR #155) is kept word for word under "First estimate" at the end; its JLCPCB fee and parts numbers
+are still the inputs here. Prices USD. "ASSUMED" = no published price or quote behind it. Every web page below was
+read on 2026-11-23 (no logins, no uploads, no quotes made).
+
+## 1. Short answer
+
+- **The duty is real, and 35 % is not too high for assembled boards.** The legal US duty on an assembled PCB from
+  China is about **41 %** today; on a bare 2- or 4-layer FR-4 board it is **12.5 %** (until 2027-01-09). JLCPCB
+  charges a flat ~35 % on both (section 2). So JLCPCB slightly under-charges the assembled boards and over-charges
+  the bare ones.
+- **Cheapest credible route: bare boards + stencils from JLCPCB, parts from Digi-Key / Mouser, assembled at Spark
+  (c8): about $650-870** for one set, against $1,265-1,422 for the JLCPCB plan (saves about $550-600). Needs
+  Spark's SMT line or reflow oven; no labour is costed (c8).
+- **If Spark's line is not free:** get one NextPCB quote (its small-batch offer takes up to $200 off the SMT cost of
+  every 1-10 piece order, and builds 1 board B): about $730-1,310, ASSUMED. Take it only if it beats the JLCPCB
+  SMT-only route ($1,165-1,321) and NextPCB confirms the press-fit hole tolerance (section 4).
+- **Assembly outside China does not pay off here.** Taiwan / EU pay about 10 % duty, but no Taiwan, Vietnam, EU,
+  UK, Canada, Mexico or US assembler publishes a low-volume price, and their labour is ASSUMED to cost more than
+  the ~25-30 points of duty saved. Sending Dan's own chips to China does not avoid duty either (section 3, row 8).
+
+## 2. US import duty, verified (read 2026-11-23)
+
+| Layer | Bare PCB, HTS 8534.00.00 (4-layer .0020, 2-layer .0040) | Assembled PCB (PCBA), HTS 8538.90.30 (PCAs for 8536 / 8537 apparatus) | Source |
+|---|---|---|---|
+| MFN (normal) duty | Free | 3.5 % | [wove 8534.00.00](https://tariffs.wove.com/us/tariff/8534.00.00), [wove 8538.90.30](https://tariffs.wove.com/us/tariff/8538.90.30) (CBP HTS file of 2026-11-09) |
+| Section 301 China lists (9903.88.03) | 25 %, **excluded** for "Printed circuit boards, each with a base wholly of plastics impregnated glass, not flexible, with 4 [or 2] layers of copper" until 2027-01-09 | 25 % (no exclusion found) | [gatewaylines exclusions list, updated 2026-11-07](https://tariff.gatewaylines.com/section-301-exclusions); [KPMG 2026-11-09](https://kpmg.com/us/en/taxnewsflash/news/2026/11/ustr-section-301-china-product-exclusions.html): "All 178 current exclusions are extended through January 9, 2027" |
+| Section 301 forced-labour action (9903.05.31), from 2026-07-24 | 12.5 % | 12.5 % | [EY 2026-07-24](https://taxnews.ey.com/news/2026-1607-ustr-finalizes-section-301-forced-labor-tariffs-on-60-economies-additional-tariffs-of-10-percent-or-125-percent-take-effect-24-july-2026); stacks on the China lists and MFN ([Zonos, Aug 2026](https://zonos.com/docs/guides/country-guides/united-states/section-301-forced-labor)) |
+| IEEPA "reciprocal" / fentanyl, Section 122 | none: IEEPA struck down; Section 122 10 % expired 2026-07-24 | none | [AtlasPCB, 2026-08-21](https://www.atlaspcb.com/news/news-pcb-tariff-section-301-exclusion-expiry-november-2026/) |
+| De minimis ($800) | gone for every mode but the postal network, indefinitely, from 2026-06-24 (DHL / FedEx included) | same | [Federal Register 2026-12670](https://www.federalregister.gov/documents/2026/06/24/2026-12670/indefinite-suspension-of-the-de-minimis-exemption-for-merchandise-arriving-through-all-modes-other) |
+| **Legal total from China** | **12.5 %** (37.5 % if the exclusion lapses on 2027-01-09) | **41 %** (wove shows 41 % for a "Power Distribution Unit Control PCB" from China) | [wove PDU control PCB from CN](https://tariffs.wove.com/us/tariff/8538.90.30.00/power-distribution-unit-control-pcb/from/CN) |
+
+Other HS codes sometimes used for a PCBA: 8537.10.91 (a complete control board, MFN 2.7 %, ASSUMED: page not read;
+total about 40 %) and 8473.30.11 (computer parts only, does not fit a PDM).
+
+**How the assemblers charge it:**
+- **JLCPCB** ([US tariff FAQ, updated 2026-10-29](https://jlcpcb.com/help/article/us-tariff-policy-faq)): US
+  individuals must take DDP (duty pre-paid at checkout); companies may pick CPT and pay customs themselves. Its
+  build-up: regular duty "0~7.5%", Section 301 25 %, and for the 12.5 % action of 2026-07-24 "JLCPCB sets its own
+  rate at 10%"; total "About 35%~92.5%". Inside the 35-90 % band it does not refund or top up. **That is where the
+  35 % came from:** 0 % MFN + 25 % + JLCPCB's 10 %.
+- **PCBWay** ([tariff news, section "Updated on August 15 2026"](https://www.pcbway.com/blog/News/Impact_of_the_New_U_S_Tariff_Policy_on_Customs_Clearance_51dff4fd.html)):
+  "PCB: 37.5%", "SMT: 47.50%" (estimates), pre-paid on DHL / FedEx DDP.
+- **NextPCB:** its own US duty billing is not published ([NextPCB tariff article, Aug 2026](https://www.nextpcb.com/blog/pcb-manufacturing-tariffs-2026-china-sourcing) quotes "a combined Section 301 rate of 37.5% on top of the underlying MFN duty"). ASSUMED 35-47.5 %.
+- **Other countries** (same EY / ghy pages): Taiwan and the EU pay 10 % in total with MFN (MFN counts toward it);
+  UK, Canada, Mexico, Malaysia 10 % on top of MFN; Vietnam, Thailand 12.5 %; Canada / Mexico goods that qualify for
+  USMCA pay nothing ([ghy, 2026-07-23](https://www.ghy.com/trade-compliance/ustr-section-301-forced-labor-60-economies/)).
+  A PCBA assembled there from Chinese bare boards is ASSUMED to take the assembly country's origin (SMT assembly is
+  usually a substantial transformation; not checked for this case).
+- **US distributors:** Mouser adds a tariff line item on some China-origin HTS 8541 / 8542 parts shipped in the US
+  ([Mouser, updated 2026-07-24](https://www.mouser.com/en/tariff-updates/)); Digi-Key "minimized tariff pass-through"
+  ([Digi-Key, updated 2026-09-08](https://www.digikey.com/resources/tariff-resources)). Hence +15-25 % over LCSC
+  below (ASSUMED).
+
+## 3. Routes to one assembled PDM set, ranked (cheapest credible first)
+
+One set = 2 x board A, 1 x board B, 3 x input board, fitted (the 6 press-fit terminals are Dan's in every route).
+Shared inputs from the first estimate: JLCPCB bare boards, 5 of each, $160-265 (ASSUMED); JLCPCB stencils $13
+(+ 90 % duty = $25); DHL $25-40 (ASSUMED); parts for exactly one set $329.72 at LCSC prices, bought from Digi-Key /
+Mouser at +15-25 % + $7 = **$386-419** (ASSUMED mark-up, section 2). 590 placed parts per set.
+
+| # | Route | Landed total, one set | Lead time | MOQ | Gotchas (4-layer ENIG, filled vias, 1 oz inner, TG155, press-fit) |
+|---|---|---|---|---|---|
+| 1 | **Bare boards + stencils from JLCPCB, US-bought parts, built at Spark (c8)** | **$650-870** (bare 216-358 with 35 % + stencils 25 + DHL 25-40 + parts 386-419 + paste / flux 0-30); Spark's own c8 figure with reels at MOQ is $758-837 (Spark pitch, ADR-2026-11-23-proof-and-assembly) | ~2 weeks (ASSUMED: boards ~1 week + DHL, Digi-Key 2-3 days, 1-2 days build) | 5 bare per design | JLCPCB makes every board spec (fab notes). Needs Spark's paste printer / reflow and an X-ray or careful inspection of the PROFET exposed pads; labour not costed (c8). As a company Spark may take CPT and pay the legal 12.5 % on bare boards (saves about $20-50 after a courier brokerage fee, ASSUMED $15-30). |
+| 2 | Same, built by Dan at his bench | $680-900 (+ hot plate if none, ASSUMED $30) | ~2 weeks + 10-16 h of Dan's time | 5 bare | via-in-pad, LQFP-64, exposed-pad switches, no X-ray / AOI (first estimate section 4) |
+| 3 | **NextPCB turnkey, small-batch offer** (1-10 pcs, "Up to $200 off eligible assembly costs", any number of orders, turnkey only, under 5 % customer parts; [NextPCB offers](https://www.nextpcb.com/offers)); 3 orders, board B qty 1 | $730-1,310 (ASSUMED: bare 160-265, parts 330-396, fees after the $200 off 30-200, duty 35-47.5 %, DHL 25-40) | 7-14 business days + sourcing + DHL (~3-4 weeks, ASSUMED) | 1 assembled | Plated-hole tolerance **±0.075 mm** "suitable for press-fit connectors"; Wurth 7461084 needs 1.475 ±0.05 mm ([NextPCB capabilities](https://www.nextpcb.com/pcb-capabilities)). Tg 130 / 150 / 170 (TG170 per ADR-2026-11-23-laminate reopen), inner 1 oz offered; resin-filled vias and ENIG not stated. Y1, U5 and T1-T8 must come from NextPCB sourcing. SMT fee level unpublished: one quote decides it. |
+| 4 | JLCPCB SMT only, Dan solders the through-hole parts, spare B left without them | $1,165-1,321 (first estimate 3.5) | 3-4 weeks | 2 assembled B | 2-2.5 h hand soldering, heavy THR terminals |
+| 5 | JLCPCB SMT only, Dan solders all through-hole parts | $1,204-1,360 (first estimate 3.5) | 3-4 weeks | 2 B | 3.5-4 h |
+| 6 | **JLCPCB full (current plan)** | $1,265-1,422 (first estimate 3.3); coupons take off about $25-40 (new user $6 PCB + $10 SMT, monthly $6 / $9 SMT, [JLCPCB coupons, updated 2026-11-10](https://jlcpcb.com/help/article/new-customer-coupons)) | 3-4 weeks | 2 B | none: every spec is on its quote page |
+| 7 | PCBWay, board B qty 1 ("Assembly MOQ is 1 piece", [PCBWay help](https://www.pcbway.com/helpcenter/pcb_assembly_ordering/What_s_the_min_quantity_of_assembly_.html)) | $1,100-1,580 (ASSUMED fees 250-400; duty 37.5 % bare / 47.5 % SMT) | 7-15 business days + DHL | 1 | its 47.5 % SMT duty eats the ~$190 saved on the second B |
+| 8 | Dan buys the dear chips in the US and consigns them to JLCPCB | no saving: US customs value includes parts the buyer supplies (an "assist", ASSUMED), so they pay 35 % on the way back, plus ~$40-60 shipping to China (ASSUMED) | +1-2 weeks | 2 B | consigned-part handling, parts can be lost |
+| 9 | US assembler with a kit (MacroFab, Screaming Circuits, CircuitHub, Advanced Assembly, Sierra): China bare boards + US parts | $1,250-2,340 (ASSUMED assembly $600-1,500 for 3 designs; none publishes a price: [MacroFab platform](https://www.macrofab.com/platform) "No minimum order quantities", quote only) | 1-3 weeks | 1 | US shops quote per job; Tempo Automation is gone (bankruptcy 2023, [Delaware case 23-11969](https://www.inforuptcy.com/browse-filings/delaware-bankruptcy-court/1:23-bk-11969/bankruptcy-case-tempo-automation-holdings-inc)) |
+| 10 | EU turnkey (Aisler: "starts at a single populated PCBA", free worldwide shipping, [Aisler assembly](https://aisler.net/products/assembly)); US duty 10 % | not priced: assembly task prices only in its calculator, EUR 15 per customer-supplied part ([Aisler pricing, 2023-08-27](https://community.aisler.net/t/our-simple-pricing/102)); ASSUMED $1,300-2,500 | 6-9+ business days | 1 | 1 oz inner, filled vias, TG and press-fit holes not listed |
+| 11 | Taiwan / Vietnam / Thailand / Malaysia / Canada / Mexico | not priced: no online low-volume price list found; Bittele (Canada) lists Shenzhen and Toronto sites, so origin is unclear ([7pcb](https://www.7pcb.com/Low-Cost-PCB-Assembly)); bestpcb.vn (Bac Ninh) quotes by e-mail only ([bestpcb.vn, 2026-05-22](https://www.bestpcb.vn/2026/05/22/prototype-pcb-assembly-services-low-volume/)) | - | - | quote by e-mail, specs unproven |
+| 12 | Sponsorships (NextPCB Accelerator "Up to $500 project sponsorship", application; Seeed / PCBWay programmes) | not plannable | weeks | 1-2 | needs approval and a public open-source project; dingoPDM-Max (board B base) has no licence (ADR-2026-11-23-proof-and-assembly) |
+
+US-made bare boards do not help: AdvancedPCB's $66 4-layer special has 1 oz inner but a minimum of 4, at most 30 sq in
+and 35 holes per sq in, and no via fill stated ([AdvancedPCB $66 special](https://advancedpcb.com/en-us/66-each-special)):
+$528 for A and B alone, more than all JLCPCB bare boards with duty. OSH Park's 4-layer has 1/2 oz inner (not allowed;
+first estimate section 4). US stencils (Pololu: "$25 for first 4 square inches, $1 for each additional square inch",
+[Pololu](https://www.pololu.com/product/446)) come to about $100, more than JLCPCB's with 90 % duty.
+
+## 4. Recommendation (for the go / no-go, c7 = a)
+
+- The duty Dan doubted is right: ~35 % at JLCPCB checkout, ~41 % in law for an assembled board. It cannot be dodged
+  by consigning parts or by de minimis, and assembly outside China only pays off if the labour were no dearer than
+  in China, which no low-volume shop shows.
+- **Build at Spark if its SMT line (paste printer + reflow, and an X-ray or careful pad inspection) is free:** order
+  only the bare boards (5 each) and stencils from JLCPCB with the current fab notes, buy the parts from Digi-Key /
+  Mouser with `*-bom-full.csv`, and build there. About **$650-870**, about $550-600 under the JLCPCB plan, and about
+  2 weeks. Check the STM32F446RET7 stock first (0 at LCSC and Mouser on 2026-11-23).
+- **If Spark's line is not free:** one NextPCB quote (3 orders, B qty 1). Use it only if it lands under $1,165 and
+  NextPCB confirms ±0.05 mm press-fit holes, resin-filled vias, ENIG, TG170 and 1 oz inner in writing. Otherwise the
+  JLCPCB SMT-only route with the spare B left without its through-hole parts ($1,165-1,321).
+- Budget: $650-870 (Spark build) or $1,165-1,422 (JLCPCB assembled). The $650-850 in `docs/pdm-vs-relays.md` matches
+  the Spark build, not a bought assembly.
+
+## 5. What was not read or not priced
+
+- No live quote at any assembler (they need an upload and mostly a login); every assembler fee outside JLCPCB is ASSUMED.
+- Not fetched: macrofab.com/pricing (the fetch needed an approval that nobody answered), unisco 8537.10.91 (site
+  error); the 8537.10.91 MFN 2.7 % is ASSUMED. LCSC's own US duty billing was not found (ASSUMED the same 35 % as
+  JLCPCB; the c8 LCSC part prices carry no US duty, so buying them from LCSC adds it).
+- Not legal advice: wove, gatewaylines, AtlasPCB, ghy and Zonos are trade-data sites, not CBP; the Federal Register,
+  EY and KPMG items agree with them.
+
+---
+
+## First estimate (job assemblyquotes, PR #155, 2026-11-23 morning; kept as written)
+
 Written 2026-11-23 by job assemblyquotes (branch `docs/assembly-options`, from main a422adf). Dan's question (2026-11-23 09:01):
 cheaper places to get the boards assembled, or mostly assembled so he solders the big through-hole parts himself?
 Prices are USD. "ASSUMED" = an estimate with no published price or quote behind it. Every web price was read on
@@ -8,7 +119,7 @@ smallest sold quantity; three parts not in that file are ASSUMED (U5 CY15B064J-S
 or from Mouser (T1-T8 Wurth 74650074R $4.09, `docs/parts-audit.md` 4.1). The 6 press-fit terminals (7461084) and the
 harness wire pads (A J3, B J6) are Dan's in every route, so they are left out of every total.
 
-## 1. Short answer
+### 1. Short answer
 
 - **No cheaper published-price assembler than JLCPCB for these boards.** The others (PCBWay, Seeed, NextPCB, MacroFab,
   Eurocircuits, Aisler assembly) only price after an upload with a login; none publishes a lower fee list.
@@ -20,7 +131,7 @@ harness wire pads (A J3, B J6) are Dan's in every route, so they are left out of
   charges at checkout and the second board B that its minimum forces. The $650-850 in `docs/pdm-vs-relays.md` looks
   like it leaves out the duty (about $320-360) and the second B.
 
-## 2. What each board needs (from the BOMs, CPLs and board files)
+### 2. What each board needs (from the BOMs, CPLs and board files)
 
 | | Board A | Board B | Input board |
 |---|---|---|---|
@@ -37,7 +148,7 @@ harness wire pads (A J3, B J6) are Dan's in every route, so they are left out of
 Minimum lots: JLCPCB Economic "2 - 50 pcs", Standard "2 - 80000 pcs"
 ([JLCPCB PCBA capabilities](https://jlcpcb.com/capabilities/pcb-assembly-capabilities), read 2026-11-23).
 
-### Through-hole parts (what Dan would solder in the partial route)
+#### Through-hole parts (what Dan would solder in the partial route)
 
 | Board | Part (ref) | Maker part | Joints per board | Difficulty | Why |
 |---|---|---|---|---|---|
@@ -49,9 +160,9 @@ Minimum lots: JLCPCB Economic "2 - 50 pcs", Standard "2 - 80000 pcs"
 
 Per PDM order (2 A + 2 B + 3 input assembled): 180 through-hole joints, 104 of them on board B.
 
-## 3. JLCPCB (the current plan) in detail
+### 3. JLCPCB (the current plan) in detail
 
-### 3.1 Published fees ([JLCPCB "PCB assembly price"](https://jlcpcb.com/help/article/pcb-assembly-price), "Last updated on Oct 22, 2026", read 2026-11-23)
+#### 3.1 Published fees ([JLCPCB "PCB assembly price"](https://jlcpcb.com/help/article/pcb-assembly-price), "Last updated on Oct 22, 2026", read 2026-11-23)
 
 | Fee | Economic | Standard |
 |---|---|---|
@@ -74,7 +185,7 @@ $75-120, input board $25-45, with ENIG, epoxy-filled vias, 1 oz inner copper, TG
 4-layer resin-filled via prices rose "slightly" ([notice 2026-08-06](https://jlcpcb.com/news/pcb-lead-time-and-price-adjustment-august2026)).
 Shipping to the US (one DHL box): $25-40, ASSUMED.
 
-### 3.2 US import duty
+#### 3.2 US import duty
 
 - JLCPCB ships to individuals DDP: duty is paid at checkout. Its rate table: **PCB 35 %, SMT (assembled) 35 %,
   stencil 90 %** (update of 2026-03-17); orders charged inside the 35-90 % band are not refunded or topped up
@@ -90,7 +201,7 @@ Shipping to the US (one DHL box): $25-40, ASSUMED.
 - This page applies 35 % to everything in a JLCPCB order (boards, fees, parts; not shipping): ASSUMED.
 - Parts Dan buys from a US distributor (Digi-Key) carry no extra import step for him.
 
-### 3.3 Per board, one PDM order (Standard, the plan in `docs/order-checklist.md`)
+#### 3.3 Per board, one PDM order (Standard, the plan in `docs/order-checklist.md`)
 
 | Board (lot) | Assembly fees | Parts | Bare boards (ASSUMED) | With 35 % duty |
 |---|---|---|---|---|
@@ -99,7 +210,7 @@ Shipping to the US (one DHL box): $25-40, ASSUMED.
 | Input (5 bare, 3 assembled) | $50.29 | $8.59 | $25-45 | $113-140 |
 | **Set, + shipping $25-40** | $292.21 | $466.64 | $160-265 | **$1,265-1,422** |
 
-### 3.4 Economic vs Standard (assembly fees only, same parts)
+#### 3.4 Economic vs Standard (assembly fees only, same parts)
 
 | Board | Economic | Standard | Verdict |
 |---|---|---|---|
@@ -111,7 +222,7 @@ Economic also allows only "standard stack-up", single-side placement and ENIG on
 page above): A and B need 1 oz inner copper, press-fit holes and filled vias, so they stay Standard (as the order
 checklist says). Try Economic for the input board only at quote time.
 
-### 3.5 Partial: JLCPCB fits the SMD parts, Dan solders the through-hole parts
+#### 3.5 Partial: JLCPCB fits the SMD parts, Dan solders the through-hole parts
 
 Removes from the JLCPCB order: 4 feeder lines ($6.12), 180 hand joints ($2.95), 3 x $3.58 labour, the $20
 inspection, the through-hole parts ($75.20) and the 35 % duty on all of that. Dan buys those parts at Digi-Key
@@ -131,7 +242,7 @@ and the "no approved alternate" risk go away; Y1 and U5 still need it); the gene
 J5 / J2 and input J2 marked "fitted by Dan" (`tools/sch_bom_fields.py`, then `tools/gen_fab_jlcpcb.py`), and the
 T1-T4 vs U8-U11 overlap question stays open.
 
-## 4. Other services and routes
+### 4. Other services and routes
 
 | Service / route | What is published (read 2026-11-23) | For this PDM | Verdict |
 |---|---|---|---|
@@ -145,7 +256,7 @@ T1-T4 vs U8-U11 overlap question stays open.
 | Bare boards + stencils only (JLCPCB), Dan builds all | stencil "$3" up to 100 x 100 mm ([JLCPCB small stencil](https://jlcpcb.com/resources/small-stencil)); stencil duty 90 % (3.2) | one set: bare $160-265 + 35 %, stencils A $3 / B $7 (ASSUMED) / input $3 + 90 %, shipping $25-40, parts for exactly 1 set from Digi-Key ($329.72 + 15 % ASSUMED + $7), paste and flux $30 (ASSUMED) = **$682-839** | cheapest cash route; 10-16 h (ASSUMED: 590 placements, 4 reflow runs, exposed-pad PROFETs, LQFP-64 MCU, 10-pin uSiP 5 V module, via-in-pad); no X-ray / AOI; needs a hot plate or oven |
 | In-house build at Spark (cost rule c8) | parts at each part's smallest sold quantity (LCSC first price break; full reels cost more, not priced) + blank PCBs and stencils from JLCPCB; no labour or machine cost | one set: **$595-752** | cheapest on paper; depends on the line being available |
 
-## 5. Comparison (one PDM; JLCPCB's minimum order already is one test set: 5 bare boards each, 2 A + 2 B + 3 input assembled)
+### 5. Comparison (one PDM; JLCPCB's minimum order already is one test set: 5 bare boards each, 2 A + 2 B + 3 input assembled)
 
 | Route | One test set | Saving vs current plan | % | Dan's extra hours |
 |---|---|---|---|---|
@@ -166,7 +277,7 @@ Lead time (current plan): bare boards + assembly (Standard build ">= 4 days", ca
 9-15 days (Y1, U5, T1-T8) + DHL: about 3-4 weeks (ASSUMED). The partial route does not shorten it (Y1 and U5 still
 wait for global sourcing).
 
-## 6. Recommendation (for the go / no-go, c7 = a)
+### 6. Recommendation (for the go / no-go, c7 = a)
 
 Stay with the current plan, JLCPCB Standard with everything but the press-fit terminals fitted by JLCPCB: no
 assembler with published prices is cheaper, and soldering the through-hole parts yourself saves only about $62
@@ -177,7 +288,7 @@ free-assembly offer covers a design. Budget the first PDM set at about $1,265-1,
 JLCPCB charges, not $650-850; the only big saving (about $585-670, 41-53 %) is a full in-house or bench build from
 bare boards and stencils, which makes sense only if a reflow line with inspection is at hand.
 
-## 7. How the numbers were made, and what was not read
+### 7. How the numbers were made, and what was not read
 
 - Fees: section 3.1 table x the counts in section 2 (BOM lines from `hardware/fab/*/*-bom-jlcpcb.csv`, SMD pads and
   through-hole pads counted in the three `.kicad_pcb` files, B assembled x 2). Parts: each JLCPCB BOM line at its
