@@ -5,14 +5,14 @@
       "deviceType": 14,
       "name": "A1",
       "baseId": 1280,
-      "sleepEnabled": false,
+      "sleepEnabled": true,
       "filtersEnabled": false,
       "disableDigInWake": false,
       "disableCanWake": false,
       "connectUsbToCan": true,
       "bitrate": 0,
       "bitrate2": 1,
-      "muteCanTxInput": 0,
+      "muteCanTxInput": 228,
       "forceSleepInput": 0,
       "analogIn": [
         {
@@ -351,23 +351,23 @@
           "id": 1447
         },
         {
-          "name": "canInput3",
+          "name": "ignition (key off / auto sleep): B IN1",
           "number": 3,
-          "enabled": false,
-          "timeoutEnabled": false,
+          "enabled": true,
+          "timeoutEnabled": true,
           "timeout": 1000,
           "ide": false,
           "startBit": 0,
-          "bitLength": 8,
+          "bitLength": 1,
           "factor": 1,
           "offset": 0,
           "byteOrder": 0,
           "signed": false,
           "operator": 0,
-          "operand": 0,
+          "operand": 1,
           "mode": 0,
           "bus": 0,
-          "id": 0
+          "id": 1447
         },
         {
           "name": "canInput4",
@@ -3561,13 +3561,13 @@
           "time": 5000
         },
         {
-          "name": "timer2",
+          "name": "Key off 10 s: mute CAN TX (auto sleep)",
           "number": 2,
-          "enabled": false,
-          "input": 0,
-          "resetInput": 0,
+          "enabled": true,
+          "input": 1,
+          "resetInput": 20,
           "mode": 0,
-          "time": 1000
+          "time": 10000
         },
         {
           "name": "timer3",
@@ -3941,7 +3941,8 @@
             "minHz": 16,
             "maxHz": 1000
           }
-        ]
+        ],
+        "completeSettings": true
       }
     },
     {
@@ -3949,14 +3950,14 @@
       "deviceType": 14,
       "name": "A2",
       "baseId": 1344,
-      "sleepEnabled": false,
+      "sleepEnabled": true,
       "filtersEnabled": false,
       "disableDigInWake": false,
       "disableCanWake": false,
       "connectUsbToCan": true,
       "bitrate": 0,
       "bitrate2": 1,
-      "muteCanTxInput": 0,
+      "muteCanTxInput": 226,
       "forceSleepInput": 0,
       "analogIn": [
         {
@@ -4257,23 +4258,23 @@
       ],
       "canInputs": [
         {
-          "name": "canInput1",
+          "name": "ignition (key off / auto sleep): B IN1",
           "number": 1,
-          "enabled": false,
-          "timeoutEnabled": false,
+          "enabled": true,
+          "timeoutEnabled": true,
           "timeout": 1000,
           "ide": false,
           "startBit": 0,
-          "bitLength": 8,
+          "bitLength": 1,
           "factor": 1,
           "offset": 0,
           "byteOrder": 0,
           "signed": false,
           "operator": 0,
-          "operand": 0,
+          "operand": 1,
           "mode": 0,
           "bus": 0,
-          "id": 0
+          "id": 1447
         },
         {
           "name": "canInput2",
@@ -7496,13 +7497,13 @@
       "flowLayout": {},
       "timers": [
         {
-          "name": "timer1",
+          "name": "Key off 10 s: mute CAN TX (auto sleep)",
           "number": 1,
-          "enabled": false,
-          "input": 0,
-          "resetInput": 0,
+          "enabled": true,
+          "input": 1,
+          "resetInput": 16,
           "mode": 0,
-          "time": 1000
+          "time": 10000
         },
         {
           "name": "timer2",
@@ -7885,7 +7886,8 @@
             "minHz": 16,
             "maxHz": 1000
           }
-        ]
+        ],
+        "completeSettings": true
       }
     },
     {
@@ -7893,14 +7895,14 @@
       "deviceType": 15,
       "name": "B",
       "baseId": 1408,
-      "sleepEnabled": false,
+      "sleepEnabled": true,
       "filtersEnabled": false,
       "disableDigInWake": false,
       "disableCanWake": false,
       "connectUsbToCan": true,
       "bitrate": 0,
       "bitrate2": 1,
-      "muteCanTxInput": 0,
+      "muteCanTxInput": 229,
       "forceSleepInput": 0,
       "analogIn": [
         {
@@ -7998,13 +8000,13 @@
           "pwmMinPulseUs": 0
         },
         {
-          "enabled": false,
-          "name": "digitalInput6",
+          "enabled": true,
+          "name": "A/C switch",
           "number": 6,
           "invert": false,
           "mode": 0,
           "debounceTime": 20,
-          "pull": 0,
+          "pull": 2,
           "pwm": false,
           "pwmMinPulseUs": 0
         },
@@ -8087,7 +8089,7 @@
           "resetTime": 2000,
           "inrushCurrentLimit": 100,
           "inrushTime": 500,
-          "input": 84,
+          "input": 21,
           "pwmEnabled": true,
           "softStartEnabled": true,
           "variableDutyCycle": false,
@@ -8151,8 +8153,8 @@
           "resetCountLimit": 5,
           "resetMode": 1,
           "resetTime": 1000,
-          "inrushCurrentLimit": 10,
-          "inrushTime": 100,
+          "inrushCurrentLimit": 20,
+          "inrushTime": 200,
           "input": 5,
           "pwmEnabled": false,
           "softStartEnabled": false,
@@ -8175,7 +8177,7 @@
           "resetTime": 1000,
           "inrushCurrentLimit": 20,
           "inrushTime": 200,
-          "input": 29,
+          "input": 10,
           "pwmEnabled": false,
           "softStartEnabled": false,
           "variableDutyCycle": false,
@@ -8253,46 +8255,8 @@
           "id": 1012
         },
         {
-          "name": "ECU 0x3F4 alive 1 s",
-          "number": 2,
-          "enabled": true,
-          "timeoutEnabled": true,
-          "timeout": 1000,
-          "ide": false,
-          "startBit": 0,
-          "bitLength": 1,
-          "factor": 1,
-          "offset": 0,
-          "byteOrder": 0,
-          "signed": false,
-          "operator": 4,
-          "operand": 0,
-          "mode": 0,
-          "bus": 0,
-          "id": 1012
-        },
-        {
-          "name": "ECU 0x3F4 seen",
-          "number": 3,
-          "enabled": true,
-          "timeoutEnabled": false,
-          "timeout": 1000,
-          "ide": false,
-          "startBit": 0,
-          "bitLength": 1,
-          "factor": 1,
-          "offset": 0,
-          "byteOrder": 0,
-          "signed": false,
-          "operator": 4,
-          "operand": 0,
-          "mode": 0,
-          "bus": 0,
-          "id": 1012
-        },
-        {
           "name": "ECU 0x3F4 byte 1 -\u003E OUT2",
-          "number": 4,
+          "number": 2,
           "enabled": true,
           "timeoutEnabled": true,
           "timeout": 1000,
@@ -8308,6 +8272,44 @@
           "mode": 0,
           "bus": 0,
           "id": 1012
+        },
+        {
+          "name": "canInput3",
+          "number": 3,
+          "enabled": false,
+          "timeoutEnabled": false,
+          "timeout": 1000,
+          "ide": false,
+          "startBit": 0,
+          "bitLength": 8,
+          "factor": 1,
+          "offset": 0,
+          "byteOrder": 0,
+          "signed": false,
+          "operator": 0,
+          "operand": 0,
+          "mode": 0,
+          "bus": 0,
+          "id": 0
+        },
+        {
+          "name": "canInput4",
+          "number": 4,
+          "enabled": false,
+          "timeoutEnabled": false,
+          "timeout": 1000,
+          "ide": false,
+          "startBit": 0,
+          "bitLength": 8,
+          "factor": 1,
+          "offset": 0,
+          "byteOrder": 0,
+          "signed": false,
+          "operator": 0,
+          "operand": 0,
+          "mode": 0,
+          "bus": 0,
+          "id": 0
         },
         {
           "name": "ECU coolant",
@@ -8329,23 +8331,23 @@
           "id": 1013
         },
         {
-          "name": "keypad 0x28 button 1",
+          "name": "canInput6",
           "number": 6,
-          "enabled": true,
-          "timeoutEnabled": true,
+          "enabled": false,
+          "timeoutEnabled": false,
           "timeout": 1000,
           "ide": false,
           "startBit": 0,
-          "bitLength": 1,
+          "bitLength": 8,
           "factor": 1,
           "offset": 0,
           "byteOrder": 0,
           "signed": false,
           "operator": 0,
-          "operand": 1,
+          "operand": 0,
           "mode": 0,
           "bus": 0,
-          "id": 424
+          "id": 0
         },
         {
           "name": "canInput7",
@@ -9358,28 +9360,28 @@
       ],
       "virtualInputs": [
         {
-          "name": "ECU 0x3F4 lost 1 s",
+          "name": "virtualInput1",
           "number": 1,
-          "enabled": true,
+          "enabled": false,
           "not0": false,
-          "var0": 23,
+          "var0": 0,
           "cond0": 0,
-          "not1": true,
-          "var1": 21,
+          "not1": false,
+          "var1": 0,
           "cond1": 0,
           "not2": false,
           "var2": 0,
           "mode": 0
         },
         {
-          "name": "ECU 0x3F4 byte 1 -\u003E OUT2 (on at loss)",
+          "name": "virtualInput2",
           "number": 2,
-          "enabled": true,
+          "enabled": false,
           "not0": false,
-          "var0": 83,
-          "cond0": 1,
+          "var0": 0,
+          "cond0": 0,
           "not1": false,
-          "var1": 25,
+          "var1": 0,
           "cond1": 0,
           "not2": false,
           "var2": 0,
@@ -11473,13 +11475,13 @@
       "flowLayout": {},
       "timers": [
         {
-          "name": "timer1",
+          "name": "Key off 10 s: mute CAN TX (auto sleep)",
           "number": 1,
-          "enabled": false,
-          "input": 0,
-          "resetInput": 0,
+          "enabled": true,
+          "input": 1,
+          "resetInput": 5,
           "mode": 0,
-          "time": 1000
+          "time": 10000
         },
         {
           "name": "timer2",
@@ -11862,7 +11864,8 @@
             "minHz": 16,
             "maxHz": 1000
           }
-        ]
+        ],
+        "completeSettings": true
       }
     }
   ],

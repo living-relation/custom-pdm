@@ -144,7 +144,9 @@ public static class PdmCritical
                 foreach (var b in v.Boards) b.Device.BitRate = ParseRate(typed)!.Value;
                 break;
             case PdmCriticalKind.CritTemp:
-                return PdmThermal.Set(v, PdmThermal.Current(v)! with { Crit = ParseTemp(typed)!.Value });
+                var set = PdmThermal.Set(v, PdmThermal.Current(v)! with { Crit = ParseTemp(typed)!.Value });
+                if (set == null) PdmIntegrity.Confirmed(v, k); // uiguide: typed with Unlock = confirmed
+                return set;
             case PdmCriticalKind.KeptOn:
                 var outs = ParseOutputs(typed)!;
                 foreach (var b in v.Boards.Where(b => b.Device.CustomPdm != null))
@@ -152,6 +154,7 @@ public static class PdmCritical
                         .Aggregate(0, (m, o) => m | 1 << (o.BoardOutput - 1));
                 break;
         }
+        PdmIntegrity.Confirmed(v, k); // uiguide: typed with Unlock = confirmed on every board
         return null;
     }
 }

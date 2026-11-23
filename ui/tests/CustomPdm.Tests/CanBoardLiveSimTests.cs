@@ -16,7 +16,7 @@ namespace CustomPdm.Tests;
 // Wheel output 1 follows IN15 (B), output 2 follows IN2 (A1), output 4 follows IN16 (B).
 public sealed class CanBoardPdm : IDisposable
 {
-    public const int Base = 0x640;
+    public const int Base = 0x6C0;
     private SimBus? _bus;
     public SimBus Bus => _bus ?? throw new InvalidOperationException("not set up");
     public List<string> Log { get; } = [];
@@ -233,23 +233,23 @@ public class CanBoardLiveSimTests(CanBoardPdm pdm, ITestOutputHelper output) : I
     {
         var p = P;
         Assert.Equal("0000", p.Outs());
-        // B sends 0x652 (4 bytes: outputs 1 and 4 are its), A1 sends 0x650 (2 bytes: output 2), every 100 ms
+        // B sends 0x6D2 (4 bytes: outputs 1 and 4 are its), A1 sends 0x6D0 (2 bytes: output 2), every 100 ms
         var idle = p.Bus.Run(1000);
-        Assert.Equal((10, 10, 0), (idle.Count(f => f.Id == 0x652), idle.Count(f => f.Id == 0x650), idle.Count(f => f.Id == 0x651)));
-        Assert.All(idle.Where(f => f.Id == 0x652), f => Assert.Equal("00000000", Convert.ToHexString(f.Data)));
-        Assert.All(idle.Where(f => f.Id == 0x650), f => Assert.Equal("0000", Convert.ToHexString(f.Data)));
+        Assert.Equal((10, 10, 0), (idle.Count(f => f.Id == 0x6D2), idle.Count(f => f.Id == 0x6D0), idle.Count(f => f.Id == 0x6D1)));
+        Assert.All(idle.Where(f => f.Id == 0x6D2), f => Assert.Equal("00000000", Convert.ToHexString(f.Data)));
+        Assert.All(idle.Where(f => f.Id == 0x6D0), f => Assert.Equal("0000", Convert.ToHexString(f.Data)));
         var seen = new List<string>();
         foreach (var (in15, in16, in2) in new[] { (true, false, false), (true, true, false), (false, true, true), (false, false, true), (false, false, false) })
         {
             p.In("B", 0, in15); p.In("B", 1, in16); p.In("A1", 1, in2);
             p.Bus.Run(300);
             var f = p.Bus.Run(200);
-            var (b, a) = (Convert.ToHexString(f.Last(x => x.Id == 0x652).Data), Convert.ToHexString(f.Last(x => x.Id == 0x650).Data));
+            var (b, a) = (Convert.ToHexString(f.Last(x => x.Id == 0x6D2).Data), Convert.ToHexString(f.Last(x => x.Id == 0x6D0).Data));
             var reported = PdmCanBoardSim.Decode(null, null, f.Last(x => x.Id == Base + 4).Data, true).Outputs;
             seen.Add($"{b} {a} {p.Outs()}");
             Assert.Equal(p.Outs(), string.Concat(reported.Select(x => x ? '1' : '0')));     // its status frame says the same
         }
-        output.WriteLine("0x652 / 0x650 / CANBoard outputs 1-4: " + string.Join(" | ", seen));
+        output.WriteLine("0x6D2 / 0x6D0 / CANBoard outputs 1-4: " + string.Join(" | ", seen));
         Assert.Equal(["01000000 0000 1000", "01000001 0000 1001", "00000001 0001 0101", "00000000 0001 0100", "00000000 0000 0000"], seen);
 
         // the PDM board that drives outputs 1 and 4 goes silent: the CANBoard drops them after its own time-out, output 2 (A1) stays

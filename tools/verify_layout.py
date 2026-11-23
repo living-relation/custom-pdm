@@ -20,6 +20,8 @@ Checks and limits (sources in docs/pcb-verification.md):
                uncoated: the head can scrape the mask).
   Pads         every pad of a +12V / PF_OUT net that touches a pour of its net is a solid (not thermal-relief) joint.
   Mask         solder-mask dams between openings of different nets >= 0.10 mm (JLCPCB green, 1 oz), counted.
+  Op-amps      every pin of every quad op-amp (TLV9004IPWR / LM2902PWR) has a net shared with another pad, and no IN+
+               sits on its own channel's OUT / IN- net (TI SBOA204A: no floating input; tlvunused 2026-11-23).
   Fiducials    listed (JLCPCB does not need them for its own panels; info).
   Board B diff added / removed / moved footprints, copper per net and layer (track length, zone area, vias)
                against the stock board.
@@ -285,11 +287,42 @@ def check_board(key, path, stock):
                         ex.append(f"{a[5]}/{c[5]} {gap:.3f}")
         add(key, f"Solder-mask dams < 0.10 mm between pads ({M})", f"{thin}", "0 (else JLCPCB opens them as one window)",
             "PASS" if thin == 0 else "WARN", "; ".join(ex) + ("; fine-pitch IC rows: normal, the pads stay apart" if thin else ""))
+    opamp_pins(b, key)
     fid = [fp.GetReference() for fp in b.GetFootprints() if "Fiducial" in str(fp.GetFPID().GetLibItemName())]
     add(key, "Fiducials / tooling holes", f"{len(fid)} fiducials", "not required by JLCPCB (it adds panel rails "
         "with fiducials and tooling holes when it panelises)", "INFO")
     if stock and key == "B":
         diff_b(b, stock)
+
+
+OPAMP_MPNS = ("TLV9004IPWR", "LM2902PWR")     # quad op-amps, TSSOP-14 PW: 4 V+, 11 V-, channels on the other pins
+# channel pins (OUT, IN-, IN+), TI SBOS833R Table 6-5 / SLOS066AE Table 5-1
+OPAMP_CH = (("1", "2", "3"), ("7", "6", "5"), ("8", "9", "10"), ("14", "13", "12"))
+
+
+def opamp_pins(b, key):
+    """tlvunused 2026-11-23: no op-amp input may float (TI SBOA204A: an unused channel is a follower, IN+ on a
+    voltage inside the common-mode range). Every pin of every quad op-amp has a net that reaches another pad; IN+ is not
+    on its own channel's OUT / IN- net (that would leave the input level undefined)."""
+    pads_per_net = collections.Counter(p.GetNetname() for fp in b.GetFootprints() for p in fp.Pads() if p.GetNetname())
+    parts, bad = [], []
+    for fp in b.GetFootprints():
+        mpn = next((f.GetText() for f in fp.GetFields() if f.GetName() == "MPN"), "")
+        if mpn not in OPAMP_MPNS and fp.GetValue() not in OPAMP_MPNS:
+            continue
+        parts.append(fp.GetReference())
+        net = {p.GetNumber(): p.GetNetname() for p in fp.Pads()}
+        for num in sorted(net, key=lambda s: int(s) if s.isdigit() else 99):
+            if not net[num] or pads_per_net[net[num]] < 2:
+                bad.append(f"{fp.GetReference()} pin {num} floats ({net[num] or 'no net'})")
+        for o, n, p in OPAMP_CH:
+            if net.get(p) and net.get(p) in (net.get(o), net.get(n)):
+                bad.append(f"{fp.GetReference()} IN+ pin {p} on its own OUT / IN- net {net[p]}")
+    if not parts:
+        add(key, "Op-amp inputs (no floating pin)", "no quad op-amp on this board", "-", "N/A")
+        return
+    add(key, "Op-amp inputs (no floating pin)", f"{len(bad)} floating / undefined on {', '.join(sorted(parts))}",
+        "0 (TI SBOA204A: unused channel = follower, IN+ inside VCM)", "PASS" if not bad else "FAIL", "; ".join(bad[:8]))
 
 
 def copper_summary(b):

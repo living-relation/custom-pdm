@@ -7,8 +7,9 @@ Every item is now fixed or waived by `tools/drc_erc_waivers.py` (last stage of `
 `build_board_b.ps1`, `build_input_board.ps1`) with its reason written next to it; the stage fails the build on any new item.
 
 **Verdict: no real defect blocks the order. DRC 0, unconnected 0, parity 0, ERC errors 0 on all three boards. One small real
-item is open (board A: 3 unused op-amp channels float, stock design; the fix needs new nets, so it waits for a yes).
-Fab outputs (Gerbers, drills, BOM, CPL, JLC check) are unchanged.**
+item was open (board A: 3 unused op-amp channels float, stock design): CLOSED 2026-11-23 by job tlvunused (below); board A
+ERC is now 0 errors, 0 warnings. Fab outputs (Gerbers, drills, BOM, CPL, JLC check) were unchanged by drcclean; tlvunused
+changed board A's copper / drill files only (see "Closed").**
 
 ## Counts (active = not excluded; excluded items stay visible with `--severity-exclusions` and carry their reason)
 
@@ -16,7 +17,7 @@ Fab outputs (Gerbers, drills, BOM, CPL, JLC check) are unchanged.**
 |---|---|---|---|
 | A | DRC | 225: 165 active (28 clearance, 4 courtyard, 4 silk, 129 library) + 60 stock exclusions without a reason | 0 active, 22 excluded with reasons |
 | A | unconnected / parity | 0 / 4 | 0 / 0 |
-| A | ERC | 646: 29 errors, 617 warnings | 0 errors; 4 warnings OPEN (real, below); 336 excluded |
+| A | ERC | 646: 29 errors, 617 warnings | 0 errors; 4 warnings OPEN (real, below); 336 excluded. tlvunused 2026-11-23: 0 errors, 0 warnings, 336 excluded |
 | B | DRC | 418 active: 211 errors, 207 warnings | 0 active, 35 excluded |
 | B | unconnected / parity | 0 / 4 | 0 / 0 |
 | B | ERC | 806: 80 errors, 726 warnings | 0 errors, 0 warnings, 419 excluded |
@@ -70,7 +71,37 @@ untouched. Parity now 0 on both boards.
   Not re-run: `verify_copper.py`, `verify_si.py`, `thermal_board_b.py`, `verify_spice.py`: they read only copper or
   circuit values, which did not change (the `.kicad_pcb` files are byte-identical to main).
 
-## Open (real, not waived; needs a yes because it changes nets)
+## Closed 2026-11-23 (job tlvunused): board A unused TLV9004 channels
+
+Coordinator default (technical, 2026-11-23): each unused channel is a voltage follower, OUT to IN-, IN+ to GND.
+Sources: TI SBOA204A "How to Properly Configure Unused Operational Amplifiers" (follower with the non-inverting input
+on a voltage inside the common-mode and output ranges; favours rail-to-rail parts; for single supply it prefers a
+mid-supply divider, which would be 2 new parts per channel) and TI SBOS833R 7.5 (TLV9004 input common-mode
+(V-) - 0.1 V .. (V+) + 0.1 V: GND is inside it; rail-to-rail output). With IN+ at GND the output rests at the GND rail,
+the same state every used IS follower is in while its PROFET is off; stock dingoPDM already wires U7 channel D this way
+(pin 12 on GND, pins 13 / 14 joined).
+
+- Generator: `tools/tlv_unused.py` (stage of `build_board_a.ps1`). Schematic: U7 unit 1 (HighCurrentDrivers),
+  U12 units 1 / 2 (MedCurrentDrivers) placed with wires OUT -> IN- and IN+ -> GND symbol (stable uuid5 IDs); the
+  stage runs after the board-a.net export, so every earlier PCB stage is unchanged. PCB: pads get the netlist nets
+  (new Net-(U7A--), Net-(U12A--), Net-(U12B--); U7.3, U12.3, U12.5 on GND), one 0.65 mm top track per OUT / IN- pair,
+  a 0.8 / 0.4 mm GND via per IN+ on a short top track (U7.3 -> (30.974, 56.777), U12.3 -> (31.558, 50.18),
+  U12.5 -> (33.858, 48.88)); zones refilled. No footprint, pad, terminal or other net change, nothing moved.
+- Proof: netlist diff vs main = exactly those 9 pins (4 nets), parts equal; `board_semdiff` vs main: U7 / U12 pad
+  nets, + 7 tracks, + 3 GND vias, B.Cu +3V3 pour -4.0 mm2, F.Cu GND pour +0.6 mm2; a full `build_board_a.ps1`
+  rebuild gives the same nets, parts, footprints, tracks and vias as the committed board.
+- Checks: kicad-cli DRC 0 active (22 excluded), unconnected 0, parity 0; ERC 0 errors, 0 warnings (336 excluded);
+  the OPEN rows in `drc_erc_waivers.py` are removed (a floating unit is a NOT WAIVED item again); `--check` exit 0 on
+  A, B, IN. New `verify_layout.py` row "Op-amp inputs": PASS on A (U7 / U12) and B (U7 / U22), FAIL on main's A
+  (9 floating pins). `gen_fab_jlcpcb.py`: JLC DRC 0 types, co-located holes 0, zone change 0.000 % on all three.
+  `copper_order.py --check` PASS, `verify_dfm.py` 7 PASS / 7 WARN / 0 FAIL (as before), `verify_cpl.py` PASS (BOM / CPL
+  unchanged). `verify_spice.py` not run: no ngspice on DansPC or its WSL; its inputs did not change and the netlist
+  diff shows the IS chain nets untouched (only the 9 unused pins changed).
+- Fab diff (board A only): F_Cu, B_Cu (+3V3 pour around the 3 vias), In1_Cu, In2_Cu (via pads), PTH drill (+3
+  holes), `jlcpcb-drc.txt` (zone line label); BOM, CPL, masks, paste, silk, edge, NPTH unchanged. Boards B and IN:
+  fab outputs identical to main.
+
+## (was) Open (real, not waived; needs a yes because it changes nets)
 
 - Board A: TLV9004 U7 channel A and U12 channels A and B are not placed in the schematic, so their pins have no net and
   the inputs float (ERC `missing_unit` / `missing_input_pin`, 2 + 2 warnings; stock dingoPDM has the same). A floating

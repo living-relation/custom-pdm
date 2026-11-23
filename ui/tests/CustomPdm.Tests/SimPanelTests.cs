@@ -109,7 +109,7 @@ public class SimPanelTests
         var fan = Assert.Single(fields, f => f.Name == "Condenser fan (B OUT2): ECU command (1 = on)");
         Assert.Equal((0x3F4, 8, 8), (fan.Id, fan.StartBit, fan.Length));
         var coolant = Assert.Single(fields, f => f.Name.StartsWith("ECU coolant (0x"));
-        Assert.Contains(fields, f => f.Id == 0x180 + 0x28 && f.Length == 1);   // the keypad button of the starter
+        Assert.DoesNotContain(fields, f => f.Id == 0x180 + 0x28);              // configfix: no keypad (A/C on its switch)
         Assert.Equal(fields.OrderBy(f => f.Id).ThenBy(f => f.StartBit).Select(f => f.Key), fields.Select(f => f.Key));
 
         // a value one board reads from ANOTHER board's status frame is not for the simulator to send

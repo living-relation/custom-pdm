@@ -64,9 +64,9 @@ public class St185CarLiveSimTests(ITestOutputHelper output)
         }
         Assert.Equal((true, true, false, false), (bus.Pin("B", 2), bus.Pin("A1", 5), bus.Pin("B", 0), bus.Pin("B", 1)));
 
-        // ECU frames lost: pump off and fans on after 1 s (fans after their 1 s soft start), EPS enable holds
+        // ECU frames lost: every ECU-commanded load off after 1 s (pump, EPS enable, fans; configfix 2026-11-23: the ECU keeps control)
         bus.Run(3000);
-        Assert.Equal((false, true, true, true), (bus.Pin("B", 2), bus.Pin("A1", 5), bus.Pin("B", 0), bus.Pin("B", 1)));
+        Assert.Equal((false, false, false, false), (bus.Pin("B", 2), bus.Pin("A1", 5), bus.Pin("B", 0), bus.Pin("B", 1)));
 
         // head lamps: low (A1 OUT1) and high (A1 OUT2) on their switches to ground; DRL off with the head lamps on
         bus.Cmd("IN A1 2 gnd");   // DRL switch on

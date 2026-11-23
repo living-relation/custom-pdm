@@ -30,7 +30,7 @@
                        Color="Color.Default"
                        Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Save"
-                       Disabled="@(!Device.Connected || !AdapterConnected)"
+                       Disabled="@(!Device.Connected || !AdapterConnected || CustomPdmGuards.PerBoardOpReason(Device) != null)" @* custom-pdm: uiguide *@
                        OnClick="@OnBurnSettingsAsync">
                 Burn
             </MudButton>
@@ -70,7 +70,7 @@
                        Color="Color.Default"
                        Size="Size.Small"
                        StartIcon="@Icons.Material.Filled.Upload"
-                       Disabled="@(!Device.Connected || !AdapterConnected || CustomPdmGuards.WriteAllBlockedReason(Device) != null)"
+                       Disabled="@(!Device.Connected || !AdapterConnected || CustomPdmGuards.WriteAllBlockedReason(Device) != null || CustomPdmGuards.PerBoardOpReason(Device) != null)" @* custom-pdm: uiguide *@
                        OnClick="@OnWriteAllDeviceAsync">
                 Write All
             </MudButton>
@@ -89,7 +89,13 @@
                     <MudChip T="string" Variant="Variant.Outlined" Size="Size.Small" Icon="@Icons.Material.Filled.Info">Read / Write Modified off</MudChip>
                 </MudTooltip>
             }
-            @if (CustomPdmGuards.WriteAllBlockedReason(Device) is { } writeAllBlocked)
+            @if (CustomPdmGuards.PerBoardOpReason(Device) is { } perBoard) @* custom-pdm: uiguide *@
+            {
+                <MudTooltip Text="@perBoard">
+                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small">Write All / Burn: PDM page</MudChip>
+                </MudTooltip>
+            }
+            else if (CustomPdmGuards.WriteAllBlockedReason(Device) is { } writeAllBlocked)
             {
                 <MudTooltip Text="@writeAllBlocked">
                     <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info" Size="Size.Small">Read All first</MudChip>

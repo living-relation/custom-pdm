@@ -32,11 +32,12 @@ Update 2026-11-23 (job drcclean): every KiCad DRC / ERC / parity item below is n
 | `tools/board_semdiff.py` (hwfix) | content diff of a rebuilt board against main: footprints / pads / nets, tracks and vias, zones | `python tools/board_semdiff.py <old> <new>` |
 | `tools/verify_layout.py` (new) | CAN / USB pairs, crystal, I2C rise time, decoupling distance, metal at mounting holes, solid joints on power pads, mask dams, fiducials, board B vs stock | KiCad 9 python: `python tools/verify_layout.py --stock-b <stock dingoPDM-Max.kicad_pcb>` |
 | `tools/verify_cpl.py` (new) | the "JLC preview" check: every placed part's LCSC footprint (JLCEDA / EasyEDA official library, https://easyeda.com, https://lceda.cn) turned by the CPL rotation must land on our pads | `python tools/verify_cpl.py` (needs easyeda.com; since the presim job's neutral user agent it answers from DansPC too) |
+| `tools/tlv_unused.py` (tlvunused) | board A's unused TLV9004 channels as followers (schematic units + PCB tracks / GND vias; stops on any pad that already has another net) | run by `build_board_a.ps1` |
 | `tools/d2_tvs.py` (d2tvs) | the D2 DO-218 footprint, its spot and clamp copper (last PCB stage of both builds; stops on a courtyard overlap or fewer than 8 vias per net) | run by `build_board_a.ps1` / `build_board_b.ps1` |
 
 Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at the copper that is ORDERED, from the one table `tools/copper_order.py`: board A and board B 1 oz outer / 1 oz inner (35 / 35 um; B: Dan 2026-11-22, c1 = a; A: coordinator 2026-11-22, because the no-sink screen read 11.9 K at 0.5 oz inner), input board 1 oz (JLCPCB default). The KiCad stackups carry the same values (`tools/pcb_stackup.py`, last build stage; upstream had 43.2 / 17.3 um) and `copper_order.py --check` fails if fab notes, stackup and table differ. `--outer-um` / `--inner-um` with another value is a what-if run (labelled, exit 2). Results in the tables below that quote 43.2 / 17.3 um copper are the 2026-11-20 runs; the ordered-copper numbers are in the section at the end.
 
-## Board A (dingoPDM v7.5 based, built twice): 20 PASS, 0 FAIL, 3 WARN, 1 info (rows)
+## Board A (dingoPDM v7.5 based, built twice): 21 PASS, 0 FAIL, 3 WARN, 1 info (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -60,6 +61,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | Crystal Y1 | verify_layout | 7.7 mm to the OSC pins, nothing routed under it PASS; no ground plane under it: stock all-layer keep-out WARN | same | none (stock design) |
 | I2C pull-ups | verify_layout | 10k, estimated rise 304-306 ns at 400 kHz (limit 300 ns) WARN | same, `port.h` i2cConfig 400000 | Left 5 |
 | Decoupling | verify_layout | CAN transceiver U3 VDD (+5V) has no local cap (nearest 69 mm, as stock); LDO U2 caps 7-9 mm; op-amps 4.3-4.4 mm. WARN | same | Left 5 |
+| Op-amp inputs (no floating pin, tlvunused 2026-11-23) | verify_layout | was FAIL (stock): U7 channel A and U12 channels A / B (TLV9004 pins 1-3, 1-3, 5-7) had no net, inputs floating. FIXED by `tools/tlv_unused.py`: each is a follower (OUT to IN-, IN+ to GND; TI SBOA204A, TLV9004 VCM (V-)-0.1 V .. (V+)+0.1 V, SBOS833R 7.5), as stock already does for U7 channel D. Now 0 floating on U7 / U12 (board B U7 / U22: 0). PASS | `verify_layout.py` (row "Op-amp inputs"; FAILs on main's board A) | done |
 | Metal at mounting holes | verify_layout | was +0.11 mm from the 6.0 mm aluminium sink post (enclosure `build_v2b.py` BOSS) to the +12V pour: FIXED by `tools/pcb_hole_keepout.py` (pour keep-out r 3.6 mm, F.Cu / B.Cu): now +0.61 mm (IPC-2221B B2 31-50 V: 0.6 mm); +3V3 track at H1 +0.23 mm (0-15 V: 0.1 mm). PASS | same; DRC unchanged (214) | done |
 | Power pads solid to pours | verify_layout | 0 thermal-relief joints on +12V / PF_OUT. PASS | same | none |
 | Mask dams < 0.10 mm | verify_layout | 0. PASS | same | none |

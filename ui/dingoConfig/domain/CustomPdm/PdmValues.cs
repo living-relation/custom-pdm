@@ -26,7 +26,8 @@ namespace domain.CustomPdm;
 //             frame = 8 one-bit outputs (msg 37 is full)
 // An input of another board inside a counter / starter / retry is one CAN input on msg 37 (the links 'off' recipe).
 // canboard: CanBoard = one input of a CANBoard preset (PdmCanBoard); its output frames are CanOut
-public enum PdmValueKind { Counter, Math, Level, CanValue, Keypad, Starter, Retry, CanOut, CanBoard }
+// configfix: AutoSleep = the key-off mute timer of a board (+ its ignition CAN input), PdmKeyOff
+public enum PdmValueKind { Counter, Math, Level, CanValue, Keypad, Starter, Retry, CanOut, CanBoard, AutoSleep }
 
 public record PdmValueFn(PdmValueKind Kind, string Board, PdmRes Main, IReadOnlyList<PdmRes> Made, string Words, int Var);
 
@@ -171,6 +172,14 @@ public static class PdmValues
                 list.Add(new PdmValueFn(PdmValueKind.Starter, r, me, [me, .. made],
                     $"starter interlock: while {T(m, q, st.Input, made)} is on, outputs {string.Join(", ", outs)} are held off", 0));
                 list[^1] = list[^1] with { Made = [me, .. made] };
+            }
+            // configfix: auto sleep after the key off (PdmKeyOff): the mute timer and its ignition CAN input
+            if (d.SleepEnabled && PdmKeyOff.SleepTimer(d) is { Enabled: true } kt)
+            {
+                var made = new List<PdmRes>();
+                var me = new PdmRes(r, PdmResKind.Timer, d.Timers.IndexOf(kt));
+                var w = $"auto sleep: CAN TX muted {PdmLinks.DelayText(kt.Time)} after {T(m, q, kt.ResetInput, made)} goes off, then the board sleeps 30 s after the bus is quiet";
+                list.Add(new PdmValueFn(PdmValueKind.AutoSleep, r, me, [me, .. made], w, 0));
             }
             if (d.CustomPdm is { MasterRetryInput: > 0 } cp)
             {

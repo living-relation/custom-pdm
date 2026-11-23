@@ -292,7 +292,7 @@ public class UiWalkTests
         var m = PdmModel.Build(v);
         string Words(int n) => PdmTriggers.Of(m, n).Words;
         Assert.Equal("ECU 0x3F4 byte 0 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(19));
-        Assert.Equal("ECU 0x3F4 byte 1 = 1 (ECU only; on 1 s after the ECU frames stop; off until the first frame)", Words(18));
+        Assert.Equal("ECU 0x3F4 byte 1 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(18));   // configfix: ECU loads off at loss
         Assert.Equal("B CAN input 5 'ECU coolant' value on at 92 or more, off at 88 or less", Words(17));
         Assert.Equal("IN2 AND IN1", Words(2));
         Assert.Equal("IN15, off-delay 5 s", Words(8));
@@ -300,7 +300,7 @@ public class UiWalkTests
         Assert.StartsWith("turn signal LEFT: IN8 or hazard IN10, flashing 350 / 350 ms", Words(9));
         Assert.StartsWith("turn signal RIGHT: IN9 or hazard IN10", Words(11));
         Assert.StartsWith("wiper motor run (wiper on B: switches slow IN16, fast IN17, intermittent IN19; park cam IN18", Words(23));
-        Assert.Contains("keypad 0x28 button 1", Words(22));
+        Assert.Equal("IN20", Words(22));                    // configfix: the OEM A/C switch, no keypad
         Assert.Contains("fan logic", Words(10));           // A2 OUT2 still runs the box fans
         Assert.Equal("IN15 = Ignition", PdmPageText.InputNames(v, Words(8)));
     }
@@ -383,7 +383,8 @@ public class UiWalkTests
 
     private static readonly string[] SetUpByTheExample =
     [
-        "output", "input", "canInput", "virtualInput", "condition", "timer", "flasher", "wiper", "customPdm"
+        "output", "input", "canInput", "virtualInput", "condition", "timer", "flasher", "wiper", "customPdm",
+        "device"   // configfix: auto sleep (device.sleepEnabled, device.muteCanTxInput; ui PdmKeyOff)
     ];
 
     [Fact]
