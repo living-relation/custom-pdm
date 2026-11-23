@@ -13,7 +13,7 @@ Updated: 2026-11-23 -- claude-cloud-orchestrator
 - Detail: none
 
 ## Next Single Step
-- [NEXT] HOLD the order. Review + merge hwtemp (fix/thermal-revF), carsim (feat/full-pdm-car-sim), isdebug (fix/board-a-current-reading); then ONE Fusion job (re-import changed boards, re-check, Fusion thermal per board + assembly before the 2026-12-01 trial end); move the old store state copies to the store _archive; drift watcher every 4 h (coordinator reminder)
+- [NEXT] HOLD the order (c7 = a: decide after proof report, assembly options, harness cost study). Five jobs stopped by Dan's 09:04 interrupt: restart them with the c8 / c9 answers once Dan says so (c10)
 
 ## Pointers
 - Branch_States: generated (state_manager.py branches)
@@ -21,4 +21,4 @@ Updated: 2026-11-23 -- claude-cloud-orchestrator
 - Latest_ADR: ADR-2026-11-23-uifix2
 - Last_Cleanup: 2026-11-23 @ 19479b5
 - Kept_Branches: fix/thermal-revF, feat/full-pdm-car-sim, fix/board-a-current-reading (2026-11-23)
-- Question_Counter: c6
+- Question_Counter: c10
