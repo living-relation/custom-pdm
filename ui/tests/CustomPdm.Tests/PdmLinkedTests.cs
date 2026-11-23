@@ -36,7 +36,7 @@ public class PdmLinkedTests
         Assert.All(v.Boards, b => Assert.All(b.Device.Outputs, o => Assert.Equal(ResetMode.Count, o.ResetMode)));
         Assert.Equal([0, 2, 0], v.Boards.Select(b => b.Device.CustomPdm!.CritExemptMask));
         // board B: its own limits (fwsafety, port_boards.py FAN_B block)
-        Assert.All(v.Boards, b => Assert.Equal(b.Role == "B" ? new PdmTempLimits(98, 104, 6, 5) : new PdmTempLimits(55, 80, 6, 5), PdmTempLimits.Of(b.Device)));
+        Assert.All(v.Boards, b => Assert.Equal(new PdmTempLimits(98, 104, 6, 5), PdmTempLimits.Of(b.Device)));   // A and B: FEA maps
         Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.FactoryNew));
         // w3a: current limit = each output's rating (A2 OUT2, the fan: 1 A); inrush limits stay 50 A (fan 2 A)
         Assert.Equal([7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5, 7.5], Dev(v, "A1").Outputs.Select(o => o.CurrentLimit));
@@ -84,9 +84,15 @@ public class PdmLinkedTests
         Assert.Equal(PdmFactoryDefaults.FanOnC, Num("FAN_ON_C"));
         Assert.Equal(PdmFactoryDefaults.FanOffC, Num("FAN_OFF_C"));
         Assert.Equal(PdmFactoryDefaults.FanCanIn0, int.Parse(Regex.Match(py, @"#define FAN_CANIN0 (\d+)").Groups[1].Value));
-        // board B temperature limits (fwsafety): the FAN_B block of port_boards.py
-        Assert.Equal((CustomPdmSettings.DefaultTempWarnB, CustomPdmSettings.DefaultTempCritB),
-            (int.Parse(Regex.Match(py, @"#define DEFAULT_TEMP_WARN (\d+)").Groups[1].Value), int.Parse(Regex.Match(py, @"#define DEFAULT_TEMP_CRIT (\d+)").Groups[1].Value)));
+        // board B temperature limits (fwsafety): the FAN_B block of port_boards.py; board A (hwtemp): the FAN_A block
+        (int, int) Lim(string board)
+        {
+            var m = Regex.Match(py, $@"#define DEFAULT_TEMP_WARN (\d+)\s+// board {board}:[^\n]*\n#define DEFAULT_TEMP_CRIT (\d+)");
+            Assert.True(m.Success, board);
+            return (int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value));
+        }
+        Assert.Equal((CustomPdmSettings.DefaultTempWarnB, CustomPdmSettings.DefaultTempCritB), Lim("B"));
+        Assert.Equal((CustomPdmSettings.DefaultTempWarnA, CustomPdmSettings.DefaultTempCritA), Lim("A"));
         // w3a current limits: board A, board B OUT1-4, board B OUT5-8, the fan
         var lim = Regex.Match(py, @"LIMIT_A, LIMIT_B_STUD, LIMIT_B, LIMIT_FAN = ([0-9.]+), ([0-9.]+), ([0-9.]+), ([0-9.]+)");
         Assert.True(lim.Success);
@@ -123,10 +129,10 @@ public class PdmLinkedTests
     public void TempLimitsByBoardShowEachBoardsSensorValues()
     {
         var v = NewPdm();
-        // fwsafety: board B ships with its own limits (98 / 104, its FEA sensor map), board A the stock 55 / 80
-        Assert.Equal([(55, 80), (55, 80), (98, 104)], PdmLinked.TempLimitsByBoard(v).Select(t => (t.Limits.Warn, t.Limits.Crit)));
+        // fwsafety / hwtemp: each board ships with its own limits from its FEA sensor map: 98 / 104 on A and B
+        Assert.Equal([(98, 104), (98, 104), (98, 104)], PdmLinked.TempLimitsByBoard(v).Select(t => (t.Limits.Warn, t.Limits.Crit)));
         Dev(v, "B").CustomPdm!.TempWarn = 60;
-        Assert.Equal([55, 55, 60], PdmLinked.TempLimitsByBoard(v).Select(t => t.Limits.Warn));
+        Assert.Equal([98, 98, 60], PdmLinked.TempLimitsByBoard(v).Select(t => t.Limits.Warn));
     }
 
     [Theory]

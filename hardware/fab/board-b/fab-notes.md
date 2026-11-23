@@ -36,6 +36,7 @@ Thin stock (order soon; if JLCPCB shows a part short, use its approved alternate
 |---|---|---|---|---|
 | D2 | 1 | Bourns SM8S24CA-Q | 400 at Digi-Key on 2026-11-22; LCSC C1976790 not checked | Vishay SM8S24CAHM3/I (LCSC C20036943, DK 112-SM8S24CAHM3/ITR-ND); Panjit SM8H24CAS-AU |
 | T1, T2, T3, T4, T5, T6, T7, T8 | 8 | Wurth Elektronik 74650074R | no LCSC number (global sourcing); Digi-Key 732-74650074RCT-ND | none approved: if JLCPCB cannot get it, quote the board at PCBWay by MPN (`*-bom-full.csv`) |
+| U5 | 1 | Infineon CY15B064J-SXE | 0 at LCSC on 2026-11-23 (C2953601, global sourcing); Digi-Key 448-CY15B064J-SXE-ND (hwtemp FRAM) | RAMXEED MB85RC64TAPNF-G-AWERE2 (LCSC C43379785; 105 C part: fit only with the board's critical limit keeping the FRAM <= 105 C, docs/heat-analysis.md 5) |
 | U8, U9, U10, U11 | 4 | Infineon BTS700121ESPXUMA1 | 17 at LCSC on 2026-11-22 (C3232444) | Infineon BTS700121ESPXUMA2 (DK 448-BTS700121ESPXUMA2CT-ND) |
 | U27 | 1 | Texas Instruments LMZM23601V5SILR | 135 at LCSC on 2026-11-22 (C2868357) | TI LMZM23601V5SILT (same part, 250 reel, LCSC C2876787) |
 | Y1 | 1 | ECS Inc. ECS-80-18-30Q-CES-TR | no LCSC number (global sourcing); Digi-Key 50-ECS-80-18-30Q-CES-TRCT-ND | ECS ECS-80-18-30Q-VY-TR (-40..105 C, LCSC C6844210) |

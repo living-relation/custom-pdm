@@ -1,6 +1,8 @@
 # Heat analysis - the current design (enclosure revF, boards with the 5 V module, 1 oz inner copper)
 
-Status: re-run 2026-11-23 (job thermal3, branch `feat/thermal-current`) on the current geometry. Results, not decisions.
+Status: re-run 2026-11-23 (job thermal3, branch `feat/thermal-current`) on the current geometry; fixes and re-run the
+same day (job hwtemp, branch `fix/thermal-revF`: section 0; sections 1-6 show the numbers after the fixes, the PR #139
+numbers are in the "before" column of section 0). Results, not decisions.
 The 2026-11-11 / 11-12 results (older v2b sink, fans pulling, no copper heat) are kept at the end as history (section 8).
 Tools: Elmer 26.2 + Gmsh 4.14 in WSL (whole box), finite-volume board models on the real KiCad copper (KiCad 9 python).
 Marks: **ASSUMED** = my modelling choice, **TBD** = not confirmed. All at a 60 C cabin.
@@ -8,27 +10,42 @@ Marks: **ASSUMED** = my modelling choice, **TBD** = not confirmed. All at a 60 C
 Order of work (Dan, 2026-11-23): each board alone first (A, B, input board: sink, fans on, TGP 3000 pad), then the whole
 assembly.
 
+## 0. Fixes (job hwtemp, 2026-11-23): before / after
+
+Coordinator defaults a-e (technical, test-first; DECISIONS proposal in the PR). Same 60 C cabin, same models; "before"
+= PR #139 (5 V module 0.2 W ASSUMED), "after" = this branch.
+
+| # | Item | Before (PR #139) | Change | After | Verdict |
+|---|---|---|---|---|---|
+| a | 5 V module loss (A U21, B U27) | 0.2 W ASSUMED; spot moved 99 -> 133 C over 0.1-0.4 W | TI SNVSAQ4C Figure 8-46 at the real load 0.22 A (CAN 70 mA dominant + +3V3 155 mA) and 13.5 V in: 0.116 W at 25 C, + hot conduction share (I^2 x 0.61 Ohm x 50 %, ASSUMED) = **0.131 W** (`thermal_board_b.p5v_loss`) | B U27 board: feed150 fans 119.3 -> 111.3 C, car 111.6 -> 103.7 C; A U21: car 102.0 -> 93.8 C, feed150a 110.5 -> 102.2 C; module board limit 121 -> 122.4 C (TJ 125 - 20 K/W x 0.131 W) | PASS (assumption replaced by maker data) |
+| b | Board B FRAM at its 104 C cut | MB85RC64TA (105 C): 107.3 C, 2.3 K over | U5 = Infineon CY15B064J-SXE on A and B (Automotive-E 125 C, same SOIC-8 / pins / address 0x50 / 2 address bytes / no page limit; firmware driver unchanged; `docs/parts-audit.md` 17) | FRAM offset over U6 +2.1 K: at 104 + 1 C it sits at 107.1 C vs 125 C (allows critical 121.9 C) | PASS |
+| c | Board A firmware limits | stock 55 / 80 C; U6 79.4 C at the car loads (1 K from the cut) | factory warn 98 / critical 104 / recovery 6 C (`port_boards.py` FAN_A; UI `PdmFactoryDefaults` / `PdmThermal` board A offset 21 K) from the board A part map (section 5) | U6 79.2 C at the car loads, 70.7 C on the s5 drive cycle: 18.8 K under warn; at critical 104 C every part inside its rating (binding 5 V module allows 105.2 C) | PASS |
+| d | Input-board DIP switch (Omron A6S, 70 C) in the lid air | 79.8 / 80.1 / 91.4 C (car / feed150 / feed150a) | no SMD DIP switch >= 105 C exists: 16 solder jumpers JP1-JP16 in the same board area (set by hand, table in `docs/order-checklist.md`); connectors, holes and outline unchanged | jumpers 79.4 / 79.7 / 91.0 C, board max 87.7 / 88.0 / 99.3 C vs the 130 C laminate (input board alone in 60 C air: jumpers 64.5 C, max 72.8 C; was DIP 64.9 / max 77.6 C) | PASS |
+| e | Fans (Sunon, -10..+70 C) | intake 60 C cabin air; frame on the 66-71 C fin wall | no 30 x 30 x 10 mm fan rated >= 80 C found (`docs/parts-audit.md` 17) | unchanged: fin wall 66.0-70.7 C | WARN kept (bearing life; the critical cut covers a dead fan) |
+| - | Board B limits (98 / 104 C) | WARN (FRAM 2.3 K, module about 1 K over) | (a) + (b) | part map allows critical 106.7 C (5 V module), MCU 107.1 C; 104 C kept (fwsafety MCU rule) | PASS |
+| - | s5 drive cycle as a load case (`drive`, PR #140 `firmware/sim/data/s5_board_power.csv`) | - | RMS current per output over the coolant / fan phase (B 62.9 A, A1 5.8 A), held steady | B: Tj 80.9 C, laminate 89.8 C (U27), U6 75.1 C; A1: Tj 65.7 C, laminate 86.8 C (U21), U6 70.7 C; box 6.5 W, sink 63.8 C, lid air 69.8 C | PASS |
+
 ## 1. Answer in short
 
 | Board / item | Worst case the firmware allows (fans on) | Limit | Verdict |
 |---|---|---|---|
-| Board A alone (A1 at 60 A, `feed150a`) | Tj 119.7 C (U13), laminate 117.2 C, MCU board 89.3 C, FRAM board 93.7 C, 5 V module board 110.5 C | 150 / 130 / 105 / 105 / 121 C | PASS |
-| Board B alone (150 A on B, worst split `feed150lo`) | Tj 121.6 C (U23), laminate 120.6 C (at the 5 V module U27), FRAM board 109.3 C, U6 sensor 108.2 C | 150 / 130 / 105 C | PASS for Tj and laminate; FRAM over 105 C at a steady 150 A, but the board's 104 C cut comes first (section 4) |
-| Input board alone (all 8 inputs at 16 V, pull-downs on) | DIP switch 64.9 C, board max 77.6 C (in 60 C air) | 70 / 130 C | PASS (5 K margin; see the radiation assumption) |
+| Board A alone (A1 at 60 A, `feed150a`) | Tj 119.6 C (U13), laminate 117.1 C, MCU board 88.9 C, FRAM board 93.2 C, 5 V module board 102.2 C | 150 / 130 / 105 / 125 / 122.4 C | PASS |
+| Board B alone (150 A on B, worst split `feed150lo`) | Tj 121.5 C (U23), laminate 118.0 C (feed corner, B.Cu), FRAM board 109.0 C, 5 V module board 112.6 C, U6 sensor 108.1 C | 150 / 130 / 125 / 122.4 C | PASS (the board's 104 C cut acts at a steady 150 A, section 4) |
+| Input board alone (all 8 inputs at 16 V, pull-downs on) | solder jumpers 64.5 C, board max 72.8 C (in 60 C air) | 130 C | PASS (h 3, no radiation: 76.9 / 85.9 C) |
 | Whole box, sink (fans on) | 75.9 C max at 150 A on B; pedestals under B 74.4 C | - | (input for the boards) |
-| Whole box, lid air -> input-board **DIP switch** (Omron A6S, -20..+70 C) | 79.8 C at the car loads, 80.1 C at 150 A on B, 91.4 C at 150 A with the A boards loaded | 70 C | **FAIL by 10-21 K** (known: `docs/parts-audit.md` 10 lists no 105 C DIP switch) |
-| Fans (Sunon, -10..+70 C) | intake = 60 C cabin air (they push); their wall on the sink 66-71 C | 70 C | PASS for the air; frame contact WARN (71 C at `feed150a`) |
-| Board A firmware limits (stock 55 / 80 C) | U6 reads 79.4 C at the car loads, fans on | must not cut in normal use | **FAIL** (1 K under the stock 80 C cut, sensor +-1 C): proposed warn 86 / critical 97 C (section 5) |
-| Board B firmware limits (98 / 104 C) | at a 104 C reading the FRAM board can sit at 107.3 C, the 5 V module at 122 C (+4 K own heat = 126 C TJ) | 105 / 125 C | WARN: 2.3 K over on the FRAM, 1 K on the module (section 5) |
+| Whole box, lid air -> input-board **solder jumpers** (were the 70 C DIP switches) | 79.4 C at the car loads, 79.7 C at 150 A on B, 91.0 C at 150 A with the A boards loaded (board max 87.7 / 88.0 / 99.3 C) | 130 C laminate | PASS (hwtemp d) |
+| Fans (Sunon, -10..+70 C) | intake = 60 C cabin air (they push); their wall on the sink 66-71 C | 70 C | PASS for the air; frame contact WARN (71 C at `feed150a`): no 80 C 30 mm fan exists (hwtemp e) |
+| Board A firmware limits (98 / 104 C since hwtemp; were the stock 55 / 80) | U6 reads 79.2 C at the car loads, 70.7 C on the drive cycle, fans on | must not cut in normal use | PASS (section 5) |
+| Board B firmware limits (98 / 104 C) | at a 104 C reading (+1 C error): FRAM board 107.1 C, 5 V module board 119.7 C | 125 / 122.4 C | PASS (FRAM now 125 C, module loss from TI data; section 5) |
 
 - **Nothing on the power path exceeds a rating** with the fans on at any load the firmware allows (150 A feed). Every
   output at its rating at once (304 A, twice the feed) is an upper bound only: there board B's laminate reaches 148.5 C
   and board A's 135.2 C (INFO, the feed limit prevents it).
 - **The fans now push west**, so the warm exhaust leaves under board B (the board with the most heat). The sink under
   B runs 0.54 K/W of box heat (was 0.47 K/W in the 11-12 model with the fans pulling); under the A boards 0.41 K/W.
-- **New hot spot: the 5 V module (LMZM23601V5)** is the hottest laminate point on both boards at most loads (board B
-  119-121 C at 150 A, board A 102-110 C). It sits in the logic corner, far from the pedestals, and its loss (0.2 W
-  ASSUMED) moves it a lot: 0.1 W -> 0.4 W moves it from 106 to 140 C on B (section 6). Bench item: measure the 5 V load.
+- **The 5 V module (LMZM23601V5)** is the hottest laminate point at light loads (car / drive cycle on A, drive cycle
+  on B). Its loss is now TI's (0.131 W at 0.22 A, 13.5 V; was 0.2 W ASSUMED): board B 110-113 C at 150 A, board A
+  94-102 C. Bench item: measure the 5 V load and the module case temperature.
 - **Fans off** (failed): on a wall the sink reaches 92 C at 150 A (1.21 K/W, was 0.98); flat (fins down) 129 C.
   The boards' own temperature cut is the protection, as before.
 
@@ -45,17 +62,24 @@ Box heat per load case (`sim/heat/loads_revF.json`, from the board models; `sim/
 
 Results (mesh m2, 828k tetrahedra; sink = plate + fins + pedestals + bosses; R_sys = (sink max - 60 C) / box heat):
 
-| Load | Air | Box (W) | Sink mean / max (C) | Pedestal max under B / A1 / A2 (C) | Fan end of the fins (C) | Lid air (C) | DIP switch (C) |
+After the hwtemp fixes (5 V modules 0.131 W, s5 drive-cycle load added; `~/scratch/hwtemp/heat/m2`, 2026-11-23):
+
+| Load | Air | Box (W) | Sink mean / max (C) | Pedestal max under B / A1 / A2 (C) | Fan end of the fins (C) | Lid air (C) | Input-board jumpers / board max (C) |
 |---|---|---|---|---|---|---|---|
-| feed150 | fans on | 26.6 | 69.0 / 75.9 | 74.4 / 68.1 / 66.1 | 66.0 | 75.2 | 80.1 |
-| feed150 | fans on, pad k 1.5 | 26.6 | 69.0 / 76.3 | 74.3 / 68.1 / 66.1 | 66.0 | 75.2 | 80.1 |
-| feed150a | fans on | 26.7 | 69.0 / 71.0 | 70.1 / 71.0 / 70.8 | 70.8 | 86.5 | 91.4 |
-| car | fans on | 21.4 | 67.2 / 72.4 | 71.5 / 67.1 / 65.1 | 65.0 | 74.9 | 79.8 |
-| rating (INFO) | fans on | 71.2 | 84.0 / 97.6 | 94.2 / 84.4 / 80.9 | 80.7 | 97.3 | 102.2 |
-| feed150 | fans off, wall (fins vertical) | 26.6 | 86.1 / 92.1 | 90.7 / 85.6 / 84.2 | 84.1 | 80.6 | 85.5 |
-| feed150 | fans off, flat (fins down) | 26.6 | 122.7 / 128.7 | 127.4 / 122.1 / 120.7 | 120.7 | 92.3 | 97.2 |
-| car | fans off, wall | 21.4 | 83.1 / 87.4 | 86.7 / 83.3 / 81.9 | 81.8 | 79.9 | 84.8 |
-| car | fans off, flat | 21.4 | 112.4 / 116.8 | 116.0 / 112.6 / 111.1 | 111.1 | 89.3 | 94.2 |
+| feed150 | fans on | 26.4 | 68.9 / 75.9 | 74.3 / 68.0 / 66.0 | 66.0 | 75.2 | 79.7 / 88.0 |
+| feed150 | fans on, pad k 1.5 | 26.4 | 68.9 / 76.2 | 74.2 / 68.0 / 66.1 | 66.0 | 75.2 | 79.7 / 88.0 |
+| feed150a | fans on | 26.4 | 68.9 / 70.9 | 70.0 / 70.9 / 70.7 | 70.7 | 86.5 | 91.0 / 99.3 |
+| car | fans on | 21.2 | 67.1 / 72.3 | 71.5 / 67.1 / 65.0 | 65.0 | 74.9 | 79.4 / 87.7 |
+| drive (s5, new) | fans on | 6.5 | 62.2 / 63.8 | 63.6 / 62.1 / 61.5 | 61.5 | 69.8 | 74.3 / 82.6 |
+| rating (INFO) | fans on | 71.0 | 84.0 / 97.6 | 94.1 / 84.4 / 80.8 | 80.6 | 97.3 | 101.8 / 110.1 |
+| feed150 | fans off, wall (fins vertical) | 26.4 | 86.0 / 92.0 | 90.6 / 85.5 / 84.1 | 84.0 | 80.6 | 85.1 / 93.4 |
+| feed150 | fans off, flat (fins down) | 26.4 | 122.4 / 128.5 | 127.1 / 121.8 / 120.4 | 120.4 | 92.2 | 96.7 / 105.0 |
+| car | fans off, wall | 21.2 | 83.0 / 87.3 | 86.6 / 83.2 / 81.7 | 81.7 | 79.9 | 84.4 / 92.7 |
+| car | fans off, flat | 21.2 | 112.0 / 116.4 | 115.7 / 112.3 / 110.8 | 110.7 | 89.2 | 93.7 / 102.0 |
+
+R_sys for the board models is unchanged to 0.01 K/W (B 0.542 / 1.253, A 0.412 / 1.096 K/W fans on / off): `R_SYS`
+0.54 / 1.25 and `R_SYS_A` 0.41 / 1.09 kept. PR #139 (0.2 W modules) had 26.6 / 26.7 / 21.4 / 71.2 W and the same
+temperatures within 0.2 K; its "DIP switch" column (lid air + 4.9 K) was 80.1 / 91.4 / 79.8 C against the A6S 70 C.
 
 Heat maps (sink top with the pedestals, and the fin tips): `docs/diagrams/heat-revF-box-fans-feed150.png` (worst case
 for the sink, fans on), `docs/diagrams/heat-revF-box-fans-feed150a.png` (A boards loaded),
@@ -91,66 +115,92 @@ Same finite-volume model as board B's (`tools/thermal_board_b.py` Thermal class)
 nets from `hardware/board-a/DingoPDM.kicad_pcb` at the ORDERED 35 / 35 um, FR-4 between, via / hole barrels, TGP 3000 on
 the two pedestals, 4 mm air gap under the board, lid air over it. Heat: the four BTS7008-2EPA on their exposed pads (16
 mOhm per channel = 1.80 W per chip at 2 x 7.5 A), the copper I2R of +12V and every loaded output (solved on the real
-copper, `tools/verify_copper.py`), J1 joint + half the BATT bars, the 5 V module U21 (0.2 W ASSUMED). The pedestals sit at
+copper, `tools/verify_copper.py`), J1 joint + half the BATT bars, the 5 V module U21 (0.131 W, TI SNVSAQ4C Figure 8-46;
+was 0.2 W ASSUMED). The pedestals sit at
 the hottest A pedestal of the box model (0.41 K/W fans on, 1.09 K/W fans off on a wall). Tests: `tools/test_thermal_models.py`
 (EP = the footprint's pad 15, chips over the pedestals, ordered copper, isothermal with no heat, energy balance; 13 tests).
 
-| Case | Sink | Tj max (chip) | Laminate max (where) | MCU U4 / FRAM U5 / 5 V module U21 board | U6 sensor | Verdict |
-|---|---|---|---|---|---|---|
-| feed150a, fans on (A1 60 A) | 70.9 | 119.7 (U13) | 117.2 (next to U13) | 89.3 / 93.7 / 110.5 | 97.5 | PASS |
-| car, fans on (A1 20.4 A) | 68.9 | 89.0 (U13) | 102.0 (U21) | 76.2 / 80.5 / 102.0 | 79.4 | PASS |
-| rating, fans on (INFO) | 88.7 | 137.7 | 135.2 | 107.5 / 112.0 / 128.5 | 116.1 | over 130 laminate (upper bound only) |
-| feed150a, fans off (wall) | 89.4 | 138.4 | 135.9 | 108.3 / 112.7 / 129.3 | 116.8 | over: the temperature cut must act |
-| car, fans off (wall) | 83.7 | 103.9 | 116.9 | 91.1 / 95.3 / 116.9 | 94.3 | PASS heat; above the stock 80 C cut |
+After hwtemp (5 V module 0.131 W; case `drive` = the s5 drive cycle; FRAM CY15B064J 125 C):
 
-Heat maps: `docs/diagrams/thermal-board-a-feed150a-fans.png` (F.Cu, B.Cu, copper-I2R rise), `-car-fans`, `-rating-fans`.
+| Case | A1 (A) | Sink | Tj max (chip) | Laminate max (where) | MCU U4 / FRAM U5 / 5 V module U21 board | U6 sensor | Verdict |
+|---|---|---|---|---|---|---|---|
+| feed150a, fans on (A1 60 A) | 60.0 | 70.8 | 119.6 (U13) | 117.1 (next to U13) | 88.9 / 93.2 / 102.2 | 97.3 | PASS |
+| car, fans on | 20.4 | 68.8 | 88.9 (U13) | 93.8 (U21) | 75.7 / 80.0 / 93.8 | 79.2 | PASS (under the 98 C warn) |
+| drive, fans on | 5.8 | 62.6 | 65.7 (U13) | 86.8 (U21) | 68.5 / 72.7 / 86.8 | 70.7 | PASS |
+| rating, fans on (INFO) | 60.0 | 88.6 | 137.6 | 135.1 | 107.1 / 111.6 / 120.3 | 115.9 | over 130 laminate (upper bound only) |
+| feed150a, fans off (wall) | 60.0 | 89.2 | 138.2 | 135.7 | 107.7 / 112.1 / 120.8 | 116.5 | over: the 104 C cut acts (U6 116.5) |
+| car, fans off (wall) | 20.4 | 83.5 | 103.6 | 108.5 (U21) | 90.4 / 94.7 / 108.5 | 94.0 | PASS heat; warn not reached (98) |
+| drive, fans off (wall) | 5.8 | 67.0 | 70.0 | 91.2 (U21) | 72.8 / 77.1 / 91.2 | 75.0 | PASS |
+| rating, fans off (INFO) | 60.0 | 137.3 | 186.8 | 184.3 | 156.8 / 161.6 / 169.6 | 166.6 | upper bound only; the cut acts |
+
+PR #139 (0.2 W): feed150a fans 119.7 / 117.2 / U21 110.5 / U6 97.5 C; car fans 89.0 / 102.0 (U21) / U6 79.4 C; car fans
+off U21 116.9, U6 94.3 C.
+
+Heat maps: `docs/diagrams/thermal-board-a-<case>-fans.png` / `-nofan.png` (F.Cu, B.Cu, copper-I2R rise; cases rating,
+feed150a, car, drive).
 
 ## 4. Board B (`tools/thermal_board_b.py`, re-run on the current files)
 
-Changes in the model: gap pad 0.86 mm (was 1.0 mm), 5 V module U27 0.2 W added, pedestals at 0.54 K/W fans on / 1.25 K/W
+Changes in the model: gap pad 0.86 mm (was 1.0 mm), 5 V module U27 0.131 W (TI data, hwtemp; PR #139: 0.2 W), pedestals at 0.54 K/W fans on / 1.25 K/W
 fans off (revF box, was 0.47 / 0.98), logic parts reported (MCU, FRAM, 5 V module, crystal). Grid 0.3 mm.
 
-| Case | Sink | Tj max (chip) | Laminate max (where) | MCU U4 / FRAM U5 / 5 V module U27 board | U6 sensor | Verdict |
-|---|---|---|---|---|---|---|
-| feed150, fans on | 74.2 | 109.1 (U9) | 119.3 (U27) | 97.1 / 108.0 / 119.3 | 107.6 | PASS heat; U6 over 104: board B cuts |
-| feed150hi, fans on | 73.4 | 119.0 (U9) | 119.0 (feed corner, B.Cu) | 95.3 / 107.3 / 118.5 | 108.4 | as above |
-| feed150lo, fans on | 75.3 | 121.6 (U23) | 120.6 (U27) | 99.3 / 109.3 / 120.6 | 108.2 | as above |
-| car, fans on | 71.1 | 114.4 (U25) | 111.6 (U27) | 88.2 / 96.7 / 111.6 | 94.5 | PASS (under the 98 C warn) |
-| rating, fans on (INFO) | 81.7 | 134.5 | 148.5 | 115.2 / 130.8 / 134.5 | 130.4 | upper bound only |
-| feed150, fans off (wall) | 93.6 | 129.3 (U9) | 139.4 (U27) | 117.4 / 128.8 / 139.4 | 128.4 | over 130 laminate: the 104 C cut must act (as 11-22) |
-| feed150lo, fans off | 96.3 | 142.7 (U23) | 142.3 (U27) | 121.3 / 131.8 / 142.3 | 130.6 | as above |
-| car, fans off | 86.1 | 129.5 (U25) | 126.9 (U27) | 103.6 / 112.4 / 126.9 | 110.1 | PASS heat; board B cuts (110 > 104) |
+After hwtemp:
+
+| Case | B (A) | Sink | Tj max (chip) | Laminate max (where) | MCU U4 / FRAM U5 / 5 V module U27 board | U6 sensor | Verdict |
+|---|---|---|---|---|---|---|---|
+| feed150, fans on | 150 | 74.1 | 109.1 (U9) | 117.6 (feed corner, B.Cu) | 96.8 / 107.7 / 111.3 | 107.5 | PASS heat; U6 over 104: board B cuts |
+| feed150hi, fans on | 150 | 73.4 | 118.9 (U9) | 118.9 (feed corner, B.Cu) | 95.0 / 107.1 / 110.5 | 108.3 | as above |
+| feed150lo, fans on | 150 | 75.2 | 121.5 (U23) | 118.0 (feed corner, B.Cu) | 98.9 / 109.0 / 112.6 | 108.1 | as above |
+| car, fans on | 118.1 | 71.1 | 114.4 (U25) | 110.1 (F.Cu at U25) | 87.9 / 96.5 / 103.7 | 94.4 | PASS (under the 98 C warn) |
+| drive, fans on | 62.9 | 63.3 | 80.9 (U8) | 89.8 (U27) | 72.0 / 76.6 / 89.8 | 75.1 | PASS |
+| rating, fans on (INFO) | 184 | 81.7 | 134.4 | 148.4 | 114.9 / 130.5 / 126.5 | 130.2 | upper bound only |
+| feed150, fans off (wall) | 150 | 93.5 | 129.2 (U9) | 139.0 (B.Cu) | 117.1 / 128.4 / 131.4 | 128.2 | over 130 laminate: the 104 C cut must act (as 11-22) |
+| feed150hi, fans off | 150 | 91.7 | 137.9 (U9) | 139.1 (B.Cu) | 114.0 / 126.5 / 129.4 | 127.8 | as above |
+| feed150lo, fans off | 150 | 96.2 | 142.6 (U23) | 141.2 (B.Cu) | 120.9 / 131.4 / 134.3 | 130.4 | as above |
+| car, fans off | 118.1 | 86.0 | 129.4 (U25) | 125.1 (F.Cu) | 103.2 / 112.0 / 118.9 | 109.9 | PASS heat; board B cuts (110 > 104) |
+| drive, fans off | 62.9 | 67.6 | 85.2 (U8) | 94.1 (U27) | 76.4 / 81.0 / 94.1 | 79.5 | PASS |
+| rating, fans off (INFO) | 184 | 112.1 | 166.6 | 183.7 | 147.4 / 164.1 / 158.5 | 163.7 | upper bound only |
+
+PR #139 (0.2 W): feed150 fans laminate 119.3 (U27), FRAM 108.0, U6 107.6 C; car fans U27 111.6, U6 94.5 C; car fans
+off U27 126.9 C.
 
 Heat maps: `docs/diagrams/thermal-board-b-<case>-fans.png` / `-nofan.png` (F.Cu, B.Cu, copper-I2R rise).
 Against the 2026-11-22 run (`docs/system-verification.md` 6): about +2 K everywhere from the warmer pedestals (the fans
 now push the exhaust under B), and the 5 V module is the new laminate hot spot (it was not in the model).
 
-## 5. Firmware temperature limits (proposals; the coordinator decides, nothing changed in firmware)
+## 5. Firmware temperature limits (set by job hwtemp, 2026-11-23)
 
-Map sensor -> hot spot (U6 MCP9808 reading vs the part, all modelled cases fans on / off), + 1 C MCP9808 error
-(DS20005095B), limits: laminate 130 C, Tj 150 C, MCU / FRAM 105 C ambient, 5 V module 125 C TJ less 4 K own heat
-(PsiJB 20 K/W x 0.2 W; TI SNVSAQ4C table 6.4: RthJA 45, PsiJB 20 K/W).
+Map sensor -> part (U6 MCP9808 reading vs the part, every modelled case fans on / off, `drive` included), + 1 C MCP9808
+error (DS20005095B). Limits: laminate 130 C, Tj 150 C, MCU 105 C ambient (STM32F446RET7), FRAM 125 C (CY15B064J-SXE
+since hwtemp), 5 V module 125 C TJ less its own heat (PsiJB 20 K/W x 0.131 W = 2.6 K: 122.4 C at the board; TI
+SNVSAQ4C table 6.4). Checked by `tools/verify_thermal_box.py --afans --anofan` ("part map" rows).
 
-| Board | Largest offset over U6 | Critical needed for it | Binding |
+| Board | Largest offset over U6 (critical it allows) | Binding | Factory limits |
 |---|---|---|---|
-| A | laminate +22.6 K (at U21, car); Tj +22.2 K; FRAM +1.1 K; 5 V module board +22.6 K | <= 106 / 126 / 102 / **97** C | 5 V module |
-| B | laminate +20.0 K (rating, fans off); Tj +19.9 K (car); FRAM +2.3 K (car, fans off); 5 V module board +17.1 K (car) | <= 109 / 129 / **101** / **102** C | FRAM, 5 V module |
+| A | laminate +19.8 K (109.2 C, feed150a); Tj +22.3 K (126.7 C); MCU -2.2 K (106.2 C); FRAM +2.1 K (121.9 C); 5 V module board +16.2 K (105.2 C, drive fans off) | 5 V module | warn 98, critical 104, recovery 6 C (were the stock 55 / 80 C) |
+| B | laminate +20.0 K (109.0 C, rating fans off); Tj +20.0 K (129.0 C, car); MCU -3.1 K (107.1 C); FRAM +2.1 K (121.9 C); 5 V module board +14.7 K (106.7 C, drive) | 5 V module | warn 98, critical 104, recovery 6 C (unchanged) |
 
-- **Board A: propose warn 86 C, critical 97 C, recovery 6 C** (stock 55 / 80 cuts at the car loads: U6 79.4 C with
-  the fans on, 94.3 C fans off). Warn = 6.6 K over the car reading and below critical-soon (92 C).
-- **Board B: the current 98 / 104 C leaves the FRAM 2.3 K and the 5 V module about 1 K over their ratings at the cut**
-  (worst case with the +1 C sensor error). Holding them would need critical 101 C (critical-soon 96 C), but U6 reads
-  94.5 C at the car loads with the fans on, so the warn would sit 0.5-1.5 K over normal use and a 65 C cabin would cut.
-  A real design choice, not a model fix (open question; a 125 C FRAM would move the binding part to the 5 V module, 102 C).
+- **Board A: warn 98 / critical 104 / recovery 6 C.** Critical 104 C is board B's and the ADR-2026-11-20-fwsafety
+  rule (MCU at the sensor + 1 C <= 105 C); it sits inside every part limit above (the 5 V module allows 105.2 C). The
+  PR #139 proposal (warn 86 / critical 97 C) was bound by the 5 V module at the assumed 0.2 W; with TI's 0.131 W the
+  module allows 105.2 C. Board A's laminate offset (19.8 K + 1 = 21 K, rounded up) equals board B's (20.0 + 1 = 21 K),
+  so the one PDM hot-spot set of the UI (119 / 125 C) gives both boards 98 / 104 C: board A takes B's warn too, 18.8 K
+  over its car-loads reading (79.2 C) and 27 K over the drive cycle (70.7 C): no warning in normal use. Fans failed at
+  the car loads A reads 94.0 C (no warning); board B warns and cuts first (109.9 C).
+- **Board B: 98 / 104 / 6 C kept.** The FRAM (2.3 K over 105 C before) is a 125 C part now and the 5 V module allows
+  106.7 C with TI's loss: nothing over its rating at the cut. U6 reads 94.4 C at the car loads (3.6 K under warn).
+- If the MB85RC64TA alternate (105 C) is fitted: FRAM offset +2.1 K needs critical <= 101 C on that board.
+- UI (`ui/dingoConfig/domain/CustomPdm/PdmThermal.cs`): `BoardBLaminateOffsetK` 20.0 (was 19.6), `BoardALaminateOffsetK`
+  19.8 (new): sensor limit = hot spot - 21 K on both boards; sensor critical maximum 104 C on both.
 
 ## 6. Assumptions that move a result by more than 5 K (all **ASSUMED**)
 
 | Assumption | Base | Changed to | Effect |
 |---|---|---|---|
-| 5 V module loss (each board) | 0.2 W | 0.1 / 0.4 W | B U27 spot 98.6 / 133.2 C (car, base 111.6); A U21 91.3 / 127.4 C (car, base 102.0); A feed150a laminate 136.2 C at 0.4 W (FAIL) |
+| 5 V module loss (each board) | 0.2 W ASSUMED (PR #139; 0.131 W TI data since hwtemp) | 0.1 / 0.4 W | B U27 spot 98.6 / 133.2 C (car, base 111.6 at 0.2 W; 103.7 at 0.131 W); A U21 91.3 / 127.4 C (car, base 102.0 at 0.2 W; 93.8 at 0.131 W); A feed150a laminate 136.2 C at 0.4 W (FAIL). The 0.4 W case needs about 0.6 A of 5 V load: not this circuit (0.22 A worst) |
 | Gap-pad contact (TGP 3000 k 3) | k 3 | k 1.5 (contact resistance doubling the pad) | B feed150 Tj 107 -> 119 C, laminate 117 -> 122 C; A feed150a Tj 121 -> 134 C, laminate 119 -> 131 C (1 K over) |
 | BATT bar far ends | sink + 15 K | sink + 5 K | A car U6 81 -> 76 C, U21 103 -> 98 C; B feed150 U6 106 -> 101 C |
-| Input board h (radiation) | 9 W/m2K (3 + 6 radiation) | 3 (no radiation) | DIP rise 4.9 -> 17.4 K (alone in 60 C air: 64.9 -> 77.4 C, PASS -> FAIL) |
+| Input board h (radiation) | 9 W/m2K (3 + 6 radiation) | 3 (no radiation) | jumper rise 4.5 -> 16.9 K, board max 12.8 -> 25.9 K (alone in 60 C air: 76.9 / 85.9 C; PASS against the 130 C laminate; was the DIP switch 64.9 -> 77.4 C, PASS -> FAIL at 70 C) |
 | Fans push vs the 11-12 pull | revF push | (11-12 pull) | pedestals under B +3.5 K at 26 W against the old R_sys |
 
 Sensitivity runs were made at the first R_sys (0.47 K/W); the differences hold. Other assumptions as before (section 8):
@@ -162,9 +212,11 @@ Board models (Windows, KiCad 9 python; about 4 min A, 8 min B):
 ```
 python tools/test_thermal_models.py
 python tools/thermal_a.py --air fans --plots docs/diagrams --json a_fans.json     (and --air nofan)
-python tools/thermal_board_b.py --res 0.3 --case feed150 feed150hi feed150lo car rating --air fans --plots docs/diagrams --json b_fans.json
+python tools/thermal_board_b.py --res 0.3 --air fans --plots docs/diagrams --json b_fans.json   (all 6 cases incl. drive; and --air nofan)
 python tools/thermal_input.py --plots docs/diagrams
+python tools/verify_thermal_box.py --fans b_fans.json --nofan b_nofan.json --afans a_fans.json --anofan a_nofan.json
 python sim/heat/make_loads.py a_fans.json b_fans.json      (writes sim/heat/loads_revF.json)
+(hwtemp: run the two thermal_a.py runs one after the other with python -u; two at once sat idle at 0 % CPU on DansPC)
 ```
 Whole box (WSL, `HEAT_GEOM=revF`; runs in `~/cad-parts/custom-pdm-thermal3/runs/20261123/m1|m2|m3`):
 ```

@@ -228,7 +228,7 @@ fk, fo = ps.FAN; a2f = f5['A2']; FAN_IN = a2f.model['outputs'][fo][0]
 b5.add(t5, *f5.values()); fan_boot = []
 for _ in range(300): b5.run_for(5); fan_boot.append(a2f.level(FAN_IN))          # every 5 ms from power-up, all boards at 30 C
 lim = {k: {n: t5.read(BASE[k], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.items()} for k in f5}
-check('thermal: factory defaults (param block 0x7F00): A1 / A2 warn 55, critical 80; B warn 98, critical 104 (its FEA sensor map); recovery 6, critical-soon margin 5 deg C', all(v == ps.temp_default(f5[k].model) for k, v in lim.items()), lim)
+check(f'thermal: factory defaults (param block 0x7F00): A1 / A2 warn {ps.TEMP_DEFAULT["warn"]}, critical {ps.TEMP_DEFAULT["crit"]}; B warn 98, critical 104 (each board\'s FEA sensor map); recovery 6, critical-soon margin 5 deg C', all(v == ps.temp_default(f5[k].model) for k, v in lim.items()), lim)
 # w3a: factory current limit = each output's rating (docs/box-connectors.md), the fan output 1 A; inrush limits unchanged
 want_lim = {'A1': [7.5] * 8, 'A2': [7.5, 1.0] + [7.5] * 6, 'B': [31.0] * 4 + [15.0] * 4}
 want_inr = {'A1': [50.0] * 8, 'A2': [50.0, 2.0] + [50.0] * 6, 'B': [50.0] * 8}
@@ -281,8 +281,9 @@ ex = {k: t5.read(BASE[k], ps.TEMP_INDEX, ps.TEMP_EXEMPT_SUB) for k in f5}
 check('critical-exempt outputs (param 0x7F00 sub 3): factory default = the fan output only (A2 bit 1 = 2), none on A1 and B', ex == {'A1': 0, 'A2': 2, 'B': 0}, ex)
 a2 = f5['A2']; t5.write(BASE['A2'], 0x1000, 0, 1); t5.write(BASE['A2'], 0x1000, 1, 1)    # A2 OUT1 on (always true), not exempt
 a2.set_load(0, a2.vbat / 3.0); a2.set_load(fo, a2.vbat / 0.12); a2.set_temp(50.0); b5.run_for(700); pre = pins_high(a2)   # 50 C: fan on (>= 45)
-a2.set_temp(80.0); b5.run_for(400); hot = (pins_high(a2), st5['A2'].dev_state()); a2.set_temp(70.0); b5.run_for(400); back = pins_high(a2)
-check('A2 at critical (80 C): the exempt fan output OUT2 stays on, the non-exempt OUT1 goes off (state OverTemp); OUT1 back at 70 C',
+CRIT_A = float(ps.TEMP_DEFAULT['crit'])                     # board A factory critical (hwtemp: its FEA sensor map)
+a2.set_temp(CRIT_A); b5.run_for(400); hot = (pins_high(a2), st5['A2'].dev_state()); a2.set_temp(CRIT_A - 10.0); b5.run_for(400); back = pins_high(a2)
+check(f'A2 at its factory critical ({CRIT_A:.0f} C): the exempt fan output OUT2 stays on, the non-exempt OUT1 goes off (state OverTemp); OUT1 back at {CRIT_A - 10:.0f} C',
       pre == [0, 1] and hot == ([1], 2) and back == [0, 1], (pre, hot, back))
 
 # configured board A1 (single-PDM config from S2), ECU commanding A1 outputs 1, 2, 4
@@ -293,6 +294,11 @@ e6.every(20000, lambda t: e6.send(ECU_ID, bytes([0b1011, 0, 0, 0xA5, 0, 0, 0, 0]
 b6.add(t6, e6, a1)
 for o_ in range(8): a1.set_load(o_, a1.vbat / 4.0)
 b6.run_for(1500); CMD_ON = [0, 1, 3]
+# The warn / critical / recovery mechanism below is checked at test limits 55 / 80 / 6 deg C written over CAN (the stock
+# values; board A's factory limits come from its FEA sensor map since hwtemp, checked above). The checks that follow
+# fail if the writes did not take.
+TEST_LIM = {'warn': 55, 'crit': 80, 'hyst': 6}
+for n, v in TEST_LIM.items(): t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM[n], v)
 def temp_step(c, ms=400): a1.set_temp(c); b6.run_for(ms); return pins_high(a1)
 p_cool = temp_step(40.0); s_cool = st6.dev_state()
 p_warn = temp_step(56.0); s_warn = st6.dev_state(); m_warn = [x for x in infos if x[1] == 3]
@@ -332,7 +338,7 @@ rd = {n: t6.read(BASE['A1'], ps.TEMP_INDEX, sub) for n, sub in ps.TEMP_PARAM.ite
 seq = [(c, temp_step(c), st6.dev_state()) for c in (45.0, 51.0, 69.5, 70.0, 66.5, 65.5)]
 check('limits set over CAN (warn 50, critical 70, recovery 4) act at once: 51 C OverTemp, 70 C all off, 66.5 C still off, 65.5 C back on',
       ok_w and rd == {'warn': 50, 'crit': 70, 'hyst': 4, 'soon': 5} and [(p, s) for c, p, s in seq] == [(CMD_ON, 0), (CMD_ON, 2), (CMD_ON, 2), ([], 2), ([], 2), (CMD_ON, 2)], (rd, seq))
-for n in ('warn', 'crit', 'hyst'): t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM[n], ps.TEMP_DEFAULT[n])
+for n in ('warn', 'crit', 'hyst'): t6.write(BASE['A1'], ps.TEMP_INDEX, ps.TEMP_PARAM[n], TEST_LIM[n])
 temp_step(40.0)
 # the prefilled load-shed example, enabled as documented (docs/firmware-thermal-plan.md section 7):
 # output 1 sheds at level 0 (70 C, back at 65 C), output 2 at level 1 (75 C, back at 70 C), output 4 is never shed

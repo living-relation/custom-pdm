@@ -315,17 +315,18 @@ def watchdog_fram_sleep():
     cfg = open(os.path.join(P.ROOT, "firmware", "core", "config_ext.cpp"), encoding="utf-8").read()
     writes = len(re.findall(r"fram\.Write\(", cfg))
     per_day = 50
-    years = P.MB85RC64TA["endurance"] / (per_day * 365)
-    add("FRAM", "MB85RC64TA write endurance vs the firmware's writes", f"{writes} write calls, only in WriteConfigExt (a "
+    years = P.CY15B064J["endurance"] / (per_day * 365)
+    add("FRAM", "CY15B064J write endurance vs the firmware's writes", f"{writes} write calls, only in WriteConfigExt (a "
         f"config save from the tool); at {per_day} saves a day the 1e13 cycles last {years:.1e} years",
-        "> 20 years", "PASS", P.MB85RC64TA["src"] + "; reads (boot only) count too on FRAM: negligible")
+        "> 20 years", "PASS", P.CY15B064J["src"] + " (the MB85RC64TA alternate: 1e13 too); reads (boot only) count too on "
+        "FRAM: negligible")
     # sleep budget, per main board, from the battery (13 V), 25 C max / 85 C max data-sheet values
     v = 13.0
     items_33 = [("STM32F446 Stop, LP regulator, flash deep power-down", 0.9e-3, 6.0e-3),
                 ("TLV9004 x 2 (8 amplifiers, no shutdown pin)", 8 * P.TLV9004["iq"], 8 * 85e-6),
                 ("MCP2562FD standby (incl. VIO)", P.MCP2562FD["idd_stby"], P.MCP2562FD["idd_stby"]),
                 ("MCP9808 shutdown", P.MCP9808["ishdn"], P.MCP9808["ishdn"]),
-                ("MB85RC64TA standby (est.)", P.MB85RC64TA["istby"], P.MB85RC64TA["istby"]),
+                ("CY15B064J FRAM standby (hwtemp; ISB max at 85 C)", P.CY15B064J["istby"], P.CY15B064J["istby"]),
                 ("TLV1117LV IQ", P.TLV1117LV["iq"], P.TLV1117LV["iq"])]
     i33_25 = sum(x[1] for x in items_33)
     i33_85 = sum(x[2] for x in items_33)

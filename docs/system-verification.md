@@ -130,6 +130,10 @@ Fan failure at 150 A: the sink climbs 72 -> 86 C with a 26 min time constant; th
 150 A, fans on (board B logic area at its MCP9808 106 C, board A about 87 C ASSUMED): crystal and capacitors are
 125 C parts on board A and board B (PASS; board A since job orderprep); 5 V module PASS; FRAM 105 C and MCU 105 C
 WARN (106 C: above the 104 C cut); DIP switches 74 C vs 70 C WARN. At a 70 C cabin every case is 10 K hotter.
+Job hwtemp (2026-11-23, `docs/heat-analysis.md` 0): FRAM CY15B064J-SXE (125 C), input-board solder jumpers (laminate
+130 C) in place of the DIP switches, 5 V module loss 0.131 W (TI), board A limits 98 / 104 C, s5 drive-cycle case:
+`verify_thermal_box.py --afans --anofan` 32 PASS / 8 WARN / 4 FAIL (on main bc32eca: 20 / 9 / 7); the 4 FAILs are 150 A
+with the fans failed (laminate 139-141 C, MCU 128 C) where board B's sensor is already over its 104 C critical.
 
 ## 7. EMC / SI (3 PASS, 2 WARN, 5 INFO on 2026-11-22)
 
@@ -144,7 +148,7 @@ ADR-2026-11-20-hwprotect b). The two WARNs are this one on each board.
 
 ## 8. Manufacturing (7 PASS, 7 WARN, 5 INFO on 2026-11-22)
 
-Via-in-pad: 58 (A), 151 (B), 27 (IN) vias in SMD pads (incl. the hwprotect VDDA via in FB1 and the 5 V module),
+Via-in-pad: 58 (A), 151 (B), 21 (IN; 27 before the hwtemp re-route) vias in SMD pads (incl. the hwprotect VDDA via in FB1 and the 5 V module),
 mostly the PROFET exposed-pad thermal vias: the fab notes ask JLCPCB for epoxy-filled + capped vias (table row +
 order remark, `tools/gen_fab_jlcpcb.py`): WARN in the tool, fine once ordered so. Copper to edge: KiCad
 edge_clearance 0.2 mm, no violations. Silk: 358 / 611 / 168 lines under 0.15 mm (KiCad library 0.12 mm, cosmetic):
@@ -159,23 +163,27 @@ re-checked on the current boards since (revF, docs/order-readiness.md section 5)
 `tools/verify_thermal_box.py` reads board B's limits from `port_boards.py` and checks them against the sensor ->
 hot-spot map of all 10 modelled cases (`thermal_board_b.py --case car feed150 feed150hi feed150lo rating`, fans on /
 failed, 60 C cabin), now at the ordered copper (1 oz outer + 1 oz inner, 35 / 35 um) on the 0.3 mm grid:
-laminate = U6 + 10.1 .. 19.6 K, Tj = U6 + 2.5 .. 20.4 K. (0.4 mm grid: + 8.3 .. 17.5 / + 4.2 .. 21.2 K; the first map,
+laminate = U6 + 9.9 .. 20.0 K, Tj = U6 + 1.0 .. 20.0 K (job hwtemp, 2026-11-23: 12 cases with the s5 drive cycle, the TI
+5 V module loss 0.131 W and the 125 C FRAM; orderprep 2026-11-22: + 10.1 .. 19.6 / + 2.5 .. 20.4 K). (0.4 mm grid: + 8.3 .. 17.5 / + 4.2 .. 21.2 K; the first map,
 2026-11-20, at 43 / 17 um copper on the 0.4 mm grid: + 9.6 .. 19.0 / + 1.7 .. 19.8 K.) A 0.25 mm grid run of three cases gives + 8.6 .. 18.4 K: the car case scatters 16.1 .. 18.4 K between the grids, so the map is used as an envelope (19.6 K covers all three grids). The largest laminate offset is
 the 184 A fans-failed case; at the car loads it is 16.1 K.
 
 | Check | Value | Limit | Verdict |
 |---|---|---|---|
-| Car loads, fans on: U6 vs warn 98 C | 93.4 C (a 70 C cabin: 103.4 C: warning and critical soon, no cut) | < 98 C | PASS |
-| Laminate / Tj when U6 reaches critical 104 C (+1 C MCP9808, largest offset) | 124.6 / 125.4 C (126.2 C with the 0.4 mm grid's Tj offset) | <= 130 / 150 C | PASS |
-| STM32F446RET7 / MB85RC64TA (105 C ambient) at U6 104 + 1 C | 105 C | <= 105 C | PASS (binding limit) |
-| Crystal ECS-80-18-30Q-CES, X7R / C0G capacitors, 5 V module at U6 104 + 1 C | 105 C | <= 125 / 125 / 121 C | PASS (125 C grades on board B since hwprotect / hw5v, on board A since orderprep) |
-| UI hot-spot offset (`PdmThermal.BoardBLaminateOffsetK`) vs the map | 19.6 K = 19.6 K (sensor limit = hot spot - 21 K) | map <= UI <= map + 1 K | PASS |
-| Board A | no FEA sensor map; the presim estimate (sink + 15 K, ASSUMED) is about 85 C at the car loads, above its stock 80 C | - | open (needs a board A model or the bench) |
+| Car loads, fans on: U6 vs warn 98 C | 94.4 C (drive cycle 75.1 C; a 70 C cabin: 104.4 C: warning and critical) | < 98 C | PASS |
+| Laminate / Tj when U6 reaches critical 104 C (+1 C MCP9808, largest offset) | 125.0 / 125.0 C (126.2 C with the 0.4 mm grid's Tj offset) | <= 130 / 150 C | PASS |
+| STM32F446RET7 (105 C ambient) at U6 104 + 1 C | 105 C | <= 105 C | PASS (binding limit; the part map puts the MCU 3.1 K or more under U6) |
+| FRAM CY15B064J-SXE (125 C, hwtemp; was MB85RC64TA 105 C), part map +2.1 K | 107.1 C | <= 125 C | PASS |
+| 5 V module board (TJ 125 C less 20 K/W x 0.131 W = 122.4 C), part map +14.7 K (drive) | 119.7 C | <= 122.4 C | PASS |
+| Crystal ECS-80-18-30Q-CES, X7R / C0G capacitors at U6 104 + 1 C | 105 C | <= 125 / 125 C | PASS (125 C grades on board B since hwprotect / hw5v, on board A since orderprep) |
+| UI hot-spot offset (`PdmThermal.BoardBLaminateOffsetK`) vs the map | 20.0 K = 20.0 K (sensor limit = hot spot - 21 K) | map <= UI <= map + 1 K | PASS |
+| Board A (hwtemp: `tools/thermal_a.py` FEA map, 8 cases; `verify_thermal_box.py --afans --anofan`) | U6 79.2 C at the car loads (drive 70.7 C); laminate +19.8 K, Tj +22.3 K, 5 V module +16.2 K, FRAM +2.1 K, MCU -2.2 K over U6; allows critical 105.2 C (5 V module) | factory 98 / 104 / 6 C | PASS (UI `BoardALaminateOffsetK` 19.8 K: hot spot - 21 K) |
 
 Result for the firmware defaults: warn 98 C, critical 104 C, recovery 6 C stay as set on 2026-11-20 (critical is bound
-by the 105 C MCU / FRAM rating, not by the copper; warn is 4.6 K over the car-loads reading and below critical-soon
-99 C). Result for the UI: the offset grows from 20 K (19.0 + 1) to 21 K (19.6 + 1, rounded up), so board B's factory
-98 / 104 C shows as the hot-spot set 119 / 125 C.
+by the 105 C MCU rating, not by the copper; warn is 3.6 K over the car-loads reading and below critical-soon
+99 C). Result for the UI: the offset grows from 20 K (19.0 + 1) to 21 K (19.6 + 1, rounded up; 20.0 + 1 since hwtemp), so
+board B's factory 98 / 104 C shows as the hot-spot set 119 / 125 C; board A (hwtemp) has the same 21 K offset and the
+same factory 98 / 104 C.
 
 ## Fixes made (firmware, custom boards only; stock dingopdm_v7 .bin md5 identical to main: fbe414ba...)
 

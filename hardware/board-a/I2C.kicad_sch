@@ -2366,7 +2366,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "MB85RC64TA"
+		(property "Value" "CY15B064J-SXE"
 			(at 48.3362 66.8528 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2410,7 +2410,7 @@
 				)
 			)
 		)
-		(property "Digi-Key_PN" "865-MB85RC64TAPNF-G-AWERE2TR-ND"
+		(property "Digi-Key_PN" "448-CY15B064J-SXE-ND"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -2421,7 +2421,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C43379785"
+		(property "LCSC" "C2953601"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -2432,7 +2432,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "RAMXEED (Fujitsu)"
+		(property "Manufacturer" "Infineon"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -2443,7 +2443,7 @@
 				)
 			)
 		)
-		(property "MPN" "MB85RC64TAPNF-G-AWERE2"
+		(property "MPN" "CY15B064J-SXE"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)
@@ -2454,7 +2454,7 @@
 				)
 			)
 		)
-		(property "Alternates" "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)"
+		(property "Alternates" "RAMXEED MB85RC64TAPNF-G-AWERE2 (LCSC C43379785; 105 C part: fit only with the board's critical limit keeping the FRAM <= 105 C, docs/heat-analysis.md 5)"
 			(at 38.735 68.58 0)
 			(hide yes)
 			(show_name no)

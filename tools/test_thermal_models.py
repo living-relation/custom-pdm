@@ -114,6 +114,58 @@ class Solve(unittest.TestCase):
         self.assertIs(TB.Thermal.__init__.__defaults__[0], None)
 
 
+class FiveVoltModule(unittest.TestCase):
+    """hwtemp: the LMZM23601V5 loss comes from TI SNVSAQ4C Figure 8-46, not the 0.2 W assumption."""
+
+    def test_ti_curve_points(self):
+        """Read-off points: 12 V / 0.2 A 0.101 W (Figure 8-42 cross-check 90.7 % -> 0.103 W), 24 V / 0.2 A 0.139 W."""
+        self.assertAlmostEqual(TB.p5v_loss(0.2, 12.0) - 0.2 ** 2 * TB.R_COND_5V * TB.HOT_COND, 0.101, places=3)
+        self.assertAlmostEqual(TB.p5v_loss(0.2, 24.0) - 0.2 ** 2 * TB.R_COND_5V * TB.HOT_COND, 0.139, places=3)
+        self.assertEqual(TB.p5v_loss(0.0, 13.5), 0.0)
+
+    def test_board_load(self):
+        """0.22 A (CAN 70 mA dominant + 3V3 155 mA) at 13.5 V: 0.116 W at 25 C + hot conduction share = 0.131 W."""
+        self.assertEqual(TB.I_5V, 0.22)
+        self.assertAlmostEqual(TB.P_5V, 0.131, places=3)
+        self.assertLess(TB.P_5V, 0.2)                                  # the old assumption was high
+        self.assertAlmostEqual(TB.board_limit_5v(), 125.0 - 20.0 * 0.131, places=3)
+
+    def test_monotonic(self):
+        self.assertLess(TB.p5v_loss(0.1), TB.p5v_loss(0.22))
+        self.assertLess(TB.p5v_loss(0.22, 12.0), TB.p5v_loss(0.22, 24.0))
+
+
+class DriveCycle(unittest.TestCase):
+    """drivecycle (PR #140) board power: the 'drive' case takes the s5 RMS currents of the coolant / fan phase."""
+
+    def test_phase_and_currents(self):
+        d, phase = TB.drive_currents()
+        self.assertTrue(phase.startswith("coolant"))
+        self.assertEqual(sorted(d), ["A1", "A2", "B"])
+        self.assertEqual(len(d["B"]), 8)
+        tot = sum(sum(v.values()) for v in d.values())
+        self.assertGreater(tot, 30.0)
+        self.assertLess(tot, 150.0)                                    # within the feed limit
+        self.assertGreater(d["B"]["PF_OUT1"], 15.0)                    # radiator fan on in that phase
+
+    def test_cases_use_it(self):
+        cur, i_a = TB.case_currents("drive")
+        d, _ = TB.drive_currents()
+        self.assertAlmostEqual(sum(cur.values()), sum(d["B"].values()), places=6)
+        self.assertAlmostEqual(i_a, sum(d["A1"].values()) + sum(d["A2"].values()), places=6)
+        c = TA.case_currents("drive")
+        self.assertAlmostEqual(c["I_B"], sum(d["B"].values()), places=6)
+        self.assertAlmostEqual(sum(c["this"].values()), sum(d["A1"].values()), places=6)
+
+
+class PartRatings(unittest.TestCase):
+    def test_fram_is_125c(self):
+        """U5 = Infineon CY15B064J-SXE (Automotive-E, -40..125 C) on both main boards since hwtemp."""
+        self.assertEqual(TB.PART_LIMITS["U5"], 125.0)
+        self.assertIn("CY15B064J", TB.LOGIC_REFS_B["U5"])
+        self.assertIn("CY15B064J", TA.LOGIC_REFS_A["U5"])
+
+
 class InputBoard(unittest.TestCase):
     def test_losses(self):
         """16 V on an input: 4.7 k series into the 3.65 V clamp + 10 k pull-down = 59 mW per input."""
@@ -130,6 +182,12 @@ class InputBoard(unittest.TestCase):
         b = pcbnew.LoadBoard(TI.PCB)
         for ref, _ in TI.losses(16.0):
             self.assertIsNotNone(b.FindFootprintByReference(ref), ref)
+        for ref in TI.JUMPERS:                       # hwtemp: solder jumpers in place of the 70 C DIP switches
+            fp = b.FindFootprintByReference(ref)
+            self.assertIsNotNone(fp, ref)
+            self.assertIn("SolderJumper", fp.GetFPID().GetLibItemName().wx_str())
+        self.assertIsNone(b.FindFootprintByReference("SW1"))
+        self.assertIsNone(b.FindFootprintByReference("SW2"))
         g, edge, ids, Tn, p_in, p_out = TI.solve(b, 0.5, 3.0, 60.0, TI.losses(16.0))
         self.assertAlmostEqual(p_in, p_out, delta=1e-6)
         self.assertGreater(float(Tn.min()), 60.0)

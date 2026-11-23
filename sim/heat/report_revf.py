@@ -5,8 +5,9 @@ Reads <run_dir>/results.json (run_cases.py) and sim/heat/loads_revF.json; option
 Lid air: one node as tools/verify_thermal_box.py (lid 0.12 m2 x 1.8 W/m2K to the cabin, open sink top 0.010 m2 x 3,
 board tops 0.024 m2 x 3; heat in = X1 / X2 contacts + harness (loads_revF lid_air_w) +
 3 input boards at their worst-case own loss (tools/thermal_input.py, 0.49 W each) + USB hub 0.1 W ASSUMED; board tops
-taken at the sink mean + 15 K, as verify_thermal_box DT_BOARD_A). DIP switch
-= lid air + the input board's own DIP rise (thermal_input.py, 4.9 K at h 9). All ASSUMED as in those tools.
+taken at the sink mean + 15 K, as verify_thermal_box DT_BOARD_A). Input board: lid air + its own rise
+(thermal_input.py at h 9, job hwtemp 2026-11-23: board max + 12.8 K, solder jumpers JP1-JP16 + 4.5 K; they replace the
+70 C DIP switches, the limit is the 130 C laminate). All ASSUMED as in those tools.
 """
 import json, os, sys
 import numpy as np
@@ -23,7 +24,8 @@ R = json.load(open(os.path.join(RUN, "results.json")))
 L = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "loads_revF.json")))
 T_CAB = 60.0
 G_LID, G_SINK_AIR, G_BOARD_AIR = 0.12 * 1.8, 0.010 * 3.0, 0.024 * 3.0
-P_INPUT, P_HUB, DIP_RISE = 3 * 0.488, 0.1, 4.9
+P_INPUT, P_HUB = 3 * 0.488, 0.1
+JP_RISE, IN_MAX_RISE = 4.5, 12.8          # tools/thermal_input.py (h 9): solder jumpers / board max over the air
 NAMES = {"fans": "fans on", "passive_upper": "fans off, wall (fins vertical)", "passive_lower": "fans off, flat (fins down)"}
 
 
@@ -57,7 +59,7 @@ print("K_XY %.2f K_Z12 %.2f K_Z9 %.2f tets %d" % (R["K_XY"], R["K_Z12"], R["K_Z9
 print("\nPedestal-top max under each board (C) and R_sys per board = (that - 60 C) / box heat (K/W):")
 for key, r in R["runs"].items():
     print(f"  {key}: " + ", ".join(f"{n} {t:.1f} ({(t - T_CAB) / r['p_total']:.3f})" for n, t in r["ped_max"].items()))
-print("\n| Load | Air | Pad k | Box heat (W) | Sink mean / max (C) | R_sys (K/W) | Lid air (C) | DIP switch (C) | Hottest chip, "
+print("\n| Load | Air | Pad k | Box heat (W) | Sink mean / max (C) | R_sys (K/W) | Lid air (C) | Input board jumpers / max (C) | Hottest chip, "
       "board top / Tj est. (C) (slab model) | Slab board tops max B / A1 / A2 (C) (indicative) |")
 print("|---|---|---|---|---|---|---|---|---|---|")
 rsys = {}
@@ -67,9 +69,9 @@ for key, r in R["runs"].items():
     la = lid_air(r, load)
     rs = (r["sink_max"] - T_CAB) / r["p_total"]
     rsys[key] = rs
-    r["lid_air"], r["dip"], r["r_sys"] = la, la + DIP_RISE, rs
+    r["lid_air"], r["dip"], r["r_sys"] = la, la + JP_RISE, rs        # "dip" key kept: the jumpers' spot now
     print(f"| {load} | {NAMES[cs]} | {k} | {r['p_total']:.1f} | {r['sink_field_mean']:.1f} / {r['sink_max']:.1f} | {rs:.3f} | "
-          f"{la:.1f} | {la + DIP_RISE:.1f} | {hot[0]} {hot[1]['board_max']:.1f} / {hot[1]['tj_est']:.1f} | "
+          f"{la:.1f} | {la + JP_RISE:.1f} / {la + IN_MAX_RISE:.1f} | {hot[0]} {hot[1]['board_max']:.1f} / {hot[1]['tj_est']:.1f} | "
           + " / ".join(f"{r['boards'][n]['top_max']:.1f}" for n in ("B", "A1", "A2")) + " |")
 print("\nenergy balance:", {k: round(r["q_out"] - r["p_total"], 3) for k, r in R["runs"].items()})
 for key in R["runs"]:

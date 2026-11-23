@@ -3,8 +3,9 @@
 usage: python gen_input_board_pcb.py <out.kicad_pcb> <netlist.xml>
 
 2-layer, 66 x 64 mm. Wires come in on the left (J2, Micro-Fit 2x6), the cable to board A leaves on the right
-(J1, JST GH 12). One row per channel in between (pull-up, pull-down, series R, clamp, cap); both 8-way DIP
-switches along the bottom. Every net is routed with route_board_a's A* router (pcb_rework.reconnect joins pads
+(J1, JST GH 12). One row per channel in between (pull-up, pull-down, series R, clamp, cap); the 16 pull-up /
+pull-down solder jumpers (JP1-8 / JP9-16, open as built, bridged by hand at assembly) along the bottom, where the two
+8-way DIP switches sat until job hwtemp (2026-11-23: Omron A6S rated 70 C, lid air 75-91 C). Every net is routed with route_board_a's A* router (pcb_rework.reconnect joins pads
 until each net is one piece), then GND is poured on both layers.
 """
 import sys, os, math
@@ -22,8 +23,13 @@ W, H = 66.0, 64.0
 
 # ---- placement: ref -> (x, y, rotation deg)
 ROW0, PITCH = 6.0, 4.5
-PLACE = {"J2": (10.0, 24.0, 90), "J1": (60.0, 24.0, 90), "SW1": (21.0, 56.5, 90), "SW2": (45.0, 56.5, 90),
-         "H1": (4.0, 60.0, 0), "H2": (62.0, 4.0, 0)}
+PLACE = {"J2": (10.0, 24.0, 90), "J1": (60.0, 24.0, 90), "H1": (4.0, 60.0, 0), "H2": (62.0, 4.0, 0)}
+# solder jumpers in the old DIP switch areas (SW1 centre x 21, SW2 x 45), 2.8 mm apart (courtyard 2.6 mm wide), pad 1
+# (PU_i / PD_i) up toward the resistors, pad 2 (+3V3 / GND) down; channel numbers and bank names on the silkscreen
+JP_Y, JP_PITCH = 56.5, 2.8
+for i in range(1, 9):
+    PLACE[f"JP{i}"] = (21.0 + (i - 4.5) * JP_PITCH, JP_Y, 270)
+    PLACE[f"JP{8 + i}"] = (45.0 + (i - 4.5) * JP_PITCH, JP_Y, 270)
 for i in range(1, 9):
     y = ROW0 + (i - 1) * PITCH
     PLACE[f"R{8 + i}"] = (19.0, y, 0)     # pull-up
@@ -97,8 +103,10 @@ for ref, c in comps.items():
             fld.SetText("")
         elif fld.GetName() == "Description":
             fld.SetText(desc or "")
-    if ref.startswith("H"):
-        fp.Reference().SetVisible(False)                 # mounting holes: no label at the board edge
+    if ref.startswith("H") or ref.startswith("JP"):
+        fp.Reference().SetVisible(False)                 # mounting holes: no label at the board edge; jumpers: own labels
+    if ref.startswith("JP"):
+        fp.Value().SetVisible(False)
     if ref == "J2":
         fp.Reference().SetPosition(pcbnew.VECTOR2I(mm(x + 2.0), mm(y + 13.0)))
     b.Add(fp)
@@ -107,6 +115,23 @@ for ref, c in comps.items():
         if n:
             pad.SetNet(netinfo(n))
 print("placed", len(comps), "parts")
+
+
+def silk(txt, x, y, size=1.0):          # JLCPCB silkscreen: text >= 1.0 mm high, line >= 0.15 mm
+    t = pcbnew.PCB_TEXT(b)
+    t.SetText(txt)
+    t.SetPosition(pcbnew.VECTOR2I(mm(x), mm(y)))
+    t.SetLayer(pcbnew.F_SilkS)
+    t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
+    t.SetTextThickness(mm(0.15))
+    b.Add(t)
+
+
+for i in range(1, 9):
+    for x0 in (21.0, 45.0):
+        silk(str(i), x0 + (i - 4.5) * JP_PITCH, JP_Y - 2.3)
+silk("PULL-UP: bridge = on", 21.0, JP_Y + 2.7)
+silk("PULL-DOWN: bridge = on", 45.0, JP_Y + 2.7)
 
 # ---- placement check: courtyards inside the board (0.5 mm margin) and not overlapping each other
 boxes = {}
@@ -205,6 +230,11 @@ for ly in (pcbnew.F_Cu, pcbnew.B_Cu):
     z.SetLocalClearance(mm(0.3))
     z.SetMinThickness(mm(0.25))
     z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL)
+    # hwtemp (2026-11-23): with the solder-jumper rows the router passes a track beside J2's GND pins, leaving one thermal
+    # spoke on F.Cu (DRC starved_thermal, minimum 2): J2's GND pins connect solid to both pours instead
+    for p in b.FindFootprintByReference("J2").Pads():
+        if p.GetNetname() == GND:
+            p.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
     ol = z.Outline()
     ol.NewOutline()
     for x, y in ((0.5, 0.5), (W - 0.5, 0.5), (W - 0.5, H - 0.5), (0.5, H - 0.5)):

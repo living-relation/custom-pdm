@@ -3715,8 +3715,8 @@
         }
       ],
       "customPdm": {
-        "tempWarn": 55,
-        "tempCrit": 80,
+        "tempWarn": 98,
+        "tempCrit": 104,
         "tempCritHyst": 6,
         "critExemptMask": 0,
         "tempCritSoonMargin": 5,
@@ -7660,8 +7660,8 @@
         }
       ],
       "customPdm": {
-        "tempWarn": 55,
-        "tempCrit": 80,
+        "tempWarn": 98,
+        "tempCrit": 104,
         "tempCritHyst": 6,
         "critExemptMask": 2,
         "tempCritSoonMargin": 5,

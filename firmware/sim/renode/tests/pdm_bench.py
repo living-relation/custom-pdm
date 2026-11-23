@@ -158,7 +158,8 @@ class pdm_bench:
         st = s._status('A2', (3,)).out_state(s.OUT[10][1])
         lim = {k: tuple(s._read1(BASE[k], s.ps.TEMP_INDEX, sub) for sub in (0, 1, 2, 3, 4)) for k in BASE}
         s._check(s.OUT[10] == s.ps.FAN and all(p == [] for p in seen) and st == 0, f'output pins high every 200 ms for 2 s at 30 C: {seen}; A2 OUT2 status {st}')
-        s._check(lim == {'A1': (55, 80, 6, 0, 5), 'A2': (55, 80, 6, 2, 5), 'B': (98, 104, 6, 0, 5)}, f'warn / critical / recovery / critical-exempt mask / critical-soon margin from the boards: {lim}')
+        wa, ca = s.ps.TEMP_DEFAULT['warn'], s.ps.TEMP_DEFAULT['crit']      # board A: its FEA sensor map (hwtemp)
+        s._check(lim == {'A1': (wa, ca, 6, 0, 5), 'A2': (wa, ca, 6, 2, 5), 'B': (98, 104, 6, 0, 5)}, f'warn / critical / recovery / critical-exempt mask / critical-soon margin from the boards: {lim}')
 
     def _fan_steps(s, steps, ms=800):
         out = []
@@ -337,12 +338,17 @@ class pdm_bench:
     # ------------------------------------------------------------------ temperature sensor (I2C)
     def board_temperature_reaches_the_status_frame(s):
         k = 'A2'; st = s._status(k, (0,)); t30 = struct.unpack('<H', st.m[0][6:8])[0]; run_state = st.dev_state()
-        s._x('sysbus.i2c1.tempSensor Temperature 60', MACH[k]); s._run(800)
+        hot = s.ps.TEMP_DEFAULT['warn'] + 4            # over A2's factory warn (55 before hwtemp: was 60 C)
+        s._x(f'sysbus.i2c1.tempSensor Temperature {hot}', MACH[k]); s._run(800)
         st = s._status(k, (0,)); t60 = struct.unpack('<H', st.m[0][6:8])[0]; hot_state = st.dev_state()
         s._x('sysbus.i2c1.tempSensor Temperature 30', MACH[k]); s._run(800); back = s._status(k, (0,)).dev_state()
-        s._check(t30 == 300 and t60 == 600 and hot_state != run_state and back == run_state, f'temperature x10: {t30} then {t60}; device state {run_state} -> {hot_state} -> {back}')
+        s._check(t30 == 300 and t60 == hot * 10 and hot_state != run_state and back == run_state, f'temperature x10: {t30} then {t60}; device state {run_state} -> {hot_state} -> {back}')
 
-    # ------------------------------------------------------------------ thermal (r5a; limits = factory defaults 55 / 80 / 6 deg C)
+    # ------------------------------------------------------------------ thermal (r5a; the mechanism at test limits 55 / 80 / 6 deg C)
+    def _a1_test_limits(s):
+        # warn / critical / recovery 55 / 80 / 6 written over CAN (the stock values): the A1 thermal tests check the
+        # mechanism there; board A's factory limits (its FEA sensor map, hwtemp) are checked in the factory-defaults test
+        for sub, v in ((0, 55), (1, 80), (2, 6)): s._write1(BASE['A1'], s.ps.TEMP_INDEX, sub, v)
     def _temp(s, k, board_c=None, die_c=None):
         if board_c is not None: s._x(f'sysbus.i2c1.tempSensor Temperature {board_c}', MACH[k])
         if die_c is not None: s._x(f'sysbus.adc1 DieTemperature {die_c}', MACH[k])
@@ -359,6 +365,7 @@ class pdm_bench:
         s._check(all(got[k][0] == want[k][0] and abs(got[k][1] - want[k][1]) <= 4 for k in got), f'board / die x10: got {got}, want {want}')
 
     def above_warn_outputs_unchanged(s):
+        s._a1_test_limits()
         s._set_cmd([1, 2, 4]); s._run(400); before = s._a1_on(); st0 = s._status('A1', (0,)).dev_state()
         s._temp('A1', 56.0); s._run(600); hot = s._a1_on(); st1 = s._status('A1', (0,)).dev_state(); msg = s._info('A1')
         s._temp('A1', 40.0); s._run(600); back = s._status('A1', (0,)).dev_state()
@@ -462,6 +469,7 @@ class pdm_bench:
         s._check(temps and set(temps) <= {0, 415} and 415 in temps, f'board temperature x10 in msg 0 after the wake-up (0 = no reading yet; 330 would be the stale pre-sleep value): {temps}')
 
     def sensor_read_failures_keep_critical_and_send_a_fault_message(s):
+        s._a1_test_limits()                     # A1 restarted since the thermal tests (ID change test): factory again
         s._set_cmd([1, 2, 4]); s._run(400); before = s._a1_on()
         s._temp('A1', 80.0); s._run(600); crit = (s._a1_on(), s._status('A1', (0,)).dev_state())
         s._mcp('A1', 'Nak true'); s._temp('A1', 40.0); s._run(2000)          # the sensor would read 40 C if it answered

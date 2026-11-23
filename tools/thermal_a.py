@@ -14,7 +14,8 @@ FR-4 between, via / hole barrels, gap pad on the pedestals, air gap under the bo
     docs/enclosure-layout.md 4.3, as sim/heat/geometry.py); (2) copper I^2R of +12V and every loaded output on the real
     copper (tools/verify_copper.solve_net, J3 wire pads as the output terminals, J1 as the feed), scaled to the local
     copper temperature; (3) J1 bolted joint (20 uOhm, ASSUMED as thermal_board_b) + half of each BATT bar segment
-    beside it; (4) the 5 V module LMZM23601V5 (U21), 0.2 W ASSUMED (thermal_board_b P_5V).
+    beside it; (4) the 5 V module LMZM23601V5 (U21), thermal_board_b P_5V (TI SNVSAQ4C Figure 8-46 at 0.22 A, 13.5 V,
+    + hot-board conduction share: 0.131 W).
   * Heat out: B.Cu on the two pedestals (sim/heat/geometry.py PED["A"], hull + 1.5 mm) through the TGP 3000 pad (k 3,
     0.86 mm after 15 % squeeze, thermal_board_b PAD_T); the rest of the bottom through the 4 mm air gap; the top to
     the lid air (3 W/m2K); J1's terminal node through the BATT bar (Cu 20 x 5) to board B (113.4 mm) and to the other A
@@ -30,6 +31,8 @@ Cases (the loaded board is A1; the box heat counts every board):
              A boards loaded first - the hottest board A case the firmware allows
   car        docs/car-loads.dummy.md (dummy test copy), currents as tools/verify_thermal_box.py: A1 OUT1-8 2.0 2.5 0.5 0.2
              5.0 0.15 5.0 5.0 A; A2 0.2 0.13 0.2 3.0 A; B 118.1 A (thermal_board_b car)
+  drive      firmware/sim/data/s5_board_power.csv (s5 drive cycle, PR #140): A1, A2 and B outputs at their RMS current
+             over the coolant / fan phase, held steady (thermal_board_b drive_currents)
 """
 import argparse
 import json
@@ -50,7 +53,7 @@ A_DRV = VC.A_DRV                                     # U8: (PF_OUT1, PF_OUT2), .
 R_CH = 1.80 / (2 * 7.5 ** 2)                         # Ohm per channel
 RTHJC_A = 1.4                                        # K/W max, Infineon BTS7008-2EPA Table 6 (docs/heat-analysis.md)
 PED_A = [(-1.905, 13.132, 11.379, 14.021), (-1.981, 10.922, -13.970, -11.227)]   # sim/heat/geometry.py PED["A"]
-LOGIC_REFS_A = {"U4": "MCU STM32F446RET7", "U5": "FRAM MB85RC64TA", "U21": "5 V module LMZM23601V5", "Y1": "crystal",
+LOGIC_REFS_A = {"U4": "MCU STM32F446RET7", "U5": "FRAM CY15B064J-SXE", "U21": "5 V module LMZM23601V5", "Y1": "crystal",
                 "U6": "MCP9808"}
 G_BARS = TB.K_CU * 20e-3 * 5e-3 * (1 / 113.4e-3 + 1 / 74.4e-3)
 L_BAR = {"B-A1": 113.4e-3, "A1-A2": 74.4e-3}
@@ -79,6 +82,10 @@ def case_currents(name):
         return dict(this=this, other_a=dict(this), I_B=30.0, b_scale=30.0 / 184.0)
     if name == "car":
         return dict(this=dict(zip(OUTS, CAR_A1)), other_a=dict(zip(OUTS, CAR_A2)), I_B=118.1, b_scale=None)
+    if name == "drive":
+        d, _ = TB.drive_currents()
+        return dict(this={n: d["A1"].get(n, 0.0) for n in OUTS}, other_a={n: d["A2"].get(n, 0.0) for n in OUTS},
+                    I_B=sum(d["B"].values()), b_scale=None, b_case="drive")
     raise SystemExit(f"unknown case {name}")
 
 
@@ -92,8 +99,8 @@ def chip_list(cur):
 
 def board_b_heat(c):
     """Board B's heat for the box total (W): drivers at their currents + copper estimate + 5 V module."""
-    if c["b_scale"] is None:                     # car: thermal_board_b car currents
-        cur, _ = TB.case_currents("car")
+    if c["b_scale"] is None:                     # car / drive: thermal_board_b's currents of that case
+        cur, _ = TB.case_currents(c.get("b_case", "car"))
     else:
         cur = {n: v * c["b_scale"] for n, v in TB.case_currents("rating")[0].items()}
     chips = TB.chip_list(cur)
@@ -182,10 +189,12 @@ def run_case(board, th, diel, case, a, T, plots=None):
                                        p_w=round(r["power_w"], 2)) for r in rs])
     sq = sum(v * v for v in cur.values())
     out.update(chips_other_a=[dict(ref=x["ref"], P=round(x["P"], 3)) for x in chip_list(c["other_a"])],
+               currents=dict(A1=[round(cur[n], 3) for n in OUTS], A2=[round(c["other_a"][n], 3) for n in OUTS]),
                p_copper_other_a=round(p_cu * sum(v * v for v in c["other_a"].values()) / sq, 3) if sq else 0.0,
                assumptions=dict(dt_bar=TB.DT_A1, p5v=TB.P_5V, r_sys=TB.R_SYS[a.air], pad_mm=TB.PAD_T * 1e3))
+    out["limit_5v_board"] = round(TB.board_limit_5v(), 1)
     out["pass"] = dict(tj=out["tj_max"] <= TB.LIMITS["tj"], laminate=out["laminate_max"] <= TB.LIMITS["laminate"],
-                       logic=all(p["t"] <= 105.0 for r, p in parts.items() if r in ("U4", "U5")))
+                       logic=all(p["t"] <= TB.PART_LIMITS[r] for r, p in parts.items() if r in TB.PART_LIMITS))
     if plots:
         TB.plot(plots, case, a, T, Tn, dcu, out, board, name="a")
     return out
@@ -193,7 +202,7 @@ def run_case(board, th, diel, case, a, T, plots=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--case", nargs="+", default=["rating", "feed150a", "car"])
+    ap.add_argument("--case", nargs="+", default=["rating", "feed150a", "car", "drive"])
     ap.add_argument("--res", type=float, default=0.3)
     ap.add_argument("--cu-res", type=float, default=0.2)
     ap.add_argument("--feed-res", type=float, default=0.3)
@@ -232,7 +241,8 @@ def main():
         with open(a.json, "w") as f:
             json.dump(res, f, indent=1, default=str)
     print("RESULT", "PASS" if not fails else f"FAIL ({fails})",
-          f"(limits: Tj <= {TB.LIMITS['tj']} C, laminate <= {TB.LIMITS['laminate']} C, MCU / FRAM board <= 105 C)")
+          f"(limits: Tj <= {TB.LIMITS['tj']} C, laminate <= {TB.LIMITS['laminate']} C, MCU board <= {TB.PART_LIMITS['U4']} C, "
+          f"FRAM board <= {TB.PART_LIMITS['U5']} C)")
     return 1 if fails else 0
 
 
