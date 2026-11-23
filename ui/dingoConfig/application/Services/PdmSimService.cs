@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using domain.CustomPdm;
 using domain.Interfaces;
+using domain.Models;
 
 namespace application.Services;
 
@@ -26,7 +28,58 @@ public class PdmSimService : IDisposable
         _manager = manager;
         _manager.Connected += OnConnected;
         _manager.Disconnected += OnDisconnected;
+        _manager.DataReceived += OnFrame;
         Attach();
+    }
+
+    // ---------------- canboard: the simulated CANBoards (PdmCanBoardSim) ----------------
+
+    private readonly ConcurrentDictionary<int, (byte[] Data, long At)> _frames = new();
+    private readonly Dictionary<int, string> _cbOut = new();          // base ID -> the output lines last sent
+    private volatile HashSet<int> _watch = [];
+    public Func<long> Clock { get; set; } = () => Environment.TickCount64;   // ms
+
+    // the panel says which CANBoards (base IDs) it shows: only their status frames are kept
+    public void Watch(IEnumerable<int> baseIds)
+    {
+        var ids = baseIds.SelectMany(PdmCanBoardSim.WatchIds).ToHashSet();
+        if (!ids.SetEquals(_watch)) _watch = ids;
+    }
+
+    private void OnFrame(object? sender, CanFrameEventArgs e)
+    {
+        var w = _watch;
+        if (w.Count == 0 || !w.Contains(e.Frame.Id)) return;
+        _frames[e.Frame.Id] = (e.Frame.Payload.Take(e.Frame.Len).ToArray(), Clock());
+    }
+
+    // what the CANBoard at baseId reports on the bus right now (Alive false: no state frame for 350 ms)
+    public PdmCanBoardLive CanBoard(int baseId)
+    {
+        var ids = PdmCanBoardSim.WatchIds(baseId);
+        byte[]? D(int id) => _frames.TryGetValue(id, out var f) ? f.Data : null;
+        var alive = IsSimulator && _frames.TryGetValue(ids[2], out var st) && Clock() - st.At <= PdmCanBoardSim.StaleMs;
+        return PdmCanBoardSim.Decode(D(ids[0]), D(ids[1]), D(ids[2]), alive);
+    }
+
+    // Put a simulated CANBoard on the bus (or back on it), set as the CANBoard card says. null = sent.
+    public string? PlugCanBoard(PdmCanBoardInfo cb)
+    {
+        lock (_lock) _cbOut.Remove(cb.BaseId);
+        return Send(PdmCanBoardSim.AddLine(cb.BaseId)) ?? Send(PdmCanBoardSim.LinkLine(cb.BaseId, true)) ?? SyncCanBoard(cb);
+    }
+
+    // keep the simulated CANBoard's outputs as the setup has them (sent again only when they changed)
+    public string? SyncCanBoard(PdmCanBoardInfo cb)
+    {
+        var lines = PdmCanBoardSim.OutputLines(cb);
+        var key = string.Join('|', lines);
+        lock (_lock)
+            if (_cbOut.GetValueOrDefault(cb.BaseId) == key) return null;
+        foreach (var l in lines)
+            if (Send(l) is { } refused) return refused;
+        lock (_lock) _cbOut[cb.BaseId] = key;
+        return null;
     }
 
     private void OnConnected(object? sender, EventArgs e) => Attach();
@@ -51,7 +104,10 @@ public class PdmSimService : IDisposable
             IsSimulator = false;
             LastReply = null;
             _set.Clear();
+            _cbOut.Clear();
         }
+
+        _frames.Clear();
 
         if (old != null) old.SimLine -= OnLine;
         Changed?.Invoke();
@@ -103,6 +159,7 @@ public class PdmSimService : IDisposable
     {
         _manager.Connected -= OnConnected;
         _manager.Disconnected -= OnDisconnected;
+        _manager.DataReceived -= OnFrame;
         Detach();
     }
 }

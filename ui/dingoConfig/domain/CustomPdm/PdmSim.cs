@@ -66,8 +66,10 @@ public static class PdmSim
             Add(new PdmSimField($"{l.Id:X}:{l.Byte * 8}:8", $"{PdmFaults.OutputLabel(l.Out)}: ECU command (1 = on)", l.Id, l.Byte * 8, 8,
                 ByteOrder.LittleEndian, false, 1, 0));
         var m = PdmModel.Build(v);
+        // canboard: a CANBoard's frames come from the simulated CANBoard (PdmCanBoardSim), not from these fields
+        var canBoard = PdmCanBoard.All(v).SelectMany(cb => cb.Inputs.Select(i => i.Input)).ToHashSet<CanInput>(ReferenceEqualityComparer.Instance);
         foreach (var b in v.Boards)
-        foreach (var c in b.Device.CanInputs.Where(c => c.Enabled && !c.Ide && c.Id > 0 && !PdmEcu.IsPdmId(v, c.Id)))
+        foreach (var c in b.Device.CanInputs.Where(c => c.Enabled && !c.Ide && c.Id > 0 && !PdmEcu.IsPdmId(v, c.Id) && !canBoard.Contains(c)))
         {
             if (m.ResOf(c) is not { } r || m.ClaimOf(r).Kind is not (PdmClaimKind.Hand or PdmClaimKind.Value)) continue;
             // a byte-aligned 8-bit field is the same bits in both byte orders: one key, so an ECU command is not listed twice

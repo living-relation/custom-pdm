@@ -1,0 +1,159 @@
+@using System.Globalization
+@using application.Services
+@using domain.CustomPdm
+@using web.Services
+@inject PdmOpsService Pdm
+@inject NotificationService Notification
+
+@* custom-pdm canboard (Dan, 2026-11-22; domain/CustomPdm/PdmCanBoard.cs): "Add CANBoard" = a one-click preset for the
+   Dingo Electronics CANBoard, PDM-wide (no board question). Its 8 switches and 5 analog inputs become named inputs
+   that show in the same pickers as the PDM's own; its 4 outputs follow PDM signals through the stock CAN outputs.
+   PC edits: Write All sends them, Burn keeps them. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel @bind-Expanded="_open" id="pdm-canboard">
+        <TitleContent>
+            <MudText Typo="Typo.h6">CANBoard (more inputs and outputs over CAN)</MudText>
+        </TitleContent>
+        <ChildContent>
+            @{
+                var busy = Pdm.Ops.Busy;
+                var all = PdmCanBoard.All(View);
+                var m = PdmModel.Build(View);
+                var free = View.Boards.Select(b => (b.Role, N: m.FreeOf(b.Role, PdmResKind.CanInput).Count)).ToList();
+                var need = PdmCanBoard.Need(_rotary);
+                var baseId = Hex(_base);
+                var clash = baseId is { } id ? PdmCanBoard.Clash(View, id) : "The base ID is a hex number, e.g. 640.";
+                var sources = PdmCanBoard.OutputSources(m, View);
+            }
+            <MudText Typo="Typo.body2" Class="mb-2">
+                A Dingo Electronics CANBoard gives the PDM 8 more switch inputs (switch to ground), 5 analog inputs (0-5 V) and
+                4 small outputs (0.5 A each, switch to ground) over the two CAN wires. Add it here: its inputs then show in the
+                same lists as the PDM's own inputs ("@(PdmCanBoard.NextName(View)) switch 3").
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudTextField T="string" @bind-Value="_name" Label="Name" Placeholder="@PdmCanBoard.NextName(View)" Variant="Variant.Outlined" Margin="Margin.Dense"
+                              MaxLength="@PdmCanBoard.NameMax" Style="max-width: 220px" Disabled="@busy" id="pdm-cb-name" />
+                <MudTextField T="string" @bind-Value="_base" Label="Its base ID (hex)" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                              Style="max-width: 150px" Disabled="@busy" id="pdm-cb-base" />
+                <MudCheckBox T="bool" @bind-Value="_rotary" Label="It has rotary switches" Dense="true" Disabled="@busy" id="pdm-cb-rotary" />
+                <MudNumericField T="int" @bind-Value="_timeout" Label="Counts as lost after (ms)" Min="@PdmCanBoard.MinTimeoutMs" Max="@PdmCanBoard.MaxTimeoutMs" Step="100"
+                                 Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 200px" Disabled="@busy" id="pdm-cb-timeout" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Add"
+                           Disabled="@(busy || clash != null || free.Sum(f => f.N) < need)" OnClick="Add" id="pdm-cb-add">Add CANBoard</MudButton>
+            </MudStack>
+            <MudText Typo="Typo.caption" Style="display: block" Class="mt-1" id="pdm-cb-hint">
+                @if (clash != null)
+                {
+                    <span style="color: var(--mud-palette-error)">@clash</span>
+                }
+                else if (free.Sum(f => f.N) < need)
+                {
+                    <span style="color: var(--mud-palette-error)">It needs @need free CAN inputs on the PDM; only @free.Sum(f => f.N) are free (@string.Join(", ", free.Select(f => $"{f.Role} {f.N}"))).</span>
+                }
+                else
+                {
+                    <span>Uses @need of the PDM's @free.Sum(f => f.N) free CAN inputs and the IDs 0x@(baseId!.Value.ToString("X3"))-0x@((baseId.Value + PdmCanBoard.BlockIds - 1).ToString("X3")) (checked against the PDM, the ECU stream and keypads). @PdmCanBoard.BusLoadText(View)</span>
+                }
+            </MudText>
+
+            @foreach (var cb in all)
+            {
+                var c = cb;
+                var readers = PdmCanBoard.Readers(View, c);
+                <MudPaper Outlined="true" Class="pa-3 mt-3" id="@($"pdm-cb-{c.BaseId:X}")">
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudIcon Icon="@Icons.Material.Filled.DeveloperBoard" />
+                        <MudText Typo="Typo.subtitle1"><b>@c.Name</b> (IDs 0x@(c.BaseId.ToString("X3"))-0x@(c.LastId.ToString("X3")))</MudText>
+                        <MudSpacer />
+                        <MudTextField T="string" Value="@Rename(c)" ValueChanged="@(x => _rename[c.BaseId] = x)" Label="New name" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                      MaxLength="@PdmCanBoard.NameMax" Style="max-width: 200px" Disabled="@busy" Class="pdm-cb-rename" />
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Disabled="@busy" OnClick="@(() => DoRename(c))" Class="pdm-cb-rename-do">Rename</MudButton>
+                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" Disabled="@busy" OnClick="@(() => Remove(c))" Class="pdm-cb-remove">Remove</MudButton>
+                    </MudStack>
+                    <MudText Typo="Typo.body2" Class="mt-1 pdm-cb-inputs">
+                        Inputs: @c.Name switch 1-8, analog 1-5 (mV)@(c.HasRotary ? ", rotary 1-5 position" : ""). Pick them in Output triggers, Functions and Values.
+                        If the CANBoard goes silent (unplugged, no power) they read <b>off</b> and <b>0 mV</b> after @PdmLinks.DelayText(c.TimeoutMs).
+                    </MudText>
+                    @if (readers.Count > 0)
+                    {
+                        <MudText Typo="Typo.caption" Style="display: block" Class="pdm-cb-readers">In use: @string.Join("; ", readers)</MudText>
+                    }
+
+                    <MudText Typo="Typo.body2" Class="mt-2"><b>Its 4 outputs</b> (0.5 A each, switch to ground): each can follow one on / off signal of the PDM</MudText>
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap" Class="mt-1">
+                        @for (var n = 1; n <= PdmCanBoard.Outs; n++)
+                        {
+                            var k = n;
+                            var cur = c.Outputs.FirstOrDefault(o => o.Number == k);
+                            <MudSelect T="string" Value="@(cur == null ? null : PdmWide.Key(cur.Role, cur.Out.Input))" ValueChanged="@(x => SetOut(c, k, x))" Label="@($"Output {k} follows")"
+                                       Clearable="true" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 240px; max-width: 300px" Disabled="@busy" Class="@($"pdm-cb-out pdm-cb-out-{k}")">
+                                @foreach (var s in sources) { <MudSelectItem T="string" Value="@s.Key">@s.Text</MudSelectItem> }
+                            </MudSelect>
+                        }
+                    </MudStack>
+                    <MudText Typo="Typo.caption" Style="display: block" Class="mt-1">
+                        The CANBoard's firmware has no fixed "set output" message: the PDM sends a small frame every @(PdmCanBoard.PeriodMs) ms and the
+                        CANBoard is set once to follow it. If the PDM goes silent, the CANBoard switches these outputs off after @PdmLinks.DelayText(c.TimeoutMs).
+                    </MudText>
+
+                    <MudText Typo="Typo.body2" Class="mt-2"><b>Set once on the CANBoard itself</b> (it is its own device: dingoConfig, CANBoard page, then Burn)</MudText>
+                    <ol class="pdm-cb-steps" style="margin: 4px 0 0 20px">
+                        @foreach (var step in PdmCanBoard.SetupSteps(c)) { <li><MudText Typo="Typo.body2">@step</MudText></li> }
+                    </ol>
+                </MudPaper>
+            }
+        </ChildContent>
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open = true;
+    private string _name = "";
+    private string? _base;
+    private bool _rotary;
+    private int _timeout = PdmLinks.TimeoutMs;
+    private readonly Dictionary<int, string> _rename = new();
+
+    protected override void OnParametersSet() => _base ??= PdmCanBoard.FreeBase(View).ToString("X3");
+
+    private static int? Hex(string? s) =>
+        int.TryParse((s ?? "").Trim().Replace("0x", "", StringComparison.OrdinalIgnoreCase), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var x) ? x : null;
+
+    private string Rename(PdmCanBoardInfo c) => _rename.GetValueOrDefault(c.BaseId, c.Name);
+
+    private bool Done(string? why, string what)
+    {
+        if (why != null) { Notification.NewError($"Not changed: {why}"); return false; }
+        Notification.NewInfo($"{what} (on the PC). Write All sends it to the boards.");
+        StateHasChanged();
+        return true;
+    }
+
+    private void Add()
+    {
+        if (Hex(_base) is not { } id) { Notification.NewError("The base ID is a hex number, e.g. 640."); return; }
+        var name = string.IsNullOrWhiteSpace(_name) ? PdmCanBoard.NextName(View) : _name.Trim();
+        if (!Done(PdmCanBoard.Add(View, id, name, _rotary, _timeout), $"{name} added: {PdmCanBoard.Need(_rotary)} inputs")) return;
+        _name = "";
+        _base = PdmCanBoard.FreeBase(View).ToString("X3");
+    }
+
+    private void Remove(PdmCanBoardInfo c)
+    {
+        if (Done(PdmCanBoard.Remove(View, c.BaseId), $"{c.Name} removed")) _base = PdmCanBoard.FreeBase(View).ToString("X3");
+    }
+
+    private void DoRename(PdmCanBoardInfo c)
+    {
+        if (Done(PdmCanBoard.Rename(View, c.BaseId, Rename(c)), $"{c.Name} is now {Rename(c).Trim()}")) _rename.Remove(c.BaseId);
+    }
+
+    private void SetOut(PdmCanBoardInfo c, int n, string? key)
+    {
+        if (string.IsNullOrEmpty(key)) { Done(PdmCanBoard.ClearOutput(View, c.BaseId, n), $"{c.Name} output {n} follows nothing"); return; }
+        if (PdmWide.Find(PdmCanBoard.OutputSources(PdmModel.Build(View), View), key) is not { } s) { Notification.NewError("Pick an on / off signal."); return; }
+        Done(PdmCanBoard.SetOutput(View, c.BaseId, n, s.Role, s.Var), $"{c.Name} output {n} follows {s.Text}");
+    }
+}
