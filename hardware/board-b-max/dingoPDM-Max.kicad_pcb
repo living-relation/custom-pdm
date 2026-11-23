@@ -5780,7 +5780,7 @@
 			(uuid "4eacf5d4-574c-4194-8f7e-f4cfefc57bdd")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/cgrant/Dropbox/KiCad/Libraries/Profet/PG-TSDSO-24-32.step"
+		(model "${KIPRJMOD}/Models/PG-TSDSO-24_bestguess.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -22454,7 +22454,7 @@
 			(uuid "dc9e4a95-940d-48ce-9bb8-baaf2cc3361a")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/cgrant/Dropbox/KiCad/Libraries/Profet/PG-TSDSO-24-32.step"
+		(model "${KIPRJMOD}/Models/PG-TSDSO-24_bestguess.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -31391,7 +31391,7 @@
 			(uuid "a4f785a9-38f9-429f-828a-2494ff9e57c3")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/cgrant/Dropbox/KiCad/Libraries/Profet/PG-TSDSO-24-32.step"
+		(model "${KIPRJMOD}/Models/PG-TSDSO-24_bestguess.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -40444,7 +40444,7 @@
 			(uuid "9ae99427-25a0-4e2a-8774-bd55814df36d")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/cgrant/Dropbox/KiCad/Libraries/Profet/PG-TSDSO-24-32.step"
+		(model "${KIPRJMOD}/Models/PG-TSDSO-24_bestguess.step"
 			(offset
 				(xyz 0 0 0)
 			)

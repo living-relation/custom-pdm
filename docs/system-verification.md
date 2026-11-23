@@ -113,51 +113,69 @@ firmware: 14.3 % load, car frames <= 0.19 ms queueing, every board's msg 0 exact
 
 ## 6. Thermal, whole box (60 C cabin; fans on / failed)
 
+Re-run 2026-11-22 (job orderprep) at the copper that is ordered (`tools/copper_order.py`: board B 1 oz outer + 1 oz
+inner = 35 / 35 um, Dan 2026-11-22), `verify_thermal_box.py` on the 0.3 mm grid: 26 PASS, 4 WARN, 6 FAIL before the
+UI constant was updated (then 27 / 4 / 5). The first results (2026-11-20) used the KiCad file's 43 / 17 um copper.
+
 | Case | Sink | Lid air | Board B Tj / laminate | Board B MCP9808 | Verdict |
 |---|---|---|---|---|---|
-| car loads (118 A on B), fans on | 69.7 C | 69.3 C | 115 / 112 C | 95.6 C | PASS heat; **FAIL vs the 80 C critical limit** -> PASS vs board B's new 98 / 104 C (fwsafety) |
-| 150 A on B, fans on | 72.6 C | 74.2 C | 113 / 120 C | 110.5 C | PASS heat; board B cuts at 104 C (150 A for a long time at a 60 C cabin is above normal use) |
-| 150 A on B, fans failed | 86.7 C | 78.8 C | 127 / **136 C** | 125.7 C | FAIL (laminate > 130 C) |
-| every output at rating (184 A, above the feed limit) | 79-102 C | 92-99 C | up to 164 / 179 C | - | INFO (upper bound) |
+| car loads (118 A on B), fans on | 69.6 C | 69.3 C | 114 / 110 C | 93.4 C | PASS (below board B's 98 C warn) |
+| 150 A on B, fans on | 72.2 C | 74.1 C | 109 / 117 C (other splits 118 / 117 C) | 106.2 C | PASS heat; board B cuts at 104 C (150 A for a long time at a 60 C cabin is above normal use) |
+| 150 A on B, fans failed | 85.9 C | 78.6 C | 123 / **132 C** (other splits 132.5 / 133.1 C) | 120.9 C | FAIL (laminate > 130 C); the 104 C cut comes first |
+| car loads, fans failed | 80.2 C | 72.7 C | 125 / 120 C | 104.4 C | PASS heat; board B cuts (104 C) |
+| every output at rating (184 A, above the feed limit) | 79-100 C | 92-99 C | up to 157 / 172 C | - | INFO (upper bound) |
 
-Fan failure at 150 A: the sink climbs 73 -> 87 C with a 26 min time constant; the laminate passes 130 C after about
-22 min. Part ratings at 150 A, fans on (board B logic area at its MCP9808 110 C, board A about 88 C ASSUMED): TSR
-1-2450, ABM3 crystal, X5R caps (85 C) FAIL; FRAM 105 C and MCU 105 C WARN; DIP switches 74 C vs 70 C WARN. The
-higher-rated drop-ins are in `docs/parts-audit.md` section 10. At a 70 C cabin every case is 10 K hotter.
+Fan failure at 150 A: the sink climbs 72 -> 86 C with a 26 min time constant; the laminate passes 130 C after about
+54 min, and board B's sensor is already over its 104 C critical limit at 150 A with the fans on. Part ratings at
+150 A, fans on (board B logic area at its MCP9808 106 C, board A about 87 C ASSUMED): crystal and capacitors are
+125 C parts on board A and board B (PASS; board A since job orderprep); 5 V module PASS; FRAM 105 C and MCU 105 C
+WARN (106 C: above the 104 C cut); DIP switches 74 C vs 70 C WARN. At a 70 C cabin every case is 10 K hotter.
 
-## 7. EMC / SI (5 PASS, 2 WARN)
+## 7. EMC / SI (3 PASS, 2 WARN, 5 INFO on 2026-11-22)
 
 Field solver self-check 53.4 vs 51.3 Ohm (Hammerstad-Jensen, +4 %). CAN pairs: A 161 Ohm, B 115 Ohm differential
 (IPC 128 / 90): both 20 mm long, electrically short at 1 Mbit/s, so impedance does not matter: PASS. USB pairs on
 In2.Cu (stripline): short (43 mm vs 100 mm critical, `verify_layout.py`). PWM spectrum: corner 8.6-20 kHz, -40
 dB/decade: 25 A at 100 Hz is 56 dBuA at 150 kHz, 34 dBuA at 530 kHz (chamber test for the CISPR 25 limits).
 Decoupling: worst MCU loop 3.7 nH (PASS); VDDA 1 uF + 100 nF behind its ferrite since hwprotect (both boards; via in
-FB1 pad 2, 11-15 mm on B.Cu to the capacitors: the U4 fan-out leaves no closer site): PASS.
+FB1 pad 2, 11-15 mm on B.Cu to the capacitors: the U4 fan-out leaves no closer site): **WARN** in `verify_si.py`
+(pin 13 to the capacitor 7.0 mm, about 7.1 nH, limit 5 nH, on A and B; accepted, bench item:
+ADR-2026-11-20-hwprotect b). The two WARNs are this one on each board.
 
-## 8. Manufacturing (8 PASS, 6 WARN)
+## 8. Manufacturing (7 PASS, 7 WARN, 5 INFO on 2026-11-22)
 
-Via-in-pad: 54 (A), 147 (B), 27 (IN) vias in SMD pads (incl. the hwprotect VDDA via in FB1), mostly the PROFET
-exposed-pad thermal vias: the fab notes now ask JLCPCB for epoxy-filled + capped vias (table row + order remark,
-`tools/gen_fab_jlcpcb.py`): PASS once ordered so. Copper to edge: KiCad edge_clearance 0.2 mm, no violations.
-Silk: 356 / 609 / 168 lines under 0.15 mm (KiCad library 0.12 mm, cosmetic): WARN. Vias 0.4 mm drill / 0.2 mm ring:
-PASS. BOM: 0 parts short at JLCPCB without an alternate; 30 of 45 types are extended parts (feeder fee). Placement:
-`verify_cpl.py` 121 / 186 / 48 placements ok (fixed its user agent: easyeda.com refused 'Mozilla/5.0'). 3D: 0
-footprint geometry changes since the boards the v2c clash build used (94adcc4): the v2c result holds; re-run after
-the d2tvs DO-218 change.
+Via-in-pad: 58 (A), 151 (B), 27 (IN) vias in SMD pads (incl. the hwprotect VDDA via in FB1 and the 5 V module),
+mostly the PROFET exposed-pad thermal vias: the fab notes ask JLCPCB for epoxy-filled + capped vias (table row +
+order remark, `tools/gen_fab_jlcpcb.py`): WARN in the tool, fine once ordered so. Copper to edge: KiCad
+edge_clearance 0.2 mm, no violations. Silk: 358 / 611 / 168 lines under 0.15 mm (KiCad library 0.12 mm, cosmetic):
+WARN. Vias 0.3 mm smallest drill / 0.2 mm ring: PASS. BOM: 0 parts short at JLCPCB without an alternate except the
+no-LCSC parts (global sourcing by MPN: Y1 on A and B, T1-T8 on B; `fab-notes.md`). Placement: `verify_cpl.py`
+129 / 194 / 48 placements, RESULT PASS (Y1 on A and B "check": 2-pad crystal with no LCSC footprint to compare,
+symmetric). 3D: WARN "15 / 16 footprint changes since 94adcc4" (the tool's old baseline); the enclosure was
+re-checked on the current boards since (revF, docs/order-readiness.md section 5).
 
-## Board B temperature limits (job fwsafety, ADR-2026-11-20-presim-findings item 1)
+## Board B temperature limits (job fwsafety, ADR-2026-11-20-presim-findings item 1; re-derived 2026-11-22, job orderprep)
 
-`tools/verify_thermal_box.py` now reads board B's limits from `port_boards.py` and checks them against the sensor ->
+`tools/verify_thermal_box.py` reads board B's limits from `port_boards.py` and checks them against the sensor ->
 hot-spot map of all 10 modelled cases (`thermal_board_b.py --case car feed150 feed150hi feed150lo rating`, fans on /
-failed, 60 C cabin): laminate = U6 + 9.6 .. 19.0 K, Tj = U6 + 1.7 .. 19.8 K.
+failed, 60 C cabin), now at the ordered copper (1 oz outer + 1 oz inner, 35 / 35 um) on the 0.3 mm grid:
+laminate = U6 + 10.1 .. 19.6 K, Tj = U6 + 2.5 .. 20.4 K. (0.4 mm grid: + 8.3 .. 17.5 / + 4.2 .. 21.2 K; the first map,
+2026-11-20, at 43 / 17 um copper on the 0.4 mm grid: + 9.6 .. 19.0 / + 1.7 .. 19.8 K.) A 0.25 mm grid run of three cases gives + 8.6 .. 18.4 K: the car case scatters 16.1 .. 18.4 K between the grids, so the map is used as an envelope (19.6 K covers all three grids). The largest laminate offset is
+the 184 A fans-failed case; at the car loads it is 16.1 K.
 
 | Check | Value | Limit | Verdict |
 |---|---|---|---|
-| Car loads, fans on: U6 vs warn 98 C | 95.6 C (a 70 C cabin: 105.6 C, critical soon + cut) | < 98 C | PASS |
-| Laminate / Tj when U6 reaches critical 104 C (+1 C MCP9808, largest offset) | 124.0 / 124.8 C | <= 130 / 150 C | PASS |
+| Car loads, fans on: U6 vs warn 98 C | 93.4 C (a 70 C cabin: 103.4 C: warning and critical soon, no cut) | < 98 C | PASS |
+| Laminate / Tj when U6 reaches critical 104 C (+1 C MCP9808, largest offset) | 124.6 / 125.4 C (126.2 C with the 0.4 mm grid's Tj offset) | <= 130 / 150 C | PASS |
 | STM32F446RET7 / MB85RC64TA (105 C ambient) at U6 104 + 1 C | 105 C | <= 105 C | PASS (binding limit) |
-| TSR 1-2450 / ABM3 / X5R (85 C) at U6 104 + 1 C | 105 C | <= 85 C | FAIL until the >= 105 C grades (hardware job); left at 85 C they would need critical <= 84 C, which trips at the car loads (95.6 C) |
+| Crystal ECS-80-18-30Q-CES, X7R / C0G capacitors, 5 V module at U6 104 + 1 C | 105 C | <= 125 / 125 / 121 C | PASS (125 C grades on board B since hwprotect / hw5v, on board A since orderprep) |
+| UI hot-spot offset (`PdmThermal.BoardBLaminateOffsetK`) vs the map | 19.6 K = 19.6 K (sensor limit = hot spot - 21 K) | map <= UI <= map + 1 K | PASS |
 | Board A | no FEA sensor map; the presim estimate (sink + 15 K, ASSUMED) is about 85 C at the car loads, above its stock 80 C | - | open (needs a board A model or the bench) |
+
+Result for the firmware defaults: warn 98 C, critical 104 C, recovery 6 C stay as set on 2026-11-20 (critical is bound
+by the 105 C MCU / FRAM rating, not by the copper; warn is 4.6 K over the car-loads reading and below critical-soon
+99 C). Result for the UI: the offset grows from 20 K (19.0 + 1) to 21 K (19.6 + 1, rounded up), so board B's factory
+98 / 104 C shows as the hot-spot set 119 / 125 C.
 
 ## Fixes made (firmware, custom boards only; stock dingopdm_v7 .bin md5 identical to main: fbe414ba...)
 

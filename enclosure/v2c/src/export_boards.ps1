@@ -7,8 +7,9 @@
 #   board A ${KIPRJMOD}/Models -> reference\dingoPDM\DingoPDM\Models (stock dingoPDM models, MIT repo) + hardware\board-a\Models
 #     (our own models, e.g. D2's DO-218 from tools/d2_model.py)
 #   board B ${KIPRJMOD}/Models -> hardware\board-b-max\Models
-# Known gap: stock dingoPDM-Max points its BTS70012 (PG-TSDSO-24-32) model at C:/Users/cgrant/...; no copy exists, so those
-# 4 packages (about 1 mm tall, board top) export without a body. See export.log.
+# BTS70012 (U8-U11, PG-TSDSO-24): since job orderprep (2026-11-22) the footprints point at
+# hardware\board-b-max\Models\PG-TSDSO-24_bestguess.step (tools/tsdso24_model.py, a labelled best guess 1.15 mm tall), so
+# the next export carries a body for them (the revF release was exported before that, without). See export.log.
 param([string]$Out = "")
 $ErrorActionPreference = "Continue"
 $src = Split-Path -Parent $MyInvocation.MyCommand.Path

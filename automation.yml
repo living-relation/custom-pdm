@@ -42,7 +42,7 @@ automations:
               tools/d2_tvs.py, tools/hw_protect.py, tools/hw_5v_module.py]
     trigger: manual
     reads: [tools/sch_board_b.py, tools/pcb_board_b.py, tools/route_board_b.py, tools/tidy_board_b.py, tools/check_board_b.py,
-            tools/pcb_feed_board_b.py, tools/pcb_stackup.py, tools/copper_order.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
+            tools/pcb_feed_board_b.py, tools/pcb_stackup.py, tools/copper_order.py, tools/pcb_models_board_b.py, tools/tsdso24_model.py]   # + baseline fe19c28 of hardware/board-b-max; not thermal_board_b.py (own entry, never run by the build)
     writes: ["hardware/board-b-max/*.kicad_sch", "hardware/board-b-max/*.kicad_pcb"]
     committed: yes
     auto_commit: false
