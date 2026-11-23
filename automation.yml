@@ -144,7 +144,7 @@ automations:
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --proposals --out /tmp/s5   # after firmware/sim/build.sh x 3; --mutants: 12 of 12 RED
+    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --out /tmp/s5   # after firmware/sim/build.sh x 3; 34 of 34; --mutants: 16 of 16 RED
     owner: claude
   - id: starter-params
     script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs

@@ -30,7 +30,7 @@ public class PdmEditor2Tests
     // ================================================================ presets
 
     [Theory]
-    [InlineData(PdmDeviceKind.RadiatorFan, 17, 30.0, 100.0, 500, 100, true, 3, 2000, 0.0, PdmLinkLoss.On)]     // B OUT1 31 A: fan 30 A cap
+    [InlineData(PdmDeviceKind.RadiatorFan, 17, 30.0, 100.0, 500, 100, true, 3, 2000, 0.0, PdmLinkLoss.Off)]    // B OUT1 31 A: fan 30 A cap; off at loss (configfix)
     [InlineData(PdmDeviceKind.FuelPump, 19, 25.0, 100.0, 500, 100, false, 3, 1000, 1.0, PdmLinkLoss.Off)]      // 25 A x 4 = 100 A (cap)
     [InlineData(PdmDeviceKind.FuelPump, 21, 15.0, 60.0, 500, 100, false, 3, 1000, 1.0, PdmLinkLoss.Off)]       // B OUT5 15 A rating wins
     [InlineData(PdmDeviceKind.Lamp, 1, 7.5, 75.0, 100, 50, false, 5, 1000, 0.5, PdmLinkLoss.Hold)]            // A 7.5 A, 10 x
@@ -150,8 +150,11 @@ public class PdmEditor2Tests
         Assert.Null(PdmLinks.Add(v, 1, 17));                                   // A1 IN1 -> B OUT1, off
         var notes = new List<string>();
         Assert.Null(PdmPresets.Apply(v, 17, PdmDeviceKind.RadiatorFan, notes));
-        Assert.Equal(PdmLinkLoss.On, PdmLinks.LinkOf(v, Out(v, 17))!.Loss);
-        Assert.Contains(notes, n => n.Contains("on 1 s after the message stops"));
+        Assert.Equal(PdmLinkLoss.Off, PdmLinks.LinkOf(v, Out(v, 17))!.Loss);   // configfix: fans off at loss
+        Assert.True(Out(v, 17).Output.SoftStartEnabled);
+        Assert.Null(PdmPresets.Apply(v, 17, PdmDeviceKind.LedLamp, notes));
+        Assert.Equal(PdmLinkLoss.Hold, PdmLinks.LinkOf(v, Out(v, 17))!.Loss);
+        Assert.Contains(notes, n => n.Contains("keeps its last state"));
         Assert.Null(PdmPresets.Apply(v, 17, PdmDeviceKind.FuelPump));
         Assert.Equal(PdmLinkLoss.Off, PdmLinks.LinkOf(v, Out(v, 17))!.Loss);
         Assert.False(Out(v, 17).Output.SoftStartEnabled);
