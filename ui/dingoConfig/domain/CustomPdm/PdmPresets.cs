@@ -19,7 +19,9 @@ namespace domain.CustomPdm;
 // - open-load min current (PRO P2) where a dead load matters and the current is steady: fuel pump, halogen lamp,
 //   A/C clutch; off for PWM fans (a low duty reads as low current) and loads that are often idle
 // - link-loss behaviour: applied to the output's cross-board link or ECU command when it has one (PdmLinks /
-//   PdmEcu SetMode); fuel pump off (ECUMaster: pump default 0 "for safety"), fans on, lamps / modules hold, rest off
+//   PdmEcu SetMode); fuel pump off (ECUMaster: pump default 0 "for safety"), fans off, lamps / modules hold, rest off;
+//   an output the ECU commands (PdmEcu) is OFF at ECU loss whatever its preset (EcuLoss; Dan 2026-11-23: the ECU keeps
+//   control and does its own shutdown / after-run, and a key off stops the ECU: it must not read as a fault)
 // - board B motor PWM (fwsafety, ADR-2026-11-20-presim-findings item 2, docs/system-verification.md 3): in the PWM off
 //   time a motor's current freewheels in the output's BYG23M (D13 .. D28, Vishay doc 88962: IF(AV) 1.5 A). The average
 //   diode current at the worst duty, I x tau x f x (1 - e^(-toff / tau)) with tau = L x I / 13.5 V (back-EMF ignored, as
@@ -43,6 +45,7 @@ public static class PdmPresets
 {
     public const double MaxInrushA = 100.0;          // stock InrushCurrentLimit clamp (PdmPage / OutputsGrid)
     public const int SoftStartFreqHz = 100;
+    public const PdmLinkLoss EcuLoss = PdmLinkLoss.Off;   // configfix: every ECU-commanded output, any preset
     public const double FreewheelIfAvA = 1.5, MotorSupplyV = 13.5;   // BYG23M IF(AV) (Vishay doc 88962); verify_switching.py
 
     // ASSUMED motor inductance per motor preset (tools/presim_parts.py CAR_LOADS, upper end of the range)
@@ -75,9 +78,9 @@ public static class PdmPresets
 
     public static readonly IReadOnlyList<PdmPreset> All =
     [
-        new(PdmDeviceKind.RadiatorFan, "Radiator fan", 30, 4, 500, 100, true, 1000, 3, 2000, 0, 500, PdmLinkLoss.On,
-            "motor: inrush 3-5 x steady for about 0.5 s (HP Academy: 12 A fan, about 50 A inrush); soft start ramps it; on at loss (cooling)"),
-        new(PdmDeviceKind.CondenserFan, "Condenser fan", 30, 4, 500, 100, true, 1000, 3, 2000, 0, 500, PdmLinkLoss.On,
+        new(PdmDeviceKind.RadiatorFan, "Radiator fan", 30, 4, 500, 100, true, 1000, 3, 2000, 0, 500, PdmLinkLoss.Off,
+            "motor: inrush 3-5 x steady for about 0.5 s (HP Academy: 12 A fan, about 50 A inrush); soft start ramps it; off at loss (the ECU keeps control and runs its own after-run)"),
+        new(PdmDeviceKind.CondenserFan, "Condenser fan", 30, 4, 500, 100, true, 1000, 3, 2000, 0, 500, PdmLinkLoss.Off,
             "as the radiator fan"),
         new(PdmDeviceKind.FuelPump, "Fuel pump", 25, 4, 500, 100, false, 1000, 3, 1000, 1.0, 500, PdmLinkLoss.Off,
             "motor (3-5 x, HP Academy); st185 pump up to 25 A; open-load 1 A flags a dead pump; off at loss (ECUMaster: pump default 0 for safety)"),
@@ -109,11 +112,82 @@ public static class PdmPresets
     public static PdmPresetValues Values(PdmPreset p, double ratingA)
     {
         var limit = Math.Round(Math.Min(ratingA, p.MaxSteadyA), 2);
-        var inrush = p.Kind == PdmDeviceKind.Other
-            ? Math.Max(limit, 50.0)
-            : Math.Min(MaxInrushA, Math.Max(limit, Math.Round(limit * p.InrushFactor, 1)));
-        return new PdmPresetValues(limit, inrush, p.InrushMs, p.TripMs, p.SoftStart, p.SoftStartMs, ResetMode.Count, p.Trips, p.RetryMs,
+        return new PdmPresetValues(limit, InrushFor(p, limit), p.InrushMs, p.TripMs, p.SoftStart, p.SoftStartMs, ResetMode.Count, p.Trips, p.RetryMs,
             p.MinCurrentA, p.MinCurrentMs, p.Loss);
+    }
+
+    // the preset's inrush rule for a current limit: limit x the inrush factor, at least the limit, at most 100 A
+    public static double InrushFor(PdmPreset p, double limit) => p.Kind == PdmDeviceKind.Other
+        ? Math.Max(limit, 50.0)
+        : Math.Min(MaxInrushA, Math.Max(limit, Math.Round(limit * p.InrushFactor, 1)));
+
+    // configfix (s5 drive cycle, 2026-11-23: the starter's CAN-Lambda had its Module limit raised 5 -> 10 A with the
+    // inrush left at 10 A, and tripped at every key-on): when the current limit of an output with a preset is edited
+    // and its inrush still follows the preset rule for the old limit, the inrush follows the rule for the new limit.
+    // An inrush set by hand (not the rule) is kept. Returns what it did, or null.
+    public static string? LimitEdited(PdmView v, PdmOutputRow o, double oldLimit)
+    {
+        var k = KindOf(v, o);
+        if (k is PdmDeviceKind.None or PdmDeviceKind.Other) return null;
+        var p = Of(k);
+        var x = o.Output;
+        if (Math.Abs(x.InrushCurrentLimit - InrushFor(p, oldLimit)) > 0.05) return null;
+        var want = InrushFor(p, x.CurrentLimit);
+        if (Math.Abs(want - x.InrushCurrentLimit) <= 0.005) return null;
+        x.InrushCurrentLimit = want;
+        return $"inrush limit {want:0.##} A ({p.Name} preset: {p.InrushFactor:0.##} x the limit)";
+    }
+
+    // ---------------- switch limits the presets do not hold (tools/verify_switching.py, WARN rows) ----------------
+
+    // PROFET values (tools/presim_parts.py PROFET: Infineon data sheets): DC rating, RDS(ON) at 150 C, slowest slew rate,
+    // IL(OVL0) min at TJ 150 C
+    public record PdmSwitch(string Model, double InomA, double Rds150, double DvdtMin, double Ovl0Min150A);
+
+    public static readonly PdmSwitch Bts7008 = new("BTS7008-2EPA", 7.5, 16e-3, 0.3e6, 65);     // Data Sheet Rev 1.20
+    public static readonly PdmSwitch Bts7004 = new("BTS7004-1EPP", 15.0, 8e-3, 0.16e6, 88);    // Data Sheet Rev 1.03
+    public static readonly PdmSwitch Bts70012 = new("BTS70012-1ESP", 31.3, 2.47e-3, 0.16e6, 146); // Data Sheet Rev 1.21
+
+    public static PdmSwitch SwitchOf(PdmOutputRow o) => o.Board == "B" ? (o.BoardOutput <= 4 ? Bts70012 : Bts7004) : Bts7008;
+
+    public const double SwitchingV = 14.4, HalogenColdFactor = 14.0, HalogenV = 13.2;   // verify_switching.py VBAT, presets()
+
+    // tools/verify_switching.py pwm_loss: the largest current whose PWM conduction + switching loss stays within the DC
+    // loss at the rating: I^2 R150 + 2 x E_edge x f <= Inom^2 R150, E_edge = V I t / 6 (resistive / lamp) or / 2 (motor
+    // with a freewheel path: hard switching), t = V / slowest dV/dt.
+    public static double PwmMaxA(PdmSwitch s, int hz, bool motor)
+    {
+        var b = hz * SwitchingV * SwitchingV / ((motor ? 1.0 : 3.0) * s.DvdtMin);
+        return (-b + Math.Sqrt(b * b + 4 * s.Rds150 * s.InomA * s.InomA * s.Rds150)) / (2 * s.Rds150);
+    }
+
+    private static bool IsMotor(PdmDeviceKind k) => k is PdmDeviceKind.RadiatorFan or PdmDeviceKind.CondenserFan or PdmDeviceKind.FuelPump or PdmDeviceKind.Motor;
+
+    // tools/verify_switching.py presets(): a halogen lamp's cold filament draws 14 x its hot current; above the PROFET's
+    // IL(OVL0) min at 150 C the switch turns itself off and restarts (5 restarts, P_8.6.1.x) at every switch-on
+    public static double HalogenMaxW(PdmSwitch s) => s.Ovl0Min150A / HalogenColdFactor * HalogenV;
+
+    // Warnings for an output that the preset values cannot hold (shown under the output on /pdm); empty = none
+    public static IReadOnlyList<string> Warnings(PdmView v, PdmOutputRow o)
+    {
+        var list = new List<string>();
+        var x = o.Output;
+        var s = SwitchOf(o);
+        var k = KindOf(v, o);
+        // PWM for real (not only the soft start's 1 s ramp at full duty)
+        var softOnly = x.SoftStartEnabled && !x.VariableDutyCycle && x.FixedDutyCycle == 100;
+        if (x is { Enabled: true, PwmEnabled: true } && !softOnly && x.Frequency > 0)
+        {
+            var max = PwmMaxA(s, x.Frequency, IsMotor(k));
+            if (x.CurrentLimit > max + 0.05)
+                list.Add($"PWM at {x.Frequency} Hz: above {max:0.0} A the {s.Model} runs hotter than at its {s.InomA:0.#} A DC rating " +
+                         $"(switching loss, tools/verify_switching.py PWM loss); keep the load under {max:0.0} A or lower the frequency.");
+        }
+        if (k == PdmDeviceKind.Lamp && x.CurrentLimit * HalogenV > HalogenMaxW(s) + 0.5)
+            list.Add($"Halogen lamp: above {HalogenMaxW(s):0} W the cold filament (14 x) passes the {s.Model} overload limit " +
+                     $"({s.Ovl0Min150A:0} A at 150 C): it switches itself off and restarts at every switch-on (tools/verify_switching.py lamp inrush); " +
+                     "use an LED lamp or a bigger output.");
+        return list;
     }
 
     public static string TripsText(int trips, int retryMs) => trips <= 1
@@ -122,6 +196,10 @@ public static class PdmPresets
 
     private static OutputProtection? Pro(PdmOutputRow o) =>
         o.Device.CustomPdm is { } cp && o.BoardOutput - 1 < cp.OutputProtection.Count ? cp.OutputProtection[o.BoardOutput - 1] : null;
+
+    // the loss mode an output should have: the preset's on a cross-board link, EcuLoss on an ECU command
+    private static PdmLinkLoss WantLoss(PdmView v, PdmOutputRow o, PdmLinkLoss preset) =>
+        PdmLinks.LinkOf(v, o) is { CrossBoard: true } ? preset : PdmEcu.Of(v, o) != null ? EcuLoss : preset;
 
     // the output's loss behaviour, when it has one (a cross-board link or an ECU command)
     private static PdmLinkLoss? Loss(PdmView v, PdmOutputRow o) =>
@@ -147,7 +225,7 @@ public static class PdmPresets
             if (pr.TripTime != want.TripTime) c.Add("trip time");
             if (Math.Abs(pr.MinCurrent - want.MinCurrent) > 0.005 || want.MinCurrent > 0 && pr.MinCurrentTime != want.MinCurrentTime) c.Add("open-load current");
         }
-        if (Loss(v, o) is { } l && l != want.Loss) c.Add("link loss");
+        if (Loss(v, o) is { } l && l != WantLoss(v, o, want.Loss)) c.Add("link loss");
         return c;
     }
 
@@ -218,12 +296,12 @@ public static class PdmPresets
             }
             notes?.Add($"link from IN{link.In.Number}: {PdmLinks.LinkOf(v, o)!.LossText}");
         }
-        else if (PdmEcu.Of(v, o) is { } e && e.Loss != w.Loss)
+        else if (PdmEcu.Of(v, o) is { } e && e.Loss != EcuLoss)
         {
-            if (PdmEcu.Set(v, output, e.Id, e.Byte, w.Loss, e.DelayMs, 0, overwrite: true) is { } why)
+            if (PdmEcu.Set(v, output, e.Id, e.Byte, EcuLoss, e.DelayMs, 0, overwrite: true) is { } why)
             {
                 restore.Restore();
-                return $"ECU loss '{w.Loss}' could not be set: {why}";
+                return $"ECU loss '{EcuLoss}' could not be set: {why}";
             }
             notes?.Add($"ECU command: {PdmEcu.Of(v, o)!.LossText}");
         }
@@ -233,6 +311,6 @@ public static class PdmPresets
     }
 
     // the loss mode a new link / ECU command of this output should get (its preset's), or the default
-    public static PdmLinkLoss DefaultLoss(PdmView v, PdmOutputRow o) =>
-        KindOf(v, o) is var k && k != PdmDeviceKind.None ? Of(k).Loss : PdmLinks.DefaultLoss;
+    public static PdmLinkLoss DefaultLoss(PdmView v, PdmOutputRow o, bool ecu = false) =>
+        ecu ? EcuLoss : KindOf(v, o) is var k && k != PdmDeviceKind.None ? Of(k).Loss : PdmLinks.DefaultLoss;
 }

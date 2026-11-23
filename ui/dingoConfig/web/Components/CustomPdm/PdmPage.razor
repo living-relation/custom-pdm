@@ -331,6 +331,10 @@
                         <MudText Typo="Typo.caption" Style="display: block">
                             @PdmPresets.TripsText(row.Output.ResetMode == ResetMode.None ? 1 : row.Output.ResetCountLimit, row.Output.ResetTime)@(pro != null ? $"; trip {pro.TripTime} ms{(pro.MinCurrent > 0 ? $"; open-load below {pro.MinCurrent:0.##} A" : "")}" : "")
                         </MudText>
+                        @foreach (var w in PdmPresets.Warnings(_view, row))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Warning" Style="display: block" Class="@($"pdm-preset-warn-{row.Number}")">@w</MudText>
+                        }
                     </EditTemplate>
                 </TemplateColumn>
                 <PropertyColumn Property="x => x.Output.State" Title="State" Editable="false">
@@ -643,8 +647,14 @@
     // Same limits and messages as the stock grids
     private void OnCurrentLimitChanged(PdmOutputRow row, double value)
     {
+        var old = row.Output.CurrentLimit;
         row.Output.CurrentLimit = Clamp(value, 0, 100.0, $"{row.Output.Name}.CurrentLimit");
         if (row.RatingWarning is { } warn) Notification.NewWarning(warn); // b2b: allowed, but warned
+        if (PdmPresets.LimitEdited(_view, row, old) is { } did)            // configfix: inrush keeps the preset rule
+        {
+            _refreshCounter++;
+            Notification.NewInfo($"Output {row.Number}: {did}.");
+        }
     }
 
     private void OnInrushLimitChanged(Output item, double value) =>

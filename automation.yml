@@ -85,8 +85,14 @@ automations:
   - id: drc-erc-waivers
     script: tools/drc_erc_waivers.py
     trigger: manual                 # also the last stage of build_board_a.ps1 / build_board_b.ps1 / build_input_board.ps1
-    reads: ["hardware/*/*.kicad_pcb", "hardware/*/*.kicad_sch"]
-    writes: ["hardware/*/*.kicad_pro", "hardware/*/*.kicad_dru", "hardware/*/*.kicad_sch"]   # exclusions + rules with reasons, parity Datasheet fields, duplicate sheet UUIDs; never the .kicad_pcb
+    # Modifies in place (does not produce) hardware/*/*.kicad_sch and *.kicad_pro, and reads the *.kicad_pcb: those
+    # files are produced by board-a-build / board-b-build / input-board-build (this script is their last stage), so
+    # their freshness is checked on those entries. The registry has no 'modifies' field: listing them in writes made
+    # DUPLICATE-OUTPUT, listing them in reads made a false STALE-OUTPUT (each board rebuild re-runs this stage; the
+    # --check below proves nothing would change). Edits: ERC / DRC exclusions with reasons (.kicad_pro), parity
+    # Datasheet fields and duplicate sheet UUIDs (.kicad_sch); never the .kicad_pcb.
+    reads: []
+    writes: ["hardware/*/*.kicad_dru"]   # custom rules with reasons (produced by this script)
     committed: yes
     auto_commit: false
     enabled: true
@@ -144,7 +150,7 @@ automations:
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --proposals --out /tmp/s5   # after firmware/sim/build.sh x 3; --mutants: 12 of 12 RED
+    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --out /tmp/s5   # after firmware/sim/build.sh x 3; 34 of 34; --mutants: 16 of 16 RED
     owner: claude
   - id: starter-params
     script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs

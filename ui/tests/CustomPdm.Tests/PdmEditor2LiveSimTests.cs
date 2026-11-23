@@ -58,12 +58,14 @@ public sealed class Editor2Pdm : IDisposable
         var cs = PdmEcu.AddValue(v, "B", "ECU coolant", Coolant, 0, 16, ByteOrder.LittleEndian, false, 0.1, 0, 1000, out var why);
         Assert.Null(why);
         var cool = PdmFactoryDefaults.CanInState(b, cs) + 1;
+        // presets first: an ECU output's preset sets "off at loss" (configfix, PdmPresets.EcuLoss); the "on at loss" below
+        // is a hand choice this test proves on the firmware (the recipe stays supported)
+        foreach (var (o, k) in new[] { (17, PdmDeviceKind.RadiatorFan), (18, PdmDeviceKind.CondenserFan), (19, PdmDeviceKind.FuelPump), (20, PdmDeviceKind.FuelPump) })
+            Assert.Null(PdmPresets.Apply(v, o, k));
         Assert.Null(PdmEcu.Set(v, 17, Ecu, 0, PdmLinkLoss.On, 500));
         Assert.Null(PdmEcu.Set(v, 18, Ecu, 1, PdmLinkLoss.On, 500));
         Assert.Null(PdmEcu.Set(v, 19, Ecu, 2, PdmLinkLoss.Off, 1000));
         Assert.Null(PdmEcu.Set(v, 20, Ecu, 3, PdmLinkLoss.Off, 1000));
-        foreach (var (o, k) in new[] { (17, PdmDeviceKind.RadiatorFan), (18, PdmDeviceKind.CondenserFan), (19, PdmDeviceKind.FuelPump), (20, PdmDeviceKind.FuelPump) })
-            Assert.Null(PdmPresets.Apply(v, o, k));
         Assert.Null(PdmPwm.Set(v, 17, new PdmPwmSpec(true, 200, PdmDutyKind.Curve, Var: cool, Points: [(80, 0), (90, 40), (100, 100)],
             SoftStart: true, SoftStartMs: 1000, MinDuty: 20)));
         Assert.Null(PdmFunctions.SetTurn(v, new PdmTurnSpec(9, 11, PdmTerm.In(8), PdmTerm.In(9), PdmTerm.In(15))));
@@ -138,7 +140,8 @@ public class PdmEditor2LiveSimTests(Editor2Pdm pdm, ITestOutputHelper output) : 
         Assert.Contains("link 22: on 2 s after the message stops", p.Words2);
         var v = p.View2;
         Assert.Equal(PdmDeviceKind.FuelPump, PdmPresets.KindOf(v, v.Outputs.Single(o => o.Number == 19)));  // matched from the board values
-        Assert.Contains(PdmPresets.KindOf(v, v.Outputs.Single(o => o.Number == 18)), new[] { PdmDeviceKind.RadiatorFan, PdmDeviceKind.CondenserFan });
+        // configfix: "on at ECU loss" set by hand is not a fan preset any more (ECU-commanded loads are off at loss)
+        Assert.Equal(PdmDeviceKind.None, PdmPresets.KindOf(v, v.Outputs.Single(o => o.Number == 18)));
         Assert.Empty(PdmModel.Build(v).Problems);
     }
 
