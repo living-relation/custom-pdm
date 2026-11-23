@@ -129,6 +129,7 @@ def kilis_tol(model, il):
     return best[1], best[2]
 
 # ---------------------------------------------------------------- car loads (docs/car-loads.dummy.md, a DUMMY TEST COPY)
+# pre-07:44 load set (worst case): the car config is now docs/st185-car-config.dummy.md (ADR-2026-11-23-ecu-loads)
 # steady current from the car-loads dummy (st185 fuse = upper bound); inductance / inrush are NOT measured on the car:
 # the values are typical published ranges (low, high) and every result built on them is a bench test (BACKLOG).
 #   DC PM motors (fans, pumps, wiper, washer): armature L 0.1-1 mH; start / stall current 3-5 x steady for 0.3-1 s

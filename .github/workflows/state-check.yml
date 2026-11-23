@@ -1,6 +1,5 @@
-# Copy to .github/workflows/state-check.yml, the script to .github/state-check.sh (and registry-check.py beside it if the repo has automation.yml).
-# Mode comes from .state-check-mode (comment = never fails; block = check fails).
-# The no-state-change label skips the check in both modes. Never pushes or edits.
+# State-file check (warn only). Template: skills/git-checker/hooks/state-check.yml. Mode: .state-check-mode.
+# Skip one PR with the no-state-change label. Never pushes or edits code.
 name: state-check
 on:
   pull_request:
