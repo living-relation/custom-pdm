@@ -31,9 +31,10 @@ SO = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith('--') else 
 OUT_DIR = arg('--out', os.path.join(SO, 's5'))
 MUTATE = int(arg('--mutate', '-1'))
 # Hot day (docs/system-verification.md section 6, tools/verify_thermal_box.py, 60 C cabin, car loads, fans on):
-# board B's own MCP9808 U6 93.4 C (FEA sensor map); board A has no map: sink 69.6 C + 15 K (DT_BOARD_A, ASSUMED) = 84.6 C
-HOT_B = 93.4
-HOT_A = float(arg('--hot-a', '84.6'))
+# board B's own MCP9808 U6 94.4 C, board A1's U6 79.2 C (FEA sensor maps, tools/thermal_board_b.py / tools/thermal_a.py
+# car case, fans on, job hwtemp 2026-11-23; board A was sink + 15 K ASSUMED = 84.6 C before it had a model)
+HOT_B = 94.4
+HOT_A = float(arg('--hot-a', '79.2'))
 res, info = [], {}
 def check(name, ok, detail='', xfail=False):
     """xfail (as s3): a known gap with a proposal (docs/simulation-index.md); must fail until fixed - an XPASS is a failure."""
@@ -57,7 +58,7 @@ MUTATIONS = [
     ('B', 'canInput[6].sid', 0x1A9, 'A/C keypad frame ID 0x1A9'),
     ('A1', 'output[1].resetCountLimit', 2, 'low beams: 2 tries before latching (was 5)'),
     ('B', 'timer[1].time', 500, 'battery shed after 0.5 s (a crank dip sheds)'),
-    ('A1', 'customPdm.tempCrit', 90, 'board A1 critical 90 C (was 80)'),
+    ('A1', 'customPdm.tempCrit', 75, 'board A1 critical 75 C (factory 104 since hwtemp; was 80): cuts on a hot day'),
 ]
 
 # ------------------------------------------------------------------ the starter as the app writes it
@@ -562,7 +563,7 @@ run(3000)
 phase_ok('hot day: board temperatures from the thermal model')
 cut = [g for g in OUT if before_hot[g] and not at_hot[g]]
 if HOT_A >= ps.TEMP_DEFAULT['crit']:
-    FINDINGS.append(f'hot day (60 C cabin, car loads, fans on): board A at {HOT_A:.1f} C (sink + 15 K, ASSUMED) is over its 80 C critical: '
+    FINDINGS.append(f'hot day (60 C cabin, car loads, fans on): board A at {HOT_A:.1f} C (thermal_a.py) is over its {ps.TEMP_DEFAULT["crit"]} C critical: '
                     f'A1 and A2 cut every output but the box fan ({", ".join(gname(g) for g in cut)}) until < 74 C; board B at {HOT_B} C runs on (warn 98)')
 info['hot_day_cut'] = [gname(g) for g in cut]
 

@@ -10,7 +10,7 @@ namespace domain.CustomPdm;
 // - Base ID: one board; moves at once with the stock Modify message (PdmOpsService.ChangeBaseId, checks PdmLinked).
 // - CAN bit rate, kept-on outputs: one value for the PDM, set on all three boards (PC edit: Write All sends it, Burn
 //   keeps it). Critical temperature: one hot-spot value for the PDM, converted per board (ADR-2026-11-20-temp-onepdm,
-//   PdmThermal: board B hot spot - 21 K, board A keeps its own).
+//   PdmThermal: each board's sensor = hot spot - its offset, 21 K on A and B since hwtemp).
 public enum PdmCriticalKind { BaseId, BitRate, CritTemp, KeptOn }
 
 // Board = "" for a PDM-wide setting
@@ -60,7 +60,7 @@ public static class PdmCritical
     private static string CritTempHint(PdmView v)
     {
         var off = v.Boards.Select(b => PdmThermal.OffsetK(b.Device)).FirstOrDefault(o => o != null);
-        if (PdmThermal.Current(v) is not { } h || off is null) return "no board B in the project";
+        if (PdmThermal.Current(v) is not { } h || off is null) return "no custom-pdm board in the project";
         return $"hot spot, whole C, {Math.Max(h.Warn + 1, CustomPdmSettings.TempMin + off.Value)} to {CustomPdmSettings.TempMax + off.Value} (above warn {h.Warn} C)";
     }
 

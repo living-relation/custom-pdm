@@ -178,6 +178,8 @@
 #define DEFAULT_CANIN_SIGNED(i) (IS_FAN_CANIN(i) ? 1 : 0)
 #define DEFAULT_CANIN_OPERATOR(i) static_cast<uint32_t>(!IS_FAN_CANIN(i) ? Operator::Equal : FAN_CANIN_HOT(i) ? Operator::GreaterThanOrEqual : Operator::LessThanOrEqual)
 #define DEFAULT_CANIN_OPERAND(i) (!IS_FAN_CANIN(i) ? F(0.0f) : F(FAN_CANIN_HOT(i) ? FAN_ON_C : FAN_OFF_C))
+#define DEFAULT_TEMP_WARN 98     // board A: see port_boards.py (FEA sensor map tools/thermal_a.py, part ratings)
+#define DEFAULT_TEMP_CRIT 104
 // Pro-PDM parity gaps (docs/feature-parity.md, core/custom_options.h PRO_FEATURES): overcurrent trip time and
 // open-load flag per output (block 0x7D00 + o), master retry input (0x7F00 sub 6), 4 lookup tables (0x7E00 + n).
 #define PRO_FEATURES 1

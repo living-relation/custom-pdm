@@ -87,8 +87,14 @@ PARTS = [
     ("C124016", "Microchip", "MCP2562FD-E/SN", "C124016", KEEP, "", None),
     ("C1343794", "STMicroelectronics", "STM32F446RET7", "C1343794", KEEP,
      "STMicroelectronics STM32F446RET6 (s9a; LCSC C69336)", None),
-    ("C43379785", "RAMXEED (Fujitsu)", "MB85RC64TAPNF-G-AWERE2", "C43379785", KEEP,
-     "RAMXEED MB85RC64TAPNF-G-BDERE1 (same chip, other packing; Mouser)", None),
+    # FRAM U5 (A and B), job hwtemp 2026-11-23: MB85RC64TA (-40..105 C) -> Infineon CY15B064J-SXE, 64 Kbit I2C F-RAM,
+    # Automotive-E -40..125 C, same SOIC-8 (150 mil, 1.27 mm) pinout A0 A1 A2 VSS SDA SCL WP VDD, slave 1010 A2 A1 A0
+    # (0x50 with A0-A2 / WP grounded), 2 address bytes, no page limit, 1 MHz, VDD 3.0-3.6 V (Infineon 002-10027 Rev *C):
+    # firmware/hardware/mb85rc.cpp works unchanged (no device-ID read, 32-byte writes, 400 kHz). Board B's FRAM sat
+    # 2.3 K over 105 C at its 104 C cut (docs/heat-analysis.md 5). LCSC C2953601 (0 in stock 2026-11-23: global sourcing).
+    ("C43379785", "Infineon", "CY15B064J-SXE", "C2953601", "448-CY15B064J-SXE-ND",
+     "RAMXEED MB85RC64TAPNF-G-AWERE2 (LCSC C43379785; 105 C part: fit only with the board's critical limit keeping the "
+     "FRAM <= 105 C, docs/heat-analysis.md 5)", "CY15B064J-SXE"),
     ("C129490", "Microchip", "MCP9808T-E/MS", "C129490", KEEP, "", None),
     # IS sense buffers (A U7 / U12, B U7 / U22): ADR-2026-11-20-is-buffer, rail-to-rail on 3.3 V (sch_board_power.py)
     ("C2058050", "Texas Instruments", "TLV9004IPWR", "C2058050", "296-51827-1-ND",
@@ -126,8 +132,7 @@ PARTS = [
      "onsemi BAT54SLT1G (DK BAT54SLT1GOSCT-ND)", None),                                       # input board clamps
     (("fp", "Molex_Micro-Fit_3.0_43045-1200_2x06_P3.00mm_Horizontal", None), "Molex", "0430451200", "C277636",
      "WM1818-ND", "", None),                                                                  # input J2
-    (("fp", "SW_DIP_SPSTx08_Slide_Omron_A6S-810x_W8.9mm_P2.54mm", None), "Omron", "A6S-8104-H", "C231310",
-     "39-A6S-8104-H-ND", "", None),                                                           # input SW1, SW2
+    # input SW1 / SW2 (Omron A6S-8104-H DIP switches, 70 C) -> solder jumpers JP1-JP16 (hwtemp 2026-11-23): no part
 ]
 # footprints that are not parts to buy (no order fields): holes, logos, solder jumpers, wire pads, Tag-Connect pads
 NOT_PARTS = re.compile(r"MountingHole|DingoFace|SolderJumper|WirePads|Tag-Connect")

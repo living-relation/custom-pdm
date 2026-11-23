@@ -99,7 +99,8 @@ What the drive cycle found (for decisions; none changes a board):
 2. **Hot day: board A cuts its lamps.** With the thermal model's board A estimate (sink 69.6 C + 15 K ASSUMED =
    84.6 C, 60 C cabin, car loads, fans on) both A boards pass their 80 C critical: low beams, switchboard, cluster and
    turn signals go off until they cool below 74 C. Board A has no FEA sensor map yet (BACKLOG, ADR-2026-11-20-fwsafety
-   c), so the 15 K is a guess.
+   c), so the 15 K is a guess. **Resolved by hwtemp (2026-11-23):** board A has its FEA map now (`tools/thermal_a.py`:
+   U6 79.2 C at the car loads, fans on) and factory limits 98 / 104 C; `s5_drive_cycle.py` uses 79.2 C (A) / 94.4 C (B).
 3. **Radiator fan goes off when ECU frames are lost.** The coolant CAN value times out to 0, which reads as "88 C or
    less". The condenser fan goes on at loss, the radiator fan does not.
 4. **Condenser fan runs after key off.** Its "on at loss" does not look at the ignition, so when the ECU stops at key
@@ -149,9 +150,9 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | copper: self-heating A (10.0 K) and B (47.3 K) | FAIL x 2 | at every output at rating with no sink the copper heats past the screen line | ADR-2026-11-22-copper (worst cases, not blockers) + ADR-2026-11-20-boardb-feed (150 A cap) |
 | thermal_box: 150 A on B, fans failed (3 splits) | FAIL x 3 | laminate 131.7-133.1 C over 130 C | ADR-2026-11-20-boardb-feed + fwsafety (c): board B cuts at 104 C first (transient PASS) |
 | thermal_box: FRAM / MCU at 150 A, fans failed | FAIL x 2 | 121 C local, over the 105 C rating | same: the 104 C cut comes first |
-| thermal_box: FRAM / MCU at 150 A, fans on | WARN x 2 | 106 C local vs 105 C | ADR-2026-11-20-fwsafety (c) (binding limit) |
-| thermal_box: input-board DIP switches at 150 A | WARN x 2 (main bc32eca: WARN 75 C + FAIL 81 C) | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | **NOT COVERED** (parts-audit 10 lists options, no decision) |
-| thermal_box (main bc32eca): UI hot-spot offset | FAIL | the new heat map's largest laminate offset is 20.0 K, the UI constant `PdmThermal.BoardBLaminateOffsetK` is 19.6 K | **NOT COVERED** (new with the merged thermal model: set the constant to 20.0 K and re-run the UI thermal tests) |
+| thermal_box: FRAM / MCU at 150 A, fans on | WARN x 2 | 106 C local vs 105 C | ADR-2026-11-20-fwsafety (c) (binding limit); FRAM: COVERED by hwtemp (CY15B064J-SXE, 125 C) |
+| thermal_box: input-board DIP switches at 150 A | WARN x 2 (main bc32eca: WARN 75 C + FAIL 81 C) | lid air 74 C (fans on) / 79 C (failed) vs the Omron A6S 70 C rating (car loads: 69.3 C) | COVERED by hwtemp: solder jumpers JP1-JP16 (laminate 130 C), `docs/parts-audit.md` 17 |
+| thermal_box (main bc32eca): UI hot-spot offset | FAIL | the new heat map's largest laminate offset is 20.0 K, the UI constant `PdmThermal.BoardBLaminateOffsetK` is 19.6 K | COVERED by hwtemp: 20.0 K (board A 19.8 K, both hot spot - 21 K) |
 | thermal_box (main bc32eca): 150 A fans failed, part ratings | FAIL x 5, WARN x 6 | the new model runs hotter with the fans failed (board B sensor 128-131 C, laminate 139-142 C; 5 V module, crystals, X7R caps 128 C) | as above: board B cuts at its sensor's 104 C first (fwsafety c, boardb-feed); re-check the transient with the new model |
 | spice: ISO 7637-2 pulse 1 | WARN x 2 | -29 to -32 V on +12 V | accept list (BACKLOG hwfix) |
 | spice: 8 inputs at 14.4 V into +3V3 | WARN | 27 mA pushed into +3V3 | accept list (pcb-verification Left 4) |

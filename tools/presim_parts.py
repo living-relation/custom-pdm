@@ -97,6 +97,11 @@ LMZM23601 = dict(src="TI LMZM23601 SNVSAQ4C rev C (2023-03)", vin_min=4.0, vin_m
                  step_dv=0.05, i_load_max=0.22, tj_max=125.0)
 TLV1117LV = dict(src="TI TLV1117LV SBVS160C", vdo_200ma=0.09, vin_max_abs=6.0, acc=0.01, iq=0.1e-3)   # dropout typ, IQ (est.)
 MB85RC64TA = dict(src="RAMXEED MB85RC64TA DS501-00044-5v0-E", endurance=1e13, istby=9e-6)          # read/write cycles per byte
+# hwtemp (2026-11-23): U5 on both main boards is the Infineon CY15B064J-SXE (Automotive-E, -40..125 C; Infineon 002-10027
+# Rev *C): endurance 1e13, ISB 6 uA typ / max at 85 C and 20 uA max at 125 C, VDD 3.0-3.6 V, tPU 1 ms, retention 121 y
+# at 85 C / 11 y at 105 C / 11,000 h at 125 C. The MB85RC64TA stays as an approved alternate (105 C).
+CY15B064J = dict(src="Infineon CY15B064J 002-10027 Rev *C", endurance=1e13, istby=6e-6, istby_125=20e-6, vdd=(3.0, 3.6),
+                 tpu=1e-3)
 RESISTOR_TOL = {"0805W8F": 0.01, "0603WAF": 0.01, "RT0805DRD": 0.005}       # Uniroyal 1 %, Yageo RT 0.5 %
 RES_TCR = 100e-6                                                            # Uniroyal 0805W8F / 0603WAF: +-100 ppm/K
 BAT54S_IS_25 = 2e-7                                                          # as tools/verify_spice.py (Nexperia BAT54S), x2 / 10 K

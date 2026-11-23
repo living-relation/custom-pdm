@@ -31,7 +31,7 @@ After A Power Cycle All Three Still Run At 1 Mbit/s On Their Own IDs With The Sa
 Brown-out: Each Board Wrote BOR Level 3 Into Its Factory Option Bytes Once At Its First Start; No Write At Later Power Cycles
     Brown Out Level Written Once
 
-Factory Defaults: Fan Output A2 OUT2 Off At 30 C, Temperature Limits A 55 / 80, B 98 / 104, Recovery 6 C, Only The Fan Exempt From Critical, Critical-soon Margin 5 C
+Factory Defaults: Fan Output A2 OUT2 Off At 30 C, Temperature Limits A 98 / 104, B 98 / 104, Recovery 6 C, Only The Fan Exempt From Critical, Critical-soon Margin 5 C
     Factory Defaults Fan Output And Temperature Limits
 
 Fan On A2 Follows A 30 -> 46 -> 42 -> 39 C Ramp On Its Own Sensor: Off, On, On, Off
