@@ -1,6 +1,6 @@
 # DUMMY / DERIVED - harness cost study (tools/harness_cost_study.py); source: st185-link-ecu-config @ e047a17 (read only) + this repo; not a source of truth
 item,relay route,PDM route (all 10 moves)
-parts USD (total),7235.1,8136.27
+parts USD (total),7235.1,8729.77
 cost: wire and cable,1218.87,1243.95
 "cost: connectors, contacts, seals, splices (st185 harness BOM, same both routes)",1113.31,1113.31
 "cost: new terminations (X2 pins, tie-in sleeves, lugs)",39.0,59.68
@@ -8,7 +8,7 @@ cost: DR-25 sleeving,676.92,682.89
 cost: boots (adhesive lined),901.0,901.0
 cost: transitions + epoxy,2576.36,2576.36
 cost: fuse boxes POWER / LOGIC / BATTRELAY,573.42,546.34
-"cost: relays, holders, PDM parts (part lines)",136.22,1012.74
+"cost: relays, holders, PDM parts (part lines)",136.22,1606.24
 labour h (total),144.11,158.9
 "labour: cut, strip, mark",7.63,7.3
 labour: terminate (crimp / insert / solder / tie-in),33.52,31.88

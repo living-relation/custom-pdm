@@ -255,8 +255,8 @@ COMMON_EXTRA = dict(
 
 # The PDM itself (built once, the first move needs all of it: the enclosure holds three boards).
 PDM_FIXED = dict(
-    parts=[P("Boards A1, A2, B assembled (JLCPCB / PCBWay) with spares: $650-850", "boards", 1, 750.0,
-             "docs/order-checklist.md order, coordinator figure (first estimate)"),
+    parts=[P("Boards A1, A2, B + 3 input boards, JLCPCB plan with US duty and minimum lots: $1,265-1,422", "boards", 1, 1343.5,
+             "docs/assembly-options.md (assemblyquotes, PR #155); in-house at Spark (c8) $595-752"),
            P("Enclosure: machined sink + lid, printed parts, fasteners, seals: $80-200", "enclosure", 1, 140.0, "ASSUMED (first estimate)"),
            P("Box internal wiring, fans: $20-40", "box-internal", 1, 30.0, "ASSUMED (first estimate)"),
            P("USB-CAN adapter for setup: $0-40", "usb-can", 1, 20.0, "ASSUMED (the RealDash CANable may do)"),

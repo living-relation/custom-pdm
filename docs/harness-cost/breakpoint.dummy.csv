@@ -1,13 +1,13 @@
 # DUMMY / DERIVED - harness cost study (tools/harness_cost_study.py); source: st185-link-ecu-config @ e047a17 (read only) + this repo; not a source of truth
 k,move,loads moved (car config #),parts USD,labour h,USD incl. labour @ 35/h,wire m,wires,terminations,splices,connectors,relay sockets,fuse positions,branch points,DR-25 m,DR-25 USD,boots,transitions,boxes / holders gone at this move
 0,relay route (st185 + new relays),,7235.0,144.1,12279.0,456.8,458,783,62,61,23,31,71,52.6,677.0,61,49,
-1,"M1 Front lamps: low, high, DRL, pop-ups",1 2 3 12 13,8134.0,161.5,13786.0,445.2,435,751,56,63,16,28,71,52.4,659.0,63,50,"RLY-DRL holder B5; R8 retract relay (relay route: its new 2-relay holder); POWER AMI OUT-2 (RTR 30 A); LOGIC: 4 of 9 relay seats, 3 fuse seats"
-2,M2 Horns,5,8132.0,161.4,13779.0,444.4,433,749,56,63,15,28,71,52.4,659.0,63,50,LOGIC: K-HORN seat
-3,M3 Turn signals + hazards,9 11,8130.0,162.0,13801.0,451.3,438,760,55,63,14,27,71,52.4,661.0,63,50,OEM flasher (its new CF13JL-02); LOGIC: HZ fuse seat
-4,M4 Tail / park lamps,14 15,8127.0,161.2,13768.0,453.4,436,756,55,63,13,27,71,52.4,661.0,63,50,OEM taillight relay (its new relay)
-5,"M5 CAN-Lambda, CSB3, cluster feeds",21 7 8,8116.0,160.7,13742.0,451.4,435,754,55,63,12,24,71,52.4,661.0,63,50,"LOGIC: K-ON seat, 3 fuse seats"
-6,M6 Rear defogger,20,8101.0,159.4,13682.0,454.1,433,750,55,63,11,24,71,52.4,662.0,63,50,OEM defogger relay (its new relay); relay holder B1 (relay route only)
-7,M7 Power windows,17,8083.0,158.0,13613.0,455.3,430,744,55,63,10,24,71,52.4,662.0,63,50,OEM power main relay (its new relay); relay holder B2 (relay route only)
-8,M8 Stop lamps,4,8097.0,158.3,13636.0,459.2,432,748,55,63,10,24,71,52.4,669.0,63,50,
-9,M9 Back-up lamps,22,8100.0,158.4,13643.0,461.2,433,750,55,63,10,24,71,52.4,669.0,63,50,
-10,M10 Wipers + washer,23 24 16,8136.0,158.9,13698.0,474.3,438,760,55,63,10,24,71,52.4,683.0,63,50,
+1,"M1 Front lamps: low, high, DRL, pop-ups",1 2 3 12 13,8727.0,161.5,14379.0,445.2,435,751,56,63,16,28,71,52.4,659.0,63,50,"RLY-DRL holder B5; R8 retract relay (relay route: its new 2-relay holder); POWER AMI OUT-2 (RTR 30 A); LOGIC: 4 of 9 relay seats, 3 fuse seats"
+2,M2 Horns,5,8726.0,161.4,14373.0,444.4,433,749,56,63,15,28,71,52.4,659.0,63,50,LOGIC: K-HORN seat
+3,M3 Turn signals + hazards,9 11,8723.0,162.0,14394.0,451.3,438,760,55,63,14,27,71,52.4,661.0,63,50,OEM flasher (its new CF13JL-02); LOGIC: HZ fuse seat
+4,M4 Tail / park lamps,14 15,8721.0,161.2,14362.0,453.4,436,756,55,63,13,27,71,52.4,661.0,63,50,OEM taillight relay (its new relay)
+5,"M5 CAN-Lambda, CSB3, cluster feeds",21 7 8,8710.0,160.7,14335.0,451.4,435,754,55,63,12,24,71,52.4,661.0,63,50,"LOGIC: K-ON seat, 3 fuse seats"
+6,M6 Rear defogger,20,8695.0,159.4,14275.0,454.1,433,750,55,63,11,24,71,52.4,662.0,63,50,OEM defogger relay (its new relay); relay holder B1 (relay route only)
+7,M7 Power windows,17,8677.0,158.0,14207.0,455.3,430,744,55,63,10,24,71,52.4,662.0,63,50,OEM power main relay (its new relay); relay holder B2 (relay route only)
+8,M8 Stop lamps,4,8690.0,158.3,14229.0,459.2,432,748,55,63,10,24,71,52.4,669.0,63,50,
+9,M9 Back-up lamps,22,8694.0,158.4,14236.0,461.2,433,750,55,63,10,24,71,52.4,669.0,63,50,
+10,M10 Wipers + washer,23 24 16,8730.0,158.9,14291.0,474.3,438,760,55,63,10,24,71,52.4,683.0,63,50,
