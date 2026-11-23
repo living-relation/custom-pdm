@@ -13,7 +13,7 @@ Loads:
   rating    every output at its rating (304 A; above the 150 A feed limit: upper bound, INFO)
   feed150   150 A on board B (thermal_board_b feed150), A boards idle (5 V module only): the hottest board B case
   feed150a  both A boards at rating (120 A) + 30 A on B: the hottest board A case the feed limit allows
-  car       docs/car-loads.dummy.md loads (B 118.1 A, A1 20.35 A, A2 3.53 A)
+  car       pre-07:44 load set (worst case): docs/car-loads.dummy.md loads (B 118.1 A, A1 20.35 A, A2 3.53 A)
   drive     s5 drive cycle (firmware/sim/data/s5_board_power.csv, PR #140): RMS currents of the coolant / fan phase
             (thermal_a / thermal_board_b case drive)
 The 5 V module loss is the board models' own (their JSON "assumptions" p5v: TI SNVSAQ4C Figure 8-46, job hwtemp).

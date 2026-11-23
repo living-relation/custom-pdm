@@ -6,17 +6,23 @@ run in this job on DansPC, from own scratch copies (WSL `~/scratch/finalcheck`, 
 
 ## Verdict
 
-**ON HOLD (2026-11-23, coordinator; repair PR chore/state-repair-2026-11-23).** Do not order until these verification
-jobs have merged and pass:
+**ON HOLD (2026-11-23, coordinator; updated by drift repair chore/drift-repair-1123b).** Do not order until the
+gates below have merged and pass; then Dan decides go / no-go (c7 = a, ADR-2026-11-23-order-gates).
 
-- Heat fixes from the revF heat results (job hwtemp, fix/thermal-revF): the assembly FAILS on the 70 C DIP switch at
-  80-91 C, board A's stock 80 C cut trips at the car loads, board B FRAM / 5 V module WARN at the 104 C cut
-  (ADR-2026-11-23-thermal-revF).
-- Full-PDM car sim and cost study (job carsim, feat/full-pdm-car-sim), with Dan's ECU-loss and ECU power-hold rules
-  (ADR-2026-11-23-ecu-loss, ADR-2026-11-23-ecu-power-hold, ADR-2026-11-23-link-can-dummy) and the drive-cycle config
-  fixes (job configfix, ADR-2026-11-23-drive-cycle).
+Done:
+
+- Heat fixes from the revF heat results (job hwtemp, PR #148, ADR-2026-11-23-hwtemp): TI 5 V module loss, 125 C FRAM,
+  board A limits 98 / 104 / 6 C, input-board solder jumpers JP1-JP16; fans WARN kept.
+- Full-PDM car sim and cost study (job carsim, PR #150, ADR-2026-11-23-full-pdm-car, ADR-2026-11-23-ecu-loads).
+
+Remaining gates:
+
 - Fusion check: re-import and re-check the changed boards in Fusion Electronics, then the Fusion thermal cross-check
-  per board and for the assembly (ADR-2026-11-23-fusion-check, ADR-2026-11-23-fusion-electronics).
+  per board and for the assembly, cross-checked against the Elmer heat results (job fusion2,
+  chore/fusion-recheck-thermal; ADR-2026-11-23-fusion-check, ADR-2026-11-23-fusion-electronics).
+- The proof (confidence) report (job confidence, docs/confidence-report).
+- The assembly-options report (job assemblyquotes, docs/assembly-options).
+- The harness cost study (job harnesscost, docs/harness-cost-breakeven).
 
 The 2026-11-22 verdict below stays as the record of that pass.
 

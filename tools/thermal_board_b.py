@@ -36,7 +36,8 @@ Cases (board B outputs OUT1-4 BTS70012 31 A, OUT5-8 BTS7004 15 A):
   feed150     150 A on board B split in proportion to the ratings (x 0.815)
   feed150hi   OUT1-4 at 31 A + 26 A over OUT5-8 (the BTS70012 pair next to J1 loaded first)
   feed150lo   OUT5-8 at 15 A + 90 A over OUT1-4 (the far BTS7004 rail loaded first)
-  car         docs/car-loads.dummy.md (dummy test copy): OUT1 radiator fan 30 A, OUT2 condenser fan 30 A, OUT3 fuel
+  car         pre-07:44 load set (worst case; the car config is now carfull, ADR-2026-11-23-ecu-loads):
+              docs/car-loads.dummy.md (dummy test copy): OUT1 radiator fan 30 A, OUT2 condenser fan 30 A, OUT3 fuel
               pump 25 A, OUT5 CAN lambda 8.1 A, OUT6 A/C clutch 10 A, OUT7 wiper 15 A (one speed at a time):
               118.1 A on B, the other 31.9 A of the feed on the A boards
   drive       firmware/sim/data/s5_board_power.csv (s5 drive cycle, PR #140): each output at its RMS current over the
