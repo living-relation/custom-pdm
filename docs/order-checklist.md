@@ -64,7 +64,7 @@ Why board A gets 1 oz inner copper too: at the default 0.5 oz the copper screen 
 | Outer Copper Weight | 1 oz |
 | Inner Copper Weight | **1 oz** (NOT the default: change it) |
 | Specify Stackup | No (the default: JLCPCB's standard stackup) |
-| Material Type | FR4 TG135 (the default) |
+| Material Type | **FR4 TG155** (NOT the default: change it; board B runs near 118 C at full load) |
 | Via Covering | **Epoxy Filled & Capped** (JLCPCB may call it "via-in-pad" / POFV): 58 vias sit inside solder pads |
 | Via Plating Method | Not Specified (the default) |
 | Mark on PCB | Remove Mark (the default) |
@@ -157,7 +157,7 @@ Left off on purpose (not in the BOM / CPL files, so nothing to do): D3, R3, R12,
 | Outer Copper Weight | 1 oz |
 | Inner Copper Weight | **1 oz** (NOT the default: change it) |
 | Specify Stackup | No (the default: JLCPCB's standard stackup) |
-| Material Type | FR4 TG135 (the default) |
+| Material Type | **FR4 TG155** (NOT the default: change it; board B runs near 118 C at full load) |
 | Via Covering | **Epoxy Filled & Capped** (JLCPCB may call it "via-in-pad" / POFV): 151 vias sit inside solder pads |
 | Via Plating Method | Not Specified (the default) |
 | Mark on PCB | Remove Mark (the default) |
