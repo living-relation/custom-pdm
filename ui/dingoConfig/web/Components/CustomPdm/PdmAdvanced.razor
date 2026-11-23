@@ -29,7 +29,12 @@
         temperature, outputs kept on at critical temperature) change only on the PDM page (Unlock). Write All / Burn on the PDM page
         send these changes to the boards.
     </MudAlert>
-    @if (_view.Boards.Count == 0)
+    @if (_view.EditsOff)
+    {
+        @* uifix2: no per-board edits while an A board's role is unknown (PdmView.Unassigned): say which board it is on the PDM page *@
+        <MudAlert Severity="Severity.Warning" id="advanced-edits-off">@string.Join(" ", _view.Unassigned.Select(PdmView.UnknownLabel)): its role is not known. Say which board it is on the PDM page first.</MudAlert>
+    }
+    else if (_view.Boards.Count == 0)
     {
         <MudAlert Severity="Severity.Info">No custom-pdm boards in the project.</MudAlert>
     }

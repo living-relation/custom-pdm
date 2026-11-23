@@ -59,7 +59,9 @@
                 <FileSystemBrowser InitialPath="@FileManager.WorkingDirectory"
                                    FileFilter=@FileFilter
                                    SelectedFile="@selectedFile"
-                                   SelectedFileChanged="@((file) => selectedFile = file)" />
+                                   SelectedFileChanged="@((file) => selectedFile = file)"
+                                   FileConfirmed="@((file) => { selectedFile = file; Submit(); })" />
+                @* custom-pdm (uifix2): FileConfirmed = Enter on a typed file path opens it *@
             </MudTabPanel>
         </MudTabs>
     </DialogContent>

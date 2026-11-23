@@ -1,0 +1,82 @@
+@using application.Services
+@using domain.CustomPdm
+@using web.Services
+@inject PdmOutputTestService Test
+@inject NotificationService Notification
+
+@* custom-pdm uifix2 (2026-11-23): Output test for real hardware (domain/CustomPdm/PdmOutputTest.cs,
+   application/Services/PdmOutputTestService.cs): ONE output on for N seconds (0.5-10, default 2) through live writes,
+   its current shown, then its own settings put back; nothing is burned. Safety-related outputs need a tick first. *@
+<MudExpansionPanels Class="mb-4">
+    <MudExpansionPanel Text="Output test (switch ONE output on for a few seconds)" id="pdm-output-test" @bind-Expanded="_open">
+        @if (_open)
+        {
+            var row = View.Outputs.FirstOrDefault(o => o.Number == _number) ?? View.Outputs.FirstOrDefault();
+            var number = row?.Number ?? 0;
+            var safety = row == null ? null : PdmOutputTest.SafetyFunction(View, row);
+            var why = Test.Check(number, _confirmed);
+            var active = Test.Active;
+            <MudText Typo="Typo.body2" Class="mb-2">
+                For checking the wiring on real hardware: the output goes on for the time you pick (whatever its trigger says),
+                the line below shows its current, then the board gets its own settings back. Nothing is burned, and a power
+                cycle also brings them back. Read All, Write All and Burn wait while a test runs.
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudSelect T="int" Value="@number" ValueChanged="@(n => { _number = n; _confirmed = false; })" Label="Output" Dense="true"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width: 280px" Class="pdm-test-output"
+                           Disabled="@(active != null)">
+                    @foreach (var o in View.Outputs)
+                    {
+                        <MudSelectItem T="int" Value="@o.Number">@o.Number: @PdmFaults.OutputLabel(o)</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudNumericField T="double" @bind-Value="_seconds" Label="Seconds" Min="@PdmOutputTest.MinSeconds" Max="@PdmOutputTest.MaxSeconds"
+                                 Step="0.5" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width: 120px" Class="pdm-test-seconds"
+                                 Disabled="@(active != null)" />
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Warning" id="pdm-test-start"
+                           Disabled="@(why != null)" OnClick="@(() => Start(number))">Switch on for @PdmOutputTest.Seconds(_seconds).ToString("0.#") s</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Color="Color.Error" id="pdm-test-stop"
+                           Disabled="@(active?.State != PdmOutputTestState.On)" OnClick="@(() => Test.Stop())">Stop</MudButton>
+            </MudStack>
+            @if (safety != null && active == null)
+            {
+                <MudCheckBox T="bool" @bind-Value="_confirmed" Color="Color.Error" Dense="true" id="pdm-test-confirm"
+                             Label="@($"{PdmFaults.OutputLabel(row!)} runs the {safety}. I checked that it is safe to switch it on now.")" />
+            }
+            @if (active != null)
+            {
+                <MudAlert Severity="@(active.State == PdmOutputTestState.On ? Severity.Info : Severity.Warning)" Dense="true" Class="mt-2" id="pdm-test-status">
+                    @(active.State == PdmOutputTestState.On
+                        ? PdmOutputTest.OnText(active.Label, active.LastA, active.PeakA, active.LastState, (active.Until - DateTime.UtcNow).TotalSeconds)
+                        : Test.HoldReason())
+                </MudAlert>
+            }
+            else if (Test.Last is { Ended: { } ended } last)
+            {
+                <MudAlert Severity="Severity.Success" Dense="true" Class="mt-2" id="pdm-test-result">
+                    @PdmOutputTest.DoneText(last.Label, (ended - last.Started).TotalSeconds, last.LastA, last.PeakA, last.Why)
+                </MudAlert>
+            }
+            @if (why != null && active == null)
+            {
+                <MudText Typo="Typo.caption" Class="mt-1" Style="display: block" id="pdm-test-off">Off: @why</MudText>
+            }
+        }
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter, EditorRequired] public PdmView View { get; set; } = null!;
+
+    private bool _open;
+    private int _number;
+    private double _seconds = PdmOutputTest.DefaultSeconds;
+    private bool _confirmed;
+
+    private void Start(int number)
+    {
+        var refused = Test.Start(number, _seconds, _confirmed);
+        if (refused != null) Notification.NewError($"Output test not started: {refused}");
+        _confirmed = false;
+    }
+}

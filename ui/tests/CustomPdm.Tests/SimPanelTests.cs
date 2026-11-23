@@ -49,7 +49,9 @@ public class SimPanelTests
         Assert.Null(PdmSim.AnalogLine(v, "B", -0.1));
         Assert.Null(PdmSim.AnalogLine(v, "X", 1));
         Assert.Equal("RESTART A1 A2 B", PdmSim.RestartLine(v));
-        Assert.Equal("RESTART A1 B", PdmSim.RestartLine(new FakePdm("A1", "B").View));
+        var noA2 = new FakePdm("A1", "B");
+        noA2.Dev("A1").CustomPdm!.ConfirmedRole = "A1";   // uifix2: a lone A board is A1 only when it was said so
+        Assert.Equal("RESTART A1 B", PdmSim.RestartLine(noA2.View));
         Assert.Null(PdmSim.RestartLine(new PdmView()));
         Assert.Equal("TXP 3F4 0100000000000000 50", PdmSim.FrameLine(0x3F4, [1, 0, 0, 0, 0, 0, 0, 0], 50));
         Assert.Equal("TXP 1A8 off", PdmSim.StopLine(0x1A8));

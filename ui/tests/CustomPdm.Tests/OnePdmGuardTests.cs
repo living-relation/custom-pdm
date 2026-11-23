@@ -192,24 +192,6 @@ public class OnePdmGuardTests
         Assert.Null(CustomPdmGuards.PerBoardOpReason(StockTests.MakeDevice(0, 0x700)));
     }
 
-    // carconfig (PR #137): the CANBoard's factory base 0x640 is the car's CSB3 switchboard (0x640-0x643)
-    [Fact]
-    public void TheCanBoardKeepsOffTheCarsIds()
-    {
-        var v = PdmLinkedTests.NewPdm();
-        Assert.Equal(0x660, PdmCanBoard.FreeBase(v));
-        Assert.Contains("CSB3", PdmCanBoard.Add(v, 0x640, null));
-        Assert.Contains("e.g. 0x660", PdmCanBoard.Add(v, 0x630, null));   // 0x630-0x642 reaches 0x640
-        Assert.Contains("0x3E8", PdmCanBoard.Add(v, 0x3E0, null));          // the ECU -> cluster streams
-        Assert.Null(PdmCanBoard.Add(v, 0x660, null));
-    }
-
-    // the car's IDs in the code are the used and planned rows of the dummy CAN ID table
-    [Fact]
-    public void TheKnownCarIdsAreTheTablesUsedRows()
-    {
-        var rows = CanIdTableDummy.Parse(CarCanDummyTests.Table()).Where(r => r.Kind is IdKind.Used or IdKind.Planned)
-            .Select(r => (r.First, r.Last)).OrderBy(x => x).ToList();
-        Assert.Equal(rows, PdmCarIds.Known.Select(k => (k.First, k.Last)).OrderBy(x => x).ToList());
-    }
+    // uifix2 (Dan, 2026-11-23): the CANBoard feature is dropped, and with it PdmCarIds (only the CANBoard used it):
+    // TheCanBoardKeepsOffTheCarsIds and TheKnownCarIdsAreTheTablesUsedRows are gone with it (UiFix2Tests.TheCanBoardFeatureIsGone)
 }

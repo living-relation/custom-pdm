@@ -59,6 +59,10 @@ public class CustomPdmSettings
     // B3 (u2a): the PC values were set by "New PDM" (PdmFactoryDefaults) = our firmware's factory config, proven equal
     // against the sim. Not saved: a project loaded from a file counts as not read.
     [JsonIgnore] public bool FactoryNew { get; set; }
+    // uifix2 (PdmView.RoleOf): the role New PDM made this board as, and the role the user gave a lone A board on /pdm.
+    // PC-only, this session (not saved): a lone A board without them is "A? (0x540)".
+    [JsonIgnore] public string? FactoryRole { get; set; }
+    [JsonIgnore] public string? ConfirmedRole { get; set; }
 
     // uipolish (PdmProjectFile.cs): saved with the project: the values of this board were a complete set (read from a
     // board, New PDM, starter, or loaded from such a file). null = a file from before this marker.

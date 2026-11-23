@@ -53,6 +53,7 @@ public static class PdmFactoryDefaults
     {
         if (d.CustomPdm == null) throw new ArgumentException($"{d.Name} is not a custom-pdm board");
         d.CustomPdm.FactoryNew = true;
+        d.CustomPdm.FactoryRole = role; // uifix2: a lone A board keeps it (PdmView.RoleOf)
         d.BaseId = BaseFor(role);
         d.BitRate = CanBitRate.BitRate1000K;                       // DEFAULT_CAN_BITRATE
         foreach (var o in d.Outputs) o.ResetMode = ResetMode.Count; // DEFAULT_RESET_MODE

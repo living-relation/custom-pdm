@@ -129,9 +129,13 @@ public class CommsAdapterManager(IServiceProvider serviceProvider, ILogger<Comms
         return await Task.FromResult(true);
     }
 
+    // custom-pdm (uifix2): called just before the adapter goes (PdmOutputTestService.StopNow puts a tested output back)
+    public Action? BeforeDisconnect { get; set; }
+
     public async Task<bool> DisconnectAsync()
     {
         if (_activeAdapter == null) return await Task.FromResult(false);
+        try { BeforeDisconnect?.Invoke(); } catch (Exception ex) { logger.LogError(ex, "Before disconnect"); } // custom-pdm (uifix2)
 
         var adapter = _activeAdapter;
         _activeAdapter = null; // Null immediately so IsConnected returns false
