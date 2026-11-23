@@ -33,6 +33,13 @@ public static class CustomPdmGuards
     // uipolish: so does a board loaded from a project file that was saved with a complete set (PdmProjectFile).
     public static bool ReadOrFactoryNew(FwDevice device) => PdmProjectFile.Complete(device);
 
+    // uiguide: a board's own device page (stock DeviceControl) does not Write All or Burn one board by itself: the PDM
+    // page writes and burns A1, A2 and B as one (its Burn first checks that all three hold the PC settings).
+    public const string PerBoardOffReason =
+        "custom-pdm boards: Write All and Burn are on the PDM page (A1, A2 and B as one; Burn checks all three first).";
+
+    public static string? PerBoardOpReason(IDeviceConfigurable device) => IsCustom(device) ? PerBoardOffReason : null;
+
     // Why a config operation must not run (null = allowed). allParams false = the Modified variants.
     public static string? ReadBlockedReason(IDeviceConfigurable device, bool allParams) =>
         !allParams && !ModifiedOpsAllowed(device) ? ModifiedOffReason : null;

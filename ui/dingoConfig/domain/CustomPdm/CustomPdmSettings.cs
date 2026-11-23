@@ -65,6 +65,12 @@ public class CustomPdmSettings
     [JsonPropertyName("completeSettings")] public bool? CompleteSettings { get; set; }
     // this board came from a project file with a complete set: writable without a Read All, asked about on connect
     [JsonIgnore] public bool FromFile { get; set; }
+    // uiguide (PdmIntegrity rule 4): critical values this board's project file brought that differ from our factory ones
+    // (kind -> raw value); Write All / Burn wait until they are set with Unlock or the board is read. Not saved.
+    [JsonIgnore] public Dictionary<PdmCriticalKind, int> FileCritical { get; } = new();
+    // uiguide: the critical values (and base ID) as this app saved them (PdmProjectFile.Seal): a file edited by hand no
+    // longer matches. null = a file from before the seal, or saved while a value still waited for Unlock.
+    [JsonPropertyName("criticalSeal")] public string? CriticalSeal { get; set; }
 
     [JsonIgnore] public int DeviceType { get; private set; }
     [JsonIgnore] public int NumOutputs { get; private set; }

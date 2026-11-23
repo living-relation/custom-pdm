@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using domain.Devices;
 using domain.Enums;
 using domain.Interfaces;
@@ -25,8 +27,17 @@ public static class PdmProjectFile
     public static void MarkForSave(IEnumerable<IDevice> devices)
     {
         foreach (var d in devices.OfType<FwDevice>())
-            if (d.CustomPdm is { } c) c.CompleteSettings = Complete(d);
+            if (d.CustomPdm is { } c)
+            {
+                c.CompleteSettings = Complete(d);
+                c.CriticalSeal = PdmIntegrity.HasUnconfirmed(d) ? null : Seal(d); // uiguide
+            }
     }
+
+    // uiguide (PdmIntegrity rule 4): a short hash of the base ID and the critical values, saved with the file
+    public static string Seal(FwDevice d) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+            $"{d.BaseId}|{(int)d.BitRate}|{d.CustomPdm!.TempCrit}|{d.CustomPdm.CritExemptMask}")))[..16];
 
     // just after a project file was read. Returns the boards that are writable.
     public static IReadOnlyList<FwDevice> MarkLoaded(IEnumerable<IDevice> devices)
@@ -39,6 +50,8 @@ public static class PdmProjectFile
             if (c.FromFile) writable.Add(d);
         }
 
+        // uiguide: critical values that differ from our factory ones wait for Unlock (PdmIntegrity rule 4)
+        PdmIntegrity.MarkFileCritical(PdmView.Build(devices.OfType<FwDevice>()));
         return writable;
     }
 }
