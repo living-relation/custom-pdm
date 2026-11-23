@@ -333,7 +333,7 @@
         _ecuOut = o;
         if (o is not { } n || View.Outputs.FirstOrDefault(r => r.Number == n) is not { } row) return;
         if (PdmEcu.Of(View, row) is { } e) (_ecuId, _ecuByte, _ecuLoss, _ecuDelay, _ecuCond) = (e.Id.ToString("X3"), e.Byte, e.Loss, e.DelayMs, e.Cond == 0 ? null : e.Cond);
-        else _ecuLoss = PdmPresets.DefaultLoss(View, row);   // the output's preset says what it should do at loss
+        else _ecuLoss = PdmPresets.DefaultLoss(View, row, ecu: true);   // configfix: an ECU-commanded load is off at ECU loss   // the output's preset says what it should do at loss
     }
 
     private async Task SetEcu()
