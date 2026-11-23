@@ -123,6 +123,27 @@ automations:
     enabled: true
     run_cmd: firmware/sim/build.sh custompdm_a /tmp/simout 1   # Linux / WSL, g++; then python3 firmware/sim/s0_board_audit.py /tmp/simout
     owner: claude
+  - id: firmware-drive-cycle
+    script: firmware/sim/s5_drive_cycle.py
+    helpers: [tools/presim_parts.py]   # loads (CAR_LOADS) and RDS(ON); pdmsim.py is listed under firmware-sim
+    trigger: manual
+    reads: [firmware/sim/data/st185-starter.params.dummy.tsv, tools/presim_parts.py]
+    writes: [firmware/sim/data/s5_board_power.csv]   # copied from the run's --out folder (also s5_current_trace.csv, s5_edges.json: not committed)
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: python3 firmware/sim/s5_drive_cycle.py /tmp/simout --proposals --out /tmp/s5   # after firmware/sim/build.sh x 3; --mutants: 12 of 12 RED
+    owner: claude
+  - id: starter-params
+    script: ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs
+    trigger: manual
+    reads: [ui/examples/st185-starter.json]
+    writes: [firmware/sim/data/st185-starter.params.dummy.tsv]
+    committed: yes
+    auto_commit: false
+    enabled: true
+    run_cmd: $env:CUSTOMPDM_WRITE_STARTER_PARAMS='1'; dotnet test ui\tests\CustomPdm.Tests --filter StarterParamsExportTests   # without the variable it only checks the file
+    owner: claude
   - id: renode-sandbox
     script: firmware/sim/renode/install_wsl.sh
     helpers: [firmware/sim/renode/check_wsl.sh, firmware/sim/renode/build_wsl.sh]
