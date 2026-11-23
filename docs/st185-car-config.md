@@ -26,11 +26,11 @@ B stud riser).
 | 2 | A1 OUT2 | X1-J | High beams | LED lamp | 5 A / 15 A 100 ms | IN2 AND IN1 (only with the head lamps on, as K-HR) | - | K-HR relay (LOGIC M2) + HR 15 A; also feeds the dash high-beam LED |
 | 3 | A1 OUT3 | X1-K | DRLs | LED lamp | 5 A / 15 A 100 ms | IN3 AND IN5 AND NOT IN1 (DRL switch, key on, head lamps off) | - | K-DRL relay (LOGIC M8) + RLY-DRL (B5) + DRL 7.5 A |
 | 5 | A1 OUT5 | X1-M | Horns | Horn | 7.5 A / 22.5 A 200 ms | IN4 (horn switch) | - | K-HORN relay (LOGIC M3); the HZ 15 A fuse stays for the hazard feed |
-| 6 | A1 OUT6 | X1-N | EPS pump enable | ECU / module feed | 5 A / 10 A 100 ms | ECU 0x3F4 byte 3 = 1 | keeps its last state (off at power-up) | K-EPS-EN relay (LOGIC M6) + EPSEN 5 A; drives the pump's C1 enable |
+| 6 | A1 OUT6 | X1-N | EPS pump enable | ECU / module feed | 5 A / 10 A 100 ms | ECU 0x3F4 byte 3 = 1 | off 1 s after the frames stop | K-EPS-EN relay (LOGIC M6) + EPSEN 5 A; drives the pump's C1 enable |
 | 7 | A1 OUT7 | X1-P | CSB3 switchboard | ECU / module feed | 5 A / 10 A 100 ms | IN5 (ignition) | - | CSB 5 A (BUS2-5) |
 | 8 | A1 OUT8 | X1-R | Centre cluster | ECU / module feed | 5 A / 10 A 100 ms | IN5 (ignition) | - | DEV 5 A (BUS2-6) |
-| 17 | B OUT1 | Stud OUT1 | Radiator fan | Radiator fan | 30 A / 100 A 500 ms, soft start 1 s (22 Hz) | ECU 0x3F4 byte 1 = 1 | on 1 s after the frames stop | K-FAN relay (POWER R4) + AMI IN-4 30 A |
-| 18 | B OUT2 | Stud OUT2 | Condenser fan | Condenser fan | 30 A / 100 A 500 ms, soft start 1 s (22 Hz) | ECU 0x3F4 byte 2 = 1 | on 1 s after the frames stop | K-FAN2 relay (POWER R5) + AMI IN-5 30 A |
+| 17 | B OUT1 | Stud OUT1 | Radiator fan | Radiator fan | 30 A / 100 A 500 ms, soft start 1 s (22 Hz) | ECU 0x3F4 byte 1 = 1 | off 1 s after the frames stop | K-FAN relay (POWER R4) + AMI IN-4 30 A |
+| 18 | B OUT2 | Stud OUT2 | Condenser fan | Condenser fan | 30 A / 100 A 500 ms, soft start 1 s (22 Hz) | ECU 0x3F4 byte 2 = 1 | off 1 s after the frames stop | K-FAN2 relay (POWER R5) + AMI IN-5 30 A |
 | 19 | B OUT3 | Stud OUT3 | Fuel pump | Fuel pump | 25 A / 100 A 500 ms, open-load 1 A | ECU 0x3F4 byte 0 = 1 | off 1 s after the frames stop | K-FP relay (trunk block B3 K1) + FP 40 A |
 | 21 | B OUT5 | X1-B | CAN-Lambda | Heater / resistive, limit lowered | 10 A / 15 A 500 ms | IN5 (ignition, from A1 over CAN) | off 1 s after A1's frames stop | K-ON relay (LOGIC M7) + LAM 10 A (Link: 10 A through an ignition relay; load up to 8.1 A) |
 | 22 | B OUT6 | X1-D | A/C clutch | A/C clutch | 10 A / 20 A 200 ms, open-load 1 A | IN15 (A/C amp request) | - | K-ACC relay (LOGIC M5) + ACC 10 A |

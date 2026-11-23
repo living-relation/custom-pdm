@@ -67,7 +67,7 @@ public static class St185Car
     ];
 
     // the ECU switches what it switches today (sot/channels.csv: Aux 3 pump, Aux 5 radiator fan, Ign 5 condenser fan,
-    // Ign 6 EPS enable); loss behaviour = the device preset's (pump off, fans on, EPS enable hold)
+    // Ign 6 EPS enable); loss behaviour: every ECU-commanded load off at loss (PdmPresets.EcuLoss, configfix 2026-11-23)
     private static readonly (int Out, int Byte, PdmLinkLoss Loss)[] Ecu =
     [
         (19, PumpByte, PdmLinkLoss.Off), (17, RadFanByte, PdmLinkLoss.On), (18, CondFanByte, PdmLinkLoss.On), (6, EpsByte, PdmLinkLoss.Hold),
@@ -202,11 +202,11 @@ public class St185CarTests
         Assert.Equal("IN2 AND IN1", Words(2));
         Assert.Equal("IN3 AND IN5 AND NOT IN1", Words(3));
         Assert.Equal("IN4", Words(5));
-        Assert.Equal("ECU 0x3F4 byte 3 = 1 (ECU only; keeps its last state (off at power-up))", Words(6));
+        Assert.Equal("ECU 0x3F4 byte 3 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(6));   // configfix: ECU loads off at loss
         Assert.Equal(("IN5", "IN5", "IN5", "IN15"), (Words(7), Words(8), Words(21), Words(22)));
         Assert.Equal("ECU 0x3F4 byte 0 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(19));
-        Assert.Equal("ECU 0x3F4 byte 1 = 1 (ECU only; on 1 s after the ECU frames stop; off until the first frame)", Words(17));
-        Assert.Equal("ECU 0x3F4 byte 2 = 1 (ECU only; on 1 s after the ECU frames stop; off until the first frame)", Words(18));
+        Assert.Equal("ECU 0x3F4 byte 1 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(17));
+        Assert.Equal("ECU 0x3F4 byte 2 = 1 (ECU only; off 1 s after the ECU frames stop)", Words(18));
         Assert.Contains("fan logic", Words(10));           // A2 OUT2 still runs the box fans
         var spare = v.Outputs.Select(o => o.Number).Except(St185Car.Loads.Select(l => l.Number)).Except([10]).ToList();
         Assert.Equal([4, 9, 11, 12, 13, 14, 15, 16, 20, 23, 24], spare);
