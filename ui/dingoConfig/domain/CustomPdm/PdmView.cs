@@ -39,6 +39,8 @@ public class PdmView
 
     public List<PdmBoard> Boards { get; } = [];
     public List<string> Problems { get; } = [];
+    // uiguide: the problems that stop Read All / Write All / Burn (PdmIntegrity.IdClashes); also in Problems
+    public List<string> Blocking { get; } = [];
     public List<PdmOutputRow> Outputs { get; } = [];
     public List<PdmInputRow> Inputs { get; } = [];
 
@@ -62,7 +64,11 @@ public class PdmView
     public static PdmView Build(IEnumerable<FwDevice> devices)
     {
         var view = new PdmView();
-        var custom = devices.Where(d => d.CustomPdm != null).ToList();
+        var all = devices.ToList();
+        var custom = all.Where(d => d.CustomPdm != null).ToList();
+        // uiguide: devices on one CAN ID block (PdmIntegrity rule 1) stop every operation; said first on /pdm
+        view.Blocking.AddRange(PdmIntegrity.IdClashes(all));
+        view.Problems.AddRange(view.Blocking);
         var a = custom.Where(d => d.DeviceTypeId == 14).OrderBy(d => d.BaseId).ToList();
         var b = custom.Where(d => d.DeviceTypeId == 15).OrderBy(d => d.BaseId).ToList();
         if (custom.Count == 0) return view;

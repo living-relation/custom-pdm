@@ -125,6 +125,8 @@ public class PdmOps(PdmOpsLinks links)
     {
         isConnected ??= d => d.Connected;
         if (!adapterConnected) return AdapterOffReason;
+        // uiguide (PdmIntegrity rule 1): two devices on one ID block get nothing, not even a Read All
+        if (view.Blocking.Count > 0) return string.Join(" ", view.Blocking);
         if (op == PdmOpKind.ReadAll)
             return view.Boards.Any(b => isConnected(b.Device)) ? null : NoBoardReason;
 
@@ -139,7 +141,10 @@ public class PdmOps(PdmOpsLinks links)
             // the PC does not change it), so the burn run asks every board for a fresh check first.
         }
 
-        return why.Count == 0 ? null : string.Join("; ", why) + ".";
+        var refused = why.Count == 0 ? null : string.Join("; ", why) + ".";
+        // uiguide (PdmIntegrity rules 2-4): settings that would make the boards stop acting as one PDM
+        var integrity = PdmIntegrity.WriteProblems(view);
+        return integrity.Count == 0 ? refused : string.Join(" ", new[] { refused }.Concat(integrity).Where(s => s != null));
     }
 
     public string? BlockedReason(PdmOpKind op, PdmView view, bool adapterConnected) =>

@@ -236,6 +236,9 @@ public static class PdmCanBoard
                     return $"the keypad at node 0x{k.Id:X2} uses {Hex(off + k.Id)} there";
         }
 
+        // uiguide (carconfig PR #137): the IDs the car itself uses (the CSB3 switchboard sits on the CANBoard's factory 0x640)
+        if (PdmCarIds.In(baseId, last) is { } car)
+            return $"the car uses {Hex(car.First)} there ({car.Name})";
         return null;
     }
 
