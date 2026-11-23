@@ -14,7 +14,7 @@ Nothing on the boards was changed. Counts are PASS / WARN / FAIL (INFO not count
 | s2 boot blip | a "default ON at loss" output pulses at power-up | host sim | 2026-11-14 (finding kept) | 1 finding | `firmware/sim/s2_boot_blip.py` |
 | s3 features | pro-PDM feature parity (logic, timers, flashers, wipers, PWM, keypads, protection, tables) | host sim, one board A per scenario | 2026-11-23 | 111 of 111, 0 XFAIL | `firmware/sim/s3_features.py` |
 | s4 CAN system | whole car bus: response-time analysis and the real boards with the dummy car traffic, unplug / replug | Davis et al. 2007 RTA + host sim | 2026-11-23 | 10 of 10 | `firmware/sim/s4_can_system.py` |
-| **s5 drive cycle (new)** | a day in the car on all three boards with the ST185 starter (section 2) | host sim, three boards + dummy ECU / keypad / car traffic + PC tool, load models, 1 ms pin checks | 2026-11-23 | 35 of 35, 1 XFAIL; 12 of 12 mutants RED | `firmware/sim/s5_drive_cycle.py` |
+| **s5 drive cycle (new)** | a day in the car on all three boards with the ST185 starter (section 2) | host sim, three boards + dummy ECU / keypad / car traffic + PC tool, load models, 1 ms pin checks | 2026-11-23 (configfix) | 34 of 34, 0 XFAIL; 16 of 16 mutants RED | `firmware/sim/s5_drive_cycle.py` |
 | Renode bench | the real ARM binaries of A1, A2, B on an emulated STM32F446 (CAN, ADC, I2C, FRAM, IWDG, option bytes) | Renode 1.17.0 + Robot tests | 2026-11-23 | see section 3 | `firmware/sim/renode/` |
 | UI tests | the PC app (dingoConfig copy): one-PDM view, Write All, presets, faults, live tests against the sim | xUnit; live tests drive the host sim through `ui/tests/sim_bridge.py` | 2026-11-23 | see section 3 | `ui/tests/CustomPdm.Tests` |
 | Starter export (new) | the ST185 starter as the wire values the app writes, for s5 | xUnit test that writes / checks the file | 2026-11-23 | PASS | `ui/tests/CustomPdm.Tests/StarterParamsExportTests.cs`, `firmware/sim/data/st185-starter.params.dummy.tsv` |
@@ -41,17 +41,17 @@ dfm 7 W, tolerance 5 W: the same today on 19479b5; on main bc32eca (merged here)
 
 ## 2. Part 1: the drive cycle (s5)
 
-**Result: PASS.** All 24 output pins of A1, A2 and B followed the starter's logic every 1 ms through the whole
-210 s cycle, every change inside its timing window, with one known gap (XFAIL, below). No watchdog reset, no
-unplanned MCU reset, no CAN overrun. 12 of 12 one-line config mutations turned the run RED.
+**Result: PASS (job configfix, 2026-11-23, branch `fix/drive-cycle-config` merged with main b75c243).** All 24 output
+pins of A1, A2 and B followed the ST185 starter's logic every 1 ms through the whole 220 s cycle, every change inside its
+timing window: 34 of 34 checks, 0 XFAIL. No watchdog reset, no unplanned MCU reset, no CAN overrun. 16 of 16 one-line
+config mutations turned the run RED (each by a failed check, not a crash). The car config (`ui/examples/st185-car.json`)
+gets its own run in the carsim job.
 
 How it works, in plain words:
 - The ST185 starter (`ui/examples/st185-starter.json`, a dummy) is turned into the exact values the app writes
   (`StarterParamsExportTests`, which also fails if the file and the starter ever differ). s5 reads each board's own
   param table, checks it is the same list, writes it with Write All + Burn like the app, reads it back, and restarts
-  the boards from their FRAM.
-- On top of the starter, s5 adds one thing the starter lacks: a battery load shed (A/C clutch off after 2 s at
-  <= 11.5 V, back at >= 12.5 V), the recipe proven in s3 F9.
+  the boards from their FRAM. Nothing is added on top of the starter any more.
 - Loads: steady current, inrush and kind from `tools/presim_parts.py` CAR_LOADS (the same table as the thermal and
   switching checks): motors (fans, pump, wiper) start at 4 x and settle, LED / electronic loads have a short
   capacitor inrush, coils (horn, A/C clutch) rise with L / R. Switchboard 2 A, cluster 1.5 A and LED turn lamps
@@ -64,51 +64,42 @@ The day, step by step (all PASS):
 | Step | What happens | Checked (measured) |
 |---|---|---|
 | Write All | starter onto three fresh boards, burn, restart | table = file on all three, CRC, read-back |
-| Key on, ECU prime | IN15 on, ECU sends pump on for 2 s | CAN-Lambda 25 ms, switchboard / cluster over CAN <= 140 ms |
-| Crank | 6.0 V for 80 ms, 9.6 V for 1.2 s, then 14.2 V | no reset, nothing switches, shed never set |
-| Lights | low, high (needs low), low off, back | 25-27 ms (20 ms debounce) |
-| Turn signals, hazard | L, R, hazard | first flash 28-29 ms, 352 / 352 ms on / off, hazard in step |
-| Horn | IN5 to ground (inverted) | 26-27 ms |
-| Wipers | slow 3.3 s, fast 2 s, intermittent 9.5 s | parks in the cam zone every time; intermittent wipes 4.006 s apart |
-| Coolant 80 -> 105 -> 85 C | radiator fan from the CAN value, condenser fan from the ECU byte | on at 92, off at 88; 1 s soft start ramps the duty |
-| A/C | keypad 0x1A8 button 1 | <= 110 ms |
+| Key on, ECU prime | IN15 on, ECU sends pump on for 2 s | CAN-Lambda on at key-on with no trip (inrush 20 A / 200 ms), switchboard / cluster over CAN <= 140 ms |
+| Crank | 6.0 V for 80 ms, 9.6 V for 1.2 s, then 14.2 V | no reset, nothing switches |
+| Lights, turn signals, hazard, horn, wipers | as the starter | 25-29 ms; 352 / 352 ms flashing; wiper parks on the cam, intermittent 4.006 s |
+| Coolant 80 -> 105 -> 85 C | radiator fan from the CAN value, condenser fan from the ECU byte | on at 92, off at 88; 1 s soft start ramps the duty (0.12 / 0.37 / 0.70 / 1.0) |
+| A/C | IN20 (OEM A/C switch) | 15-32 ms |
 | Hot day | boards to the thermal model's temperatures (B 93.4 C, A 84.6 C) and back | A1 / A2 cut at 80 C (box fan kept), back below 74 C; B runs on |
-| ECU frames lost 3 s | ECU silent | pump off 1005.9 ms after the last frame, back 3.9 ms after the first |
+| ECU frames lost 3 s | ECU silent, pump, radiator and condenser fans on | all three OFF 1004-1006 ms after the last frame (the ECU keeps control), back with the frames |
 | Board B unplugged 3 s | B's CAN off | A1 switchboard off at 961 ms, cluster kept by its off-delay, all back |
-| Overcurrent | 0.25 Ohm short on the low beams | cut in 6 ms, 4 retries 1102 ms apart, latched, Reset faults: on again in 55 ms |
-| Low battery | 11.2 V | A/C off after 2205 ms, back at 12.6 V |
-| Key off | IN15 off, ECU stops 2 s later | switchboard 110 ms, cluster 5.0 s later |
-| Sleep | the app's sleep request to each board | all three asleep, no frame on the bus, none woke the others |
-| Wake | key on, ECU frames | all three wake on the first frame, outputs follow again |
+| Overcurrent | 0.25 Ohm short on the low beams | cut in 4 ms, 4 retries 1102 ms apart, latched, Reset faults: on again |
+| Key off | IN15 off, ECU stops 2 s later | switchboard 111 ms, cluster 5.0 s later |
+| Auto sleep | no request | CAN TX muted 10.0 s (B) / 10.1 s (A1, A2) after the key off, each board asleep 30.2 s after its last received frame (40.3 s after the key off), none woke another |
+| Wake | key on, ECU frames | all three wake on the first frame (1 ms), outputs follow again |
 
 Firmware current readings matched the load model within 0.3 % on every steady load of 2 A or more.
 
 Board power for the thermal job: `firmware/sim/data/s5_board_power.csv` (switch conduction loss per board and mean
-current per output, every 0.5 s; run with `--proposals` so the CAN-Lambda runs as intended). Over the 210 s cycle:
-A1 32 J (mostly the short), A2 under 0.1 J, B 267 J (1.27 W mean, 2.9 W peak over 0.5 s). RDS(ON) is interpolated
-between the data-sheet 25 C and 150 C values at the board temperature + 15 K (ASSUMED). The full 10 ms current trace
-(model and firmware reading per output) is written to the run's output folder.
+current per output, every 0.5 s). Over the 220 s cycle: A1 31 J (mostly the short), A2 under 0.1 J, B 260 J (1.18 W
+mean, 3.1 W peak over 0.5 s). RDS(ON) is interpolated between the data-sheet 25 C and 150 C values at the board
+temperature + 15 K (ASSUMED). The full 10 ms current trace (model and firmware reading per output) is written to the
+run's output folder.
 
-What the drive cycle found (for decisions; none changes a board):
+What the first run (drivecycle, 2026-11-23) found, and what configfix did (coordinator defaults + Dan 2026-11-23):
 
-1. **XFAIL - CAN-Lambda trips at key-on.** B OUT5 has limit 10 A and inrush limit 10 A / 100 ms (the "Module" preset
-   is 5 A with 2 x inrush; the limit was raised to 10 A, the inrush was not). The CAR_LOADS lambda starts at
-   8.1 A x 1.5 = 12.2 A for 100 ms, so it trips at every key-on above about 11.1 V and latches after 5 tries.
-   Proposal (proven: `--proposals` turns it into a pass with everything else still passing): inrush 20 A / 200 ms on
-   B OUT5 in the starter, and the UI keeps inrush = 2 x limit when a Module limit is edited.
-2. **Hot day: board A cuts its lamps.** With the thermal model's board A estimate (sink 69.6 C + 15 K ASSUMED =
-   84.6 C, 60 C cabin, car loads, fans on) both A boards pass their 80 C critical: low beams, switchboard, cluster and
-   turn signals go off until they cool below 74 C. Board A has no FEA sensor map yet (BACKLOG, ADR-2026-11-20-fwsafety
-   c), so the 15 K is a guess.
-3. **Radiator fan goes off when ECU frames are lost.** The coolant CAN value times out to 0, which reads as "88 C or
-   less". The condenser fan goes on at loss, the radiator fan does not.
-4. **Condenser fan runs after key off.** Its "on at loss" does not look at the ignition, so when the ECU stops at key
-   off the fan comes on (30 A preset) until the PDM sleeps, and the starter never sleeps by itself (auto sleep off on
-   all three boards).
-5. Board B unplugged while driving stops the fuel pump after 1 s (the chosen "pump off at loss" policy) and drops
-   A1's switchboard (its ignition comes from B over CAN): as designed, listed so it is known.
-6. The A/C clutch follows keypad button 1 as a momentary input: on only while the button bit is set (config reading;
-   s5 holds the button).
+1. CAN-Lambda tripped at key-on (limit 10 A = inrush 10 A / 100 ms; the load starts at 8.1 A x 1.5 for 100 ms):
+   starter B OUT5 inrush 20 A / 200 ms (limit stays 10 A = the LAM fuse); the UI keeps inrush = the preset rule
+   (Module 2 x limit) when a preset output's limit is edited (`PdmPresets.LimitEdited`).
+2. Radiator fan off / condenser fan on at ECU loss, condenser fan on after key off: Dan's rule, every ECU-commanded
+   load goes OFF at ECU frame loss (the ECU keeps control and does its own shutdown and after-run; a key off is not a
+   fault). Starter condenser fan "off at loss"; the device presets: fans off at loss, and any ECU-commanded output off
+   at ECU loss (`PdmPresets.EcuLoss`). The car config file follows the same rule (fans, EPS enable: off at loss).
+3. The PDM never slept by itself: auto sleep on all three boards (`ui PdmKeyOff`: stock `device.sleepEnabled` +
+   `device.muteCanTxInput`, stock `core/sleep.cpp` CheckEnterSleep; SLEEP_TIMEOUT 30 s in `boards/custompdm_*/port.h`).
+4. A/C on a keypad button: the starter now has the OEM A/C switch on IN20 (no keypad).
+5. Still open: hot day board A cuts its lamps at the estimated 84.6 C (board A has no FEA sensor map; BACKLOG,
+   ADR-2026-11-20-fwsafety c); board B unplugged stops the pump after 1 s and drops A1's switchboard (as designed).
+   The low-voltage cutout / load shed is researched in the carsim job (not in the starter).
 
 Not modelled: the PROFET's own current limit / thermal restarts in a short (the firmware side is), real CAN error
 frames, STOP mode itself (a wake is modelled as the MCU reset that follows it), load inductance at turn-off.
@@ -116,7 +107,7 @@ frames, STOP mode itself (a wake is modelled as the MCU reset that follows it), 
 ## 3. Part 2: every check re-run, and every FAIL / WARN
 
 Firmware and UI on `main` 19479b5 (host sim .so built from an LF `git archive`): s0 76 of 76, s1 91 of 91, s3 111 of
-111, s4 10 of 10, s5 35 of 35 + 1 XFAIL. Renode bench 39 of 39 (binaries built from main 63053b9, own scratch HOME;
+111, s4 10 of 10, s5 35 of 35 + 1 XFAIL (configfix re-run on branch fix/drive-cycle-config + main b75c243: s0 76 of 76, s1 91 of 91, s3 111 of 111, s4 10 of 10, s5 34 of 34, 0 XFAIL). Renode bench 39 of 39 (binaries built from main 63053b9, own scratch HOME;
 no firmware change between that and bc32eca). UI tests 467 of 467 with the live sim on this branch merged with main
 bc32eca (first run before the merge: 458 of 459, the wall-clock test `WriteAllSpeedTests` A1 8.8 s vs 8.5 s while
 Renode and s5 ran beside it; 4 of 4 alone). s5 re-run on the merged branch: same result.
@@ -135,8 +126,8 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | power: solenoid turn-off energy (A2 OUT5) | WARN | a big solenoid without a diode may exceed EAR; A2 OUT5 is a spare | bench list (load inductance) |
 | switching: motor PWM heat, BTS7004 / BTS70012 | FAIL x 2 | hard-switched motors at 100-400 Hz heat the switch more than DC | ADR-2026-11-20-fwsafety (d): motor presets 22 / 64 / 60 Hz |
 | switching: fan PWM vs BYG23M | FAIL x 2 | PWM above about 32 / 50 Hz overloads board B's freewheel diodes | ADR-2026-11-20-fwsafety (d) (fans 22 Hz; s5 runs them at 22 Hz) |
-| switching: PWM loss, lamp / motor on BTS7008 and lamps on BTS7004 / BTS70012 | WARN x 4 | at 100 Hz PWM a lamp may draw only 6.8 / 12.5 / 23.8 A before the PWM heat beats DC | **NOT COVERED** (no preset or UI limit for lamp PWM) |
-| switching: 65 W halogen on board A | WARN | its cold start (69 A) is above the PROFET's self-limit (65 A hot): it restarts itself | **NOT COVERED** (the starter uses LED lamps) |
+| switching: PWM loss, lamp / motor on BTS7008 and lamps on BTS7004 / BTS70012 | WARN x 4 | at 100 Hz PWM a lamp may draw only 6.8 / 12.5 / 23.8 A before the PWM heat beats DC | configfix: /pdm warns under the output (`PdmPresets.Warnings`: real PWM above the PWM-heat current of its switch) |
+| switching: 65 W halogen on board A | WARN | its cold start (69 A) is above the PROFET's self-limit (65 A hot): it restarts itself | configfix: /pdm warns under a halogen-lamp preset output (`PdmPresets.Warnings`: above 61 W on board A) |
 | switching: radiator fan inrush | WARN | a hard 5 x start (150 A) is at the BTS70012 limit (146 A hot) | partly: the fan preset soft start (s5 shows the ramp); bench (fan L / inrush) |
 | switching: parallel pair B OUT3 + OUT4 | WARN | a pair trips at 52 A, not 62 A | ADR-2026-11-20-fwsafety (d) |
 | mcu: PA15 JTAG pull-up on B OUT7 | WARN | for a few us after reset the wiper output's IN pin may float high; far shorter than the PROFET turn-on delay | order-readiness section 3 table (known); no ADR |
@@ -157,11 +148,11 @@ Each FAIL / WARN, what it means, and what covers it ("NOT COVERED" = no ADR or a
 | spice: 8 inputs at 14.4 V into +3V3 | WARN | 27 mA pushed into +3V3 | accept list (pcb-verification Left 4) |
 | spice: analog 5 V at 125 C | WARN | reads 3 % low | bench list; analog via ECU (Dan 2026-11-08) |
 | spice: three 120R on the bus | WARN | a closed PDM termination jumper weakens CAN | Dan 2026-11-08 (termination install-specific) + order-checklist: JP1 open |
-| s5: CAN-Lambda inrush (XFAIL) | XFAIL | trips at key-on, latches | **NOT COVERED** (proposal above) |
+| s5: CAN-Lambda inrush | fixed | tripped at key-on | configfix: inrush 20 A / 200 ms, UI inrush rule |
 | s5: hot day board A cut | finding | lamps / cluster off at the estimated 84.6 C | partly: fwsafety (c) / BACKLOG board A model; the consequence is new |
-| s5: radiator fan off at ECU loss | finding | fan off while the engine may be hot | **NOT COVERED** |
-| s5: condenser fan after key off, no auto sleep | finding | 30 A fan on with the key off | **NOT COVERED** |
-| s5: A/C momentary on the keypad | finding | A/C only while the button is held | **NOT COVERED** |
+| s5: fans at ECU loss | fixed | radiator off / condenser on at loss | Dan 2026-11-23: every ECU-commanded load off at ECU loss (configfix) |
+| s5: condenser fan after key off, no auto sleep | fixed | 30 A fan on with the key off | configfix: off at loss + auto sleep (PdmKeyOff) |
+| s5: A/C on the keypad | fixed | no keypad in the car | configfix: A/C on the OEM switch IN20 |
 
 ## 4. How to run
 
