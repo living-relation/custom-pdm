@@ -516,7 +516,8 @@ automations:
   - id: fusion-electronics-check
     script: tools/fusion_check/compare2.py
     helpers: [tools/fusion_check/kicad_ref.py, tools/fusion_check/classify.py, tools/fusion_check/ercsum.py, tools/fusion_check/mkdru.py,
-              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru]
+              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru,
+              tools/fusion_check/export_package.py]   # export_package.py: build-package Fusion exports (.f3z / .f3d / STEP / EAGLE), docs/fusion-electronics-check.md "Build package exports"
     trigger: manual                 # after a board change; Fusion steps (upload, ULPs, DRC / ERC) in docs/fusion-electronics-check.md "How to re-run"
     reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
     writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-board-*.png", "docs/diagrams/fusion-input-board.png"]   # copied in by hand from the Fusion ULP outputs

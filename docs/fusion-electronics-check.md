@@ -148,3 +148,43 @@ Totals: A 221, B 614, input board 58 (raw lists in `docs/fusion-check/drc-*.txt`
    anyway?" (same-signal clearance note): Yes), `DRC`, `RUN errs.ulp <out>.txt`; on each `.fsch`: `ERC`, `RUN errs.ulp`.
 3. `"%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe" tools/fusion_check/kicad_ref.py ref.json`, then
    `compare2.py ref.json A|B|IN <brdinfo out>`, `classify.py <errs out> <geo out> <out.json>`, `ercsum.py <erc out>`.
+
+## Build package exports: .f3z, .f3d, STEP, EAGLE (job pkgfix, 2026-11-24)
+
+Dan (2026-11-24): "find a way to actually export the f3z". What was tried, in order (Fusion 2706, trial):
+
+| Way | Result |
+|---|---|
+| API `ExportManager.createFusionArchiveExportOptions(<name>.f3z)` on the 3D PCB design | writes `<name>.f3z.f3d`: the 3D PCB has no external references, so Fusion's archive of it is an .f3d (the File > Export dialog of the 3D PCB lists .f3d only, no .f3z) |
+| API `DataFile.download` / `dataObject` | refused for Fusion data ("Only DataFiles that represent non-Fusion data can be downloaded", API reference) |
+| Data panel "Export Archive" (`CopyToDesktopCommand`) on the Electronics design | writes an `.fprj` only (1.4 MB, the design container; no schematic or board inside) |
+| Fusion Compute MCP (cloud Fusion) | its APS app lists only Assets, Standard Components and Default Project in hub dgrip (not `custom-pdm`), and its export modes are STL / STEP / OBJ / SVF: no .f3z |
+| Fusion Data / APS Data Management MCP | none available in this session |
+| **File > Export of the opened Electronics design** (the `.fprj` tab active), type "Autodesk Fusion Archive Files (*.f3z)" | **works**: a cloud translation writes `<name>.f3z` holding the `.fprj`, `.fsch` and `.fbrd` (Autodesk support article "How to export the entire folder/files of an Electronics Design to local disk in Autodesk Fusion"). Re-uploading the .f3z gives the linked design back. |
+
+The catch: before an .f3z export Fusion saves a new version of every design with pending changes ("The design has
+pending changes. A new change will be saved before exporting"), and opening an imported design always marks the
+board changed. So the package job does not export from the checked folder `electronics-2026-11-23b` (that would
+add versions to it). It imports the same KiCad files again into its own folder and exports from there:
+
+1. `tools/fusion_check/export_package.py` (run inside Fusion under the fusion-desktop lock): `upload()` of each
+   `.kicad_pro` into `custom-pdm/electronics-<date>-pkg/<board>` (click OK on "ECAD Design Upload Options": Sheets,
+   Create Electronics Design), `open_design()`, `run_ulp(brdinfo.ulp)` for the counts, `export_3d()` for
+   `<board>-3D-PCB.f3d` + `.step` (API), `close_all()` (never saves).
+2. By hand or with screen control, with the design's tabs open: `.fprj` tab: File > Export, type .f3z, Export (wait
+   for the Job Status line "Complete"); schematic tab: File > Export, "EAGLE 9.X Compatible Schematic Files (*.sch)";
+   board tab: File > Export, "EAGLE 9.X Compatible Board Files (*.brd)". Fusion has no API for these three.
+
+Run 2026-11-24 (folder `electronics-2026-11-24-pkg`, imported from branch `feat/build-package-2`, hardware equal to
+`main` after PR #164 apart from the input board J2 3D model path, which the Fusion importer does not use: the
+input board 3D PCB has the same STEP size as before):
+
+| Board | brdinfo.ulp (elements / signals / vias) | .f3z content | Same as KiCad (section "Re-check") |
+|---|---|---|---|
+| A | 145 / 121 / 328 | `.fprj` + `.fsch` + `.fbrd`, 2.0 MB | yes |
+| B | 211 / 145 / 678 | same, 2.8 MB | yes |
+| Input | 64 / 36 / 117 | same, 0.5 MB | yes |
+
+The 3D PCB is not part of the .f3z (Fusion makes it from the board on demand); the package carries it as the
+separate `.f3d` and `.step`. In Fusion's 3D PCB the input board J2 is still Fusion's own package body, not the
+Molex STEP (that one is in the KiCad project and the KiCad board STEP).
