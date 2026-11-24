@@ -12,6 +12,8 @@ Firmware repo for dingoPDM, dingoPDM-Max, CANBoard and other dingoFW based devic
 
 dingoPDM is an Infineon Profet based Power Distribution Module. 
 
+custom-pdm: flashing our boards (A1 / A2 / B), checking the version and when to update: [../docs/firmware-flashing.md](../docs/firmware-flashing.md).
+
 # [**Documentation**](https://corygrant.github.io/dingoElec/)
 
 # [**Store**](https://dingo-electronics.square.site/product/dingopdm/1)

@@ -165,3 +165,8 @@
 - [BKLG] Boards A / B sym-lib-table names *-rescue.lib files missing from the repo (symbols are embedded; warning only): drop the entries in the generator. -- coordinator, 2026-11-24
 - [BKLG] Firmware flashing method (DFU over USB-C with SW1 closed) is not written up in the repo: add it to the docs from the dingo docs with a source. -- coordinator, 2026-11-24
 - [BKLG] Parts data has no Mouser part numbers; prices are only the LCSC breaks of 2026-11-10 (docs/parts-audit.csv). -- coordinator, 2026-11-24
+- [closed 2026-11-24] Input board J2 (Molex 43045-1200) has no 3D body: Molex STEP in hardware/input-board/Models, stage tools/pcb_models_input_board.py (pins on pad centres, docs/pcb-verification.md). -- pkgfix, 2026-11-24
+- [closed 2026-11-24] Firmware flashing method is not written up in the repo: docs/firmware-flashing.md (from the dingo update guide + repo sources). -- pkgfix, 2026-11-24
+- [closed 2026-11-24] Parts data has no Mouser part numbers; prices are only the LCSC breaks of 2026-11-10: Mouser numbers + Mouser / Digi-Key / LCSC prices read 2026-11-24 in docs/parts-audit.csv (docs/parts-audit.md 18). -- pkgfix, 2026-11-24
+- [BKLG] needs owner yes: the schematic Digi-Key field of the 47 uF 2220 caps (A C41 / C42, B C39 / C40) is 445-7935-1-ND = TDK CGA9N3X7R1C476M230KB, a 16 V part on a 25 V line: replace the field (sch_bom_fields.py) with a 25 V part or blank it (docs/parts-audit.md 18). -- pkgfix, 2026-11-24
+- [BKLG] Mouser has no listing for 6 fitted MPNs (CGA4J1X7R1H475KT0Y0N, 0805CG270J500NT, FS55X476K250LRG, TCC0402X7R105K100AT, FRC1206J470 TS, ARG05FTC5101) and no approved alternate there: for a US-bought set add approved alternates sold by Mouser / Digi-Key (docs/parts-audit.md 18). -- pkgfix, 2026-11-24

@@ -26,9 +26,10 @@ automations:
   - id: input-board-build
     script: tools/build_input_board.ps1
     helpers: [tools/gen_input_board_sch.py, tools/gen_input_board_pcb.py, tools/route_board_a.py, tools/pcb_rework.py,
-              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/board_fix_pcb.py, tools/drc_erc_waivers.py]
+              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_models_input_board.py, tools/board_fix_pcb.py,
+              tools/drc_erc_waivers.py]
     trigger: manual
-    reads: ["tools/gen_input_board_*.py"]
+    reads: ["tools/gen_input_board_*.py", hardware/input-board/Models/430451200.stp]
     writes: [hardware/input-board/input-board.kicad_sch, hardware/input-board/input-board.kicad_pcb]
     committed: yes
     auto_commit: false
@@ -117,12 +118,12 @@ automations:
   - id: parts-audit-csv
     script: tools/gen_parts_audit_csv.py
     trigger: manual
-    reads: ["hardware/board-a/*.kicad_sch", "hardware/board-b-max/*.kicad_sch", "hardware/input-board/*.kicad_sch"]   # plus the old CSV (LCSC stock/price carried over); new LCSC numbers looked up on lcsc.com
+    reads: ["hardware/board-a/*.kicad_sch", "hardware/board-b-max/*.kicad_sch", "hardware/input-board/*.kicad_sch"]   # plus the old CSV (LCSC / Mouser / Digi-Key data carried over); LCSC read on lcsc.com; Mouser / Digi-Key from a --dist TSV read on trustedparts.com in a browser (docs/parts-audit.md 18)
     writes: [docs/parts-audit.csv]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python tools/gen_parts_audit_csv.py [--offline]   # uses KiCad 10 kicad-cli
+    run_cmd: python tools/gen_parts_audit_csv.py [--offline] [--refresh-lcsc] [--dist TSV --over TSV] [--date D]; python tools/gen_parts_audit_csv.py --set-cost   # uses KiCad 10 kicad-cli
     slow: true
     owner: claude
   - id: firmware-port
@@ -515,7 +516,8 @@ automations:
   - id: fusion-electronics-check
     script: tools/fusion_check/compare2.py
     helpers: [tools/fusion_check/kicad_ref.py, tools/fusion_check/classify.py, tools/fusion_check/ercsum.py, tools/fusion_check/mkdru.py,
-              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru]
+              tools/fusion_check/brdinfo.ulp, tools/fusion_check/geo.ulp, tools/fusion_check/errs.ulp, tools/fusion_check/jlc4.dru, tools/fusion_check/jlc2.dru,
+              tools/fusion_check/export_package.py]   # export_package.py: build-package Fusion exports (.f3z / .f3d / STEP / EAGLE), docs/fusion-electronics-check.md "Build package exports"
     trigger: manual                 # after a board change; Fusion steps (upload, ULPs, DRC / ERC) in docs/fusion-electronics-check.md "How to re-run"
     reads: [hardware/board-a/DingoPDM.kicad_pcb, hardware/board-b-max/dingoPDM-Max.kicad_pcb, hardware/input-board/input-board.kicad_pcb]
     writes: ["docs/fusion-check/*.txt", "docs/diagrams/fusion-board-*.png", "docs/diagrams/fusion-input-board.png"]   # copied in by hand from the Fusion ULP outputs

@@ -4,7 +4,9 @@ Updated 2026-11-23 by job cheaperpcba (branch `docs/cheaper-assembly`), after Da
 cheaper options ... there's no way import duties are that much. Look for other options." The first estimate (job
 assemblyquotes, PR #155) is kept word for word under "First estimate" at the end; its JLCPCB fee and parts numbers
 are still the inputs here. Prices USD. "ASSUMED" = no published price or quote behind it. Every web page below was
-read on 2026-11-23 (no logins, no uploads, no quotes made).
+read on 2026-11-23 (no logins, no uploads, no quotes made). **Part prices re-read 2026-11-24** (job pkgfix: LCSC,
+Mouser and Digi-Key, `docs/parts-audit.md` section 18): the US parts cost of one set is now a read price, not an
+ASSUMED mark-up, so routes 1 and 2 below changed; nothing else was re-priced.
 
 ## 1. Short answer
 
@@ -13,7 +15,8 @@ read on 2026-11-23 (no logins, no uploads, no quotes made).
   charges a flat ~35 % on both (section 2). So JLCPCB slightly under-charges the assembled boards and over-charges
   the bare ones.
 - **Cheapest credible route: bare boards + stencils from JLCPCB, parts from Digi-Key / Mouser, assembled at Spark
-  (c8): about $650-870** for one set, against $1,265-1,422 for the JLCPCB plan (saves about $550-600). Needs
+  (c8): about $533-720** for one set (parts re-read 2026-11-24), against $1,265-1,422 for the JLCPCB plan (saves
+  about $700). Needs
   Spark's SMT line or reflow oven; no labour is costed (c8).
 - **If Spark's line is not free:** get one NextPCB quote (its small-batch offer takes up to $200 off the SMT cost of
   every 1-10 piece order, and builds 1 board B): about $730-1,310, ASSUMED. Take it only if it beats the JLCPCB
@@ -52,20 +55,23 @@ total about 40 %) and 8473.30.11 (computer parts only, does not fit a PDM).
   usually a substantial transformation; not checked for this case).
 - **US distributors:** Mouser adds a tariff line item on some China-origin HTS 8541 / 8542 parts shipped in the US
   ([Mouser, updated 2026-07-24](https://www.mouser.com/en/tariff-updates/)); Digi-Key "minimized tariff pass-through"
-  ([Digi-Key, updated 2026-09-08](https://www.digikey.com/resources/tariff-resources)). Hence +15-25 % over LCSC
-  below (ASSUMED).
+  ([Digi-Key, updated 2026-09-08](https://www.digikey.com/resources/tariff-resources)). The first estimate put
+  them at +15-25 % over LCSC (ASSUMED); the 2026-11-24 read found Digi-Key cheaper than LCSC for one set (the
+  dear chips cost less there), so the mark-up is gone below.
 
 ## 3. Routes to one assembled PDM set, ranked (cheapest credible first)
 
 One set = 2 x board A, 1 x board B, 3 x input board, fitted (the 6 press-fit terminals are Dan's in every route).
 Shared inputs from the first estimate: JLCPCB bare boards, 5 of each, $160-265 (ASSUMED); JLCPCB stencils $13
-(+ 90 % duty = $25); DHL $25-40 (ASSUMED); parts for exactly one set $329.72 at LCSC prices, bought from Digi-Key /
-Mouser at +15-25 % + $7 = **$386-419** (ASSUMED mark-up, section 2). 590 placed parts per set.
+(+ 90 % duty = $25); DHL $25-40 (ASSUMED); parts for exactly one set bought in the US: **$267** (2026-11-24: the
+cheaper of Mouser / Digi-Key per line at the real price breaks, $260.47, LCSC price for the 4 lines neither lists,
++ $7 shipping, ASSUMED; `docs/parts-audit.md` 18; was $386-419 = LCSC $329.72 + an ASSUMED 15-25 % + $7).
+590 placed parts per set.
 
 | # | Route | Landed total, one set | Lead time | MOQ | Gotchas (4-layer ENIG, filled vias, 1 oz inner, TG155, press-fit) |
 |---|---|---|---|---|---|
-| 1 | **Bare boards + stencils from JLCPCB, US-bought parts, built at Spark (c8)** | **$650-870** (bare 216-358 with 35 % + stencils 25 + DHL 25-40 + parts 386-419 + paste / flux 0-30); Spark's own c8 figure with reels at MOQ is $758-837 (Spark pitch, ADR-2026-11-23-proof-and-assembly) | ~2 weeks (ASSUMED: boards ~1 week + DHL, Digi-Key 2-3 days, 1-2 days build) | 5 bare per design | JLCPCB makes every board spec (fab notes). Needs Spark's paste printer / reflow and an X-ray or careful inspection of the PROFET exposed pads; labour not costed (c8). As a company Spark may take CPT and pay the legal 12.5 % on bare boards (saves about $20-50 after a courier brokerage fee, ASSUMED $15-30). |
-| 2 | Same, built by Dan at his bench | $680-900 (+ hot plate if none, ASSUMED $30) | ~2 weeks + 10-16 h of Dan's time | 5 bare | via-in-pad, LQFP-64, exposed-pad switches, no X-ray / AOI (first estimate section 4) |
+| 1 | **Bare boards + stencils from JLCPCB, US-bought parts, built at Spark (c8)** | **$533-720** (bare 216-358 with 35 % + stencils 25 + DHL 25-40 + parts 267 + paste / flux 0-30; was $650-870 with the ASSUMED parts mark-up); Spark's own c8 figure with reels at MOQ is $758-837 (Spark pitch, ADR-2026-11-23-proof-and-assembly) | ~2 weeks (ASSUMED: boards ~1 week + DHL, Digi-Key 2-3 days, 1-2 days build) | 5 bare per design | JLCPCB makes every board spec (fab notes). Needs Spark's paste printer / reflow and an X-ray or careful inspection of the PROFET exposed pads; labour not costed (c8). As a company Spark may take CPT and pay the legal 12.5 % on bare boards (saves about $20-50 after a courier brokerage fee, ASSUMED $15-30). |
+| 2 | Same, built by Dan at his bench | $563-750 (+ hot plate if none, ASSUMED $30; was $680-900) | ~2 weeks + 10-16 h of Dan's time | 5 bare | via-in-pad, LQFP-64, exposed-pad switches, no X-ray / AOI (first estimate section 4) |
 | 3 | **NextPCB turnkey, small-batch offer** (1-10 pcs, "Up to $200 off eligible assembly costs", any number of orders, turnkey only, under 5 % customer parts; [NextPCB offers](https://www.nextpcb.com/offers)); 3 orders, board B qty 1 | $730-1,310 (ASSUMED: bare 160-265, parts 330-396, fees after the $200 off 30-200, duty 35-47.5 %, DHL 25-40) | 7-14 business days + sourcing + DHL (~3-4 weeks, ASSUMED) | 1 assembled | Plated-hole tolerance **±0.075 mm** "suitable for press-fit connectors"; Wurth 7461084 needs 1.475 ±0.05 mm ([NextPCB capabilities](https://www.nextpcb.com/pcb-capabilities)). Tg 130 / 150 / 170 (TG155 per ADR-2026-11-23-laminate reopen), inner 1 oz offered; resin-filled vias and ENIG not stated. Y1, U5 and T1-T8 must come from NextPCB sourcing. SMT fee level unpublished: one quote decides it. |
 | 4 | JLCPCB SMT only, Dan solders the through-hole parts, spare B left without them | $1,165-1,321 (first estimate 3.5) | 3-4 weeks | 2 assembled B | 2-2.5 h hand soldering, heavy THR terminals |
 | 5 | JLCPCB SMT only, Dan solders all through-hole parts | $1,204-1,360 (first estimate 3.5) | 3-4 weeks | 2 B | 3.5-4 h |
@@ -90,13 +96,14 @@ first estimate section 4). US stencils (Pololu: "$25 for first 4 square inches, 
   in China, which no low-volume shop shows.
 - **Build at Spark if its SMT line (paste printer + reflow, and an X-ray or careful pad inspection) is free:** order
   only the bare boards (5 each) and stencils from JLCPCB with the current fab notes, buy the parts from Digi-Key /
-  Mouser with `*-bom-full.csv`, and build there. About **$650-870**, about $550-600 under the JLCPCB plan, and about
-  2 weeks. Check the STM32F446RET7 stock first (0 at LCSC and Mouser on 2026-11-23).
+  Mouser with `*-bom-full.csv` (Mouser and Digi-Key numbers per line: `docs/parts-audit.csv`), and build there.
+  About **$533-720**, about $700 under the JLCPCB plan, and about 2 weeks. Check the STM32F446RET7 stock first (0 at
+  LCSC, Mouser and Digi-Key on 2026-11-24).
 - **If Spark's line is not free:** one NextPCB quote (3 orders, B qty 1). Use it only if it lands under $1,165 and
   NextPCB confirms ±0.05 mm press-fit holes, resin-filled vias, ENIG, TG155 and 1 oz inner in writing. Otherwise the
   JLCPCB SMT-only route with the spare B left without its through-hole parts ($1,165-1,321).
-- Budget: $650-870 (Spark build) or $1,165-1,422 (JLCPCB assembled). The $650-850 in `docs/pdm-vs-relays.md` matches
-  the Spark build, not a bought assembly.
+- Budget: $533-720 (Spark build, parts re-read 2026-11-24) or $1,165-1,422 (JLCPCB assembled). The $650-850 in
+  `docs/pdm-vs-relays.md` covers the Spark build, not a bought assembly.
 
 ## 5. What was not read or not priced
 

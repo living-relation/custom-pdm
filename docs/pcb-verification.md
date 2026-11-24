@@ -90,7 +90,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | CPL polarity / rotation | verify_cpl | was 2 FAIL: U2 SOT-223 turned 90 deg, J7 JST GH vertical 180 deg; J2 USB-C 3.7 mm and U13 TSR 2.5 mm off centre: FIXED. Now 186 of 186 (T1-T8: no LCSC part, pad pattern the same at every 90 deg; 8 x 47 nF caps: no library footprint, 2-pad). PASS. Re-run 2026-11-20 (d2tvs): 169 ok + 16 ok-sym + 1 check: D2 (CPL rot 180), no EasyEDA footprint (as board A) | `verify_cpl.py` | D2: assembler preview at order time (BACKLOG) |
 | Board B vs stock dingoPDM-Max | verify_layout | 73 parts added (the BTS7004 rail U23-U26 + IS / buffer parts, T1-T8 terminals, H5 / H6, J6 / J7, JP2), 10 removed (test points TP1-TP8, J4, logo G1), 1 moved (logo G2), 7 value changes (each in DECISIONS: TVS, Schottky, LDO, CAN transceiver, MCU suffix, FRAM, op-amp). Power copper: +12V pour 3296 -> 5588 mm2 and vias 85 -> 133; OUT1-4 pours 193 -> 174 mm2 and vias 25 -> 23 per output (changed since stock), checked above. INFO | same | none |
 
-## Input board: 5 PASS, 0 FAIL, 2 WARN (rows)
+## Input board: 6 PASS, 0 FAIL, 2 WARN (rows)
 
 | Check | Tool | Result | Evidence | Action |
 |---|---|---|---|---|
@@ -101,6 +101,7 @@ Copper (updated 2026-11-22, job orderprep): every copper / heat check runs at th
 | Analog input (10k / 20k) | verify_spice | 5.00 V reads 4.994 / 4.928 / 4.848 V at 25 / 85 / 125 C (BAT54S leakage). PASS to 85 C, WARN at 125 C | same | none |
 | Mounting holes, mask dams | verify_layout | GND only near H1 / H2 (switch pull-up 2.1 mm away); 0 dams. PASS | `verify_layout.py IN` | none |
 | CPL polarity / rotation | verify_cpl | was 4 FAIL: J1 JST GH turned 180, J2 Micro-Fit 180 (+7.6 mm off centre), SW1 / SW2 DIP switches 90 deg: FIXED. Now 48 of 48. PASS | `verify_cpl.py` | done |
+| J2 model check (2026-11-24) | kicad-cli 10 `pcb export step` + build123d section | J2 now carries Molex's own STEP (`hardware/input-board/Models/430451200.stp`, stage `tools/pcb_models_input_board.py`). In the board STEP, a section 1 mm below the board cuts 12 pins at the 12 pad centres (worst error 0.000 mm) and one peg prong inside each 3.0 mm peg hole; the housing sits on the top surface; `kicad-cli pcb render` shows the body. PASS | stage docstring | none |
 
 ## Fixes made (generators only; no footprint, pad, net or terminal moved)
 
