@@ -128,7 +128,7 @@ Left off on purpose (not in the BOM / CPL files, so nothing to do): D3, R3, R12,
 
 - Two press-fit power terminals per board (Wurth 7461084, positions J1, J2): buy 4 for the two boards (LCSC C6828431 / Digi-Key 732-3203-ND). They are pressed in, never soldered:
   arbor press, one straight stroke, the board lying on a plate with a 1.75 mm hole under every pin (8 pins), at least 40 N per pin; keep 3 mm away from other parts.
-- Leave the CAN_TERM jumper (JP1) open.
+- Leave the CAN_TERM jumper (JP3 on board A; JP1 is the power-LED jumper) open.
 
 ## Board B (need 1 for one PDM)
 
@@ -225,7 +225,7 @@ Left off on purpose (not in the BOM / CPL files, so nothing to do): D5, R3, U1, 
 
 - Two press-fit power terminals per board (Wurth 7461084, positions J1, J3): buy 2 (LCSC C6828431 / Digi-Key 732-3203-ND). They are pressed in, never soldered:
   arbor press, one straight stroke, the board lying on a plate with a 1.75 mm hole under every pin (8 pins), at least 40 N per pin; keep 3 mm away from other parts.
-- Leave the CAN_TERM jumper (JP1) open.
+- Leave the CAN_TERM jumper (JP2 on board B; JP1 is the power-LED jumper) open.
 
 ## Input board (need 3 for one PDM)
 
