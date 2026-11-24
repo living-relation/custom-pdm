@@ -4,4 +4,6 @@ Personal 12 V power distribution module (PDM) for car accessories: 24 outputs (1
 
 Based on [corygrant/dingoPDM](https://github.com/corygrant/dingoPDM) (MIT). Personal project, not for sale.
 
+Firmware: which file goes on which board, how to flash it over USB-C, how to check the version and when to update: [docs/firmware-flashing.md](docs/firmware-flashing.md).
+
 Progress and open items: live state lives in this repo ([STATE.md](STATE.md), [BACKLOG.md](BACKLOG.md), `archives/`; see the role table in [AGENTS.md](AGENTS.md)).
