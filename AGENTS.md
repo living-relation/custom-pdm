@@ -33,7 +33,7 @@ Store unreachable (PC offline, cloud session): live state is still in the repo; 
 
 ## Commands
 Firmware (before any commit that touches `firmware/`):
-- WSL: `bash firmware/sim/renode/build_wsl.sh` (strip CR first): 4 builds OK, the only warning is the linker "RWX segment" one. Never build from `/mnt/c` (CRLF checkout): the script builds from `git archive` of a named branch (`main`).
+- WSL: `bash firmware/sim/renode/build_wsl.sh`: 4 builds OK, the only warning is the linker "RWX segment" one. Never build from `/mnt/c` (slow; not the intended tree): the script builds from `git archive` of a named branch (`main`). Text files checkout as LF on every OS; CRLF is only for `.bat`/`.cmd`/`.ps1`/`.psd1`/`.vbs` (see `.gitattributes`).
 - Linux / WSL: `firmware/sim/build.sh custompdm_a <out> 1`, same for `custompdm_a <out> 2` and `custompdm_b <out> 1`, then `python3 firmware/sim/s0_board_audit.py <out>` (expect 76 of 76), `python3 firmware/sim/s4_can_system.py <out>` (CAN system, expect 10 of 10), `python3 firmware/sim/s1_system.py <out>` (expect 91 of 91) and `python3 firmware/sim/s3_features.py <out>` (feature parity, `docs/feature-parity.md`: expect 111 of 111, 0 XFAIL; an XFAIL marks a gap with a proposal; exit code 0).
 - Renode bench: `powershell -ExecutionPolicy Bypass -File firmware\sim\renode\run_bench.ps1 --build` (expect 39 of 39).
 UI: `dotnet build ui\dingoConfig\dingoConfig.sln`; `dotnet test ui\tests\CustomPdm.Tests` with `CUSTOMPDM_SIM_SO` pointing at a sim build of the same firmware (`ui/README.md`).
