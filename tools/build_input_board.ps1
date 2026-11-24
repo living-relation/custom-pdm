@@ -21,6 +21,8 @@ try {
     & $kc10 sch export netlist -o "$Out\ib.net" input-board.kicad_sch | Out-Null
     & $py9 "$repo\tools\pcb_bom_fields.py" input-board.kicad_pcb "$Out\ib.net" 2>&1 | Where-Object { $_ -match 'stage|Error' }
     if ($LASTEXITCODE) { throw 'pcb_bom_fields.py failed' }
+    & $py9 "$repo\tools\pcb_models_input_board.py" input-board.kicad_pcb 2>&1 | Where-Object { $_ -notmatch 'memory leak' }   # 2026-11-24: J2 Molex STEP
+    if ($LASTEXITCODE) { throw 'pcb_models_input_board.py failed' }
     & $kc10 sch erc -o "$Out\ib-erc.rpt" input-board.kicad_sch | Select-Object -Last 1
     & $kc10 pcb drc --schematic-parity -o "$Out\ib-drc.rpt" input-board.kicad_pcb | Select-Object -Last 2
     Set-Content -Path input-board.kicad_pro -Value $pro -NoNewline -Encoding utf8

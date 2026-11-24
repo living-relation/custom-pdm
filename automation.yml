@@ -26,9 +26,10 @@ automations:
   - id: input-board-build
     script: tools/build_input_board.ps1
     helpers: [tools/gen_input_board_sch.py, tools/gen_input_board_pcb.py, tools/route_board_a.py, tools/pcb_rework.py,
-              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/board_fix_pcb.py, tools/drc_erc_waivers.py]
+              tools/sch_bom_fields.py, tools/pcb_bom_fields.py, tools/pcb_models_input_board.py, tools/board_fix_pcb.py,
+              tools/drc_erc_waivers.py]
     trigger: manual
-    reads: ["tools/gen_input_board_*.py"]
+    reads: ["tools/gen_input_board_*.py", hardware/input-board/Models/430451200.stp]
     writes: [hardware/input-board/input-board.kicad_sch, hardware/input-board/input-board.kicad_pcb]
     committed: yes
     auto_commit: false
