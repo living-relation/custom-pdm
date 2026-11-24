@@ -117,12 +117,12 @@ automations:
   - id: parts-audit-csv
     script: tools/gen_parts_audit_csv.py
     trigger: manual
-    reads: ["hardware/board-a/*.kicad_sch", "hardware/board-b-max/*.kicad_sch", "hardware/input-board/*.kicad_sch"]   # plus the old CSV (LCSC stock/price carried over); new LCSC numbers looked up on lcsc.com
+    reads: ["hardware/board-a/*.kicad_sch", "hardware/board-b-max/*.kicad_sch", "hardware/input-board/*.kicad_sch"]   # plus the old CSV (LCSC / Mouser / Digi-Key data carried over); LCSC read on lcsc.com; Mouser / Digi-Key from a --dist TSV read on trustedparts.com in a browser (docs/parts-audit.md 18)
     writes: [docs/parts-audit.csv]
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python tools/gen_parts_audit_csv.py [--offline]   # uses KiCad 10 kicad-cli
+    run_cmd: python tools/gen_parts_audit_csv.py [--offline] [--refresh-lcsc] [--dist TSV --over TSV] [--date D]; python tools/gen_parts_audit_csv.py --set-cost   # uses KiCad 10 kicad-cli
     slow: true
     owner: claude
   - id: firmware-port

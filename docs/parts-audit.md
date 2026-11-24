@@ -3,7 +3,7 @@
 Written 2026-11-11 on branch `feat/parts-audit` (from main d319ad3). Stock and prices were checked 2026-11-10 to 2026-11-11.
 This file lists what the design really needs and where each rating came from. It makes no choices: the choices it offered are in section 3, each now marked with its decision (`DECISIONS.md` 2026-11-11 to 2026-11-14).
 Progress and open items are not repeated here: see the memory-store `BACKLOG.md` (AGENTS.md role table) and `DECISIONS.md`.
-Machine-readable copy of the board tables, one row per part group with LCSC stock and price breaks: `docs/parts-audit.csv`.
+Machine-readable copy of the board tables, one row per part group with maker / MPN, LCSC, Mouser and Digi-Key part numbers, stock and price breaks (re-read 2026-11-24, section 18): `docs/parts-audit.csv`.
 
 Marks: **TBD** = could not be confirmed from a primary source. **Proposal** = a part number I suggest, not one the design names.
 
@@ -641,3 +641,62 @@ Coordinator defaults after the PR #139 heat results (`docs/heat-analysis.md` sec
 | Fans (2 x Sunon MF30101V1-1000U-A99, 30 x 30 x 10 mm) | -10..+70 C | **unchanged** (WARN kept) | - | - | No 30 x 30 x 10 mm fan rated >= 80 C ambient was found (Sunon, Delta, Orion, Sofaco sD3010, Same Sky CFM-30B, Wakefield DC0301012, RS PRO: all -10..+70 C). The fans push 60 C cabin air (their air is inside the rating); only the frame touches the 66-71 C fin wall (`docs/heat-analysis.md` 2). Bearing life: makers rate it at 40 C (e.g. Sofaco 70,000 h ball / 30,000 h sleeve at 40 C); grease life roughly halves per 10-15 K hotter (ASSUMED rule of thumb), so expect a shorter fan life in a hot car: the firmware critical cut covers a dead fan (no tach). Bench item. |
 
 Sources: Infineon CY15B064J data sheet 002-10027 Rev *C (2018-11-22; text read from https://pdf.elecfans.com/CYPRESS/CY15B064J-SXET.html, the Infineon and Digi-Key pages blocked scripted reads) and the Cypress automotive qualification report 002-18474 (CY15B064J-SXE listed); LCSC https://www.lcsc.com/product-detail/C2953601.html (2026-11-23: SOIC-8, -40..125 C, 3-3.6 V, out of stock); Digi-Key https://www.digikey.ca/en/products/detail/infineon-technologies/CY15B064J-SXE/6823479 (448-CY15B064J-SXE-ND, tube); TI SNVSAQ4C (https://www.ti.com/lit/ds/symlink/lmzm23601.pdf, Figures 8-42 / 8-46, table 6.4); Sofaco sD3010 data sheet (https://cdn.shopify.com/s/files/1/0061/2270/0911/files/sD3010_HXHT.pdf); web searches 2026-11-23 for 105 C SMD DIP switches and 80 C 30 mm fans (no hit).
+
+## 18. Mouser part numbers and prices re-read (2026-11-24, branch `feat/build-package-2`, job pkgfix)
+
+Dan (2026-11-24 12:30): "add Mouser part numbers ... update prices". `docs/parts-audit.csv` now has, per line: the
+schematic maker and MPN, the LCSC data re-read live on lcsc.com (`lcsc_read` 2026-11-24), the Mouser part number,
+stock and USD price breaks, the Digi-Key part that was priced (`digikey_priced_pn`; `digikey_priced_mpn` only when it
+is not the schematic MPN) with stock and breaks, a note per distributor, the read date and one URL per source.
+Generator: `tools/gen_parts_audit_csv.py` (`--refresh-lcsc --dist <tsv> --over <tsv> --date 2026-11-24`); one-set
+cost: `python tools/gen_parts_audit_csv.py --set-cost`.
+
+**How Mouser / Digi-Key were read.** mouser.com and digikey.com refuse scripted reads (bot walls: "Access to this page
+has been denied" / a Cloudflare check), and Octopart no longer lists either of them. The numbers come from
+trustedparts.com (ECIA's authorized-distributor search), read in a normal browser on 2026-11-24, which shows each
+distributor's part number, stock and first five price breaks with a data age of hours to one day (`dist_read_url`
+per line). Spot check: Mouser's own page for CC0805KRX7R9BB104 (read through the web fetch tool) gave the same
+Mouser number 603-CC805KRX7R9BB104 and the same breaks ($0.19 / 0.116 / 0.081 / 0.071 / 0.053). Prices change daily:
+re-check stock and price in the cart before buying.
+
+**Mouser coverage (57 schematic MPNs on A, B and the input board, DNP parts included):**
+
+| Result | Count | Parts |
+|---|---|---|
+| Same part, same maker | 46 | 37 exact MPN; 8 UNI-ROYAL resistors (Mouser lists the maker's US brand Royal Ohm, 303-..., full reels of 5,000 only, so a one-set buy is cheaper at Digi-Key); JST BM12B-GHS-TBT as BM12B-GHS-TBT(LF)(SN) (306-BM12BGHSTBTLFSNN, JST's full number) |
+| Approved alternate (repo `Alternates` field) | 4 | KEMET C0805C473K5RAC7800 -> C0805C473K5RACTU (80-C0805C473K5R); DOWO NUP2105LT1G -> onsemi NUP2105LT1G (863-NUP2105LT1G); Infineon BTS700121ESPXUMA1 -> BTS700121ESPXUMA2 (726-BTS700121ESPXUM2); FH 0603B103K500NT -> YAGEO CC0603KRX7R9BB103 (603-CC603KRX7R9BB103) |
+| Not at Mouser, no approved alternate there | 7 | TDK CGA4J1X7R1H475KT0Y0N (TDK's China code; its alternate HRE CGA0805X7R475K500MT is not at Mouser either), FH 0805CG270J500NT, PSA FS55X476K250LRG, CCTC TCC0402X7R105K100AT (alternate YAGEO CC0402KRX7R6BB105 not at Mouser), FOJAN FRC1206J470 TS, Viking ARG05FTC5101, CUI VXO7805-500-M-TR (DNP) |
+
+Traps found while matching (each line's `mouser_note` says which applies):
+- Mouser 843-0603B103K500NT is a **Novacap** high-reliability capacitor with the same digits as the FH part on the
+  input board ($1.41 each): not this part. The Mouser number used is the approved YAGEO alternate.
+- The schematic Digi-Key field of the 47 uF 2220 capacitors (A C41 / C42, B C39 / C40), 445-7935-1-ND, is TDK
+  CGA9N3X7R1C476M230KB, a **16 V** part; the line needs 25 V (PSA FS55X476K250LRG). It is not priced and must not be
+  bought (BACKLOG 2026-11-24). Digi-Key does not list the PSA part.
+- Most other Digi-Key fields name an equivalent from another maker (inherited from stock dingoPDM / sch_digikey.py,
+  section C6): for example YAGEO RC0805FR-... for the UNI-ROYAL resistors. Where Digi-Key lists the exact schematic
+  MPN, that part is priced instead (`digikey_priced_pn`), for example 311-1140-1-ND for CC0805KRX7R9BB104 (the field
+  478-1395-1-ND is a KYOCERA AVX part). Digi-Key prices 53 of the 57 MPNs; not listed: CGA4J1X7R1H475KT0Y0N,
+  0805CG270J500NT, FS55X476K250LRG, TCC0402X7R105K100AT.
+
+**LCSC price changes over 20 % since 2026-11-10** (first common break): CL21B106KPQNNNE -27 % (0.0622 -> 0.0451),
+NUP2105LT1G -27 % (0.0469 -> 0.0344), 0805W8F4701T5E -27 % (0.0033 -> 0.0024), MCP9808T-E/MS **+26 %** (2.1212 ->
+2.6740), BYG23M-E3/TR -28 % (0.1796 -> 0.1291), 0603B103K500NT -58 % (0.0104 -> 0.0044), 0603WAF4701T5E -36 %
+(0.0028 -> 0.0018); new: CY15B064J-SXE $4.7518 (0 in stock). LCSC stock now 0 for SM8S24CA-Q, CL21B103KBANNNC,
+RT0805DRD0747KL, CJS-1200TB1, VXO7805-500-M-TR, TLV1117LV33DCYR, STM32F446RET7, CY15B064J-SXE, OKI-78SR (DNP),
+BM12B-GHS-TBT, 0603B103K500NT; 11 left of MCP2562FD-E/SN (JLCPCB global sourcing / approved alternates cover these,
+`docs/order-checklist.md`). The press-fit terminal C6828431 has no LCSC product data (TBD).
+
+**One PDM set of fitted parts** (2 A + 1 B + 3 input boards, DNP and the 6 press-fit terminals left out; each line
+bought at no less than its first price break, at the price of the largest break reached; `--set-cost`):
+
+| Source (read 2026-11-24) | One set | Lines with no price there |
+|---|---|---|
+| LCSC | $295.98 | 2 (74650074R, ECS-80-18-30Q-CES-TR: global sourcing) |
+| Digi-Key | $252.70 | 8 lines / 4 MPNs (above) |
+| Mouser | $439.58 | 12 lines / 6 MPNs; includes 8 full Royal Ohm reels |
+| Cheapest of Mouser / Digi-Key per line, LCSC price where neither lists it | **$260.47** | 0 |
+
+Digi-Key is cheaper than LCSC for one set because the dear chips cost less there (STM32F446RET7 $11.10 vs $21.64,
+LMZM23601V5SILR $5.27 vs $25.14 at quantity 1). The old ASSUMED US buy of $386-419 (LCSC + 15-25 % + $7,
+`docs/assembly-options.md` section 3) is about 35 % too high.
