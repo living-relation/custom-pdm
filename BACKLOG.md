@@ -160,3 +160,8 @@
 - [closed 2026-11-23] c10 (restart the stopped jobs): Dan 13:02 'I didn't stop anything': the 09:04 interrupt was his mid-turn message, not a stop; all 5 jobs restarted and merged (#154-#157, sparkpitch outside the repo). -- coordinator, 2026-11-23
 - [BKLG] Supply: STM32F446RET7 0 stock at LCSC and Mouser (2026-11-23, sparkpitch): check at order time; approved alternates / global sourcing per the hardware rule. -- coordinator, 2026-11-23
 - [BKLG] Licence: dingoPDM-Max has no licence; any sale of the PDM (Spark pitch) needs Cory Grant's written permission first; personal build unaffected. -- coordinator, 2026-11-23
+- [closed 2026-11-24] Build package delivered (buildpkg job): custom-pdm-board-build-package-2026-11-24-282ade1.zip (KiCad, Fusion EAGLE .sch/.brd + .f3d + STEP, fab, parts list, firmware, README, manifest), sent to Dan in chat. -- coordinator, 2026-11-24
+- [BKLG] Input board J2 (Molex 43045-1200) has no 3D body (KiCad stock library lacks it): add the maker STEP. -- coordinator, 2026-11-24
+- [BKLG] Boards A / B sym-lib-table names *-rescue.lib files missing from the repo (symbols are embedded; warning only): drop the entries in the generator. -- coordinator, 2026-11-24
+- [BKLG] Firmware flashing method (DFU over USB-C with SW1 closed) is not written up in the repo: add it to the docs from the dingo docs with a source. -- coordinator, 2026-11-24
+- [BKLG] Parts data has no Mouser part numbers; prices are only the LCSC breaks of 2026-11-10 (docs/parts-audit.csv). -- coordinator, 2026-11-24
