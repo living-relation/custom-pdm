@@ -120,23 +120,33 @@ public class St185CarTests
                 .Concat(v.Inputs.Where(r => r.Digital != null).Select(i => $"IN | IN{i.Number} | {i.Board} IN{i.BoardInput} | {i.Connector} |")));
 
         string Words(int n) => PdmTriggers.Of(m, n).Words;
-        Assert.Equal("IN1", Words(1));
-        Assert.Equal("IN2 AND IN1", Words(2));
+        Assert.Equal("IN16", Words(1));                    // CAN-Lambda (A1 OUT1 + OUT2 paired)
         Assert.Equal("IN3 AND IN5 AND NOT IN1", Words(3));
-        Assert.Equal("IN6", Words(4));
-        Assert.Equal("IN4", Words(5));
-        Assert.Equal(("IN5", "IN5", "IN21", "IN16", "IN16", "IN24"), (Words(7), Words(8), Words(16), Words(17), Words(21), Words(22)));
-        Assert.Equal(("IN7 (link: keeps its last state (off at power-up))", "IN7 (link: keeps its last state (off at power-up))"), (Words(14), Words(15)));   // lamps hold at loss
-        Assert.Equal("turn signal LEFT: IN8 or hazard IN9, flashing 350 / 350 ms in step with output 11", Words(9));
-        Assert.Equal("pop-up LH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN11 (top) / IN12 (bottom)", Words(12));
-        Assert.Equal("pop-up RH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN13 (top) / IN14 (bottom)", Words(13));
+        Assert.Equal(("IN5", "IN5", "IN16"), (Words(7), Words(8), Words(17)));
+        Assert.Equal(("IN1 (link: keeps its last state (off at power-up))", "IN2 AND IN1", "IN4"), (Words(21), Words(22), Words(23)));
+        Assert.Equal("IN7 (link: keeps its last state (off at power-up))", Words(24));   // lamps hold at loss
+        Assert.Equal("turn signal LEFT: IN8 or hazard IN9, flashing 350 / 350 ms in step with output 13", Words(11));
+        Assert.Equal("turn signal RIGHT: IN10 or hazard IN9, flashing 350 / 350 ms in step with output 11", Words(13));
+        Assert.Equal("pop-up LH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN17 (top) / IN18 (bottom)", Words(18));
+        Assert.Equal("pop-up RH motor: up on (IN3 and IN5) or IN1, down on IN23 (not while up); stops at its own limit contacts IN19 (top) / IN20 (bottom)", Words(19));
         Assert.StartsWith("IN22 AND IN16 AND NOT B virtual input", Words(20));
-        Assert.StartsWith("wiper motor run (wiper on B:", Words(23));
         Assert.Contains("fan logic", Words(10));           // A2 OUT2 still runs the box fans
-        // every output but the box fans and three spares (A1 OUT6, B OUT2 / OUT3, 31 A) is a car load
-        var spare = Enumerable.Range(1, 24).Except([10]).Except(St185Car.Loads.Select(l => l.Number)).ToList();
-        Assert.Equal([6, 18, 19], spare);
+        // every output but the box fans, the pair followers and six spares (all 7.5 A board A outputs) is a car load
+        var followers = St185Car.Pairs.Select(p => p.Follower).ToList();
+        var spare = Enumerable.Range(1, 24).Except([10]).Except(followers).Except(St185Car.Loads.Select(l => l.Number)).ToList();
+        Assert.Equal([4, 5, 6, 9, 15, 16], spare);
         Assert.All(spare, n => Assert.Equal("none", Words(n)));
+        Assert.All(spare, n => Assert.Equal(7.5, v.Outputs.Single(r => r.Number == n).RatingA));
+        foreach (var (p, f) in St185Car.Pairs)
+        {
+            var po = v.Outputs.Single(r => r.Number == p);
+            var fo = v.Outputs.Single(r => r.Number == f);
+            Assert.Equal((po.Board, po.BoardOutput - 1, true, -1), (fo.Board, fo.Output.PrimaryOutput, fo.Output.Enabled, po.Output.PrimaryOutput));
+            Assert.Equal((po.BoardOutput - 1) / 2, (fo.BoardOutput - 1) / 2);   // one BTS7008-2EPA (docs/firmware-pin-map.md)
+            Assert.Equal(PdmView.PairRating(PdmView.Rating(po.Board, po.BoardOutput - 1)), po.RatingA);
+            Assert.Equal(0, fo.Output.Input);
+            Assert.Equal("none", Words(f));
+        }
 
         foreach (var l in St185Car.Loads)
         {
@@ -152,6 +162,32 @@ public class St185CarTests
             Assert.Equal((s.Name, true, s.GroundActive, s.GroundActive ? InputPull.PullUp : InputPull.PullDown, s.Latched ? InputMode.Latched : InputMode.Momentary),
                 (i.Name, i.Digital!.Enabled, i.Digital.Invert, i.Digital.Pull, i.Digital.Mode));
         }
+    }
+
+    // fusesize (2026-11-25; docs/pdm-2a-plan.md "Why it was shelved"): Dan's fuse boxes size each circuit from the device's
+    // peak / inrush current, so the st185 fuse rating is the sizing number: every car output's rating (a paired primary:
+    // its derated pair rating, PdmView.PairRating) must be at least the fuse that protects that circuit today.
+    [Fact]
+    public async Task EveryCarOutputIsRatedForItsCircuitsFuse()
+    {
+        foreach (var v in new[] { Built().BuildView(), (await Loaded()).BuildView() })
+        {
+            var low = St185Car.Loads.Select(l => (l, o: v.Outputs.Single(r => r.Number == l.Number)))
+                .Where(x => x.o.RatingA < x.l.St185FuseA)
+                .Select(x => $"output {x.l.Number} ({x.o.Board} OUT{x.o.BoardOutput}) {x.l.Name}: rated {x.o.RatingA:0.#} A < st185 fuse {x.l.St185FuseA:0.#} A").ToList();
+            Assert.True(low.Count == 0, string.Join("\n", low));
+        }
+        // what stays on its OEM switch / relay does so because nothing left is rated for its fuse: the best spare is a
+        // free board A pair (two free channels of one dual chip), and no circuit on the PDM is one of them
+        var w = Built().BuildView();
+        var used = St185Car.Loads.Select(l => l.Number).Concat(St185Car.Pairs.Select(p => p.Follower)).Append(10).ToHashSet();
+        var free = w.Outputs.Where(o => !used.Contains(o.Number)).ToList();
+        var best = free.Select(o => o.RatingA).Concat(free.Where(o => o.Board != "B" && o.BoardOutput % 2 == 1
+                && free.Any(f => f.Board == o.Board && f.BoardOutput == o.BoardOutput + 1))
+            .Select(o => PdmView.PairRating(o.RatingA))).Max();
+        Assert.Equal(12.5, best);
+        Assert.All(St185Car.OffThePdm, c => Assert.True(c.St185FuseA > best, $"{c.Name} ({c.St185FuseA} A) fits a spare ({best} A): put it on the PDM"));
+        Assert.All(St185Car.OffThePdm, c => Assert.DoesNotContain(St185Car.Loads, l => c.Name.StartsWith(l.Name.Split(' ')[0])));
     }
 
     // Dan 2026-11-23: the ECU controls and powers its own loads (no PDM output, no ECU command on the PDM); what the EFI
@@ -184,7 +220,7 @@ public class St185CarTests
         Assert.Equal(3, sleepWords.Count);
         Assert.All(sleepWords, w => Assert.Contains("IN5 and IN7 and IN9 are all off", w));
         // the firmware can arm every wake input (core/sleep.cpp: not A IN1 / IN3 / IN4, not B IN1 / IN9 / IN10)
-        Assert.Equal((0b1110010, 0b10, 0b10), (St185Car.WakeMask("A1"), St185Car.WakeMask("A2"), St185Car.WakeMask("B")));
+        Assert.Equal((0b1010010, 0b10, 0b10), (St185Car.WakeMask("A1"), St185Car.WakeMask("A2"), St185Car.WakeMask("B")));
     }
 
     [Fact]

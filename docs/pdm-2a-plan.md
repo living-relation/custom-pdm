@@ -28,7 +28,9 @@ request (2026-11-25). The 3-board PDM is unchanged.
 
 ## Open item this raised for the 3-board PDM
 The 3-board car setup (`docs/st185-car-config.dummy.md`) puts the low beams, high beams and horn (15 A fuses) on A1
-and each pop-up motor (RTR 30 A) on A2 OUT4 / OUT5, all 7.5 A outputs. Logged in BACKLOG.
+and each pop-up motor (RTR 30 A) on A2 OUT4 / OUT5, all 7.5 A outputs. Logged in BACKLOG. Done 2026-11-25 (fusesize):
+the car map now puts every circuit on an output rated for its fuse (board B 15 A / 31 A outputs, board A pairs for the
+10 A circuits); stop / back-up lamps, wipers and washer stay on their OEM switches (`docs/st185-car-config.dummy.md`).
 
 ## The plan as approved on 2026-11-24 (unchanged below this line)
 

@@ -9,7 +9,8 @@ namespace CustomPdm.Tests;
 // st185-link-ecu-config @ a0490839 (sot/fuse-relay-map.csv, sot/channels.csv, docs/harness/circuit-plan.md,
 // CAN-BUS-ID-ALLOCATION-TABLE.md, CAN-BUS-MASTER-DESIGN.md; read only) and of the 1992 EWD power source / headlight pages
 // (st185-celica-repair-manual @ 66b0f72, read only), written out in docs/st185-car-config.dummy.md.
-// Every load of the POWER / LOGIC / trunk boxes and of the kept OEM boxes that fits the 23 car outputs is on the PDM.
+// Every load of the POWER / LOGIC / trunk boxes and of the kept OEM boxes that fits the 23 car outputs is on the PDM,
+// on an output rated for its st185 fuse (fusesize 2026-11-25); what fits no output stays on its OEM switch (OffThePdm).
 // Dan 2026-11-23 07:44: what the ECU controls and powers stays OFF the PDM entirely (fuel pump, EPS pump, radiator and
 // condenser fans, heater, A/C, ETB, throttle pedal, boost solenoid, injectors, coils): their relays and fuses are
 // unchanged, and the PDM needs no CAN frame from the ECU. The EFI main relay K-EFI stays a relay (the ECU's own power
@@ -30,28 +31,42 @@ public static class St185Car
 
     public record Sw(int Number, string Name, bool GroundActive, string Wire, bool Latched = false, bool Wake = false);
 
+    // fusesize (2026-11-25): every output's rating (a paired primary: PdmView.PairRating) >= the circuit's st185 fuse
+    // (Dan's fuse boxes are sized from each device's peak / inrush current; docs/pdm-2a-plan.md). 15 A and 30 A circuits
+    // sit on board B (OUT1-4 31 A studs, OUT5-8 15 A); the 10 A circuits on board A pairs (12.5 A, one dual chip each).
     public static readonly Load[] Loads =
     [
-        new(1, "Low beams", PdmDeviceKind.LedLamp, 15, "K-HL relay (LOGIC M1) + HL 15 A"),
-        new(2, "High beams", PdmDeviceKind.LedLamp, 15, "K-HR relay (LOGIC M2) + HR 15 A"),
+        new(1, "CAN-Lambda", PdmDeviceKind.Heater, 10, "K-ON relay (LOGIC M7) + LAM 10 A", LimitA: 10, InrushA: 15),
         new(3, "DRLs", PdmDeviceKind.LedLamp, 7.5, "K-DRL relay (LOGIC M8) + RLY-DRL (B5) + DRL 7.5 A"),
-        new(4, "Stop lamps", PdmDeviceKind.Lamp, 15, "J/B No.1 STOP 15 A (the brake switch carried the lamp current)"),
-        new(5, "Horns", PdmDeviceKind.Horn, 15, "K-HORN relay (LOGIC M3); HZ 15 A"),
         new(7, "CSB3 switchboard", PdmDeviceKind.Module, 5, "CSB 5 A (BUS2-5)"),
         new(8, "Centre cluster", PdmDeviceKind.Module, 5, "DEV 5 A (BUS2-6)"),
-        new(9, "Turn left", PdmDeviceKind.Lamp, 10, "OEM turn flasher + J/B No.1 TURN 10 A (hazard: HZ 15 A)"),
-        new(11, "Turn right", PdmDeviceKind.Lamp, 10, "OEM turn flasher + J/B No.1 TURN 10 A (hazard: HZ 15 A)"),
-        new(12, "Pop-up LH", PdmDeviceKind.Motor, 30, "retract control relay R8 + RTR 30 A (AMI OUT-2) + K-POD (LOGIC M10) + D1 / D2"),
-        new(13, "Pop-up RH", PdmDeviceKind.Motor, 30, "retract control relay R8 + RTR 30 A (AMI OUT-2) + K-POD (LOGIC M10) + D1 / D2"),
-        new(14, "Tail / park front", PdmDeviceKind.Lamp, 15, "taillight relay + J/B No.1 TAIL 15 A (front half)"),
-        new(15, "Tail / licence / dash lights", PdmDeviceKind.Lamp, 15, "taillight relay + J/B No.1 TAIL 15 A (rear half)"),
-        new(16, "Washer pump", PdmDeviceKind.Motor, 20, "OEM washer switch on J/B No.1 WIPER 20 A"),
+        new(11, "Turn left", PdmDeviceKind.Lamp, 10, "OEM turn flasher + J/B No.1 TURN 10 A (hazard: HZ 15 A)", LimitA: 10),
+        new(13, "Turn right", PdmDeviceKind.Lamp, 10, "OEM turn flasher + J/B No.1 TURN 10 A (hazard: HZ 15 A)", LimitA: 10),
         new(17, "Power windows", PdmDeviceKind.Motor, 30, "R/B No.2 power main relay (the 30 A POWER fuse stays: it feeds the door locks)", LimitA: 25, InrushA: 60),
+        new(18, "Pop-up LH", PdmDeviceKind.Motor, 30, "retract control relay R8 + RTR 30 A (AMI OUT-2) + K-POD (LOGIC M10) + D1 / D2"),
+        new(19, "Pop-up RH", PdmDeviceKind.Motor, 30, "retract control relay R8 + RTR 30 A (AMI OUT-2) + K-POD (LOGIC M10) + D1 / D2"),
         new(20, "Rear defogger", PdmDeviceKind.Heater, 30, "defogger relay + J/B No.1 DEFOGGER 30 A", LimitA: 20, InrushA: 30),
-        new(21, "CAN-Lambda", PdmDeviceKind.Heater, 10, "K-ON relay (LOGIC M7) + LAM 10 A", LimitA: 10, InrushA: 15),
-        new(22, "Back-up lamps", PdmDeviceKind.Lamp, 15, "back-up switch on J/B No.1 GAUGE 15 A (the switch carried the lamp current)"),
-        new(23, "Wiper slow", PdmDeviceKind.Motor, 20, "OEM wiper switch / relay + J/B No.1 WIPER 20 A"),
-        new(24, "Wiper fast", PdmDeviceKind.Motor, 20, "OEM wiper switch / relay + J/B No.1 WIPER 20 A"),
+        new(21, "Low beams", PdmDeviceKind.LedLamp, 15, "K-HL relay (LOGIC M1) + HL 15 A"),
+        new(22, "High beams", PdmDeviceKind.LedLamp, 15, "K-HR relay (LOGIC M2) + HR 15 A"),
+        new(23, "Horns", PdmDeviceKind.Horn, 15, "K-HORN relay (LOGIC M3); HZ 15 A"),
+        new(24, "Tail / park / licence / dash lights", PdmDeviceKind.Lamp, 15, "taillight relay + J/B No.1 TAIL 15 A (front and rear on one output, as the one fuse)"),
+    ];
+
+    // firmware output pairing (output sub 17 PrimaryOutput, functions/profet.cpp: one follower per primary, it mirrors the
+    // primary, the primary checks and reports the sum): (primary, follower) PDM numbers, both channels of one BTS7008-2EPA
+    // (docs/firmware-pin-map.md: OUT1+2 U8, OUT3+4 U11, OUT5+6 U10, OUT7+8 U13)
+    public static readonly (int Primary, int Follower)[] Pairs = [(1, 2), (11, 12), (13, 14)];
+
+    // st185 circuits that stay on their OEM switch / relay and fuse: no PDM output is rated for their fuse (A pairs 12.5 A
+    // < 15 / 20 A; the four 15 A and four 31 A board B outputs are full) and the stock st185 way has no relay coil to drive
+    // (the switch carries the load current); the harness cost study (ADR-2026-11-23-harness-cost) found these moves
+    // (M8-M10) only add wire.
+    public static readonly (string Name, double St185FuseA, string StaysOn)[] OffThePdm =
+    [
+        ("Stop lamps", 15, "stop lamp switch on J/B No.1 STOP 15 A"),
+        ("Back-up lamps", 15, "back-up switch on J/B No.1 GAUGE 15 A"),
+        ("Wipers (slow / fast)", 20, "OEM wiper switch / relay on J/B No.1 WIPER 20 A"),
+        ("Washer pump", 20, "OEM washer switch on J/B No.1 WIPER 20 A"),
     ];
 
     public static readonly Sw[] Switches =
@@ -61,43 +76,33 @@ public static class St185Car
         new(3, "DRL switch", true, "DRL-SW (the old K-DRL coil 85 wire) to ground"),
         new(4, "Horn switch", true, "G IE1-19: horn switch C15-10 to ground"),
         new(5, "EFI main relay (Bus 2)", false, "K-EFI 87 = LOGIC Bus 2 (12 V while the ECU holds K-EFI on Aux 6: key on and the ECU after-run)", Wake: true),
-        new(6, "Brake switch", false, "stop lamp switch output (12 V pressed; was the STOP lamp feed)", Wake: true),
         new(7, "Light switch TAIL", true, "taillight relay coil wire: light switch TAIL / HEAD to ground", Wake: true),
         new(8, "Turn left", true, "turn switch LEFT (was the flasher's left lamp line) to ground"),
         new(9, "Hazard switch", true, "hazard switch H5 to ground", Wake: true),
         new(10, "Turn right", true, "turn switch RIGHT to ground"),
-        new(11, "Pop-up LH at top", true, "retract motor LH up limit contact (TO CHECK on the bench: closed to ground at the top)"),
-        new(12, "Pop-up LH at bottom", true, "retract motor LH down limit contact (TO CHECK: closed to ground at the bottom)"),
-        new(13, "Pop-up RH at top", true, "retract motor RH up limit contact (TO CHECK: closed to ground at the top)"),
-        new(14, "Pop-up RH at bottom", true, "retract motor RH down limit contact (TO CHECK: closed to ground at the bottom)"),
         new(16, "Ignition (IG2)", false, "B-O J/B1 1H-7 IGN (live at ON and ST), 12 V = on", Wake: true),
-        new(17, "Wiper LO", true, "wiper switch LO to ground"),
-        new(18, "Wiper HI", true, "wiper switch HI to ground"),
-        new(19, "Wiper INT", true, "wiper switch INT to ground"),
-        new(20, "Wiper park cam", false, "wiper motor park cam, 12 V in the park zone"),
-        new(21, "Washer switch", true, "washer switch to ground"),
+        // the pop-up limit contacts are on B, the motors' board (PdmFunctions.SetPopUps: the stop must not wait for CAN)
+        new(17, "Pop-up LH at top", true, "retract motor LH up limit contact (TO CHECK on the bench: closed to ground at the top)"),
+        new(18, "Pop-up LH at bottom", true, "retract motor LH down limit contact (TO CHECK: closed to ground at the bottom)"),
+        new(19, "Pop-up RH at top", true, "retract motor RH up limit contact (TO CHECK: closed to ground at the top)"),
+        new(20, "Pop-up RH at bottom", true, "retract motor RH down limit contact (TO CHECK: closed to ground at the bottom)"),
         new(22, "Rear defogger switch", true, "defogger push switch to ground (a press toggles)", Latched: true),
         new(23, "Light switch OFF (pods down)", true, "light control switch OFF contact (was the retract relay R8 'down' input) to ground"),
-        new(24, "Reverse switch", false, "back-up switch output (12 V in reverse; also tapped by the CSB3 opto IN2)"),
     ];
 
     public static Load LoadOf(int n) => Loads.Single(l => l.Number == n);
 
     private static readonly (int Out, PdmTriggerSpec Spec)[] Triggers =
     [
-        (1, PdmTriggerSpec.Input(PdmTerm.In(1))),
-        (2, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(2), PdmTerm.In(1))),                      // as K-HR: only with the head lamps on
+        (1, PdmTriggerSpec.Input(PdmTerm.In(Ignition))),                                     // CAN-Lambda, as K-ON (IG)
         (3, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(3), PdmTerm.In(EfiMain), PdmTerm.In(1, true))),  // as K-DRL + RLY-DRL, Bus 2
-        (4, PdmTriggerSpec.Input(PdmTerm.In(6))),
-        (5, PdmTriggerSpec.Input(PdmTerm.In(4))),
         (7, PdmTriggerSpec.Input(PdmTerm.In(EfiMain))),
         (8, PdmTriggerSpec.Input(PdmTerm.In(EfiMain))),
-        (14, PdmTriggerSpec.Input(PdmTerm.In(Tail))),
-        (15, PdmTriggerSpec.Input(PdmTerm.In(Tail))),
-        (16, PdmTriggerSpec.Input(PdmTerm.In(21))),
         (17, PdmTriggerSpec.Input(PdmTerm.In(Ignition))),                                    // as the power main relay (IG)
-        (21, PdmTriggerSpec.Input(PdmTerm.In(Ignition))),
-        (22, PdmTriggerSpec.Input(PdmTerm.In(24))),
+        (21, PdmTriggerSpec.Input(PdmTerm.In(1))),
+        (22, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(2), PdmTerm.In(1))),                     // as K-HR: only with the head lamps on
+        (23, PdmTriggerSpec.Input(PdmTerm.In(4))),
+        (24, PdmTriggerSpec.Input(PdmTerm.In(Tail))),
     ];
 
     // wake inputs per board (bit i = board input i): only inputs the firmware can arm (core/sleep.cpp WakeInputMaskBadBits)
@@ -152,6 +157,17 @@ public static class St185Car
     {
         static void Ok(string? why, string what) { if (why != null) throw new InvalidOperationException($"{what}: {why}"); }
 
+        // the pairs first (stock 'Primary output', Advanced screen): the view then rates each primary at its pair rating
+        foreach (var (p, f) in Pairs)
+        {
+            var po = v.Outputs.Single(r => r.Number == p);
+            var fo = v.Outputs.Single(r => r.Number == f);
+            if (po.Board != fo.Board || (po.Board != "B" && (po.BoardOutput - 1) / 2 != (fo.BoardOutput - 1) / 2))
+                throw new InvalidOperationException($"pair {p} + {f}: not two channels of one driver chip");
+            (fo.Output.Enabled, fo.Output.Name, fo.Output.PrimaryOutput) = (true, $"{LoadOf(p).Name} (pair)", po.BoardOutput - 1);
+        }
+        v = PdmView.Build(v.Boards.Select(b => b.Device));
+
         foreach (var s in Switches)
         {
             var d = v.Inputs.Single(r => r.Number == s.Number && r.Digital != null).Digital!;
@@ -159,17 +175,11 @@ public static class St185Car
             d.Pull = s.GroundActive ? InputPull.PullUp : InputPull.PullDown;
         }
         foreach (var (o, spec) in Triggers) Ok(PdmTriggers.Set(v, o, spec), $"output {o} trigger");
-        Ok(PdmFunctions.SetTurn(v, new PdmTurnSpec(9, 11, PdmTerm.In(8), PdmTerm.In(10), PdmTerm.In(Hazard))), "turn signals");
+        Ok(PdmFunctions.SetTurn(v, new PdmTurnSpec(11, 13, PdmTerm.In(8), PdmTerm.In(10), PdmTerm.In(Hazard))), "turn signals");
         var shed = Shed(v);
         Ok(PdmTriggers.Set(v, 20, PdmTriggerSpec.Logic(PdmLogicOp.And, PdmTerm.In(22), PdmTerm.In(Ignition), PdmTerm.Of(shed, true))), "output 20 trigger");
-        // the wiper runs with the key on only (it was on the IG-fed WIPER fuse)
-        var ign = DiVar(v, Ignition);
-        var slow = Vi(v, "B", "wiper LO, key on", DiVar(v, 17), Conditional.And, ign);
-        var fast = Vi(v, "B", "wiper HI, key on", DiVar(v, 18), Conditional.And, ign);
-        var inter = Vi(v, "B", "wiper INT, key on", DiVar(v, 19), Conditional.And, ign);
-        Ok(PdmFunctions.SetWiper(v, new PdmWiperSpec(23, 24, PdmTerm.Of(slow), PdmTerm.Of(fast), PdmTerm.Of(inter), 20, true, PdmTerm.In(21), 3, 3000)), "wiper");
-        // pop-ups on A2 (PdmFunctions.SetPopUps): the PDM does what the stalk and the retract relay R8 did
-        Ok(PdmFunctions.SetPopUps(v, new PdmPopUpSpec(12, 13, PdmTerm.In(1), PdmTerm.In(23), 11, 12, 13, 14, PdmTerm.In(3), PdmTerm.In(EfiMain))), "pop-ups");
+        // pop-ups on B studs (PdmFunctions.SetPopUps): the PDM does what the stalk and the retract relay R8 did
+        Ok(PdmFunctions.SetPopUps(v, new PdmPopUpSpec(18, 19, PdmTerm.In(1), PdmTerm.In(23), 17, 18, 19, 20, PdmTerm.In(3), PdmTerm.In(EfiMain))), "pop-ups");
         foreach (var l in Loads)
         {
             Ok(PdmPresets.Apply(v, l.Number, l.Kind), $"output {l.Number} preset");

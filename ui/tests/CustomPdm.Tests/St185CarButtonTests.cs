@@ -59,7 +59,7 @@ public class St185CarButtonTests : BunitContext, IAsyncLifetime
         cut.Find("#pdm-load-car").Click();
         cut.WaitForAssertion(() => Assert.Equal(3, _pdm.BuildView().Boards.Count));
         var v = _pdm.BuildView();
-        Assert.Equal(("Low beams", "Power windows"), (v.Outputs.Single(o => o.Number == 1).Output.Name, v.Outputs.Single(o => o.Number == 17).Output.Name));
+        Assert.Equal(("CAN-Lambda", "Power windows"), (v.Outputs.Single(o => o.Number == 1).Output.Name, v.Outputs.Single(o => o.Number == 17).Output.Name));
         Assert.All(v.Boards, b => Assert.True(b.Device.CustomPdm!.FactoryNew));
         Assert.Null(_pdm.BlockedReason(PdmOpKind.WriteAll, v, true));
     }

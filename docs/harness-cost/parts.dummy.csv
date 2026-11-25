@@ -57,6 +57,10 @@ relay,relay route only: body holder B2,FRH-A12-C cover,FRH-A12-C,1,5.99,5.99,cus
 relay,relay route only: body holder B2,FRH-A12-MB-B1 bracket,FRH-A12-MB-B1,1,1.59,1.59,customconnectorkits.com products.json 2026-11-23,30.0
 pdm,common: new heater / starter relays,heater + starter relays 1-1393304-0 (on hand),1-1393304-0,2,0.0,0.0,st185 te-on-hand-bom.csv,1.0
 pdm,common: new heater / starter relays,their seat receptacles 280756-4 x4 + 42281-1 x4,280756-4/42281-1,1,2.0,2.0,st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14),0.0
+pdm,PDM: Turn signals + hazards,"turn L pair splice behind X1 (solder + sleeve, ASSUMED)",-,1,0.3,0.3,ASSUMED,2.2
+pdm,PDM: Turn signals + hazards,"turn R pair splice behind X1 (solder + sleeve, ASSUMED)",-,1,0.3,0.3,ASSUMED,2.2
+pdm,PDM: Tail / park lamps,"tail split splice behind X1 (solder + sleeve, ASSUMED)",-,1,0.3,0.3,ASSUMED,2.2
+pdm,"PDM: CAN-Lambda, CSB3, cluster feeds","CAN-Lambda pair splice behind X1 (solder + sleeve, ASSUMED)",-,1,0.3,0.3,ASSUMED,2.2
 pdm,PDM,"Boards A1, A2, B + 3 input boards, JLCPCB plan with US duty and minimum lots: $1,265-1,422",boards,1,1343.5,1343.5,"docs/assembly-options.md (assemblyquotes, PR #155); in-house at Spark (c8) $595-752",0.0
 pdm,PDM,"Enclosure: machined sink + lid, printed parts, fasteners, seals: $80-200",enclosure,1,140.0,140.0,ASSUMED (first estimate),0.0
 pdm,PDM,"Box internal wiring, fans: $20-40",box-internal,1,30.0,30.0,ASSUMED (first estimate),0.0
