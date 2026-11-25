@@ -7,9 +7,9 @@ ui/examples/st185-car.dummy.json written by Write All exactly as the app writes 
 (firmware/sim/data/st185-car.params.dummy.tsv, made and checked by ui/tests St185CarTests).
 
 Script: parked (auto sleep by itself), key on (wake on the ignition input), ECU boot, crank (6 V dip), idle, power
-windows, tail / head / high / flash, DRL with the pods up, pop-ups up and down (the motors and their limit contacts
-modelled), turn signals and hazard, horn, stop lamps, back-up lamps, wipers with the park cam + washer wipes, rear
-defogger (push on / push off), night rain with every load on (current export for the thermal model), the ECU's CAN
+windows, tail / head / high / flash, DRL with the pods up, pop-ups up and down (the motors on board B studs and their
+limit contacts modelled), turn signals and hazard (each on a board A output pair), horn, rear defogger (push on /
+push off), night rain with every load on (current export for the thermal model), the ECU's CAN
 silent while driving (nothing on the PDM changes), low battery with the engine off (defogger shed after 30 s, nothing
 ECU-held), key off with the ECU's after-run hold (a low battery during the hold: nothing shed, no mute, no sleep), ECU
 release (no fault, every output off), auto sleep, parking lights and hazards with the key off (wake on the tail /
@@ -18,7 +18,10 @@ hazard switch), sleep again.
 Ground truth: every PROFET IN pin of the 24 outputs, every 1 ms, against an independent logic model written from the
 car map's own words (docs/st185-car-config.dummy.md, the /pdm trigger texts in St185CarTests) - not from the firmware.
 A pin may differ from the model only inside the latency window of a change; every change is timed. The pop-up motors
-and the wiper are checked by their mechanical models (position, limit contacts, park cam).
+are checked by their mechanical model (position, limit contacts). fusesize (2026-11-25): every output is rated for its
+circuit's st185 fuse; the 10 A circuits (turn signals, CAN-Lambda) run on firmware output pairs (a follower copies its
+primary, the primary reports the sum): each follower pin is checked against its primary every 1 ms. Stop lamps,
+back-up lamps, wipers and washer stay on their OEM switches (no output rated for their 15 / 20 A fuses).
 
 usage: python3 firmware/sim/s5_car_cycle.py <sim out dir> [--out dir] [--json file] [--mutate N] [--mutants]
 (exit 1 on any FAIL). --mutants runs every one-line config mutation in MUTATIONS (each must turn RED)."""
@@ -71,14 +74,14 @@ def _mut():
     return [
         ('B', shed_c, ps.f32(10.5), 'battery shed at 10.5 V, not 11.8 V'),
         ('B', shed_t, 500, 'battery shed after 0.5 s (a crank dip sheds)'),
-        ('B', 'input[10].invert', 1, 'reverse switch inverted (back-up lamps on in every gear)'),
+        ('A1', 'input[4].invert', 0, 'horn switch not inverted (horns on with the button released)'),
         ('B', 'output[1].input', 1, 'power windows always on (not with the key)'),
         ('A1', 'output[7].input', 1, 'CSB3 always on (does not follow the EFI main relay)'),
-        ('A2', 'input[4].invert', 0, 'pop-up LH top limit contact not inverted'),
+        ('B', 'input[3].invert', 0, 'pop-up LH top limit contact not inverted'),
         ('A2', pfind('A2', r'flasher\[\d+\]\.onTime', 350), 500, 'turn signal on time 350 -> 500 ms'),
         ('A1', 'device.muteCanTxInput', 1, 'A1 mutes its CAN TX whatever the key / ECU hold'),
-        ('B', 'wiper.parkStopLevel', 0, 'wiper park level inverted'),
-        ('A1', 'input[6].invert', 1, 'brake switch inverted (stop lamps on without the pedal)'),
+        ('A2', 'output[4].primaryOutput', -1, 'turn left follower unpaired (half the lamp current path dead)'),
+        ('A1', 'input[7].invert', 0, 'tail switch not inverted (tail lamps on with the switch off)'),
         ('B', 'input[8].mode', 0, 'defogger switch momentary (no push on / push off)'),
         ('A1', 'customPdm.wakeInputMask', 0, 'A1 wakes on no input (parking lights dead with the key off)'),
         ('B', sibling(shed_c, 'operator'), 4, 'shed condition >= instead of <='),
@@ -113,23 +116,22 @@ OUT = {g: (BOARDS[(g - 1) // 8], (g - 1) % 8) for g in range(1, 25)}
 # name, steady A at 13.5 V, inrush x, inrush s, kind, (L low, L high) H. Sources: tools/presim_parts.py CAR_LOADS where it
 # has the load (marked C), else ASSUMED from the st185 fuse (steady <= 0.75 x fuse) and typical lamp / motor data (A).
 LOADS = {
-    1: ('Low beams (LED) C', 2.0, 3.0, 0.01, 'electronic', (0, 0)), 2: ('High beams + dash LED C', 2.5, 3.0, 0.01, 'electronic', (0, 0)),
+    1: ('CAN-Lambda C', 8.1, 1.5, 0.1, 'electronic', (0, 1e-6)),
     3: ('DRLs A (A34 0.5 A)', 0.5, 3.0, 0.005, 'electronic', (0, 0)),
-    4: ('Stop lamps A (2 x 21 W + 18 W halogen)', 4.4, 8.0, 0.02, 'lamp', (0, 0)),
-    5: ('Horn pair C', 5.0, 1.0, 0.0, 'coil', (5e-3, 30e-3)),
     7: ('CSB3 A', 2.0, 3.0, 0.01, 'electronic', (0, 0)), 8: ('Centre cluster A', 1.5, 3.0, 0.01, 'electronic', (0, 0)),
-    9: ('Turn L A (2 x 21 W + LED lead)', 3.3, 8.0, 0.02, 'lamp', (0, 0)), 11: ('Turn R A', 3.3, 8.0, 0.02, 'lamp', (0, 0)),
-    12: ('Pop-up motor LH A', 5.0, 4.0, 0.3, 'motor', (0.3e-3, 1.0e-3)), 13: ('Pop-up motor RH A', 5.0, 4.0, 0.3, 'motor', (0.3e-3, 1.0e-3)),
-    14: ('Tail / park front A (2 x 5 W + 2 x 3.8 W)', 1.3, 8.0, 0.02, 'lamp', (0, 0)),
-    15: ('Tail / licence / dash A (about 47 W)', 3.5, 8.0, 0.02, 'lamp', (0, 0)),
-    16: ('Washer pump C', 3.0, 4.0, 0.2, 'motor', (0.2e-3, 1.0e-3)),
+    11: ('Turn L A (2 x 21 W + LED lead)', 3.3, 8.0, 0.02, 'lamp', (0, 0)), 13: ('Turn R A', 3.3, 8.0, 0.02, 'lamp', (0, 0)),
     17: ('Power windows A (one window moving 10 A; switches 0.05 A)', 10.0, 2.0, 0.3, 'motor', (0.3e-3, 1.0e-3)),
+    18: ('Pop-up motor LH A', 5.0, 4.0, 0.3, 'motor', (0.3e-3, 1.0e-3)), 19: ('Pop-up motor RH A', 5.0, 4.0, 0.3, 'motor', (0.3e-3, 1.0e-3)),
     20: ('Rear defogger A (about 200 W grid)', 15.0, 1.3, 1.0, 'lamp', (0, 0)),
-    21: ('CAN-Lambda C', 8.1, 1.5, 0.1, 'electronic', (0, 1e-6)), 22: ('Back-up lamps A (2 x 21 W)', 3.2, 8.0, 0.02, 'lamp', (0, 0)),
-    23: ('Wiper motor C', 6.0, 4.0, 0.3, 'motor', (0.3e-3, 1.5e-3)),
+    21: ('Low beams (LED) C', 2.0, 3.0, 0.01, 'electronic', (0, 0)), 22: ('High beams + dash LED C', 2.5, 3.0, 0.01, 'electronic', (0, 0)),
+    23: ('Horn pair C', 5.0, 1.0, 0.0, 'coil', (5e-3, 30e-3)),
+    24: ('Tail / park / licence / dash A (front 1.3 A + rear 3.5 A)', 4.8, 8.0, 0.02, 'lamp', (0, 0)),
 }
-LOADS[24] = LOADS[23]
+# firmware output pairs (St185Car.Pairs): primary -> follower; the load current splits evenly (ASSUMED) between the two
+PAIRS = {1: 2, 11: 12, 13: 14}
+FOLLOWER = {f: p_ for p_, f in PAIRS.items()}
 NAME = {g: LOADS[g][0].rsplit(' ', 1)[0] if LOADS.get(g) else '' for g in OUT}; NAME[10] = 'box fan'
+for p_, f in PAIRS.items(): NAME[f] = NAME[p_] + ' (pair)'
 def gname(g): k, o = OUT[g]; return f'{k} OUT{o + 1} {NAME.get(g, "")}'
 V_NOM = 13.5
 class Load:
@@ -161,8 +163,8 @@ B = {'A1': ps.Board(ps.BOARD_A, 'A1', SO, unit=1), 'A2': ps.Board(ps.BOARD_A, 'A
 BASE = {'A1': 0x500, 'A2': 0x540, 'B': 0x580}
 for b in B.values(): b.set_vbat(12.6); b.set_temp(25.0, 28.0)
 carn = ps.PyNode('car'); carn.powered = False
-S = dict(ign=0, efi=0, win=0, rev=0, light='off', flash=0, high=0, drl=0, horn=0, brake=0, turnL=0, turnR=0,
-         hazard=0, wlo=0, whi=0, wint=0, wash=0, defog_sw=0, defog=0, vbat=12.6, shed=False, wiper=False, tail_seen=0,
+S = dict(ign=0, efi=0, win=0, light='off', flash=0, high=0, drl=0, horn=0, turnL=0, turnR=0,
+         hazard=0, defog_sw=0, defog=0, vbat=12.6, shed=False, tail_seen=0, head_seen=0, high_seen=0,
          awake={k: True for k in BOARDS}, temp={k: 25.0 for k in BOARDS}, boxfan=0)
 rows = []
 for ln in open(os.path.join(REPO, 'docs', 'car-can-dummy', 'bus-load.dummy.md'), encoding='utf-8'):
@@ -189,8 +191,8 @@ bus.add(tool, carn, *B.values())
 
 # ------------------------------------------------------------------ inputs: the wires (PDM input number -> board, index)
 def where(n): return ('A1', n - 1) if n <= 7 else ('A2', n - 8) if n <= 14 else ('B', n - 15)
-GND_ACTIVE = {1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, 21, 22, 23}   # IN24 reverse, IN20 cam, IN5 / 6 / 16: 12 V
-WAKE = {2, 5, 6, 7, 9, 16}                                         # St185Car.Switches Wake
+GND_ACTIVE = {1, 2, 3, 4, 7, 8, 9, 10, 17, 18, 19, 20, 22, 23}   # IN5 / IN16: 12 V; IN6, IN11-15, IN21, IN24 free
+WAKE = {2, 5, 7, 9, 16}                                            # St185Car.Switches Wake
 LEVEL = {}
 def wire(n, on):
     """switch n on / off: a ground-switched input goes to ground (open = the input-board DIP pull-up), a 12 V one to 12 V
@@ -203,7 +205,7 @@ def wire(n, on):
     if LEVEL.get(n) != bool(on) and B[k].flags()['asleep'] and B[k].model['inputs'][i][0] in ps.exti_lines(B[k]).values(): wake_req.add(k)
     LEVEL[n] = bool(on)
 
-# ------------------------------------------------------------------ mechanical models: pop-up motors, wiper
+# ------------------------------------------------------------------ mechanical model: pop-up motors
 class Pod:
     """A one-way crank motor: half a turn (1.0 s, ASSUMED) from bottom (0.0) to top (0.5) and on to bottom (1.0 = 0).
     Its limit contacts close to ground at the top (0.47-0.53) and at the bottom (0.97-0.03) (TO CHECK on the bench)."""
@@ -217,22 +219,8 @@ class Pod:
         if not on and s.was and s.runs: s.runs[-1][1] = t
         s.was = on
         wire(s.top, s.at_top()); wire(s.bottom, s.at_bottom())
-PODS = [Pod(12, 11, 12), Pod(13, 13, 14)]
-class Wiper:
-    """Wiper motor + park cam (s3 F8): one turn 1.0 s slow / 0.6 s fast; cam 12 V on B IN6 (IN20) for the first 10 %."""
-    def __init__(s): s.pos = 0.02; s.turns = 0; s.starts = []; s.was_on = False
-    def step(s, slow, fast, t):
-        on = slow or fast
-        if on:
-            p = s.pos + 1.0 / (600.0 if fast else 1000.0)
-            if int(p) > int(s.pos): s.turns += 1
-            s.pos = p
-        if on and not s.was_on: s.starts.append(t)
-        s.was_on = on
-        wire(20, (s.pos % 1.0) < 0.10)
-    def parked(s): return (s.pos % 1.0) < 0.10
-WIP = Wiper()
-LD = {g: Load(LOADS[g]) for g in LOADS if g != 24}
+PODS = [Pod(18, 17, 18), Pod(19, 19, 20)]            # motors on B OUT2 / OUT3, limit contacts on B IN3-6 (IN17-20)
+LD = {g: Load(LOADS[g]) for g in LOADS}
 PIN = {g: 0 for g in OUT}; EDGES = {g: [] for g in OUT}; IMOD = {g: 0.0 for g in OUT}; OHMS = {}
 def now_ms(): return bus.now / 1000.0
 def read_pins():
@@ -245,10 +233,10 @@ def set_ohms(g, ohms):
 def update_loads():
     t = now_ms() / 1000.0; vb = S['vbat']
     for g, ld in LD.items():
-        if g == 23:
-            on = PIN[23] or PIN[24]; i = ld.current(on, t, vb)
-            IMOD[23], IMOD[24] = ((0.2 * vb / V_NOM if PIN[23] else 0.0), i) if PIN[24] else (i, 0.0)
-            for gg in (23, 24): set_ohms(gg, vb / IMOD[gg] if IMOD[gg] > 1e-3 else vb / (ld.i * ld.k * vb / V_NOM))
+        if g in PAIRS:                            # a pair: the follower copies the primary; each switch carries half
+            f = PAIRS[g]; i = ld.current(PIN[g] or PIN[f], t, vb); half = i / 2.0
+            IMOD[g] = half if PIN[g] else 0.0; IMOD[f] = half if PIN[f] else 0.0
+            for gg in (g, f): set_ohms(gg, vb / half if half > 1e-3 else vb / max(ld.i * ld.k * vb / V_NOM / 2.0, 1e-3))
             continue
         if g == 17:                               # power windows: the switches 0.05 A, a window motor only while one moves
             i = ld.current(PIN[17] and S['win'], t, vb) + (0.05 * vb / V_NOM if PIN[17] else 0.0); IMOD[17] = i
@@ -264,32 +252,28 @@ def tail(): return S['light'] in ('tail', 'head')
 def hi(): return (S['high'] and S['light'] == 'head') or S['flash']   # R-W: dimmer HIGH (with HEAD) or FLASH
 def logic():
     E = {g: 0 for g in OUT}
-    E[12] = E[13] = 'free'                                              # pop-ups: the motor model checks them
+    E[18] = E[19] = 'free'                                              # pop-ups: the motor model checks them
     a1, a2, b = S['awake']['A1'], S['awake']['A2'], S['awake']['B']
     if a1:
-        E[1] = int(head())                                              # IN1
-        E[2] = int(hi() and head())                                     # IN2 AND IN1
+        E[1] = int(S['ign']) if heard('A1', 'B') else 0                 # IN16 over CAN, off at loss: CAN-Lambda (pair 1 + 2)
         E[3] = int(S['drl'] and S['efi'] and not head())                # IN3 AND IN5 AND NOT IN1 (DRL off with the head lamps)
-        E[4] = int(S['brake'])                                          # IN6
-        E[5] = int(S['horn'])                                           # IN4
         E[7] = E[8] = int(S['efi'])                                     # IN5: the EFI main relay (Bus 2)
     if a2:
-        E[9] = 'flash' if (S['turnL'] or S['hazard']) else 0
-        E[11] = 'flash' if (S['turnR'] or S['hazard']) else 0
-        if heard('A2', 'A1'): S['tail_seen'] = int(tail())                # lamps hold their last state at link loss
-        E[14] = E[15] = S['tail_seen']
-        E[16] = int(S['wash']) if heard('A2', 'B') else 0               # IN21 over CAN, off at loss
+        E[11] = 'flash' if (S['turnL'] or S['hazard']) else 0           # pair 11 + 12
+        E[13] = 'flash' if (S['turnR'] or S['hazard']) else 0           # pair 13 + 14
         if S['temp']['A2'] < 40: E[10] = 0
     if b:
         E[17] = int(S['ign'])                                           # IN16: power windows (as the power main relay)
         E[20] = int(S['defog'] and S['ign'] and not S['shed'])          # IN22 (latched) AND IN16 AND NOT shed
-        E[21] = int(S['ign'])                                           # IN16
-        E[22] = int(S['rev'])                                           # IN24: back-up lamps
-        E[23] = E[24] = 'free' if S['wiper'] else 0
+        if heard('B', 'A1'):                                            # lamps hold their last state at link loss
+            S['head_seen'], S['high_seen'], S['tail_seen'] = int(head()), int(hi() and head()), int(tail())
+        E[21], E[22], E[24] = S['head_seen'], S['high_seen'], S['tail_seen']   # IN1; IN2 AND IN1; IN7 (over CAN)
+        E[23] = int(S['horn']) if heard('B', 'A1') else 0               # IN4 over CAN, off at loss
+    for p_, f in PAIRS.items(): E[f] = E[p_]                            # a follower copies its primary
     return E
 MUTED = {}
 LAT = {g: (15, 32, 0) for g in OUT}                                     # a wire input: 20 ms debounce, 2 ms loop
-LAT.update({14: (15, 140, 0), 15: (15, 140, 0), 16: (15, 140, 0), 10: (0, 450, 0)})   # over CAN (msg 37, 100 ms)
+LAT.update({g: (15, 140, 0) for g in (1, 2, 21, 22, 23, 24)}); LAT[10] = (0, 450, 0)   # over CAN (msg 37, 100 ms)
 EXP = {g: dict(v=0, t=0.0, lo=0, hi=0, grace=0, pend=False, hit=0.0, old=0) for g in OUT}
 VIOL = []; TIMES = []; PHASE = ['boot']; PH_T = {}; MISMATCH = {}
 def expect(g, v, lo, hi_, grace=0):
@@ -324,12 +308,13 @@ def check_pins():
 
 # ------------------------------------------------------------------ time
 POW_ROWS = []; TRACE = []; _acc = {'E': {k: 0.0 for k in BOARDS}, 'I': {g: 0.0 for g in OUT}, 'n': 0}
+PAIR_RUN, PAIR_MAX = {}, {}
 ENERGY = {k: 0.0 for k in BOARDS}; PEAK = {k: 0.0 for k in BOARDS}; WAKES = []; ASLEEP_AT = {}; RMS = {}
 def wake(k):
     b = B[k]; fram, opt = b.fram(), b.L.sim_opt_get(); held = b.board_c
     b.resets.append((bus.now, 'wake')); b.t0 = bus.now; b._load(fram, opt, ps.RSTF_SFT); b.mcp_carry(held)
     S['awake'][k] = True; MUTED.pop(k, None)
-    if k == 'A2': S['tail_seen'] = 0                                  # a link-held lamp is off at power-up
+    if k == 'B': S['tail_seen'] = S['head_seen'] = S['high_seen'] = 0  # a link-held lamp is off at power-up
 def tick():
     bus.run_for(1); t = now_ms()
     for k in BOARDS + ('car',):                                  # bus wake-up: a frame nobody acknowledges still puts dominant
@@ -345,8 +330,11 @@ def tick():
         if muted != bool(MUTED.get(k)):
             MUTED[k] = muted; update(lat={g: (0, 1200) for g in OUT})
     read_pins()
+    for p_, f in PAIRS.items():
+        if B[OUT[p_][0]].powered and PIN[f] != PIN[p_]:
+            PAIR_RUN[f] = PAIR_RUN.get(f, 0) + 1; PAIR_MAX[f] = max(PAIR_MAX.get(f, 0), PAIR_RUN[f])
+        else: PAIR_RUN[f] = 0
     for p in PODS: p.step(PIN[p.g], t)
-    WIP.step(PIN[23], PIN[24], t)
     update_loads()
     check_pins()
     for g, (k, o) in OUT.items():
@@ -380,7 +368,7 @@ def spans(g, t0, t1, level=1):
     return out
 def sw(name, val, lat=None):
     S[name] = val
-    n = dict(drl=3, horn=4, brake=6, turnL=8, hazard=9, turnR=10, wlo=17, whi=18, wint=19, wash=21, defog_sw=22, rev=24).get(name)
+    n = dict(drl=3, horn=4, turnL=8, hazard=9, turnR=10, defog_sw=22).get(name)
     if n: wire(n, val)
     if name == 'defog_sw' and val: S['defog'] = 1 - S['defog']       # push on / push off (latched input)
     update(lat)
@@ -398,7 +386,7 @@ def ecu_power(on):
     """the Link ECU: K-EFI (its own main relay on Aux 6, A1 IN5 reads its output) and the car's CAN traffic, together"""
     S['efi'] = on; wire(5, on); carn.powered = bool(on); update()
 def pods_at(where_):
-    return all((p.at_top() if where_ == 'top' else p.at_bottom()) for p in PODS) and not PIN[12] and not PIN[13]
+    return all((p.at_top() if where_ == 'top' else p.at_bottom()) for p in PODS) and not PIN[18] and not PIN[19]
 
 # ================================================================== 0. the car config onto three fresh boards
 phase('load the ST185 car config (Write All + Burn, as the app)')
@@ -437,8 +425,8 @@ t_k = now_ms(); n_w = len(WAKES); S['ign'] = 1; wire(16, 1); update(lat={g: (0, 
 ecu_power(1); run(3000)
 phase_ok('key on: wake, ECU boot')
 woke = {k: round(t - t_k, 1) for k, t in WAKES[n_w:]}
-check('key on: B wakes on its ignition input (wake set), A1 / A2 on the bus activity or their own wake input (<= 0.6 s); CAN-Lambda, windows, CSB3 and cluster on',
-      sorted(woke) == sorted(BOARDS) and woke.get('B', 99) <= 5 and all(v <= 600 for v in woke.values()) and PIN[21] and PIN[17] and PIN[7] and PIN[8], woke)
+check('key on: B wakes on its ignition input (wake set), A1 / A2 on the bus activity or their own wake input (<= 0.6 s); CAN-Lambda (pair), windows, CSB3 and cluster on',
+      sorted(woke) == sorted(BOARDS) and woke.get('B', 99) <= 5 and all(v <= 600 for v in woke.values()) and PIN[1] and PIN[2] and PIN[17] and PIN[7] and PIN[8], woke)
 
 # ================================================================== 3. crank
 phase('crank (6 V dip)')
@@ -450,9 +438,9 @@ check('crank: no MCU reset on any board (6.0 V 80 ms, 9.6 V 1.2 s), nothing swit
       {k: b.resets[r0[k]:] for k, b in B.items()})
 
 # ================================================================== 4. idle, EPS enable
-phase('idle: power windows, back-up lamps')
-S['win'] = 1; update(); run(2500); S['win'] = 0; update(); sw('rev', 1); run(800); sw('rev', 0); run(500)
-phase_ok('idle: power windows, back-up lamps')
+phase('idle: power windows')
+S['win'] = 1; update(); run(2500); S['win'] = 0; update(); run(500)
+phase_ok('idle: power windows')
 
 # ================================================================== 5. lights and pop-ups
 phase('lights and pop-ups')
@@ -482,38 +470,16 @@ check('pop-ups: up on DRL + key and on head / flash, down at OFF only when nothi
 # ================================================================== 6. turn signals, hazard
 phase('turn signals + hazard')
 FL = {}
-for name, gs in (('turnL', (9,)), ('turnR', (11,)), ('hazard', (9, 11))):
-    t0 = now_ms(); sw(name, 1); run(3000); t1 = now_ms(); sw(name, 0, lat={9: (0, 40), 11: (0, 40)}); run(800)
+for name, gs in (('turnL', (11,)), ('turnR', (13,)), ('hazard', (11, 13))):
+    t0 = now_ms(); sw(name, 1); run(3000); t1 = now_ms(); sw(name, 0, lat={g: (0, 40) for g in (11, 12, 13, 14)}); run(800)
     FL[name] = {g: dict(first=round(edges_in(g, t0, t1)[0][0] - t0, 1) if edges_in(g, t0, t1) else None, on=spans(g, t0, t1, 1), off=spans(g, t0, t1, 0)) for g in gs}
 phase_ok('turn signals + hazard')
 check('turn signals: first flash <= 32 ms, then 350 / 350 ms (+-5 ms); hazard both sides',
       all(f['first'] is not None and f['first'] <= 32 and len(f['on']) >= 4 and all(abs(x - 350) <= 5 for x in f['on'][:-1] + f['off'][:-1])
           for n in FL for f in FL[n].values()), {n: {g: (f['first'], sorted(set(f['on']))) for g, f in FL[n].items()} for n in FL})
 
-# ================================================================== 7. horn, stop lamps
-phase('horn + stop lamps'); sw('horn', 1); run(400); sw('horn', 0); run(300); sw('brake', 1); run(600); sw('brake', 0); run(300); phase_ok('horn + stop lamps')
-
-# ================================================================== 8. wipers + washer
-phase('wipers + washer')
-WP = {}
-def wipe(name, ms):
-    S['wiper'] = True; update(); turns0 = WIP.turns; t0 = now_ms(); sw(name, 1); run(ms); t1 = now_ms(); sw(name, 0)
-    for _ in range(3000):
-        tick()
-        if not PIN[23] and not PIN[24] and WIP.parked(): break
-    run(300); WP[name] = dict(turns=WIP.turns - turns0, parked=WIP.parked() and not PIN[23] and not PIN[24], starts=[round(t - t0) for t in WIP.starts if t >= t0])
-    S['wiper'] = False; update(lat={23: (0, 5), 24: (0, 5)})
-wipe('wlo', 3300); wipe('whi', 2000); wipe('wint', 9500)
-S['wiper'] = True; update(); tw = WIP.turns; sw('wash', 1); run(600); sw('wash', 0)
-for _ in range(6000):
-    tick()
-    if not PIN[23] and WIP.parked() and now_ms() > PH_T['wipers + washer'] + 1000: break
-run(300); wash_turns = WIP.turns - tw; S['wiper'] = False; update(lat={23: (0, 5), 24: (0, 5)})
-phase_ok('wipers + washer')
-gaps = [b_ - a_ for a_, b_ in zip(WP['wint']['starts'], WP['wint']['starts'][1:])]
-check('wipers: LO about 3 turns, HI about 3 turns, INT one wipe every 4.0 s; each parks in the cam zone; washer: pump on its switch (A2 over CAN) and 3 wipes',
-      WP['wlo']['turns'] in (3, 4) and WP['whi']['turns'] in (3, 4) and all(w['parked'] for w in WP.values()) and len(gaps) >= 2
-      and all(3850 <= g_ <= 4150 for g_ in gaps) and wash_turns in (3, 4), dict({k: (v['turns'], v['parked']) for k, v in WP.items()}, int_gaps=gaps, wash_turns=wash_turns))
+# ================================================================== 7. horn (B OUT7, its switch on A1 over CAN)
+phase('horn'); sw('horn', 1); run(400); sw('horn', 0); run(300); phase_ok('horn')
 
 # ================================================================== 9. rear defogger, A/C clutch, ECU fans
 phase('rear defogger')
@@ -524,8 +490,7 @@ check('rear defogger: one push on, the next push off (latched input)', on_d and 
 
 # ================================================================== 10. night rain: every load on (current export for the thermal model)
 phase('night rain, everything on')
-light('head'); sw('defog_sw', 1); run(200); sw('defog_sw', 0); sw('brake', 1); S['win'] = 1
-S['wiper'] = True; sw('whi', 1); update(); run(3000)
+light('head'); light(high=1); sw('defog_sw', 1); run(200); sw('defog_sw', 0); S['win'] = 1; update(); run(3000)
 RMS.update(rms={g: 0.0 for g in OUT}, n=0); run(20000)
 rms = {g: math.sqrt(RMS['rms'][g] / RMS['n']) for g in OUT}; RMS.clear()
 phase_ok('night rain, everything on')
@@ -537,17 +502,17 @@ phase('ECU CAN silent while driving')
 t_l = now_ms(); f0 = len(FAULTS); n_e = sum(len(e) for e in EDGES.values()); before = dict(PIN)
 carn.powered = False; update(); run(3000); carn.powered = True; update(); run(1000)
 phase_ok('ECU CAN silent while driving')
-steady = [g for g in OUT if g not in (9, 11, 23, 24) and before[g] != PIN[g]]
+steady = [g for g in OUT if g not in (11, 12, 13, 14) and before[g] != PIN[g]]
 check('ECU CAN silent 3 s while driving (the ECU keeps its relays): no PDM output changes (the PDM reads no ECU frame), no fault',
       not steady and len(FAULTS) == f0, (steady, FAULTS[f0:f0 + 3]))
-sw('brake', 0); S['win'] = 0; update(); sw('whi', 0); S['wiper'] = False; update(lat={23: (0, 2000), 24: (0, 2000)}); run(2500)
+S['win'] = 0; light(high=0); run(2500)
 sw('defog_sw', 1); run(200); sw('defog_sw', 0); light('off'); pods_wait('bottom'); run(500)
 
 # ================================================================== 12. low battery, engine off, key on
 phase('low battery, engine off')
 sw('defog_sw', 1); run(200); sw('defog_sw', 0); run(1500)
 t_s = now_ms(); set_vbat(11.6); S['shed'] = True; update(lat={20: (SHED_MS, SHED_MS + 300)}); run(SHED_MS + 3000)
-held = [g for g in (7, 8, 17, 21) if EXP[g]['v'] and not PIN[g]]
+held = [g for g in (1, 2, 7, 8, 17) if EXP[g]['v'] and not PIN[g]]
 set_vbat(12.4); update(); run(2000); still = not PIN[20]
 set_vbat(13.9); S['shed'] = False; update(lat={20: (0, 300)}); run(1500)
 phase_ok('low battery, engine off')
@@ -582,12 +547,12 @@ check('ECU release: every output off (CSB3 / cluster / DRLs with IN5), no output
 phase('key off: parking lights, hazards')
 t_w = now_ms(); n_w = len(WAKES); light('tail', lat={g: (0, 900) for g in OUT}); run(3000)
 woke = {k: round(t - t_w, 1) for k, t in WAKES[n_w:]}
-park_ok = PIN[14] and PIN[15]
-sw('hazard', 1); run(3000); haz = len(spans(9, now_ms() - 3000, now_ms())) >= 3 and len(spans(11, now_ms() - 3000, now_ms())) >= 3
-light('off'); run(MUTE_MS - 2000); still_haz = bool(spans(9, now_ms() - 1500, now_ms()))   # hazards keep A2 / A1 / B awake
-sw('hazard', 0, lat={9: (0, 40), 11: (0, 40)}); t_h = now_ms(); n_s = len(ASLEEP_AT); run(MUTE_MS + SLEEP_TIMEOUT_MS + 3000)
+park_ok = bool(PIN[24])
+sw('hazard', 1); run(3000); haz = len(spans(11, now_ms() - 3000, now_ms())) >= 3 and len(spans(13, now_ms() - 3000, now_ms())) >= 3
+light('off'); run(MUTE_MS - 2000); still_haz = bool(spans(11, now_ms() - 1500, now_ms()))   # hazards keep A2 / A1 / B awake
+sw('hazard', 0, lat={g: (0, 40) for g in (11, 12, 13, 14)}); t_h = now_ms(); n_s = len(ASLEEP_AT); run(MUTE_MS + SLEEP_TIMEOUT_MS + 3000)
 phase_ok('key off: parking lights, hazards')
-check('key off: the tail switch wakes A1 (its wake set) and A1 wakes A2 / B (CAN): parking lamps on (A2 over CAN); hazards flash and keep the PDM '
+check('key off: the tail switch wakes A1 (its wake set) and A1 wakes A2 / B (CAN): parking lamps on (B over CAN); hazards flash and keep the PDM '
       'awake; all off -> asleep again', woke.get('A1', 99) <= 5 and park_ok and haz and still_haz and sorted(ASLEEP_AT) == list(BOARDS),
       dict(woke=woke, parking=park_ok, hazard=haz, asleep_s={k: round((v - t_h) / 1000, 1) for k, v in ASLEEP_AT.items()}))
 
@@ -600,10 +565,27 @@ check('whole cycle: no watchdog reset, no MCU reset but the planned restart / wa
 c = {k: B[k].counters() for k in BOARDS}
 check('whole cycle: no CAN receive overrun on any board', all(v['rx_overruns'] == 0 for v in c.values()), {k: v['rx_overruns'] for k, v in c.items()})
 check('whole cycle: no output fault or overcurrent reported by any board (status msg 3)', not FAULTS, FAULTS[:5])
+def pair_skew(f):
+    """follower edge time - the primary's nearest edge of the same level (ms): < 0 = the follower switched first"""
+    pe = EDGES[FOLLOWER[f]]; out = {'on': [], 'off': []}
+    for t, v in EDGES[f]:
+        same = [tp for tp, vp in pe if vp == v]
+        if same: out['on' if v else 'off'].append(round(t - min(same, key=lambda x: abs(x - t)), 1))
+    return {k: (min(v), max(v), len(v)) if v else None for k, v in out.items()}
+info['pair_skew_ms'] = {gname(f): pair_skew(f) for f in FOLLOWER}
+check('pairs: every follower pin (A1 OUT2, A2 OUT4, A2 OUT6) follows its primary pin, never more than 5 ms apart, and each pair switched',
+      all(PAIR_MAX.get(f, 0) <= 5 and len(EDGES[f]) >= 2 and len(EDGES[f]) == len(EDGES[FOLLOWER[f]]) for f in FOLLOWER), dict({gname(f): (PAIR_MAX.get(f, 0), len(EDGES[f])) for f in FOLLOWER}, skew_ms=info['pair_skew_ms']))
 errs = {}
+IDX = {g: n_ for n_, g in enumerate(OUT)}
 for j in range(20, len(TRACE)):
     for n_, g in enumerate(OUT):
+        if g in FOLLOWER: continue                                    # its current is read on its primary (the sum)
         im, fw = TRACE[j][3 + n_], TRACE[j][27 + n_]
+        if g in PAIRS:
+            im += TRACE[j][3 + IDX[PAIRS[g]]]
+            if not all(abs(TRACE[j - d][3 + n_] + TRACE[j - d][3 + IDX[PAIRS[g]]] - im) <= 0.01 * im for d in range(1, 21)): continue
+            if im >= 2.0: errs[g] = max(errs.get(g, 0.0), abs(fw - im) / im)
+            continue
         if im >= 2.0 and all(abs(TRACE[j - d][3 + n_] - im) <= 0.01 * im for d in range(1, 21)):
             errs[g] = max(errs.get(g, 0.0), abs(fw - im) / im)
 check('current readings: every steady load >= 2 A reads within 8 % of the model current', errs and max(errs.values()) <= 0.08,

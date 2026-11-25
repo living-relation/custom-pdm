@@ -169,7 +169,7 @@ automations:
     committed: yes
     auto_commit: false
     enabled: true
-    run_cmd: python3 firmware/sim/s5_car_cycle.py /tmp/simout --out /tmp/s5car   # after firmware/sim/build.sh x 3; 32 of 32; --mutants: 13 of 13 RED
+    run_cmd: python3 firmware/sim/s5_car_cycle.py /tmp/simout --out /tmp/s5car   # after firmware/sim/build.sh x 3; 31 of 31; --mutants: 13 of 13 RED
     slow: true
     owner: claude
   - id: harness-cost-study

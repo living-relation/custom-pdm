@@ -49,23 +49,24 @@ public class St185CarLiveSimTests(ITestOutputHelper output)
         Assert.Equal(want, got);
         Assert.Empty(PdmModel.Build(svc2.BuildView()).Problems);
 
-        // on the bench (inputs and outputs count from 0 in the bridge; carsim 2026-11-23 map): key on = the ignition on B IN2
-        // and the EFI main relay output on A1 IN5 -> CAN-Lambda and power windows (B), CSB3 and cluster (A1, Bus 2 = IN5)
+        // on the bench (inputs and outputs count from 0 in the bridge; fusesize 2026-11-25 map): key on = the ignition on
+        // B IN2 and the EFI main relay output on A1 IN5 -> CAN-Lambda (A1 OUT1 + its paired OUT2, over CAN) and power
+        // windows (B OUT1), CSB3 and cluster (A1, Bus 2 = IN5)
         bus.Cmd("IN B 1 12v");
         bus.Cmd("IN A1 4 12v");
         bus.Run(500);
-        Assert.Equal((true, true, true, true), (bus.Pin("A1", 6), bus.Pin("A1", 7), bus.Pin("B", 4), bus.Pin("B", 0)));
-        // the ECU's own loads are not on the PDM: B OUT2 / OUT3 and A1 OUT6 stay spare (off)
-        Assert.Equal((false, false, false), (bus.Pin("B", 1), bus.Pin("B", 2), bus.Pin("A1", 5)));
+        Assert.Equal((true, true, true, true, true), (bus.Pin("A1", 6), bus.Pin("A1", 7), bus.Pin("A1", 0), bus.Pin("A1", 1), bus.Pin("B", 0)));
+        // the spares (A1 OUT4-6) stay off; the pop-up motors (B OUT2 / OUT3) do not run with no lamp switch on
+        Assert.Equal((false, false, false, false, false), (bus.Pin("A1", 3), bus.Pin("A1", 4), bus.Pin("A1", 5), bus.Pin("B", 1), bus.Pin("B", 2)));
 
-        // head lamps: low (A1 OUT1) and high (A1 OUT2) on their switches to ground; DRL off with the head lamps on
+        // head lamps: low (B OUT5) and high (B OUT6) follow their switches on A1 over CAN; DRL (A1 OUT3) off with the head lamps on
         bus.Cmd("IN A1 2 gnd");   // DRL switch on
         bus.Run(300);
-        Assert.Equal((true, false, false), (bus.Pin("A1", 2), bus.Pin("A1", 0), bus.Pin("A1", 1)));
+        Assert.Equal((true, false, false), (bus.Pin("A1", 2), bus.Pin("B", 4), bus.Pin("B", 5)));
         bus.Cmd("IN A1 0 gnd");
         bus.Cmd("IN A1 1 gnd");
         bus.Run(300);
-        Assert.Equal((false, true, true), (bus.Pin("A1", 2), bus.Pin("A1", 0), bus.Pin("A1", 1)));
+        Assert.Equal((false, true, true), (bus.Pin("A1", 2), bus.Pin("B", 4), bus.Pin("B", 5)));
 
         // the ECU lets go of its main relay (end of its after-run): CSB3 and cluster off with IN5, the key-off functions stay
         bus.Cmd("IN A1 4 open down");

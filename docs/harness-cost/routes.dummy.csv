@@ -1,31 +1,31 @@
 # DUMMY / DERIVED - harness cost study (tools/harness_cost_study.py); source: st185-link-ecu-config @ e047a17 (read only) + this repo; not a source of truth
-item,relay route,PDM route (all 10 moves)
-parts USD (total),7235.1,8729.77
-cost: wire and cable,1218.87,1243.95
+item,relay route,PDM route (all 7 moves)
+parts USD (total),7235.1,8679.35
+cost: wire and cable,1218.87,1217.85
 "cost: connectors, contacts, seals, splices (st185 harness BOM, same both routes)",1113.31,1113.31
-"cost: new terminations (X2 pins, tie-in sleeves, lugs)",39.0,59.68
-cost: DR-25 sleeving,676.92,682.89
+"cost: new terminations (X2 pins, tie-in sleeves, lugs)",39.0,53.12
+cost: DR-25 sleeving,676.92,662.13
 cost: boots (adhesive lined),901.0,901.0
 cost: transitions + epoxy,2576.36,2576.36
 cost: fuse boxes POWER / LOGIC / BATTRELAY,573.42,546.34
-"cost: relays, holders, PDM parts (part lines)",136.22,1606.24
-labour h (total),144.11,158.9
-"labour: cut, strip, mark",7.63,7.3
-labour: terminate (crimp / insert / solder / tie-in),33.52,31.88
+"cost: relays, holders, PDM parts (part lines)",136.22,1609.24
+labour h (total),144.11,158.35
+"labour: cut, strip, mark",7.63,7.23
+labour: terminate (crimp / insert / solder / tie-in),33.52,31.28
 labour: sleeve DR-25,19.34,19.24
 labour: boots + transitions,14.67,14.8
 labour: route + install in the car,26.0,26.25
-labour: test (continuity),3.05,2.92
+labour: test (continuity),3.05,2.89
 labour: build boxes (POWER / LOGIC / BATTRELAY),34.77,33.95
-labour: relays / holders / design / PDM build and setup,5.12,22.55
-"wire m, 20 AWG",213.77,259.37
-"wires, 20 AWG",223,245
-"wire m, 18 AWG",70.07,51.68
-"wires, 18 AWG",71,52
-"wire m, 16 AWG",49.55,39.57
+labour: relays / holders / design / PDM build and setup,5.12,22.7
+"wire m, 20 AWG",213.77,246.53
+"wires, 20 AWG",223,237
+"wire m, 18 AWG",70.07,51.93
+"wires, 18 AWG",71,54
+"wire m, 16 AWG",49.55,35.84
 "wires, 16 AWG",55,39
-"wire m, 14 AWG",39.63,44.3
-"wires, 14 AWG",39,33
+"wire m, 14 AWG",39.63,42.0
+"wires, 14 AWG",39,35
 "wire m, 12 AWG",12.43,6.27
 "wires, 12 AWG",8,5
 "wire m, 10 AWG",18.71,18.36
@@ -42,29 +42,29 @@ labour: relays / holders / design / PDM build and setup,5.12,22.55
 "wires, 1/0 AWG",12,12
 "wire m, cable AWG",21.57,21.57
 "wires, cable AWG",28,28
-metres,456.84,474.29
-wires,458,438
-terminations,783,760
+metres,456.84,455.67
+wires,458,434
+terminations,783,746
 splices,62,55
 connectors,61,63
 relays,23,10
 fuses,31,24
 branch_points,71,71
 sleeve_m,52.62,52.41
-sleeve_usd,676.92,682.89
+sleeve_usd,676.92,662.13
 boots,61,63
 transitions,49,50
 wire ends: box,6,6
 wire ends: conn,429,399
 wire ends: hold,22,0
 wire ends: lug,0,1
-wire ends: oem,130,116
-wire ends: pdm,0,44
+wire ends: oem,130,112
+wire ends: pdm,0,32
 wire ends: ring,51,52
 wire ends: screw,9,9
 wire ends: solderpin,25,25
-wire ends: splice,195,171
-wire ends: stud,0,4
+wire ends: splice,195,177
+wire ends: stud,0,6
 wire ends: term,49,49
 st185 harness BOM lines with no price (same both routes),91,91
 st185 POWER box as designed: USD / build h,361.76,19.79

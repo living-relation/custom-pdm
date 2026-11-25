@@ -297,11 +297,11 @@ open it again. The silkscreen numbers the channels 1-8 over each row: left row "
 input switched to ground), right row "PULL-DOWN" (JP9-JP16, 10 k to GND, for a 12 V input). Never bridge both jumpers of
 one channel. Channel n of an input board = board input IN(n+2) of its main board (`docs/firmware-pin-map.md` 8).
 
-| Input board | Fits on | Bridge (pull-up row) | Bridge (pull-down row) | Leave open | Why (`docs/st185-car-config.md` Inputs) |
+| Input board | Fits on | Bridge (pull-up row) | Bridge (pull-down row) | Leave open | Why (`docs/st185-car-config.dummy.md` Inputs, fusesize map 2026-11-25) |
 |---|---|---|---|---|---|
-| #1 | A1 (J6) | 1 (IN3 DRL switch), 2 (IN4 horn switch) | 3 (IN5 ignition IG2) | 4-8 | IN3 / IN4 switch to ground; IN5 is a 12 V input |
-| #2 | A2 (J6) | none | none | all | A2 has no input in use |
-| #3 | B (J7) | none | none | all | B IN3-IN10 are not in use (B IN1 / IN2 sit on board B itself) |
+| #1 | A1 (J6) | 1 (IN3 DRL switch), 2 (IN4 horn switch), 5 (IN7 light switch TAIL) | 3 (IN5 EFI main relay, Bus 2) | 4, 6-8 | IN3 / IN4 / IN7 switch to ground; IN5 is a 12 V input; A1 IN6 is free |
+| #2 | A2 (J6) | 1 (IN10 turn right) | none | 2-8 | IN8 / IN9 (turn left, hazard) are A2 IN1 / IN2 on board A itself; A2 IN4-7 are free |
+| #3 | B (J7) | 1-4 (IN17-20 pop-up limit contacts), 6 (IN22 defogger switch), 7 (IN23 light switch OFF) | none | 5, 8 | all switch to ground; B IN7 / IN10 are free (IN16 ignition is B IN2 on board B itself) |
 
 When an input is added later: pull-up for a switch to ground, pull-down for a 12 V signal, set the input's invert in
 the tool to match, and note it here.

@@ -9,68 +9,74 @@ injectors, coils) and K-EFI stay on relays and count the same on both routes (AD
 Numbers come from `tools/harness_cost_study.py`. Its outputs: `docs/harness-cost/*.dummy.csv` and the chart
 `docs/diagrams/harness-breakpoint.png`. It reads st185-link-ecu-config @ e047a17, read only. Prices are USD.
 **ASSUMED** marks a figure with no quote or source behind it. The earlier, smaller estimate is kept at the end as the
-"first estimate".
+"first estimate". Re-run 2026-11-25 (fusesize) for the re-sized car map: every PDM output is now rated for its
+circuit's st185 fuse, so the moves follow the new outputs (15 A / 30 A loads on board B, the 10 A loads on board A
+output pairs joined in a splice behind X1, front and rear tail lamps on one output), and the old moves M8-M10 (stop
+lamps, back-up lamps, wipers / washer) are gone: no free output is rated for their 15 / 20 A fuses, so they stay on
+their OEM switches on both routes (`docs/st185-car-config.dummy.md`).
 
 ## Verdict (for the board-order go / no-go, c7 = a)
 
 - **Harness savings do not justify the board order on their own. At no point does the PDM drastically cut length or
-  work.** Its best point is after move M7 (14 of the 20 loads moved), compared with the relay route:
-  - Wire: about the same (455 m vs 457 m, -0.3 %).
-  - Terminations: 39 fewer (-5 %). Splices: 7 fewer (-11 %).
+  work.** Its best point is after move M7, the last move (all 14 car-config loads on the PDM), compared with the
+  relay route:
+  - Wire: about the same (456 m vs 457 m, -0.2 %).
+  - Terminations: 37 fewer (-5 %). Splices: 7 fewer (-11 %).
   - Relay sockets + fuse positions: 34 vs 54 (-37 %). Four relay holders and the flasher are gone.
-  - Parts: **+$1,442 (+20 %)**. Labour: **+13.9 h (+10 %)**. The board set is $1,265-1,422 on the JLCPCB plan
-    (`docs/assembly-options.md`). Built in-house at Spark (c8 costing, $595-752) it is still +$694-851.
+  - Parts: **+$1,444 (+20 %)**. Labour: **+14.2 h (+10 %)**. The board set is $1,265-1,422 on the JLCPCB plan
+    (`docs/assembly-options.md`). Built in-house at Spark (c8 costing, $595-752) it is still +$696-853.
 - **Why it can't be drastic:** st185 already puts the relays in the glove box, right where the PDM would sit. The long
   runs (lamps, horns, pop-up motors, wipers) exist on both routes. The PDM only swaps the short box wiring (coil
   feeds, fuse jumpers, relay pigtails) for input wires that run back to the switches.
-- **Moves M8-M10 only add wire** (stop, back-up, wipers / washer: +19 m, +16 terminations). Those loads have no
-  relay today. Move them only for the features (fault reading, intermittent wipe, wash-wipe).
+- **Stop lamps, back-up lamps, wipers and washer stay on their OEM switches** on both routes: no free PDM output is
+  rated for their STOP / GAUGE 15 A or WIPER 20 A fuses (fusesize, 2026-11-25). They have no relay today, and the
+  first run of this study found moving them (then M8-M10) only added wire (+19 m, +16 terminations).
 - **What the PDM does change a lot:** box parts and fault-finding. Relay sockets drop from 23 to 10 and fuse
   positions from 31 to 24. Gone: RLY-DRL, the R8 retract relay and its replacement, the flasher, the taillight relay,
   the defogger relay and the power main relay. Gone from LOGIC: 6 of 9 relays and 7 of 20 fuses. Added: per-output
   current reading and logic in software (section (c) of the first estimate below).
 - **For the order decision:** treat this study as **neutral to negative**. Decide the order on the product goal (an
   open-source PDM, the 2026-11-16 goal) and on the proof and assembly-options reports. Don't count on the harness to
-  pay for it. If the boards are ordered: move M1-M7. M8-M10 are optional.
+  pay for it. If the boards are ordered: move M1-M7 (the whole car config).
 
 ## Totals per route
 
 Relay route = the st185 harness, the POWER / LOGIC / BATTRELAY boxes as designed, and new relays where st185 keeps an
-OEM one. PDM route = all 10 moves done (20 loads on the PDM).
+OEM one. PDM route = all 7 moves done (the 14 car-config loads on the PDM; this is also its best point).
 
-| | Relay route | PDM route (all moves) | Best PDM point (after M7) |
-|---|---|---|---|
-| Parts cost | **$7,235** | **$8,730** | $8,677 |
-| Labour | **144.1 h** | **158.9 h** | 158.0 h |
-| Parts + labour at $35 / h (ASSUMED value) | $12,279 | $14,291 | $14,207 |
-| Wire | 456.8 m (458 wires) | 474.3 m (438 wires) | 455.3 m (430 wires) |
-| Terminations (crimps, tie-ins, solder joints, splices) | 783 | 760 | 744 |
-| Splices | 62 | 55 | 55 |
-| Harness connectors (each with a boot) | 61 | 63 (adds X1, X2) | 63 |
-| Relay sockets / fuse positions | 23 / 31 | 10 / 24 | 10 / 24 |
-| Branch points (layout nodes with 3+ legs) | 71 | 71 | 71 |
-| DR-25 tubing | 52.6 m, 190 pieces, $677 | 52.4 m, 189 pieces, $683 | 52.4 m, $662 |
-| Moulded transitions | 49 | 50 | 50 |
+| | Relay route | PDM route (all 7 moves) |
+|---|---|---|
+| Parts cost | **$7,235** | **$8,679** |
+| Labour | **144.1 h** | **158.4 h** |
+| Parts + labour at $35 / h (ASSUMED value) | $12,279 | $14,222 |
+| Wire | 456.8 m (458 wires) | 455.7 m (434 wires) |
+| Terminations (crimps, tie-ins, solder joints, splices) | 783 | 746 |
+| Splices | 62 | 55 (+ 4 new ones behind X1: the three pair joins and the tail split, not in this count) |
+| Harness connectors (each with a boot) | 61 | 63 (adds X1, X2) |
+| Relay sockets / fuse positions | 23 / 31 | 10 / 24 |
+| Branch points (layout nodes with 3+ legs) | 71 | 71 |
+| DR-25 tubing | 52.6 m, 190 pieces, $677 | 52.4 m, 189 pieces, $662 |
+| Moulded transitions | 49 | 50 |
 
-Wire per gauge, relay route vs PDM route (m): 20 AWG 213.8 vs 259.4, 18 AWG 70.1 vs 51.7, 16 AWG 49.6 vs 39.6,
-14 AWG 39.6 vs 44.3, 12 AWG 12.4 vs 6.3, 10 AWG 18.7 vs 18.4, 8 AWG 7.5 vs 7.5, 6 AWG 2.3 vs 4.4 (PDM feed and ground),
+Wire per gauge, relay route vs PDM route (m): 20 AWG 213.8 vs 246.5, 18 AWG 70.1 vs 51.9, 16 AWG 49.6 vs 35.8,
+14 AWG 39.6 vs 42.0, 12 AWG 12.4 vs 6.3, 10 AWG 18.7 vs 18.4, 8 AWG 7.5 vs 7.5, 6 AWG 2.3 vs 4.4 (PDM feed and ground),
 4 / 2 / 1/0 AWG and the shielded cables are the same on both routes (`docs/harness-cost/routes.dummy.csv`).
 
 Where the money goes (relay route vs PDM route):
 
 | Cost line | Relay | PDM |
 |---|---|---|
-| Wire and cable | $1,219 | $1,244 |
+| Wire and cable | $1,219 | $1,218 |
 | st185 harness BOM: connectors, contacts, seals, splices (same both routes) | $1,113 | $1,113 |
 | Moulded transitions + epoxy | $2,576 | $2,576 |
 | Boots (adhesive lined) | $901 | $901 |
-| DR-25 | $677 | $683 |
+| DR-25 | $677 | $662 |
 | Fuse boxes POWER / LOGIC / BATTRELAY (st185 parts lists) | $573 | $546 |
-| Relays, holders, new terminations / the PDM (boards $1,344 mid of $1,265-1,422, enclosure $140, rest) | $175 | $1,666 |
+| Relays, holders, new terminations / the PDM (boards $1,344 mid of $1,265-1,422, enclosure $140, rest) | $175 | $1,662 |
 
-Labour (h, relay vs PDM): cut, strip, mark 7.6 vs 7.3. Terminate 33.5 vs 31.9. DR-25 19.3 vs 19.2. Boots and
+Labour (h, relay vs PDM): cut, strip, mark 7.6 vs 7.2. Terminate 33.5 vs 31.3. DR-25 19.3 vs 19.2. Boots and
 transitions 14.7 vs 14.8. Route and install 26.0 vs 26.3. Test 3.1 vs 2.9. Build the st185 boxes 34.8 vs 34.0.
-Relays, holders, design and the PDM build 5.1 vs 22.6. The PDM line is: inside-box wiring 8.9 h (111 wires,
+Relays, holders, design and the PDM build 5.1 vs 22.7 (with 0.2 h for the four splices behind X1). The PDM line is: inside-box wiring 8.9 h (111 wires,
 `harness/enclosure-wire-list.csv`), mechanical assembly 4 h, design of the harness changes 4 h and setup 5 h (all
 ASSUMED), and mounting 0.5 h.
 
@@ -83,21 +89,18 @@ first.
 | Move | Loads (car config #) | Parts | Hours | Wire m | Terminations | Relays / fuses | Boxes or holders gone |
 |---|---|---|---|---|---|---|---|
 | relay route | - | $7,235 | 144.1 | 456.8 | 783 | 23 / 31 | - |
-| M1 Front lamps: low, high, DRL, pop-ups | 1 2 3 12 13 | $8,727 | 161.5 | 445.2 | 751 | 16 / 28 | **RLY-DRL holder (B5); R8 and its new 2-relay holder; POWER AMI OUT-2 (RTR 30 A)**; LOGIC 4 relays + 3 fuses |
-| M2 Horns | 5 | $8,726 | 161.4 | 444.4 | 749 | 15 / 28 | LOGIC K-HORN |
-| M3 Turn + hazards | 9 11 | $8,723 | 162.0 | 451.3 | 760 | 14 / 27 | **flasher**; LOGIC HZ fuse |
-| M4 Tail / park | 14 15 | $8,721 | 161.2 | 453.4 | 756 | 13 / 27 | taillight relay |
-| M5 CAN-Lambda, CSB3, cluster | 21 7 8 | $8,710 | 160.7 | 451.4 | 754 | 12 / 24 | LOGIC K-ON + 3 fuses |
-| M6 Rear defogger | 20 | $8,695 | 159.4 | 454.1 | 750 | 11 / 24 | defogger relay; **relay holder B1** |
-| M7 Power windows | 17 | **$8,677** | **158.0** | **455.3** | **744** | **10 / 24** | power main relay; **relay holder B2** |
-| M8 Stop lamps | 4 | $8,690 | 158.3 | 459.2 | 748 | 10 / 24 | - (adds wire) |
-| M9 Back-up lamps | 22 | $8,694 | 158.4 | 461.2 | 750 | 10 / 24 | - (adds wire) |
-| M10 Wipers + washer | 23 24 16 | $8,730 | 158.9 | 474.3 | 760 | 10 / 24 | - (adds wire) |
+| M1 Front lamps: low, high, DRL, pop-ups | 21 22 3 18 19 | $8,729 | 161.5 | 445.2 | 751 | 16 / 28 | **RLY-DRL holder (B5); R8 and its new 2-relay holder; POWER AMI OUT-2 (RTR 30 A)**; LOGIC 4 relays + 3 fuses |
+| M2 Horns | 23 | $8,727 | 161.4 | 444.4 | 749 | 15 / 28 | LOGIC K-HORN |
+| M3 Turn + hazards (two pairs) | 11 13 | $8,725 | 162.2 | 451.5 | 762 | 14 / 27 | **flasher**; LOGIC HZ fuse |
+| M4 Tail / park (one output) | 24 | $8,723 | 161.4 | 453.6 | 757 | 13 / 27 | taillight relay |
+| M5 CAN-Lambda (pair), CSB3, cluster | 1 7 8 | $8,712 | 161.1 | 451.8 | 756 | 12 / 24 | LOGIC K-ON + 3 fuses |
+| M6 Rear defogger | 20 | $8,698 | 159.8 | 454.5 | 752 | 11 / 24 | defogger relay; **relay holder B1** |
+| M7 Power windows | 17 | **$8,679** | **158.4** | **455.7** | **746** | **10 / 24** | power main relay; **relay holder B2** |
 
 ![Breakpoint chart](diagrams/harness-breakpoint.png)
 
 The chart shows each measure as % of the relay route. Cost jumps about 21 % and hours about 12 % at M1 (the PDM's fixed cost)
-and never come back below 100. Wire stays within -3 % to +4 %. Terminations stay within -5 %. Only relay sockets +
+and never come back below 100. Wire stays within -3 % to 0 %. Terminations stay within -5 %. Only relay sockets +
 fuse positions fall a lot (-37 %).
 
 ## Which boxes shrink or disappear
@@ -112,7 +115,7 @@ fuse positions fall a lot (-37 %).
 | OEM flasher -> new CF13JL-02 | yes | **gone (M3)** |
 | Body relay holders B1 (tail + defog), B2 (power main), GEP FRH-A12 at J/B No.1 | yes | **gone (M6, M7)** |
 | PDM box (X1, X2, studs) | - | added |
-| OEM J/B No.1, R/B No.2 / No.4 | kept (constant feeds) | kept. Their STOP, TURN, HZ, TAIL, GAUGE, WIPER and DEFOG fuses go unused |
+| OEM J/B No.1, R/B No.2 / No.4 | kept (constant feeds) | kept. Their TURN, HZ, TAIL and DEFOG fuses go unused; STOP, GAUGE and WIPER stay in use (stop, back-up lamps, wipers, washer on their OEM switches) |
 
 ## How it is counted
 
@@ -137,7 +140,7 @@ fuse positions fall a lot (-37 %).
   2 AWG ASSUMED). The DR-25 size is the smallest that passes two checks. Shrink check: expanded ID >= 1.25 x D (HP
   Academy: DR-25 is 2:1 and should shrink at least 20 % of its supplied size). Fit check: recovered ID <= D (TBHD 8.3:
   warn if recovered > D). Cut length = segment + 10 %. Result: every relay-route segment passes. One PDM-route
-  segment fails: GB-GB_T, D = 42.1 mm, where 2 in DR-25 is only 1.21 x. Split that glove-box trunk in two there.
+  segment fails: GB-GB_T, D = 41.4 mm, where 2 in DR-25 is only 1.21 x. Split that glove-box trunk in two there.
   Per-segment table: `docs/harness-cost/sleeving.dummy.csv`.
 - **Boots and transitions.** One adhesive-lined Raychem boot per harness connector: $14.00 for 202A121-25/225-0,
   $23.40 for 202A132-25/225-0 on the big DRB / ECU / HD shells. The X1 / X2 boots are the on-hand HD30-24BT-BK
@@ -216,11 +219,11 @@ The tools are not added to either total, because both routes need the same set.
 
 | Assumption | If it changes | Effect at the best point (M7) |
 |---|---|---|
-| Dan's hour is worth $35 (ASSUMED) | $0 / $60 | the PDM is +$1,442 / +$2,276 dearer |
-| Boards on the JLCPCB plan, $1,265-1,422 (`docs/assembly-options.md`) | built in-house at Spark (c8: reels + blank boards, $595-752) | the PDM is +$694-851 in parts: still dearer |
+| Dan's hour is worth $35 (ASSUMED) | $0 / $60 | the PDM is +$1,444 / +$2,299 dearer |
+| Boards on the JLCPCB plan, $1,265-1,422 (`docs/assembly-options.md`) | built in-house at Spark (c8: reels + blank boards, $595-752) | the PDM is +$696-853 in parts: still dearer |
 | The PDM's design (4 h) and setup (5 h) count against this car | count them as product development | +4.9 h, or +0.9 h if the 4 h assembly is product work too |
 | R8 is replaced (Dan: OEM relays too old) | R8 kept | the relay route gets about $29 and 3.4 h cheaper: the gap grows |
-| Inside-box wiring 8.9 h, assembly 4 h | Spark Robotic builds the box | the PDM is about 13 h faster than now, about even with relays on hours; still +$1,442 in parts (+$694-851 with in-house boards) |
+| Inside-box wiring 8.9 h, assembly 4 h | Spark Robotic builds the box | the PDM is about 13 h faster than now, about even with relays on hours; still +$1,444 in parts (+$696-853 with in-house boards) |
 | PDM in the glove box | PDM near J/B No.1 (LH kick) | inputs get shorter, outputs to the RH side longer: wire stays within a few %, not drastic |
 | Pop-up and turn circuits as modelled (ASSUMED tie-ins) | the bench checks (car config T2) change them | a few wires either way |
 
@@ -228,6 +231,8 @@ Not costed: reprinting LOGIC smaller (saves part of its $41 base print and some 
 finding saved later by the PDM's diagnostics.
 
 ## First estimate (carsim, 2026-11-23; kept as it was, superseded by the study above)
+
+(Its "20 car loads" are the car map before fusesize, 2026-11-25; the car config now has 14 loads on the PDM.)
 
 This first estimate treated the OEM relays as free and did not count the harness itself; the study above does both.
 Dan's question (2026-11-23): "is the PDM cost effective, saving money and time vs more wiring and relays?" The loads

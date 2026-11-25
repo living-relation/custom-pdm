@@ -77,6 +77,7 @@ def P(desc, pn, qty, unit, src, minutes=0.0):
     return {"desc": desc, "pn": pn, "qty": qty, "unit": unit, "src": src, "min": minutes}
 
 
+X1, X2, STUD = "@PDM#X1", "@PDM#X2", "@PDM#STUD"     # all three sit at layout node GB_LOGIC
 ST = "st185 PROJECT-BOM / fusebox-parts (Digi-Key / CCK / Waytek 2026-10-20..11-14)"
 CCK = "customconnectorkits.com products.json 2026-11-23"
 
@@ -98,6 +99,13 @@ AMI_SEAT = P("POWER AMI seat (AMI-30, 2R5 lug, M5 bolts / nuts, PEM stud, C-stra
 HOLDER = [P("GEP FRH-A12 holder (holds up to 2 micro relays, GEP drawing via st185 BOM)", "FRH-A12", 1, 8.99, CCK),
           P("FRH-A12-T TPA", "FRH-A12-T", 1, 0.65, CCK), P("FRH-A12-C cover", "FRH-A12-C", 1, 5.99, CCK),
           P("FRH-A12-MB-B1 bracket", "FRH-A12-MB-B1", 1, 1.59, CCK, MIN["box_mount"])]
+
+
+def pair_join(name, awg):
+    """A board A output pair (fusesize): the follower's X1 cavity joins the primary's output wire in a splice just behind
+    X1 (one new short wire + one new splice joint, ASSUMED)."""
+    return (W("p_%s_pair" % name, X1, "pdm", "@PDM#SPL", "splice", awg, "pair: follower cavity into the output wire behind X1"),
+            P("%s pair splice behind X1 (solder + sleeve, ASSUMED)" % name, "-", 1, 0.30, "ASSUMED", MIN["splice"]))
 
 
 def W(wid, a, ka, b, kb, awg, note=""):
@@ -122,16 +130,19 @@ def relay_in_holder(name, node, gauges, relay_price=3.79, relay_pn="301-1A-C-R1-
 # Each move takes loads off relays and puts them on PDM outputs (docs/st185-car-config.dummy.md). `remove` = st185
 # master wires that only the relay route has; `add` = the PDM route's wires; `seats` = st185 box / holder parts that go;
 # `relay_only` = the new relays the relay route needs because the OEM ones are too old (Dan 2026-11-23), which the PDM
-# route never builds; `boxes` = boxes or holders that disappear with this move.
-X1, X2, STUD = "@PDM#X1", "@PDM#X2", "@PDM#STUD"     # all three sit at layout node GB_LOGIC
+# route never builds; `boxes` = boxes or holders that disappear with this move; `pdm_parts` = parts the PDM route adds
+# for this move (the splice behind X1 that joins the two cavities of a board A output pair).
+# fusesize (2026-11-25): every output is rated for its circuit's st185 fuse, so the moves follow the new car map; the
+# old M8-M10 (stop lamps STOP 15 A, back-up lamps GAUGE 15 A, wipers / washer WIPER 20 A) are gone: no free output is
+# rated for their fuse (St185Car.OffThePdm), they stay on their OEM switches on both routes.
 MOVES = []
 
 _popup_parts, _popup_wires = relay_in_holder("popup", "R8", ["16"] * 5 + ["16"] * 5, 4.69, "301-1C-C-R1-U01-12VDC")
 _popup_parts[0]["qty"] = 2
 _popup_parts[1].update(qty=10, desc="popup: Metri-Pack 280 terminals 12129409-L x10")
 MOVES.append(dict(
-    id="M1", name="Front lamps: low, high, DRL, pop-ups", loads=[1, 2, 3, 12, 13],
-    outputs="A1 OUT1-3, A2 OUT4-5", inputs="IN1 IN2 IN3 IN11-14 IN23",
+    id="M1", name="Front lamps: low, high, DRL, pop-ups", loads=[21, 22, 3, 18, 19],
+    outputs="B OUT5-6, A1 OUT3, B OUT2-3 (studs)", inputs="IN1 IN2 IN3 IN17-20 IN23",
     remove=["w_hl_cp", "w_hl_30_cp", "w_hl_86_cp", "w_hr_86_cp", "w_hl_on_cp", "w_hr_on_cp", "w_hl_85_cp",
             "w_head_coil_cp", "w_hl_low",
             "w_drl_85_cp", "w_drl_sw_cp", "w_r8_up_cp", "w_r8_d1_a_cp", "w_r8_d1_k_cp", "w_r8_d2_a_cp", "w_r8_d2_k_cp",
@@ -141,7 +152,7 @@ MOVES.append(dict(
     add=[W("p_lo", X1, "pdm", "SP-HL-ON", "splice", 14), W("p_hi", X1, "pdm", "SP-HR-HI", "splice", 14),
          W("p_drl", X1, "pdm", "SP-DRL", "splice", 16), W("p_in_drlsw", X2, "pdm", "DRL-SW", "conn", 20),
          W("p_in_head", "@JB1", "oem", X2, "pdm", 20, "IE1-2 R-Y"), W("p_in_high", "@JB1", "oem", X2, "pdm", 20, "IE1-18 R-W"),
-         W("p_pod_lh", X1, "pdm", "SP-RTR-R2-4", "splice", 14), W("p_pod_rh", X1, "pdm", "SP-RTR-R3-4", "splice", 14),
+         W("p_pod_lh", STUD, "stud", "SP-RTR-R2-4", "splice", 14), W("p_pod_rh", STUD, "stud", "SP-RTR-R3-4", "splice", 14),
          W("p_lim_lh_up", "@RTR_LH", "oem", X2, "pdm", 20), W("p_lim_lh_dn", "@RTR_LH", "oem", X2, "pdm", 20),
          W("p_lim_rh_up", "@RTR_RH", "oem", X2, "pdm", 20), W("p_lim_rh_dn", "@RTR_RH", "oem", X2, "pdm", 20),
          W("p_in_off", "@COLUMN", "oem", X2, "pdm", 20, "light switch OFF contact")],
@@ -158,16 +169,18 @@ MOVES.append(dict(
            "LOGIC: 4 of 9 relay seats, 3 fuse seats"]))
 
 MOVES.append(dict(
-    id="M2", name="Horns", loads=[5], outputs="A1 OUT5", inputs="IN4",
+    id="M2", name="Horns", loads=[23], outputs="B OUT7", inputs="IN4",
     remove=["w_horn_85_cp", "w_horn_30_cp", "w_horn_86_cp", "w_pmu_horn_cp"],
     add=[W("p_horn", X1, "pdm", "SP-HORN", "splice", 14), W("p_in_horn", "@JB1", "oem", X2, "pdm", 20, "IE1-19")],
     seats=micro_seat("K-HORN", "4-1904124-3", 4.54), relays=1, fuses=0,
     relay_only=dict(parts=[], wires=[], relays=0, fuses=0), boxes=["LOGIC: K-HORN seat"]))
 
+_tl, _tr = pair_join("turn L", 18), pair_join("turn R", 18)
 MOVES.append(dict(
-    id="M3", name="Turn signals + hazards", loads=[9, 11], outputs="A2 OUT1, OUT3", inputs="IN8 IN9 IN10",
+    id="M3", name="Turn signals + hazards", loads=[11, 13], outputs="A2 OUT3+4, OUT5+6 (pairs)", inputs="IN8 IN9 IN10",
     remove=["w_haz_cp", "w_hz_cp"],
-    add=[W("p_turn_l", X1, "pdm", "@COLUMN", "oem", 18), W("p_turn_r", X1, "pdm", "@COLUMN", "oem", 18),
+    pdm_parts=[_tl[1], _tr[1]],
+    add=[W("p_turn_l", X1, "pdm", "@COLUMN", "oem", 18), W("p_turn_r", X1, "pdm", "@COLUMN", "oem", 18), _tl[0], _tr[0],
          W("p_in_tl", "@COLUMN", "oem", X2, "pdm", 20), W("p_in_tr", "@COLUMN", "oem", X2, "pdm", 20),
          W("p_in_haz", "@CLUSTER", "oem", X2, "pdm", 20),
          W("p_turn_com", "@COLUMN", "oem", "@COLUMN", "oem", 20, "turn switch common to ground (ASSUMED)"),
@@ -179,19 +192,24 @@ MOVES.append(dict(
 
 _tail_parts, _tail_wires = relay_in_holder("tail", "JB1", ["18"] * 4)
 MOVES.append(dict(
-    id="M4", name="Tail / park lamps", loads=[14, 15], outputs="A2 OUT6, OUT7", inputs="IN7",
+    id="M4", name="Tail / park lamps", loads=[24], outputs="B OUT8 (front + rear on one output)", inputs="IN7",
     remove=["w_clr"],
-    add=[W("p_park", X1, "pdm", "SP-CLR", "splice", 16), W("p_tail", X1, "pdm", "@JB1", "oem", 16, "TAIL rear / licence / dash"),
+    pdm_parts=[P("tail split splice behind X1 (solder + sleeve, ASSUMED)", "-", 1, 0.30, "ASSUMED", MIN["splice"])],
+    add=[W("p_tail_out", X1, "pdm", "@PDM#SPL", "splice", 14, "B OUT8 into the front / rear split behind X1"),
+         W("p_park", "@PDM#SPL", "splice", "SP-CLR", "splice", 16),
+         W("p_tail", "@PDM#SPL", "splice", "@JB1", "oem", 16, "TAIL rear / licence / dash"),
          W("p_in_tail", "@JB1", "oem", X2, "pdm", 20, "light switch TAIL (relay coil lead)")],
     seats=[], relays=0, fuses=0,
     relay_only=dict(parts=_tail_parts + [P("relay retrofit design share (ASSUMED)", "-", 1, 0.0, "ASSUMED", 30)],
                     wires=_tail_wires, relays=1, fuses=0, holder="B1"),
     boxes=["OEM taillight relay (its new relay)"]))
 
+_lam = pair_join("CAN-Lambda", 16)
 MOVES.append(dict(
-    id="M5", name="CAN-Lambda, CSB3, cluster feeds", loads=[21, 7, 8], outputs="B OUT5, A1 OUT7, OUT8", inputs="IN16 (fixed)",
+    id="M5", name="CAN-Lambda, CSB3, cluster feeds", loads=[1, 7, 8], outputs="A1 OUT1+2 (pair), OUT7, OUT8", inputs="IN16 (fixed)",
     remove=["w_k_on_86_cp", "w_lam12_cp", "w_csb12", "w_dev_clu"],
-    add=[W("p_lam", X1, "pdm", "DRB102-CABIN", "conn", 14), W("p_csb", X1, "pdm", "CSB3", "conn", 20),
+    pdm_parts=[_lam[1]],
+    add=[W("p_lam", X1, "pdm", "DRB102-CABIN", "conn", 14), _lam[0], W("p_csb", X1, "pdm", "CSB3", "conn", 20),
          W("p_dev", X1, "pdm", "T-CLUSTER-PWR", "term", 16)],
     seats=micro_seat("K-ON", "6-1419137-4", 4.49) + [P("K-ON 85 ground ring 320572", "320572", 1, 0.30, ST, 3)]
     + fuse_seat("LAM 10 A") + fuse_seat("CSB 5 A") + fuse_seat("DEV 5 A"), relays=1, fuses=3,
@@ -217,27 +235,6 @@ MOVES.append(dict(
     relay_only=dict(parts=_win_parts + [P("relay retrofit design share (ASSUMED)", "-", 1, 0.0, "ASSUMED", 30)],
                     wires=_win_wires, relays=1, fuses=0, holder="B2"),
     boxes=["OEM power main relay (its new relay)"]))
-
-MOVES.append(dict(
-    id="M8", name="Stop lamps", loads=[4], outputs="A1 OUT4", inputs="IN6",
-    remove=[], add=[W("p_stop", X1, "pdm", "@PEDAL", "oem", 16, "lamp side of the cut switch output"),
-                    W("p_in_stop", "@PEDAL", "oem", X2, "pdm", 20, "stop switch output")],
-    seats=[], relays=0, fuses=0, relay_only=dict(parts=[], wires=[], relays=0, fuses=0), boxes=[]))
-
-MOVES.append(dict(
-    id="M9", name="Back-up lamps", loads=[22], outputs="B OUT6", inputs="IN24",
-    remove=["w_rev_lamps"],
-    add=[W("p_rev", X1, "pdm", "@IG2C", "oem", 14, "IG2-13"), W("p_in_rev", "SP-REV", "splice", X2, "pdm", 20)],
-    seats=[], relays=0, fuses=0, relay_only=dict(parts=[], wires=[], relays=0, fuses=0), boxes=[]))
-
-MOVES.append(dict(
-    id="M10", name="Wipers + washer", loads=[23, 24, 16], outputs="B OUT7, OUT8, A2 OUT8", inputs="IN17-21",
-    remove=["w_wip_lo", "w_wip_hi", "w_wip_park", "w_wash_pos"],
-    add=[W("p_wip_lo", X1, "pdm", "@WIPER", "oem", 14), W("p_wip_hi", X1, "pdm", "@WIPER", "oem", 14),
-         W("p_in_park", "@WIPER", "oem", X2, "pdm", 20), W("p_wash", X1, "pdm", "@WASH", "oem", 16)]
-    + [W("p_in_w%d" % i, "@COLUMN", "oem", X2, "pdm", 20) for i in range(4)]
-    + [W("p_wip_com", "@COLUMN", "oem", "@COLUMN", "oem", 20, "switch common to ground (ASSUMED)")],
-    seats=[], relays=0, fuses=0, relay_only=dict(parts=[], wires=[], relays=0, fuses=0), boxes=[]))
 
 HOLDERS = {"B1": ["M4", "M6"], "B2": ["M7"]}    # body relay holders of the relay route and the moves that empty them
 
@@ -346,6 +343,7 @@ class Study:
         for m in MOVES:
             if m in done:
                 new += m["add"]
+                parts += [dict(p, group="PDM: " + m["name"]) for p in m.get("pdm_parts", [])]
                 relays -= m["relays"]
                 fuses -= m["fuses"]
                 boxes_gone += m["boxes"]
@@ -589,7 +587,7 @@ def chart(res, path):
         ys = [100.0 * v / vals[0] for v in vals]          # indexed: relay route = 100 (one scale for all panels)
         ax.set_facecolor(SURF)
         ax.set_ylim(50, 130)
-        ax.axhline(100, color=ORANGE, lw=2, ls=(0, (6, 3)), label="Relay route = 100 (all 20 loads on relays)")
+        ax.axhline(100, color=ORANGE, lw=2, ls=(0, (6, 3)), label="Relay route = 100 (all %d car-config loads on relays)" % sum(len(m["loads"]) for m in MOVES))
         ax.plot(ks, ys, color=BLUE, lw=2, marker="o", ms=8, mec=SURF, mew=2, label="PDM route after each move (% of relay route)")
         ax.annotate(fmt % vals[-1], (ks[-1], ys[-1]), textcoords="offset points", xytext=(-10, 10), color=INK2, fontsize=9)
         ax.annotate(fmt % vals[0], (0, 100), textcoords="offset points", xytext=(4, 6), color=INK2, fontsize=9)
@@ -620,8 +618,10 @@ def main():
     ap.add_argument("--st185", required=True, help="a clone of st185-link-ecu-config (read only)")
     ap.add_argument("--out", default=os.path.join(REPO, "docs", "harness-cost"))
     ap.add_argument("--png", default=os.path.join(REPO, "docs", "diagrams", "harness-breakpoint.png"))
+    ap.add_argument("--st185-commit", help="the st185 commit when --st185 is a git archive (no .git), e.g. e047a17")
     a = ap.parse_args()
     S = Study(a.st185)
+    S.commit = S.commit or a.st185_commit or "unknown"
     line1 = ("# DUMMY / DERIVED - harness cost study (tools/harness_cost_study.py); source: st185-link-ecu-config @ %s "
              "(read only) + this repo; not a source of truth" % S.commit)
     res, prev = [], None
@@ -659,7 +659,7 @@ def main():
     rows.append(["st185 harness BOM lines with no price (same both routes)", R["unpriced"], Pd["unpriced"]])
     for b, c, h in R["box_lines"]:
         rows.append(["st185 %s box as designed: USD / build h" % b.upper(), c, h])
-    write_csv(os.path.join(a.out, "routes.dummy.csv"), ["item", "relay route", "PDM route (all 10 moves)"], rows, line1)
+    write_csv(os.path.join(a.out, "routes.dummy.csv"), ["item", "relay route", "PDM route (all %d moves)" % len(MOVES)], rows, line1)
     # sleeving per segment
     rows = []
     for name, r in (("relay", R), ("pdm", Pd)):
